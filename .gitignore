@@ -12,7 +12,7 @@ tmp/
 test-result
 server.pid
 *.eml
-/dist/
+dist/
 .cache
 *.log
 
@@ -194,3 +194,8 @@ local.properties
 
 # Code Recommenders
 .recommenders/
+
+# Frontend related .gitignore
+
+node_modules/
+
