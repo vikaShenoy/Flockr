@@ -13,6 +13,8 @@ junit:
 recent-artifacts-frontend:
   stage: deploy
   script:
+    - echo "Checking that npm version exists"
+    - npm -v | echo
     - cd frontend && npm install && npm run build
   artifacts:
     paths:
@@ -24,6 +26,8 @@ recent-artifacts-frontend:
 release-artifacts-frontend:
   stage: deploy
   script:
+  - echo "Checking that npm version exists"
+  - npm -v | echo
   - cd frontend && npm install && npm run build
   artifacts:
     paths:
