@@ -13,7 +13,7 @@ junit:
 recent-artifacts-frontend:
   stage: deploy
   script:
-    - cd frontend && npm run build
+    - cd frontend && npm install && npm run build
   artifacts:
     paths:
       - frontend/dist
@@ -24,7 +24,7 @@ recent-artifacts-frontend:
 release-artifacts-frontend:
   stage: deploy
   script:
-  - cd frontend && npm run build
+  - cd frontend && npm install && npm run build
   artifacts:
     paths:
     - frontend/dist
