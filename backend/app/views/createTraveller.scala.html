@@ -1,0 +1,32 @@
+@import helper._
+@import play.mvc.Http.Request
+
+@(travellerForm: Form[TravellerData])(implicit request: Request)
+
+@main {
+    <h1>Create a traveller</h1>
+
+    @helper.form(routes.TravellerController.handleCreateTravellerSubmission) {
+        @helper.CSRF.formField
+
+        @helper.inputText(travellerForm("emailAddress"))
+
+        @helper.inputText(travellerForm("firstName"))
+
+        @helper.inputText(travellerForm("middleName"))
+
+        @helper.inputText(travellerForm("lastName"))
+
+        @helper.inputPassword(travellerForm("password"))
+
+        @helper.inputText(travellerForm("gender"))
+
+        @helper.inputDate(travellerForm("birthday"))
+
+        @helper.inputText(travellerForm("passports"))
+
+        @helper.inputText(travellerForm("nationalities"))
+
+        <button class="btn success" type="submit">Create traveller</button>
+    }
+}

@@ -1,0 +1,26 @@
+@import helper._
+@import play.mvc.Http.Request
+
+@(destinationForm: Form[DestinationData])(implicit request: Request)
+
+@main {
+    <h1>Create a destination</h1>
+
+    @helper.form(routes.DestinationsController.handleCreateDestinationSubmission) {
+        @helper.CSRF.formField
+
+        @helper.inputText(destinationForm("name"))
+
+        @helper.inputText(destinationForm("destinationType"))
+
+        @helper.inputText(destinationForm("district"))
+
+        @helper.inputText(destinationForm("latitude"))
+
+        @helper.inputText(destinationForm("longitude"))
+
+        @helper.inputText(destinationForm("country"))
+
+        <button class="btn success" type="submit">Create destination</button>
+    }
+}

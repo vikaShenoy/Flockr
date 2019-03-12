@@ -3,8 +3,10 @@
   @main {
     <div>
       <ul>
-        <li>List widgets <a href="@routes.WidgetController.listWidgets">@routes.WidgetController.listWidgets</a></li>
-        <li>Home Controller <a href="@routes.HomeController.list(0, "name", "asc", "")">@routes.HomeController.list(0, "name", "asc", "")</a></li>
+        <li>Create a traveller <a href="@routes.TravellerController.createTraveller()">/travellers/create</a></li>
+        <li>Log in as a traveller <a href="@routes.TravellerController.loginTraveller()">/travellers/login</a></li>
+        <li>View all destinations <a href="@routes.DestinationsController.listAllDestinations()">/destinations/listAll</a></li>
+        <li>Create a destination <a href="@routes.DestinationsController.createDestination()">/destinations/create</a></li>
       </ul>
     </div>
   }

@@ -1,0 +1,18 @@
+@import helper._
+@import play.mvc.Http.Request
+
+@(loginTravellerForm: Form[TravellerLoginData])(implicit request: Request)
+
+@main {
+    <h1>Log in as a traveller</h1>
+
+    @helper.form(routes.TravellerController.handleTravellerLoginSubmission) {
+        @helper.CSRF.formField
+
+        @helper.inputText(loginTravellerForm("emailAddress"))
+
+        @helper.inputPassword(loginTravellerForm("password"))
+
+        <button class="btn success" type="submit">Log in</button>
+    }
+}
