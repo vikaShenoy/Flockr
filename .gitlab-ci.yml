@@ -1,6 +1,3 @@
-before_script:
-  - apt install nodejs npm
-
 tag_checker:
   stage: build
   script:
@@ -16,6 +13,7 @@ junit:
 recent-artifacts-frontend:
   stage: deploy
   script:
+    -echo $USER
     - echo "Checking that npm version exists"
     - npm -v | echo
     - cd frontend && npm install && npm run build
