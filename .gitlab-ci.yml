@@ -8,15 +8,15 @@ tag_checker:
 junit:
   stage: test
   script:
-    - sbt test
+    - cd backend && sbt test
 
 recent-artifacts:
   stage: deploy
   script:
-    - sbt dist
+    - cd backend && sbt dist
   artifacts:
     paths:
-      - target/universal/*.zip
+      - backend/target/universal/*.zip
     expire_in: 1 week
   except:
     - tags
@@ -24,9 +24,9 @@ recent-artifacts:
 release-artifacts:
  stage: deploy
  script:
-    - sbt dist
+    - cd backend && sbt dist
  artifacts:
     paths:
-    - target/universal/*.zip
+    - backend/target/universal/*.zip
  only:
     - tags
