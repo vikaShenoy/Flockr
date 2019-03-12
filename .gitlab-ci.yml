@@ -10,7 +10,28 @@ junit:
   script:
     - cd backend && sbt test
 
-recent-artifacts:
+recent-artifacts-frontend:
+  stage: deploy
+  script:
+    - cd frontend && npm run build
+  artifacts:
+    paths:
+      - frontend/dist
+    expire_in: 1 week
+  except:
+    - tags
+
+release-artifacts-frontend:
+  stage: deploy
+  script:
+  - cd frontend && npm run build
+  artifacts:
+    paths:
+    - frontend/dist
+  only:
+  - tags
+
+recent-artifacts-backend:
   stage: deploy
   script:
     - cd backend && sbt dist
@@ -21,7 +42,7 @@ recent-artifacts:
   except:
     - tags
 
-release-artifacts:
+release-artifacts-backend:
  stage: deploy
  script:
     - cd backend && sbt dist
