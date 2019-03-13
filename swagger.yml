@@ -260,20 +260,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
                 
-                
+  '/destinations':
+    get:
+      tags:
+        - destinations
+      summary: "Gets a list of all destinations"
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved destinations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destinations'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
   '/travellers/types':
     get:
       tags:
         - travellers
       summary: "Gets a list of valid traveller types"
-      parameters:
-        - in: path
-          name: userId
-          description: ID of the traveller
-          required: true
-          schema:
-            type: integer
-            minimum: 0
       security:
         - cookieAuth: []
       responses:
@@ -498,6 +516,27 @@ components:
       type: object
       properties:
         response:
+          type: string
+    destinations:
+      type: array
+      items:
+        $ref: '#/components/schemas/destination'
+    destination:
+      type: object
+      properties:
+        destinationId:
+          type: integer
+        destinationName:
+          type: string
+        destinationType:
+          type: string
+        district:
+          type: string
+        latitude:
+          type: float
+        longitude:
+          type: float
+        country:
           type: string
     traveller:
       type: object
