@@ -264,7 +264,7 @@ paths:
     get:
       tags:
         - destinations
-      summary: "Gets a list of all destinations"
+      summary: "Get a list of all destinations"
       security:
         - cookieAuth: []
       responses:
@@ -276,6 +276,130 @@ paths:
                 $ref: '#/components/schemas/destinations'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              type: object
+              properties:
+                destinationName: string
+                destinationType: string
+                district: string
+                latitude: number
+                longitude: number
+                country: string
+    post:
+      tags:
+        - destinations
+      summary: "Create a new destination"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/destination'
+      security:
+        - cookieAuth: []
+      responses:
+        '201':
+          description: Successfully created new destination
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/destinations/{destinationId}':
+    get:
+      tags:
+        - destinations
+      summary: "Get an existing destination"
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved destination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destination'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      tags:
+        - destinations
+      summary: "Edit an existing destination"
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully updated destination
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    delete:
+      tags:
+        - destinations
+      summary: "Delete an existing destination"
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully deleted destination
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Destination not found
           content:
             application/json:
               schema:
@@ -533,9 +657,9 @@ components:
         district:
           type: string
         latitude:
-          type: float
+          type: number
         longitude:
-          type: float
+          type: number
         country:
           type: string
     traveller:
