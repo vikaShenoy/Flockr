@@ -34,16 +34,4 @@ public class WidgetControllerTest extends WithApplication {
         Result result = route(app, request);
         assertEquals(OK, result.status());
     }
-
-    @Test
-    public void testCreateWidget() {
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method(POST)
-                .bodyForm(ImmutableMap.of("name","widget 6", "price", "6"))
-                .uri("/widgets");
-
-        Result result = route(app, request);
-        assertEquals(SEE_OTHER, result.status());
-    }
-
 }

@@ -32,7 +32,4 @@ public class TravellerLoginData {
     public void setPassword(String password) {
         this.password = password;
     }
-
-
-
 }
