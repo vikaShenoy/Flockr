@@ -353,7 +353,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-      
   'travellers/nationalities':
     get:
       tags:
@@ -387,7 +386,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-                
+              
   '/travellers/{userId}/nationalities':
     post:
       tags:
@@ -503,27 +502,184 @@ paths:
                 $ref: '#/components/schemas/error'
 
   '/travellers/{userId}/trips':
-    tags:
-        - travellers
-    summary: "Shows a list of a users trips"
-    parameters:
-      - in: path
-        name: userId
-        description: ID of the traveller
-        required: true
-        schema:
-          type: integer
-          minimum: 0
-
-    security:
-      - cookieAuth: []
-    responses:
-      '200':
-          description: Successfully retrieved trips
+    get:
+      tags:
+          - trips 
+      summary: Shows a list of a users trips
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+            description: Successfully retrieved trips
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/trips'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/trips'
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed (Only if viewing other users' nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+          - trips 
+      summary: Creates a new trip
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createTrip'
+
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+            description: Successfully created trip
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/response'
+        '400':
+            description: Bad request 
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed (Only if viewing other users' nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  '/travellers/{userId}/trips/{tripId}':
+    get:
+      tags:
+        - trips
+      summary: Get a specific trip
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+        - in: path
+          name: tripId
+          description: The trip ID to access
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        cookieAuth: []
+      responses:
+        '200':
+            description: Successfully retrieved trip
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/trip'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed (Only if viewing other users' nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      tags:
+        - trips
+      summary: Update a specific trip
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+        - in: path
+          name: tripId
+          description: The trip ID to access
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateTrip'
+      security:
+        cookieAuth: []
+      responses:
+        '200':
+          description: Successfully updated trip
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Bad request 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
       '401':
         description: Unauthorized
         content:
@@ -542,14 +698,52 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/error'
-      
-              
-    
-                
-                
-  
-                
-    
+    delete:
+      tags:
+        - trips
+      summary: Deletes a specific trip
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+        - in: path
+          name: tripId
+          description: The trip ID to delete
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        cookieAuth: []
+      responses:
+        '200':
+          description: Successfully deleted trip
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed (Only if viewing other users' nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
                 
 components:
   schemas:
@@ -640,7 +834,7 @@ components:
         gender:
           type: string
 
-    trips:
+    trip:
       type: object
       properties:
         tripId:
@@ -649,14 +843,18 @@ components:
           type: object
           properties:
             destination:
-              $ref: '#/components/schemas/Destination'
+              $ref: '#/components/schemas/destination'
             destinationArrival:
               type: integer
             destinationDeparture:
               type: integer
-              
 
-          
+    trips:
+      type: array
+      items:
+        $ref: '#/components/schemas/trip'
+      
+
     travellerType:
       type: object
       properties:
@@ -695,7 +893,33 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/nationality'
-    
+
+    createTrip:
+      type: array
+      items:
+        type: object
+        properties:
+           destinationId:
+            type: integer
+           destinationArrival:
+            type: integer
+           destinationDeparture:
+            type: integer
+
+    updateTrip:
+      type: array
+      items:
+        type: object
+        properties:
+          destinationArrival:
+            type: integer
+          destinationDeparture:
+            type: integer
+          destinationId: 
+            type: integer
+          
+
+
   securitySchemes:
     cookieAuth:
       type: apiKey
