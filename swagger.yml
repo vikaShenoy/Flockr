@@ -167,7 +167,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
                 
-      
   '/travellers/{userId}':
     get:
       tags:
@@ -484,7 +483,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-                
+
+  '/travellers/{userId}/trips':
+    tags:
+        - travellers
+    summary: "Shows a list of a users trips"
+    parameters:
+      - in: path
+        name: userId
+        description: ID of the traveller
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+
+    security:
+      - cookieAuth: []
+    responses:
+      '200':
+          description: Successfully retrieved trips
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trips'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      '403':
+        description: Profile has not been completed (Only if viewing other users' nationalities)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      '500':
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/error'
+      
+              
     
                 
                 
@@ -541,7 +582,7 @@ components:
         error:
           type: string
           description: "An informative error message (to help with debugging)"
-          
+
     updateTraveller:
       type: object
       properties:
@@ -559,6 +600,23 @@ components:
           description: "Specified as a unix timestamp"
         gender:
           type: string
+
+    trips:
+      type: object
+      properties:
+        tripId:
+          type: integer
+        destinations:
+          type: object
+          properties:
+            destination:
+              $ref: '#/components/schemas/Destination'
+            destinationArrival:
+              type: integer
+            destinationDeparture:
+              type: integer
+              
+
           
     travellerType:
       type: object
