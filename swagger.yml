@@ -454,8 +454,8 @@ paths:
       security:
         - cookieAuth: []
       responses:
-        '201':
-          description: Successfully added nationality
+        '200':
+          description: Successfully deleted nationality
           content:
             application/json:
               schema:
@@ -473,7 +473,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
         '403':
-          description: Profile has not been completed (Only if viewing other users nationalities)
+          description: Profile has not been completed (Only if viewing other users' nationalities)
           content:
             application/json:
               schema:
