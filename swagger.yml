@@ -168,7 +168,7 @@ paths:
                 $ref: '#/components/schemas/error'
                 
       
-  '/travellers/{travellerId}':
+  '/travellers/{userId}':
     get:
       tags:
         - travellers
@@ -177,7 +177,7 @@ paths:
         - cookieAuth: []
       parameters:
         - in: path
-          name: travellerId
+          name: userId
           description: ID of the traveller
           required: true
           schema:
@@ -215,7 +215,7 @@ paths:
       summary: Updates parts of a traveller
       parameters:
         - in: path
-          name: travellerId
+          name: userId
           description: ID of the traveller
           required: true
           schema:
@@ -268,7 +268,7 @@ paths:
       summary: "Gets a list of valid traveller types"
       parameters:
         - in: path
-          name: travellerId
+          name: userId
           description: ID of the traveller
           required: true
           schema:
@@ -378,7 +378,7 @@ paths:
       summary: "Adds a nationality to a user"
       parameters:
         - in: path
-          name: travellerId
+          name: userId
           description: ID of the traveller
           required: true
           schema:
