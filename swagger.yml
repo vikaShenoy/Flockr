@@ -1,0 +1,567 @@
+openapi: 3.0.0
+servers:
+  - url: /api/v1
+info:
+  description: ''
+  version: 0.0.8
+  title: Travel EA specification for Team 500
+tags:
+  - name: auth
+    description: All authentication endpoints
+  - name: travellers
+    description: All traveller related endpoints
+  - name: destinations
+    description: All destination related endpoints
+  - name: trips
+    description: All trip related endpoints
+    
+paths:
+  '/auth/travellers/signup':
+    post:
+      tags:
+        - auth
+      summary: Sign's up a traveller
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/traveller'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/auth/travellers/login':
+    post:
+      tags:
+        - auth
+      summary: Logs in a traveller
+      responses:
+        '200':
+          description: Traveller has logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/traveller'
+        '400':
+          description: Malformed request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/auth/travellers/logout':
+    post:
+      tags:
+        - auth
+      summary: 'Logs out a user'
+      security:
+        - cookieAuth: []
+      parameters:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/travellers':
+    get:
+      tags:
+        - travellers
+      summary: Searches a list of travellers
+      security: 
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: nationality
+          description: Filter by specific nationality
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: gender
+          description: Filter by specific gender
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: ageMin
+          description: Filter by min age
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: ageMax
+          description: Filter by max age
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: travellerType
+          description: Filter by traveller type
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved travellers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/travellers'
+        '403':
+          description: User has not filled out their profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: User is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '400':
+          description: "Query strings were malformed"
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/error'
+        '500':
+          description: "Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+      
+  '/travellers/{travellerId}':
+    get:
+      tags:
+        - travellers
+      summary: Gets a travellers details
+      security: 
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: travellerId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/traveller'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+    patch:
+      tags:
+        - travellers
+      summary: Updates parts of a traveller
+      parameters:
+        - in: path
+          name: travellerId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      requestBody: 
+         content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateTraveller'
+      responses:
+        '201':
+          description: User has succesfully been updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+                
+  '/travellers/{travellerId}/types':
+    get:
+      tags:
+        - travellers
+      summary: "Gets a list of a users travellers types"
+      parameters:
+        - in: path
+          name: travellerId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved traveller types
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/travellerTypes'
+                
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed (Only if viewing other users traveller types)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  '/travellers/{travellerId}/passports':
+    get:
+      tags:
+        - travellers
+      summary: "Gets a list of a users travellers types"
+      parameters:
+        - in: path
+          name: travellerId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved passports
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/passports'
+                
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed (Only if viewing other users passports)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+    post:
+      
+      
+                
+  '/travellers/{travellerId}/nationalities':
+    get:
+      tags:
+        - travellers
+      summary: "Gets a list of a users nationalities"
+      parameters:
+        - in: path
+          name: travellerId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved nationalities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/nationalities'
+                
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed (Only if viewing other users nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - travellers
+      summary: "Adds a nationality to a user"
+      parameters:
+        - in: path
+          name: travellerId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nationality:          
+                  type: string
+              required:
+                - nationality
+
+      security:
+        - cookieAuth: []
+      responses:
+        '201':
+          description: Successfully added nationality
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed (Only if viewing other users nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'            
+                
+    
+                
+                
+  
+                
+    
+                
+components:
+  schemas:
+    response:
+      type: object
+      properties:
+        response:
+          type: string
+    traveller:
+      type: object
+      properties:
+        userId:
+          type: integer
+        firstName:
+          type: string
+        middleName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+        dateOfBirth:
+          type: integer
+          description: "Specified as a unix timestamp"
+        gender:
+          type: string
+        nationalities:
+          type: array
+          items:
+            type: string
+        passports:
+          type: array
+          items:
+            type: string
+        travellerTypes:
+          type: array
+          items:
+            type: string
+            
+    travellers:
+      type: array
+      items:
+        $ref: '#/components/schemas/traveller'
+    error:
+      type: object
+      properties:
+        error:
+          type: string
+          
+    updateTraveller:
+      type: object
+      properties:
+        userId:
+          type: integer
+        firstName:
+          type: string
+        middleName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+        dateOfBirth:
+          type: integer
+          description: "Specified as a unix timestamp"
+        gender:
+          type: string
+          
+    travellerType:
+      type: object
+      properties:
+        travellerTypeId:
+          type: integer
+        name:
+          type: string
+            
+    travellerTypes:
+      type: array
+      items:
+        $ref: '#/components/schemas/travellerType'
+        
+    passport:
+      type: object
+      properties:
+        passportId:
+          type: integer
+        name:
+          type: string
+        
+    passports:
+      type: array
+      items:
+        $ref: '#/components/schemas/passport'
+        
+    nationality:
+      type: object
+      properties:
+        nationalityId:
+          type: integer
+        name:
+          type: string
+        
+    nationalities:
+      type: array
+      items:
+        $ref: '#/components/schemas/nationality'
+    
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      name: 'userId'
+      in: cookie
+      
+
