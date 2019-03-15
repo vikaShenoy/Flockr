@@ -134,6 +134,7 @@ export default {
 
   #navbar {
     background-color: $primary;
+    position:fixed;
   }
 
   #title-box {
