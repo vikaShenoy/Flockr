@@ -3,6 +3,7 @@ package controllers;
 
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.Http;
 
 /**
  * Manage a database of computers
@@ -11,8 +12,8 @@ public class HomeController extends Controller {
     /**
      * Handle default path requests
      */
-    public Result index() {
-      return ok(views.html.index.render());
+    public Result index(Http.Request request) {
+      return ok("Congrats! You are in the backend index, you probably shouldn't be querying this though!");
     }
 }
             

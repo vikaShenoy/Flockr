@@ -17,90 +17,49 @@ import java.util.List;
  * Manage front end actions related to travellers
  */
 public class TravellerController {
-    private FormFactory formFactory;
-    private final Form<TravellerData> travellerForm;
-    private final Form<TravellerLoginData> travellerLoginDataForm;
-    private HttpExecutionContext httpExecutionContext;
-
-
-    /**
-     * Create a new TravellerController and inject the FormFactory into it
-     * @param formFactory
-     */
-    @Inject
-    public TravellerController(FormFactory formFactory) {
-        this.formFactory = formFactory;
-        this.travellerForm = this.formFactory.form(TravellerData.class);
-        this.travellerLoginDataForm = this.formFactory.form(TravellerLoginData.class);
-    }
-
-    /**
-     * Render the page that allows a traveller to login
-     * @param request the request directed here by the routes file
-     * @return the rendered page that allows a traveller to login
-     */
     public Result loginTraveller(Http.Request request) {
-        return ok(views.html.loginTraveller.render(this.travellerLoginDataForm, request));
+        return ok("You have reached the login traveller endpoint");
     }
 
-    /**
-     * Handle form submission for when a traveller logs in
-     * @param request the request directed here by the routes file
-     * @return user data as json if successful or error message if no data found.
-     */
     public Result handleTravellerLoginSubmission(Http.Request request) {
-        Form<TravellerLoginData> boundForm = this.travellerLoginDataForm.bindFromRequest(request);
-        TravellerLoginData travellerLoginData = boundForm.get();
+        // TODO: get these from request
+        String email = "email@me.com";
+        String password = "wow_verySecure";
 
-
-
-        List<Traveller> selectedTraveller = Traveller.find.query().where().like("emailAddress", travellerLoginData.getEmailAddress())
-                .like("password",travellerLoginData.getPassword()).findList();
+        List<Traveller> selectedTraveller = Traveller.find.query().where().like("emailAddress", email)
+                .like("password", password).findList();
         if (selectedTraveller.size() != 1) {
             return ok("BAD LOGIN");
         } else return ok(play.libs.Json.toJson(selectedTraveller));
 
     }
 
-    /**
-     * Front end method to render a page to create a new traveller.
-     * @param request the request directed here by the routes file
-     * @return the rendered page to create a new traveller
-     */
     public Result createTraveller(Http.Request request) {
-        return ok(views.html.createTraveller.render(this.travellerForm, request));
+        // TODO: implement create traveller
+        return ok("You have reached the end point to create a traveller");
     }
 
-    /**
-     * Front end method to process new traveller form submissions
-     * @param request the request directed here by the routes file
-     * @return a rendered page confirming whether the user has been created
-     */
     public Result handleCreateTravellerSubmission(Http.Request request) {
-        final Form<TravellerData> boundForm = this.travellerForm.bindFromRequest(request);
-        TravellerData travellerData = boundForm.get();
-        String firstName = travellerData.getFirstName();
-        String middleName = travellerData.getMiddleName();
-        String lastName = travellerData.getLastName();
-        String password = travellerData.getPassword();
-        String gender = travellerData.getGender();
-        Date birthday = travellerData.getBirthday();
-        String emailAddress = travellerData.getEmailAddress();
-        String nationalities = travellerData.getNationalities();
-        String passports = travellerData.getPassports();
+        String firstName = "Felipe";
+        String middleName = "Rafael";
+        String lastName = "Araneda Ruiz";
+        String password = "wow_muchSecurity";
+        String gender = "Male";
+        Date birthday = new Date();
+        String emailAddress = "me@email.com";
+        String nationalities = "I am very nationality";
+        String passports = "ALL the passports";
 
-        Traveller traveller = new Traveller(travellerData);
+        Traveller traveller = new Traveller(firstName, middleName, lastName, password, gender, emailAddress, nationalities, birthday, passports);
 
-        List<Traveller> selectedTraveller = Traveller.find.query().where().like("emailAddress", travellerData.getEmailAddress()).findList();
+        List<Traveller> selectedTraveller = Traveller.find.query().where().like("emailAddress", emailAddress).findList();
         if (selectedTraveller.size() == 0 ) {
             traveller.save();
-            selectedTraveller = Traveller.find.query().where().like("emailAddress", travellerData.getEmailAddress())
-                    .like("password",travellerData.getPassword()).findList();
+            selectedTraveller = Traveller.find.query().where().like("emailAddress", emailAddress)
+                    .like("password", password).findList();
             return ok(play.libs.Json.toJson(selectedTraveller));
         } else
             return ok("Traveller Exists");
-
-
     }
 
 

@@ -1,6 +1,5 @@
 package models.destinations;
 
-import controllers.DestinationData;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 import javax.persistence.Entity;
@@ -21,15 +20,6 @@ public class Destination extends models.BaseModel {
         this.latitude = latitude;
         this.longitude = longitude;
         this.country = country;
-    }
-
-    public Destination(DestinationData destinationData) {
-        this.name = destinationData.getName();
-        this.destinationType = destinationData.getDestinationType();
-        this.district = destinationData.getDistrict();
-        this.latitude = destinationData.getLatitude();
-        this.longitude = destinationData.getLongitude();
-        this.country = destinationData.getCountry();
     }
 
     private String name;

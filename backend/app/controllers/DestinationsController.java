@@ -10,6 +10,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
+import java.awt.*;
 import java.util.List;
 
 import static play.libs.Scala.asScala;
@@ -18,20 +19,6 @@ import static play.libs.Scala.asScala;
  * Manage front end actions related to destinations
  */
 public class DestinationsController extends Controller {
-    private FormFactory formFactory;
-    private Form<DestinationData> createDestinationForm;
-    private HttpExecutionContext httpExecutionContext;
-
-    /**
-     * Make a new DestinationsController and inject the form factory to it
-     * @param formFactory the form factory being injected
-     */
-    @Inject
-    public DestinationsController(FormFactory formFactory) {
-        this.formFactory = formFactory;
-        this.createDestinationForm = this.formFactory.form(DestinationData.class);
-    }
-
     /**
      * Show all destinations to the user
      * @param request the request made through the routes file
@@ -44,12 +31,6 @@ public class DestinationsController extends Controller {
             return ok(play.libs.Json.toJson(destinationList));
         } else
             return ok("No Destinations");
-
-//        List<Destination> destinations = com.google.common.collect.Lists.newArrayList(
-//                new Destination("Niagara Falls", DestinationType.NATURAL_ATTRACTION, "Ontario", 43.085094, 	-79.079559, "Canada"),
-//                new Destination("Torres del Paine", DestinationType.NATURAL_ATTRACTION, "Magallanes y Antartica Chilena", -51.000000, -73.094, "Chile")
-//        );
-//        return ok(views.html.destinations.listAllDestinations.render(asScala(destinations), request));
     }
 
 
@@ -59,7 +40,7 @@ public class DestinationsController extends Controller {
      * @return the rendered page that allows the user to create a new destination
      */
     public Result createDestination(Http.Request request) {
-        return ok(views.html.destinations.createDestination.render(this.createDestinationForm, request));
+        return ok("You have reached the create destinations endpoint");
     }
 
 
@@ -69,9 +50,14 @@ public class DestinationsController extends Controller {
      * @return an inditcation to the user of whether their new destination was created or not
      */
     public Result handleCreateDestinationSubmission(Http.Request request) {
-        final Form<DestinationData> boundForm = this.createDestinationForm.bindFromRequest(request);
-        DestinationData destinationData = boundForm.get();
-        Destination destination = new Destination(destinationData);
+        String name = "Ilam Gardens";
+        DestinationType destinationType = DestinationType.NATURAL_ATTRACTION;
+        String disctrict = "Canterbury";
+        Double latitude = 50.34;
+        Double longitude = 32.0901;
+        String country = "New Zealand";
+
+        Destination destination = new Destination(name, destinationType, disctrict, latitude, longitude, country);
         // TODO: add this new destination to data persistence
         destination.save();
 
