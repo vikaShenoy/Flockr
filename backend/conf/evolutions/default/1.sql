@@ -106,11 +106,12 @@ create table user (
   middle_name                   varchar(255),
   last_name                     varchar(255),
   date_of_birth                 timestamp,
-  gender                        varchar(255),
+  gender_gender_id              integer,
   email                         varchar(255),
-  timestamp                     timestamp,
-  password                      varchar(255),
+  password_hash                 varchar(255),
   token                         varchar(255),
+  timestamp                     timestamp not null,
+  constraint uq_user_gender_gender_id unique (gender_gender_id),
   constraint pk_user primary key (user_id)
 );
 
@@ -167,6 +168,8 @@ alter table trip_destination add constraint fk_trip_destination_trip_trip_id for
 
 alter table trip_destination add constraint fk_trip_destination_destination_dest_id foreign key (destination_dest_id) references destination (dest_id) on delete restrict on update restrict;
 
+alter table user add constraint fk_user_gender_gender_id foreign key (gender_gender_id) references gender (gender_id) on delete restrict on update restrict;
+
 
 # --- !Downs
 
@@ -194,6 +197,8 @@ alter table trip_destination drop constraint if exists fk_trip_destination_trip_
 drop index if exists ix_trip_destination_trip_trip_id;
 
 alter table trip_destination drop constraint if exists fk_trip_destination_destination_dest_id;
+
+alter table user drop constraint if exists fk_user_gender_gender_id;
 
 drop table if exists company;
 

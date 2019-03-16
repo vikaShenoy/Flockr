@@ -1,16 +1,16 @@
 package models;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
+import javax.validation.Constraint;
 import java.util.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import io.ebean.*;
-import models.finders.UserFinder;
-
+import io.ebean.annotation.CreatedTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
+import play.data.format.Formats;
+import play.data.validation.Constraints;
 /**
  * A traveller, who may wish to create trips, go to destinations, book hotels, book flights, etc
  */
@@ -18,12 +18,15 @@ import models.finders.UserFinder;
 public class User extends Model {
 
     @Id
+    @Constraints.Required
     private int userId;
 
+    @Constraints.Required
     private String firstName;
 
     private String middleName;
 
+    @Constraints.Required
     private String lastName;
 
     @OneToMany(cascade = CascadeType.PERSIST)
@@ -31,8 +34,10 @@ public class User extends Model {
 
     private Date dateOfBirth;
 
-    private String gender;
+    @OneToOne
+    private Gender gender;
 
+    @Constraints.Required
     private String email;
 
     @OneToMany(cascade = CascadeType.PERSIST)
@@ -41,9 +46,15 @@ public class User extends Model {
     @OneToMany(cascade = CascadeType.PERSIST)
     private List<Passport> passports;
 
+    @Constraints.Required
+    @Formats.DateTime(pattern="yyyy-MM-dd HH:mm:ss")
+    @CreatedTimestamp
+    @Column(updatable=false)
     private LocalDateTime timestamp;
 
-    private String password;
+    @Constraints.Required
+    private String passwordHash;
+
 
     private String token;
 
@@ -53,19 +64,19 @@ public class User extends Model {
      * @param firstName the traveller's first name
      * @param middleName the traveller's middle name
      * @param lastName the traveller's last name
-     * @param password the traveller's password
+     * @param passwordHash the traveller's hashed password
      * @param gender the traveller's gender
      * @param email the traveller's email address
      * @param nationalities the traveller's nationalities
      * @param dateOfBirth the traveller's birthday
      * @param passports the traveller's passports
+     * @param token the traveller's token
      */
-    public User(String firstName, String middleName, String lastName, String password, String gender, String email, List<Nationality> nationalities, Date dateOfBirth, List<Passport> passports, String token) {
+    public User(String firstName, String middleName, String lastName, String passwordHash, Gender gender, String email, List<Nationality> nationalities, Date dateOfBirth, List<Passport> passports, String token) {
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
-        this.password = password;
-        this.timestamp = LocalDateTime.now();
+        this.passwordHash = passwordHash;
         this.gender = gender;
         this.email = email;
         this.nationalities = nationalities;
@@ -74,11 +85,19 @@ public class User extends Model {
         this.token = token;
     }
 
-    public User(String firstName, String lastName, String email, String password, String token) {
+    /**
+     * Constructor used for signin up
+     * @param firstName Traveller's first name
+     * @param lastName Traveller's last name
+     * @param email Traveller's email
+     * @param passwordHash Traveller's hashed password
+     * @param token Traveller's token
+     */
+    public User(String firstName, String lastName, String email, String passwordHash, String token) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.password = password;
+        this.passwordHash = passwordHash;
         this.token = token;
     }
 
@@ -131,11 +150,11 @@ public class User extends Model {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public String getGender() {
+    public Gender getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(Gender gender) {
         this.gender = gender;
     }
 
@@ -171,12 +190,12 @@ public class User extends Model {
         this.timestamp = timestamp;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getToken() {
@@ -187,8 +206,12 @@ public class User extends Model {
         this.token = token;
     }
 
+    public boolean profileCompleted() {
+        return firstName != null && middleName != null && lastName != null & nationalities.size() != 0 && dateOfBirth != null && gender != null && email != null && travellerTypes.size() != 0 && timestamp != null && passwordHash != null && token != null;
+    }
+
     /**
      * This is required by EBean to make queries on the database
      */
-    public static final UserFinder find = new UserFinder();
+    public static final Finder<Integer, User> find = new Finder<>(User.class);
 }

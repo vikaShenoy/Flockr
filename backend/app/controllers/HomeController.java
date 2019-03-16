@@ -2,6 +2,7 @@ package controllers;
 
 
 import actions.ActionState;
+import actions.ProfileCompleted;
 import models.User;
 import play.mvc.Controller;
 import play.mvc.Result;

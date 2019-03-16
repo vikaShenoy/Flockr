@@ -15,7 +15,9 @@ import javax.inject.Inject;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
-
+/**
+ * Middleware to check if a user is logged in
+ */
 public class LoggedIn extends Action.Simple {
     private final AuthRepository authRepository;
 
@@ -24,7 +26,11 @@ public class LoggedIn extends Action.Simple {
         this.authRepository = authRepository;
     }
 
-
+    /**
+     * The call to check if the user is logged in
+     * @param request Request object to get authorization token from
+     * @return The next middleware/controller if successful, returns unauthorized if the token was invalid,
+     */
     public CompletionStage<Result> call(Http.Request request) {
             Optional<String> token = request.getHeaders().get("Authorization");
 
@@ -40,13 +46,4 @@ public class LoggedIn extends Action.Simple {
                return delegate.call(request.addAttr(ActionState.USER, user.get()));
             });
     }
-
-
-
-//        .thenCompose((user) -> {
-//            if (user == null) {
-//                return unauthorized();
-//            }
-//        })
-//        .thenApplyAsync(reuest -> reuest);
 }
