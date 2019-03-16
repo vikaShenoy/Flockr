@@ -18,7 +18,6 @@ public class HomeController extends Controller {
      */
 
     public Result index(Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
         return ok("Congrats! You are in the backend index, you probably shouldn't be querying this though!");
     }
 }
