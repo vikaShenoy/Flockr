@@ -16,11 +16,11 @@ import javax.inject.Inject;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 
-public class AuthActions extends Action.Simple {
+public class LoggedIn extends Action.Simple {
     private final AuthRepository authRepository;
 
     @Inject
-    public AuthActions(AuthRepository authRepository) {
+    public LoggedIn(AuthRepository authRepository) {
         this.authRepository = authRepository;
     }
 
@@ -37,7 +37,7 @@ public class AuthActions extends Action.Simple {
                    return supplyAsync(() -> unauthorized("You are unauthorized"));
                }
 
-                return delegate.call(request);
+               return delegate.call(request.addAttr(ActionState.USER, user.get()));
             });
     }
 
