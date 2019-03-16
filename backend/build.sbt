@@ -21,4 +21,8 @@ libraryDependencies += "org.mockito" % "mockito-core" % "2.1.0" % Test
 libraryDependencies += "org.mindrot" % "jbcrypt" % "0.3m"
 testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
 
+
 javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation", "-Werror")
+
+PlayKeys.playRunHooks += VuePlayHook(baseDirectory.value)
+
