@@ -2,6 +2,12 @@ import play.sbt.PlayRunHook
 import sbt._
 import scala.sys.process.Process
 
+
+/**
+  * This hook captures the startup of the play framework and invokes 'npm install'.
+  * After play is loaded the hook then executes 'npm run serv'.
+  */
+
 object VuePlayHook {
   def apply(base: File): PlayRunHook = {
 
