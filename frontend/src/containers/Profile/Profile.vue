@@ -10,7 +10,7 @@
     </v-select>
 
     <v-btn color="secondary" depressed @click="addTravellerType()">Add</v-btn>
-
+  
     <li v-for="selectedType in selectedTypes" v-bind:key="selectedType">
       {{ selectedType }} <v-btn @click="deleteTravellerType(selectedType)">Delete</v-btn>
     </li>

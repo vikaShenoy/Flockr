@@ -25,25 +25,13 @@ public class WidgetControllerTest extends WithApplication {
         return new GuiceApplicationBuilder().build();
     }
 
-    // @Test
-    // public void testIndex() {
-    //     Http.RequestBuilder request = Helpers.fakeRequest()
-    //             .method(GET)
-    //             .uri("/");
+    @Test
+    public void testIndex() {
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method(GET)
+                .uri("/");
 
-    //     Result result = route(app, request);
-    //     assertEquals(OK, result.status());
-    // }
-
-    // @Test
-    // public void testCreateWidget() {
-    //     Http.RequestBuilder request = Helpers.fakeRequest()
-    //             .method(POST)
-    //             .bodyForm(ImmutableMap.of("name","widget 6", "price", "6"))
-    //             .uri("/widgets");
-
-    //     Result result = route(app, request);
-    //     assertEquals(SEE_OTHER, result.status());
-    // }
-
+        Result result = route(app, request);
+        assertEquals(OK, result.status());
+    }
 }

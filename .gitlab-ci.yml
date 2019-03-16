@@ -15,7 +15,7 @@ recent-artifacts-frontend:
   script:
     - echo $USER
     - echo "Checking that npm version exists"
-    - npm -v | echo
+    - npm -v
     - cd frontend && npm install && npm run build
   artifacts:
     paths:
