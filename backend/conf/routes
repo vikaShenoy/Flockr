@@ -1,20 +1,10 @@
 # Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
 
 # Home page
 GET     /                           controllers.HomeController.index(request: Request)
 
-# Travellers
-GET     /travellers/create          controllers.TravellerController.createTraveller(request: Request)
-GET     /handleCreateTravellerSubmission  controllers.TravellerController.handleCreateTravellerSubmission(request: Request)
-GET     /travellers/login           controllers.TravellerController.loginTraveller(request: Request)
-GET     /handleTravellerLoginSubmission   controllers.TravellerController.handleTravellerLoginSubmission(request: Request)
-
-# Destinations
-GET     /destinations/listAll        controllers.DestinationsController.listAllDestinations(request: Request)
-GET     /destinations/create          controllers.DestinationsController.createDestination(request: Request)
-GET     /handleCreateDestinationSubmission  controllers.DestinationsController.handleCreateDestinationSubmission(request: Request)
+# Auth routes
+POST    /api/auth/travellers/signup     controllers.AuthController.signup(request: Request)
 
 
 # Map static resources from the /public folder to the /assets URL path
