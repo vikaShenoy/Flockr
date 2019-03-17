@@ -51,7 +51,7 @@ public class AuthController {
 
         User user = new User(firstName, lastName, email, hashedPassword, userToken);
 
-        return this.authRepository.insert(user)
+        return authRepository.insert(user)
         .thenApplyAsync((insertedUser) -> ok(Json.toJson(insertedUser)), httpExecutionContext.current());
 
     }
