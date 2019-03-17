@@ -2,8 +2,8 @@ package models;
 
 import javax.persistence.*;
 import javax.validation.Constraint;
+import java.sql.Timestamp;
 import java.util.Date;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import io.ebean.*;
@@ -32,7 +32,7 @@ public class User extends Model {
     @OneToMany(cascade = CascadeType.PERSIST)
     private List<Nationality> nationalities;
 
-    private Date dateOfBirth;
+    private Timestamp dateOfBirth;
 
     @OneToOne
     private Gender gender;
@@ -47,10 +47,9 @@ public class User extends Model {
     private List<Passport> passports;
 
     @Constraints.Required
-    @Formats.DateTime(pattern="yyyy-MM-dd HH:mm:ss")
     @CreatedTimestamp
     @Column(updatable=false)
-    private LocalDateTime timestamp;
+    private java.sql.Timestamp timestamp;
 
     @Constraints.Required
     private String passwordHash;
@@ -72,7 +71,7 @@ public class User extends Model {
      * @param passports the traveller's passports
      * @param token the traveller's token
      */
-    public User(String firstName, String middleName, String lastName, String passwordHash, Gender gender, String email, List<Nationality> nationalities, Date dateOfBirth, List<Passport> passports, String token) {
+    public User(String firstName, String middleName, String lastName, String passwordHash, Gender gender, String email, List<Nationality> nationalities, Timestamp dateOfBirth, List<Passport> passports, String token) {
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
@@ -142,11 +141,11 @@ public class User extends Model {
         this.nationalities = nationalities;
     }
 
-    public Date getDateOfBirth() {
+    public Timestamp getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
+    public void setDateOfBirth(Timestamp dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
@@ -182,11 +181,11 @@ public class User extends Model {
         this.passports = passports;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Timestamp getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
     }
 

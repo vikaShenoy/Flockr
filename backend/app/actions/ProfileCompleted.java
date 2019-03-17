@@ -24,7 +24,6 @@ public class ProfileCompleted extends Action.Simple {
         if (user.profileCompleted()) {
             return delegate.call(request);
         } else {
-            System.out.println("Profile was not completed");
             return supplyAsync(() -> forbidden());
         }
     }

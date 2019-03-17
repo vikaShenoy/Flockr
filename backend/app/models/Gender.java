@@ -2,12 +2,12 @@ package models;
 
 import io.ebean.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class Gender extends Model {
     @Id
+    @OneToOne(fetch = FetchType.LAZY)
     private int genderId;
 
     private String genderName;

@@ -65,7 +65,7 @@ create table nationality (
 
 create table passport (
   passport_id                   integer auto_increment not null,
-  user_user_id                  integer not null,
+  user_user_id                  integer,
   passport_country              varchar(255),
   constraint pk_passport primary key (passport_id)
 );

@@ -2,6 +2,7 @@ package repository;
 
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
+import models.Passport;
 import models.User;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
@@ -10,23 +11,47 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.concurrent.CompletionStage;
 
+/**
+ * Contains database calls for all things traveller related
+ */
 public class TravellerRepository {
    private final EbeanServer ebeanServer;
     private final DatabaseExecutionContext executionContext;
-    private final EbeanDynamicEvolutions ebeanDynamicEvolutions;
 
+    /**
+     * Dependency injection
+     * @param ebeanConfig ebean config to use
+     * @param executionContext Context to run completion stages on
+     */
     @Inject
-    public TravellerRepository(EbeanConfig ebeanConfig, EbeanDynamicEvolutions ebeanDynamicEvolutions, DatabaseExecutionContext executionContext) {
-        this.ebeanDynamicEvolutions = ebeanDynamicEvolutions;
+    public TravellerRepository(EbeanConfig ebeanConfig, DatabaseExecutionContext executionContext) {
         this.ebeanServer = Ebean.getServer(ebeanConfig.defaultServer());
         this.executionContext = executionContext;
     }
 
+    /**
+     * Updates a users details
+     * @param user The user to update
+     * @return Nothing
+     */
     public CompletionStage<Void> updateUser(User user) {
         return runAsync(() -> {
-            user.save();
+            user.update();
+        });
+    }
+
+    /**
+     * Gets a passport by it's ID
+     * @param passportId The passport to get
+     * @return The list of passports
+     */
+    public CompletionStage<List<Passport>> getPassportById(int passportId) {
+        return supplyAsync(() -> {
+            List<Passport> passports = Passport.find.all();
+            return passports;
         }, executionContext);
     }
 }

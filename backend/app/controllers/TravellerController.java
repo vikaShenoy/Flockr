@@ -12,14 +12,19 @@ import play.mvc.With;
 import repository.TravellerRepository;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
 import java.util.concurrent.CompletionStage;
+
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+
 import play.libs.concurrent.HttpExecutionContext;
 
-
+/**
+ * Contains all endpoints associated with travellers
+ */
 public class TravellerController extends Controller {
     private final TravellerRepository travellerRepository;
-    private final HttpExecutionContext httpExecutionContext;
+    private HttpExecutionContext httpExecutionContext;
 
     @Inject
     public TravellerController(TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext) {
@@ -27,14 +32,19 @@ public class TravellerController extends Controller {
         this.httpExecutionContext = httpExecutionContext;
     }
 
+
+    /**
+     * Updates a travellers details
+      * @param travellerId Redundant ID
+     * @param request Object to get the JSOn data
+     * @return 200 status if update was successful, 500 otherwise
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> updateTraveller(int travellerId, Http.Request request) {
         JsonNode jsonBody = request.body().asJson();
 
-        User user = request.attrs().get(ActionState.USER);
 
-        System.out.println(user.getFirstName());
-        System.out.println(user.getGender().getGenderId());
+        User user = request.attrs().get(ActionState.USER);
 
         if (jsonBody.has("firstName")) {
             user.setFirstName(jsonBody.get("firstName").asText());
@@ -48,9 +58,10 @@ public class TravellerController extends Controller {
             user.setLastName(jsonBody.get("firstName").asText());
         }
 
-//        if (jsonBody.has("dateOfBirth")) {
-//            user.setDateOfBirth(jsonBody.get("middleName").asText());
-//        }
+        if (jsonBody.has("dateOfBirth")) {
+            Timestamp timestamp = new Timestamp(jsonBody.get("dateOfBirth").asInt());
+            user.setDateOfBirth(timestamp);
+        }
 
         if (jsonBody.has("genderId")) {
             Gender gender = new Gender(null);
@@ -58,11 +69,31 @@ public class TravellerController extends Controller {
             user.setGender(gender);
         }
 
-            return supplyAsync(() -> {
-                travellerRepository.updateUser(user);
-                return ok();
-            }, httpExecutionContext.current());
+        return supplyAsync(() -> {
+            travellerRepository.updateUser(user);
+            return ok();
+        }, httpExecutionContext.current());
 
 
+    }
+
+    /**
+     * Adds a passport to a user
+     * @param travellerId Redundant ID
+     * @param request Object to get the passportId to add
+     * @return 200 if request was successful, 500 otherwise
+     */
+    public Result addPassport(int travellerId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        int passportId = request.body().asJson().get("passportId").asInt();
+
+//        return travellerRepository.getPassportById(passportId)
+//        .thenApplyAsync((passports) -> {
+//            System.out.println(passports);
+//            return ok();
+//        }, httpExecutionContext.current());
+
+
+        return ok();
     }
 }

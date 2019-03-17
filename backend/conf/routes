@@ -1,11 +1,21 @@
 # Routes
 
 # Home page
-GET     /                           controllers.HomeController.index(request: Request)
+GET          /                                         controllers.HomeController.index(request: Request)
+
+#Interval routes
+POST         /api/internal/resample                    controllers.InternalController.resample
 
 # Auth routes
-POST    /api/auth/travellers/signup     controllers.AuthController.signup(request: Request)
+POST         /api/auth/travellers/signup               controllers.AuthController.signup(request: Request)
+
+
+# Traveller routes
+POST         /api/travellers/:travellerId/passports    controllers.TravellerController.addPassport(travellerId: Int, request: Request)
+PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET          /assets/*file                             controllers.Assets.at(path="/public", file)
+
+
