@@ -4,7 +4,9 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import models.Gender;
+import models.Passport;
 import models.User;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -13,6 +15,7 @@ import repository.TravellerRepository;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -83,17 +86,26 @@ public class TravellerController extends Controller {
      * @param request Object to get the passportId to add
      * @return 200 if request was successful, 500 otherwise
      */
-    public Result addPassport(int travellerId, Http.Request request) {
+    @With(LoggedIn.class)
+    public CompletionStage<Result> addPassport(int travellerId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
+        System.out.println(1);
+        System.out.println(user.getPassports());
+
         int passportId = request.body().asJson().get("passportId").asInt();
 
-//        return travellerRepository.getPassportById(passportId)
-//        .thenApplyAsync((passports) -> {
-//            System.out.println(passports);
-//            return ok();
-//        }, httpExecutionContext.current());
-
-
-        return ok();
+        return travellerRepository.getPassportById(passportId)
+                .thenApplyAsync((passport) -> {
+                    if (!passport.isPresent()) {
+                        return notFound();
+                    }
+                    List<Passport> passports = user.getPassports();
+                    passports.add(passport.get());
+                    user.setPassports(passports);
+                    user.save();
+                    System.out.println(2);
+                    System.out.println(user.getPassports());
+                    return ok();
+                }, httpExecutionContext.current());
     }
 }

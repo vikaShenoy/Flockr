@@ -12,6 +12,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -48,10 +49,11 @@ public class TravellerRepository {
      * @param passportId The passport to get
      * @return The list of passports
      */
-    public CompletionStage<List<Passport>> getPassportById(int passportId) {
+    public CompletionStage<Optional<Passport>> getPassportById(int passportId) {
         return supplyAsync(() -> {
-            List<Passport> passports = Passport.find.all();
-            return passports;
+            Optional<Passport> passport = Passport.find.query().
+                    where().eq("passport_id", passportId).findOneOrEmpty();
+            return passport;
         }, executionContext);
     }
 }

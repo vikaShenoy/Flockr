@@ -29,7 +29,7 @@ public class User extends Model {
     @Constraints.Required
     private String lastName;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private List<Nationality> nationalities;
 
     private Timestamp dateOfBirth;
@@ -40,10 +40,11 @@ public class User extends Model {
     @Constraints.Required
     private String email;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private List <TravellerType> travellerTypes;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany
+    @JoinTable(name="USER_PASSPORT")
     private List<Passport> passports;
 
     @Constraints.Required

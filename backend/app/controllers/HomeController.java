@@ -18,7 +18,11 @@ public class HomeController extends Controller {
      * Handle default path requests
      */
 
+    @With(LoggedIn.class)
     public Result index(Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+        System.out.println("user is: " + user.getFirstName());
         return ok("Congrats! You are in the backend index, you probably shouldn't be querying this though!");
     }
 }
