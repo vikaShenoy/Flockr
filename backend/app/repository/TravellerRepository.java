@@ -3,6 +3,7 @@ package repository;
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import models.Passport;
+import models.Nationality;
 import models.User;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
@@ -54,6 +55,19 @@ public class TravellerRepository {
             Optional<Passport> passport = Passport.find.query().
                     where().eq("passport_id", passportId).findOneOrEmpty();
             return passport;
+        }, executionContext);
+    }
+
+    /**
+     * Gets a nationality by it's ID
+     * @param nationalityId The nationality to get
+     * @return The list of nationalities
+     */
+    public CompletionStage<Optional<Nationality>> getNationalityById(int nationalityId) {
+        return supplyAsync(() -> {
+            Optional<Nationality> nationality = Nationality.find.query().
+                    where().eq("nationality_id", nationalityId).findOneOrEmpty();
+            return nationality;
         }, executionContext);
     }
 }

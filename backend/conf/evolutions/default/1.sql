@@ -3,21 +3,6 @@
 
 # --- !Ups
 
-create table company (
-  id                            bigint auto_increment not null,
-  name                          varchar(255),
-  constraint pk_company primary key (id)
-);
-
-create table computer (
-  id                            bigint auto_increment not null,
-  name                          varchar(255),
-  introduced                    timestamp,
-  discontinued                  timestamp,
-  company_id                    bigint,
-  constraint pk_computer primary key (id)
-);
-
 create table country (
   country_id                    integer auto_increment not null,
   country_name                  varchar(255),
@@ -130,29 +115,12 @@ create table user (
   constraint pk_user primary key (user_id)
 );
 
-create table user_nationality (
-  user_nationality_id           integer auto_increment not null,
-  nationality_id                integer not null,
-  user_id                       integer not null,
-  constraint pk_user_nationality primary key (user_nationality_id)
-);
-
 create table user_role (
   user_role_id                  integer auto_increment not null,
   role_id                       integer not null,
   user_id                       integer not null,
   constraint pk_user_role primary key (user_role_id)
 );
-
-create table user_traveller_types (
-  user_traveller_type_id        integer auto_increment not null,
-  traveller_type_id             integer not null,
-  user_id                       integer not null,
-  constraint pk_user_traveller_types primary key (user_traveller_type_id)
-);
-
-create index ix_computer_company_id on computer (company_id);
-alter table computer add constraint fk_computer_company_id foreign key (company_id) references company (id) on delete restrict on update restrict;
 
 alter table destination add constraint fk_destination_dest_type_dest_type_id foreign key (dest_type_dest_type_id) references destination_type (dest_type_id) on delete restrict on update restrict;
 
@@ -190,9 +158,6 @@ alter table user add constraint fk_user_gender_gender_id foreign key (gender_gen
 
 # --- !Downs
 
-alter table computer drop constraint if exists fk_computer_company_id;
-drop index if exists ix_computer_company_id;
-
 alter table destination drop constraint if exists fk_destination_dest_type_dest_type_id;
 
 alter table destination drop constraint if exists fk_destination_dest_district_district_id;
@@ -226,10 +191,6 @@ alter table trip_destination drop constraint if exists fk_trip_destination_desti
 
 alter table user drop constraint if exists fk_user_gender_gender_id;
 
-drop table if exists company;
-
-drop table if exists computer;
-
 drop table if exists country;
 
 drop table if exists destination;
@@ -260,9 +221,5 @@ drop table if exists trip_destination;
 
 drop table if exists user;
 
-drop table if exists user_nationality;
-
 drop table if exists user_role;
-
-drop table if exists user_traveller_types;
 

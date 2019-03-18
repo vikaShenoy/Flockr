@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import models.Gender;
 import models.Passport;
 import models.User;
+import models.Nationality;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -105,4 +106,31 @@ public class TravellerController extends Controller {
                     return ok();
                 }, httpExecutionContext.current());
     }
+
+    /**
+     * Adds a nationality to the user
+     * @param travellerId the traveller ID
+     * @param request Object to get the nationality to add.
+     * @return
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> addNationality(int travellerId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        int nationalityId = request.body().asJson().get("nationalityId").asInt();
+
+        return travellerRepository.getNationalityById(nationalityId)
+                .thenApplyAsync((nationality) -> {
+                    if (!nationality.isPresent()) {
+                        return notFound();
+                    }
+                    List<Nationality> nationalities = user.getNationalities();
+                    nationalities.add(nationality.get());
+                    user.setNationalities(nationalities);
+                    user.save();
+                    System.out.println(user.getNationalities());
+                    return ok();
+                }, httpExecutionContext.current());
+
+    }
+
 }
