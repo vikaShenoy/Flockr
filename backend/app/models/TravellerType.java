@@ -4,7 +4,9 @@ import io.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import java.rmi.MarshalledObject;
+import java.util.List;
 
 @Entity
 public class TravellerType extends Model {
@@ -12,6 +14,9 @@ public class TravellerType extends Model {
 
     @Id
     private int travellerTypeId;
+
+    @ManyToMany
+    private List<User> users;
 
     private String travellerTypeName;
 

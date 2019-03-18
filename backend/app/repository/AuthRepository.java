@@ -37,9 +37,21 @@ public class AuthRepository {
         }, executionContext);
     }
 
+    /**
+     * Gets a user by their auth token
+     * @param token The token to find the user by
+     * @return The user
+     */
     public CompletionStage<Optional<User>> getByToken(String token) {
         return supplyAsync(() -> {
-           Optional<User> user = User.find.query().where().eq("token", token).findOneOrEmpty();
+            Optional<User> user = ebeanServer.find(User.class)
+                    .select("*")
+                    .fetch("passports")              // contacts is a OneToMany path
+                    .fetch("travellerTypes")
+                    .fetch("nationalities")
+                    .where()
+                    .eq("token", token)
+                    .findOneOrEmpty();
            return user;
         });
     }

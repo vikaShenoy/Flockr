@@ -89,8 +89,7 @@ public class TravellerController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> addPassport(int travellerId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
-        System.out.println(1);
-        System.out.println(user.getPassports());
+
 
         int passportId = request.body().asJson().get("passportId").asInt();
 
@@ -103,8 +102,6 @@ public class TravellerController extends Controller {
                     passports.add(passport.get());
                     user.setPassports(passports);
                     user.save();
-                    System.out.println(2);
-                    System.out.println(user.getPassports());
                     return ok();
                 }, httpExecutionContext.current());
     }

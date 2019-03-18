@@ -62,6 +62,12 @@ create table nationality (
   constraint pk_nationality primary key (nationality_id)
 );
 
+create table nationality_user (
+  nationality_nationality_id    integer not null,
+  user_user_id                  integer not null,
+  constraint pk_nationality_user primary key (nationality_nationality_id,user_user_id)
+);
+
 create table passport (
   passport_id                   integer auto_increment not null,
   passport_country              varchar(255),
@@ -84,6 +90,12 @@ create table traveller_type (
   traveller_type_id             integer auto_increment not null,
   traveller_type_name           varchar(255),
   constraint pk_traveller_type primary key (traveller_type_id)
+);
+
+create table traveller_type_user (
+  traveller_type_traveller_type_id integer not null,
+  user_user_id                  integer not null,
+  constraint pk_traveller_type_user primary key (traveller_type_traveller_type_id,user_user_id)
 );
 
 create table trip (
@@ -125,18 +137,6 @@ create table user_nationality (
   constraint pk_user_nationality primary key (user_nationality_id)
 );
 
-create table user_traveller_type (
-  user_user_id                  integer not null,
-  traveller_type_traveller_type_id integer not null,
-  constraint pk_user_traveller_type primary key (user_user_id,traveller_type_traveller_type_id)
-);
-
-create table user_passport (
-  user_user_id                  integer not null,
-  passport_passport_id          integer not null,
-  constraint pk_user_passport primary key (user_user_id,passport_passport_id)
-);
-
 create table user_role (
   user_role_id                  integer auto_increment not null,
   role_id                       integer not null,
@@ -160,11 +160,23 @@ alter table destination add constraint fk_destination_dest_district_district_id 
 
 alter table destination add constraint fk_destination_dest_country_country_id foreign key (dest_country_country_id) references country (country_id) on delete restrict on update restrict;
 
+create index ix_nationality_user_nationality on nationality_user (nationality_nationality_id);
+alter table nationality_user add constraint fk_nationality_user_nationality foreign key (nationality_nationality_id) references nationality (nationality_id) on delete restrict on update restrict;
+
+create index ix_nationality_user_user on nationality_user (user_user_id);
+alter table nationality_user add constraint fk_nationality_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
 create index ix_passport_user_passport on passport_user (passport_passport_id);
 alter table passport_user add constraint fk_passport_user_passport foreign key (passport_passport_id) references passport (passport_id) on delete restrict on update restrict;
 
 create index ix_passport_user_user on passport_user (user_user_id);
 alter table passport_user add constraint fk_passport_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
+create index ix_traveller_type_user_traveller_type on traveller_type_user (traveller_type_traveller_type_id);
+alter table traveller_type_user add constraint fk_traveller_type_user_traveller_type foreign key (traveller_type_traveller_type_id) references traveller_type (traveller_type_id) on delete restrict on update restrict;
+
+create index ix_traveller_type_user_user on traveller_type_user (user_user_id);
+alter table traveller_type_user add constraint fk_traveller_type_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
 alter table trip add constraint fk_trip_user_user_id foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
@@ -174,18 +186,6 @@ alter table trip_destination add constraint fk_trip_destination_trip_trip_id for
 alter table trip_destination add constraint fk_trip_destination_destination_dest_id foreign key (destination_dest_id) references destination (dest_id) on delete restrict on update restrict;
 
 alter table user add constraint fk_user_gender_gender_id foreign key (gender_gender_id) references gender (gender_id) on delete restrict on update restrict;
-
-create index ix_user_traveller_type_user on user_traveller_type (user_user_id);
-alter table user_traveller_type add constraint fk_user_traveller_type_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
-
-create index ix_user_traveller_type_traveller_type on user_traveller_type (traveller_type_traveller_type_id);
-alter table user_traveller_type add constraint fk_user_traveller_type_traveller_type foreign key (traveller_type_traveller_type_id) references traveller_type (traveller_type_id) on delete restrict on update restrict;
-
-create index ix_user_passport_user on user_passport (user_user_id);
-alter table user_passport add constraint fk_user_passport_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
-
-create index ix_user_passport_passport on user_passport (passport_passport_id);
-alter table user_passport add constraint fk_user_passport_passport foreign key (passport_passport_id) references passport (passport_id) on delete restrict on update restrict;
 
 
 # --- !Downs
@@ -199,11 +199,23 @@ alter table destination drop constraint if exists fk_destination_dest_district_d
 
 alter table destination drop constraint if exists fk_destination_dest_country_country_id;
 
+alter table nationality_user drop constraint if exists fk_nationality_user_nationality;
+drop index if exists ix_nationality_user_nationality;
+
+alter table nationality_user drop constraint if exists fk_nationality_user_user;
+drop index if exists ix_nationality_user_user;
+
 alter table passport_user drop constraint if exists fk_passport_user_passport;
 drop index if exists ix_passport_user_passport;
 
 alter table passport_user drop constraint if exists fk_passport_user_user;
 drop index if exists ix_passport_user_user;
+
+alter table traveller_type_user drop constraint if exists fk_traveller_type_user_traveller_type;
+drop index if exists ix_traveller_type_user_traveller_type;
+
+alter table traveller_type_user drop constraint if exists fk_traveller_type_user_user;
+drop index if exists ix_traveller_type_user_user;
 
 alter table trip drop constraint if exists fk_trip_user_user_id;
 
@@ -213,18 +225,6 @@ drop index if exists ix_trip_destination_trip_trip_id;
 alter table trip_destination drop constraint if exists fk_trip_destination_destination_dest_id;
 
 alter table user drop constraint if exists fk_user_gender_gender_id;
-
-alter table user_traveller_type drop constraint if exists fk_user_traveller_type_user;
-drop index if exists ix_user_traveller_type_user;
-
-alter table user_traveller_type drop constraint if exists fk_user_traveller_type_traveller_type;
-drop index if exists ix_user_traveller_type_traveller_type;
-
-alter table user_passport drop constraint if exists fk_user_passport_user;
-drop index if exists ix_user_passport_user;
-
-alter table user_passport drop constraint if exists fk_user_passport_passport;
-drop index if exists ix_user_passport_passport;
 
 drop table if exists company;
 
@@ -242,6 +242,8 @@ drop table if exists gender;
 
 drop table if exists nationality;
 
+drop table if exists nationality_user;
+
 drop table if exists passport;
 
 drop table if exists passport_user;
@@ -250,6 +252,8 @@ drop table if exists role;
 
 drop table if exists traveller_type;
 
+drop table if exists traveller_type_user;
+
 drop table if exists trip;
 
 drop table if exists trip_destination;
@@ -257,10 +261,6 @@ drop table if exists trip_destination;
 drop table if exists user;
 
 drop table if exists user_nationality;
-
-drop table if exists user_traveller_type;
-
-drop table if exists user_passport;
 
 drop table if exists user_role;
 
