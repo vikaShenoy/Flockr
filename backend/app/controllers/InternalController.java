@@ -1,8 +1,10 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Gender;
 import models.Nationality;
 import models.Passport;
+import play.libs.Json;
 import play.mvc.Result;
 
 import java.util.concurrent.CompletionStage;
@@ -34,7 +36,9 @@ public class InternalController {
             nationality1.save();
             nationality2.save();
 
-            return ok("Successfully resampled database");
+            ObjectNode json = Json.newObject();
+            json.put("message", "Success resampling the database");
+            return ok(json);
         });
     }
 }
