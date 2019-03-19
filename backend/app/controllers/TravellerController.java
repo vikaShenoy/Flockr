@@ -188,5 +188,17 @@ public class TravellerController extends Controller {
                 }, httpExecutionContext.current());
 
     }
+
+    /**
+     * Gets a list of all the passports and returns it with a 200 ok code to the HTTP client
+     * @param request <b>Http.Request</b> the http request
+     * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
+     */
+    public CompletionStage<Result> getAllPassports(Http.Request request) {
+        return travellerRepository.getAllPassports()
+                .thenApplyAsync((passports) -> {
+                    return ok(Json.toJson(passports));
+                }, httpExecutionContext.current());
+    }
     
 }
