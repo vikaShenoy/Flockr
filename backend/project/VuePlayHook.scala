@@ -13,6 +13,18 @@ object VuePlayHook {
 
     object NpmRunServe extends PlayRunHook {
 
+
+
+      override def beforeStarted(): Unit = {
+        if (!(base / "../frontend" / "node_modules").exists())  
+          if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            Process("cmd /c npm install", base / "../frontend").!
+          } else {
+            Process("npm install", base / "../frontend").!
+          }
+      }
+  
+
 //      override def beforeStarted(): Unit = {
 //        val frontend = base / "../frontend"
 //        Process("npm install", frontend ).run
@@ -20,7 +32,13 @@ object VuePlayHook {
 
       override def afterStarted(): Unit = {
         val frontend = base / "../frontend"
-        Process("npm run serve", frontend ).run
+        // Windows cmd prefixes
+        if (System.getProperty("os.name").toLowerCase().contains("win")){
+          Process("cmd /c npm run serve", frontend ).run
+        } else {
+          Process("npm run serve", frontend ).run
+        }
+        
       }
     }
 
