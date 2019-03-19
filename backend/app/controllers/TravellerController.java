@@ -37,7 +37,7 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * Retrieves a travellers details
+     * A function that retrieves a travellers details based on the traveller ID given
      * @param travellerId the traveller Id of the traveller to retrieve
      * @param request request Object
      * @return traveller details as a Json object
@@ -60,8 +60,8 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * Updates a travellers details
-      * @param travellerId Redundant ID
+     * A function that updates a travellers details based on the traveller ID given.
+     * @param travellerId the traveller ID
      * @param request Object to get the JSOn data
      * @return 200 status if update was successful, 500 otherwise
      */
@@ -104,7 +104,7 @@ public class TravellerController extends Controller {
     /**
      * A function that gets a list of all the passports and returns a 200 ok code to the HTTP client
      * @param request Http.Request the HTTP request
-     * @return CompletionStage<Result> the completion function to be called on completion
+     * @return a status code 200 if the request is successful, otherwise returns 500.
      */
     public CompletionStage<Result> getAllPassports(Http.Request request) {
         return travellerRepository.getAllPassports()
@@ -114,10 +114,10 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * Adds a passport to a user
-     * @param travellerId Redundant ID
+     * A function that adds a passport to a user based on the given user ID
+     * @param travellerId the traveller ID
      * @param request Object to get the passportId to add
-     * @return 200 if request was successful, 500 otherwise
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addPassport(int travellerId, Http.Request request) {
@@ -140,10 +140,10 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * Deletes a passport from the user
+     * A function that deletes a passport from a user based on the given user ID
      * @param travellerId the traveller ID
      * @param passportId the passport ID
-     * @return 200 OK if the request was successful, 500 if not
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> removePassport(int travellerId, int passportId, Http.Request request) {
@@ -164,9 +164,9 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * Gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
-     * @param request <b>Http.Request</b> the http request
-     * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
+     * A function that gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
+     * @param request Http.Request the http request
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     public CompletionStage<Result> getNationalities(Http.Request request) {
         return travellerRepository.getAllNationalities()
@@ -176,10 +176,10 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * Adds a nationality to the user
+     * A function that adds a nationality to the user based on the user ID given
      * @param travellerId the traveller ID
      * @param request Object to get the nationality to add.
-     * @return <b>CompletionStage&ltResult&gt</b> the method to be run on completion
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addNationality(int travellerId, Http.Request request) {
@@ -200,10 +200,10 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * Delete a nationality for a logged in user given a nationality id in the request body
+     * A function that deletes a nationality for a logged in user given a nationality id in the request body
      * @param travellerId the traveller for which we want to delete the nationality
      * @param request the request passed by the routes file
-     * @return a response with status code as specified in API spec
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteNationalityForUser(int travellerId, int nationalityId, Http.Request request) {
