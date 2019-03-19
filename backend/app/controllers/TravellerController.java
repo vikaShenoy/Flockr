@@ -187,17 +187,16 @@ public class TravellerController extends Controller {
         int nationalityId = request.body().asJson().get("nationalityId").asInt();
 
         return travellerRepository.getNationalityById(nationalityId)
-                .thenApplyAsync((nationality) -> {
-                    if (!nationality.isPresent()) {
-                        return notFound();
-                    }
-                    List<Nationality> nationalities = user.getNationalities();
-                    nationalities.add(nationality.get());
-                    user.setNationalities(nationalities);
-                    user.save();
-                    System.out.println(user.getNationalities());
-                    return ok();
-                }, httpExecutionContext.current());
+            .thenApplyAsync((nationality) -> {
+                if (!nationality.isPresent()) {
+                    return notFound();
+                }
+                List<Nationality> nationalities = user.getNationalities();
+                nationalities.add(nationality.get());
+                user.setNationalities(nationalities);
+                user.save();
+                return ok();
+            }, httpExecutionContext.current());
     }
 
     /**
