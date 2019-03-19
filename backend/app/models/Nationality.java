@@ -23,9 +23,22 @@ public class Nationality extends Model {
     }
 
 
+    public int getNationalityId() {
+        return nationalityId;
+    }
+
+    public String getNationalityCountry() {
+        return nationalityCountry;
+    }
+
     /**
      * This is required by EBean to make queries on the database
      */
     public static final Finder<Integer, Nationality> find = new Finder<>(Nationality.class);
+
+//    @Override
+//    public String toString() {
+//        return
+//    }
 }
 

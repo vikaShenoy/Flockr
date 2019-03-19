@@ -18,10 +18,11 @@ public class InternalController {
 
             Nationality nationality1 = new Nationality("New Zealand");
             Nationality nationality2 = new Nationality("Australia");
+            Nationality nationality3 = new Nationality("Afghanistan");
 
             Gender gender1 = new Gender("Male");
             Gender gender2 = new Gender("Female");
-            Gender gender3 = new Gender("Non-Identifying");
+            Gender gender3 = new Gender("Gender Diverse");
 
             gender1.save();
             gender2.save();
@@ -33,7 +34,7 @@ public class InternalController {
             nationality1.save();
             nationality2.save();
 
-            return ok();
+            return ok("Successfully resampled database");
         });
     }
 }
