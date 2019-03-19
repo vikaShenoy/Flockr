@@ -70,4 +70,15 @@ public class TravellerRepository {
             return nationality;
         }, executionContext);
     }
+
+    /**
+     * Gets a list of all nationalities
+     * @return <b>List</b> of nationalities
+     */
+    public CompletionStage<List<Nationality>> getAllNationalities() {
+        return supplyAsync(() -> {
+            List<Nationality> nationalities = Nationality.find.query().findList();
+            return nationalities;
+        }, executionContext);
+    }
 }

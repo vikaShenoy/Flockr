@@ -36,6 +36,18 @@ public class TravellerController extends Controller {
         this.httpExecutionContext = httpExecutionContext;
     }
 
+    /**
+     * Gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
+     * @param request <b>Http.Request</b> the http request
+     * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
+     */
+    public CompletionStage<Result> getNationalities(Http.Request request) {
+        return travellerRepository.getAllNationalities()
+        .thenApplyAsync((nationalities) -> {
+           return ok(Json.toJson(nationalities));
+        }, httpExecutionContext.current());
+    }
+
 
     /**
      * Updates a travellers details
@@ -77,8 +89,6 @@ public class TravellerController extends Controller {
             travellerRepository.updateUser(user);
             return ok();
         }, httpExecutionContext.current());
-
-
     }
 
     /**
@@ -111,7 +121,7 @@ public class TravellerController extends Controller {
      * Adds a nationality to the user
      * @param travellerId the traveller ID
      * @param request Object to get the nationality to add.
-     * @return
+     * @return <b>CompletionStage&ltResult&gt</b> the method to be run on completion
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addNationality(int travellerId, Http.Request request) {
@@ -130,7 +140,5 @@ public class TravellerController extends Controller {
                     System.out.println(user.getNationalities());
                     return ok();
                 }, httpExecutionContext.current());
-
     }
-
 }
