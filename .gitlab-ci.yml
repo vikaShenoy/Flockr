@@ -5,7 +5,7 @@ tag_checker:
   only:
     - tags
 
-junit:
+run-tests:
   stage: test
   script:
     - cd backend && sbt test
