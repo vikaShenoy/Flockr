@@ -133,14 +133,26 @@ public class TravellerController extends Controller {
 
     }
 
+    /**
+     * Retrieves a travellers details
+     * @param travellerId the traveller Id of the traveller to retrieve
+     * @param request request Object
+     * @return traveller details as a Json object
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTraveller(int travellerId, Http.Request request) {
 
-        User user = request.attrs().get(ActionState.USER);
-        JsonNode userAsJson = Json.toJson(user);
+        return travellerRepository.getUserById(travellerId)
+                .thenApplyAsync((user) -> {
+                    if (!user.isPresent()) {
+                        return notFound();
+                    }
 
-        return supplyAsync(() -> ok(userAsJson)
-        , httpExecutionContext.current());
+                    JsonNode userAsJson = Json.toJson(user);
+
+                    return ok(userAsJson);
+
+                }, httpExecutionContext.current());
 
     }
 
