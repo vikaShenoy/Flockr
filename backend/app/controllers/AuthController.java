@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.libs.Json;
 import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
@@ -12,7 +13,8 @@ import util.Security;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 import util.Responses;
-
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static play.mvc.Results.badRequest;
 import static play.mvc.Results.ok;
 
 /**
@@ -40,6 +42,13 @@ public class AuthController {
      */
     public CompletionStage<Result> signup(Request request) {
         JsonNode jsonRequest = request.body().asJson();
+        if (jsonRequest == null) {
+            return supplyAsync(() -> {
+                ObjectNode message = Json.newObject();
+                message.put("message", "Please provide a valid request body according to the API spec");
+                return badRequest(message);
+            });
+        }
         String firstName = jsonRequest.get("firstName").asText();
         String lastName = jsonRequest.get("lastName").asText();
         String email = jsonRequest.get("email").asText();
