@@ -20,6 +20,10 @@ public class District extends Model {
         return districtName;
     }
 
+    public int getDistrictId() {
+        return districtId;
+    }
+
     public void setDistrictName(String districtName) {
         this.districtName = districtName;
     }

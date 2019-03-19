@@ -21,6 +21,14 @@ public class Passport extends Model {
         this.passportCountry = passportCountry;
     }
 
+    public int getPassportId() {
+        return passportId;
+    }
+
+    public String getPassportCountry() {
+        return passportCountry;
+    }
+
     /**
      * This is required by EBean to make queries on the database
      */

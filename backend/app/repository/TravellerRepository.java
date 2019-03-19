@@ -70,4 +70,29 @@ public class TravellerRepository {
             return nationality;
         }, executionContext);
     }
+
+    /**
+     * Gets a user/traveller by their ID
+     * @param userId The ID of the user to get
+     * @return the user object
+     */
+    public CompletionStage<Optional<User>> getUserById(int userId) {
+        return supplyAsync(() -> {
+                    Optional<User> user = User.find.query().
+                            where().eq("user_id", userId).findOneOrEmpty();
+                    return user;
+                }, executionContext);
+    }
+
+     /**
+     * Gets a list of all nationalities
+     * @return <b>List</b> of nationalities
+     */
+    public CompletionStage<List<Nationality>> getAllNationalities() {
+        return supplyAsync(() -> {
+            List<Nationality> nationalities = Nationality.find.query().findList();
+            System.out.println(nationalities.get(0));
+            return nationalities;
+        }, executionContext);
+    }
 }

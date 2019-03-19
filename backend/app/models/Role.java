@@ -13,6 +13,14 @@ public class Role extends Model {
 
     private String roleType;
 
+    public int getRoleId() {
+        return roleId;
+    }
+
+    public String getRoleType() {
+        return roleType;
+    }
+
     public Role(String roleType) {
         this.roleType = roleType;
     }
