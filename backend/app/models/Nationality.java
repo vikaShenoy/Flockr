@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
@@ -21,20 +22,10 @@ public class Nationality extends Model {
         this.nationalityCountry = nationalityCountry;
     }
 
-    public int getNationalityId() {
-        return nationalityId;
-    }
 
-    public void setNationalityId(int nationalityId) {
-        this.nationalityId = nationalityId;
-    }
-
-    public String getNationalityCountry() {
-        return nationalityCountry;
-    }
-
-    public void setNationalityCountry(String nationalityCountry) {
-        this.nationalityCountry = nationalityCountry;
-    }
+    /**
+     * This is required by EBean to make queries on the database
+     */
+    public static final Finder<Integer, Nationality> find = new Finder<>(Nationality.class);
 }
 

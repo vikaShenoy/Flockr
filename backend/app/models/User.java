@@ -30,7 +30,7 @@ public class User extends Model {
     private String lastName;
 
     @ManyToMany(mappedBy = "users")
-    private List<Nationality> nationalities;
+    public List<Nationality> nationalities;
 
     private Timestamp dateOfBirth;
 
@@ -41,7 +41,7 @@ public class User extends Model {
     private String email;
 
     @ManyToMany(mappedBy = "users")
-    private List <TravellerType> travellerTypes;
+    public List <TravellerType> travellerTypes;
 
     @ManyToMany(mappedBy = "users")
     public List<Passport> passports;

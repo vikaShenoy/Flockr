@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
@@ -12,31 +13,18 @@ import java.util.List;
 public class TravellerType extends Model {
 
 
-    @Id
-    private int travellerTypeId;
+
 
     @ManyToMany
     private List<User> users;
 
+    @Id
+    private int travellerTypeId;
+
     private String travellerTypeName;
 
-    public TravellerType(String travellerTypeName) {
-        this.travellerTypeName = travellerTypeName;
-    }
-
-    public int getTravellerTypeId() {
-        return travellerTypeId;
-    }
-
-    public void setTravellerTypeId(int travellerTypeId) {
-        this.travellerTypeId = travellerTypeId;
-    }
-
-    public String getTravellerTypeName() {
-        return travellerTypeName;
-    }
-
-    public void setTravellerTypeName(String travellerTypeName) {
-        this.travellerTypeName = travellerTypeName;
-    }
+    /**
+     * This is required by EBean to make queries on the database
+     */
+    public static final Finder<Integer, TravellerType> find = new Finder<>(TravellerType.class);
 }

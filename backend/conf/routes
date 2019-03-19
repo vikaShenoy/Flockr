@@ -12,6 +12,7 @@ POST         /api/auth/travellers/signup               controllers.AuthControlle
 
 # Traveller routes
 POST         /api/travellers/:travellerId/passports    controllers.TravellerController.addPassport(travellerId: Int, request: Request)
+POST         /api/travellers/:travellerId/nationalities    controllers.TravellerController.addNationality(travellerId: Int, request: Request)
 PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
 
 
