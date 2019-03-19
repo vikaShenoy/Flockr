@@ -18,7 +18,7 @@ import static play.test.Helpers.*;
  *
  * https://www.playframework.com/documentation/latest/JavaFunctionalTest
  */
-public class WidgetControllerTest extends WithApplication {
+public class HomeControllerTest extends WithApplication {
 
     @Override
     protected Application provideApplication() {
