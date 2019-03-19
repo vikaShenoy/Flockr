@@ -78,6 +78,7 @@ public class TravellerRepository {
     public CompletionStage<List<Nationality>> getAllNationalities() {
         return supplyAsync(() -> {
             List<Nationality> nationalities = Nationality.find.query().findList();
+            System.out.println(nationalities.get(0));
             return nationalities;
         }, executionContext);
     }

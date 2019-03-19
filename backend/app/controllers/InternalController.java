@@ -18,6 +18,7 @@ public class InternalController {
 
             Nationality nationality1 = new Nationality("New Zealand");
             Nationality nationality2 = new Nationality("Australia");
+            Nationality nationality3 = new Nationality("Afghanistan");
 
             Gender gender1 = new Gender("Male");
             Gender gender2 = new Gender("Female");
