@@ -18,7 +18,7 @@
 export default {
   data() {
     return {
-      photos: ["./beach-holiday.jpg", "./beach-holiday.jpg", "./beach-holiday.jpg"]
+      photos: ["./beach-holiday.jpg", "./desert-holiday.jpeg", "./snow-holiday.jpg"]
     };
   } 
 }
