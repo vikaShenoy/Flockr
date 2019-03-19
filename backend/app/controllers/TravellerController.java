@@ -118,6 +118,30 @@ public class TravellerController extends Controller {
     }
 
     /**
+     * Deletes a passport from the user
+     * @param travellerId the traveller ID
+     * @param passportId the passport ID
+     * @return 200 OK if the request was successful, 500 if not
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> removePassport(int travellerId, int passportId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+        return travellerRepository.getPassportById(passportId)
+                .thenApplyAsync((passport) -> {
+                    if (!passport.isPresent()) {
+                        return notFound();
+                    }
+                    List<Passport> passports = user.getPassports();
+                    passports.remove(passport.get());
+                    user.setPassports(passports);
+                    user.save();
+                    System.out.println(user.getPassports());
+                    return ok();
+                }, httpExecutionContext.current());
+    }
+
+    /**
      * Adds a nationality to the user
      * @param travellerId the traveller ID
      * @param request Object to get the nationality to add.
