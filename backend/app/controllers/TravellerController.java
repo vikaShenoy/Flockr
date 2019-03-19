@@ -37,17 +37,27 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * Gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
-     * @param request <b>Http.Request</b> the http request
-     * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
+     * Retrieves a travellers details
+     * @param travellerId the traveller Id of the traveller to retrieve
+     * @param request request Object
+     * @return traveller details as a Json object
      */
-    public CompletionStage<Result> getNationalities(Http.Request request) {
-        return travellerRepository.getAllNationalities()
-        .thenApplyAsync((nationalities) -> {
-           return ok(Json.toJson(nationalities));
-        }, httpExecutionContext.current());
-    }
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getTraveller(int travellerId, Http.Request request) {
 
+        return travellerRepository.getUserById(travellerId)
+                .thenApplyAsync((user) -> {
+                    if (!user.isPresent()) {
+                        return notFound();
+                    }
+
+                    JsonNode userAsJson = Json.toJson(user);
+
+                    return ok(userAsJson);
+
+                }, httpExecutionContext.current());
+
+    }
 
     /**
      * Updates a travellers details
@@ -92,9 +102,9 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * Gets a list of all the passports and returns it with a 200 ok code to the HTTP client
-     * @param request <b>Http.Request</b> the http request
-     * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
+     * A function that gets a list of all the passports and returns a 200 ok code to the HTTP client
+     * @param request Http.Request the HTTP request
+     * @return CompletionStage<Result> the completion function to be called on completion
      */
     public CompletionStage<Result> getAllPassports(Http.Request request) {
         return travellerRepository.getAllPassports()
@@ -154,6 +164,18 @@ public class TravellerController extends Controller {
     }
 
     /**
+     * Gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
+     * @param request <b>Http.Request</b> the http request
+     * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
+     */
+    public CompletionStage<Result> getNationalities(Http.Request request) {
+        return travellerRepository.getAllNationalities()
+                .thenApplyAsync((nationalities) -> {
+                    return ok(Json.toJson(nationalities));
+                }, httpExecutionContext.current());
+    }
+
+    /**
      * Adds a nationality to the user
      * @param travellerId the traveller ID
      * @param request Object to get the nationality to add.
@@ -176,29 +198,6 @@ public class TravellerController extends Controller {
                     System.out.println(user.getNationalities());
                     return ok();
                 }, httpExecutionContext.current());
-    }
-
-    /**
-     * Retrieves a travellers details
-     * @param travellerId the traveller Id of the traveller to retrieve
-     * @param request request Object
-     * @return traveller details as a Json object
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> getTraveller(int travellerId, Http.Request request) {
-
-        return travellerRepository.getUserById(travellerId)
-                .thenApplyAsync((user) -> {
-                    if (!user.isPresent()) {
-                        return notFound();
-                    }
-
-                    JsonNode userAsJson = Json.toJson(user);
-
-                    return ok(userAsJson);
-
-                }, httpExecutionContext.current());
-
     }
 
     /**
