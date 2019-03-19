@@ -16,6 +16,7 @@ POST         /api/travellers/:travellerId/passports    controllers.TravellerCont
 DELETE       /api/travellers/:travellerId/passports/:passportId     controllers.TravellerController.removePassport(travellerId: Int, passportId: Int, request: Request)
 POST         /api/travellers/:travellerId/nationalities    controllers.TravellerController.addNationality(travellerId: Int, request: Request)
 PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
+GET          /api/travellers/:travellerId               controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
 
 
 # Map static resources from the /public folder to the /assets URL path
