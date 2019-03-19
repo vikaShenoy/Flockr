@@ -133,4 +133,15 @@ public class TravellerController extends Controller {
 
     }
 
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getTraveller(int travellerId, Http.Request request) {
+
+        User user = request.attrs().get(ActionState.USER);
+        JsonNode userAsJson = Json.toJson(user);
+
+        return supplyAsync(() -> ok(userAsJson)
+        , httpExecutionContext.current());
+
+    }
+
 }
