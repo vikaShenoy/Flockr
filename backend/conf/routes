@@ -13,12 +13,12 @@ POST         /api/auth/travellers/signup               controllers.AuthControlle
 # Traveller routes
 GET          /api/travellers/nationalities             controllers.TravellerController.getNationalities(request: Request)
 GET          /api/travellers/passports                 controllers.TravellerController.getAllPassports(request: Request)
+GET          /api/travellers/:travellerId               controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
 POST         /api/travellers/:travellerId/passports    controllers.TravellerController.addPassport(travellerId: Int, request: Request)
-DELETE       /api/travellers/:travellerId/passports/:passportId     controllers.TravellerController.removePassport(travellerId: Int, passportId: Int, request: Request)
 POST         /api/travellers/:travellerId/nationalities    controllers.TravellerController.addNationality(travellerId: Int, request: Request)
 PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
-GET          /api/travellers/:travellerId               controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
-
+DELETE       /api/travellers/:travellerId/nationalities/:nationalityId  controllers.TravellerController.deleteNationalityForUser(travellerId: Int, nationalityId: Int, request: Request)
+DELETE       /api/travellers/:travellerId/passports/:passportId     controllers.TravellerController.removePassport(travellerId: Int, passportId: Int, request: Request)
 
 # Map static resources from the /public folder to the /assets URL path
 GET          /assets/*file                             controllers.Assets.at(path="/public", file)
