@@ -133,4 +133,35 @@ public class TravellerController extends Controller {
 
     }
 
+    /**
+     * Delete a nationality for a logged in user given a nationality id in the request body
+     * @param travellerId the traveller for which we want to delete the nationality
+     * @param request the request passed by the routes file
+     * @return a response with status code as specified in API spec
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> deleteNationalityForUser(int travellerId, int nationalityId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        return travellerRepository.getNationalityById(nationalityId)
+            .thenApplyAsync((optionalNationality) -> {
+                if (!optionalNationality.isPresent()) {
+                    return notFound("Could not find nationality " + nationalityId);
+                }
+                // now that we know that the nationality definitely exists
+                // extract the Nationality from the Optional<Nationality> object
+                Nationality nationality = optionalNationality.get();
+                List<Nationality> userNationalities = user.getNationalities();
+
+                // return not found if the user did not have that nationality already
+                if (!userNationalities.contains(nationality)) {
+                    return notFound("User does not have nationality " + nationalityId);
+                }
+
+                userNationalities.remove(nationality);
+                user.setNationalities(userNationalities);
+                user.save();
+                return ok("Successfully deleted nationality");
+            }, httpExecutionContext.current());
+    }
+
 }
