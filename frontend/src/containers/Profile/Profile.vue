@@ -10,7 +10,7 @@
     </div>
     <v-card class="col-lg-8" >
       <NationalityPassports />
-      <TravellerTypes />
+      <TravellerTypes :travellerTypes="travellerTypes"/>
       <Trips />
     </v-card>
     </div>
@@ -36,6 +36,36 @@ export default {
   },
   data() {
     return {
+      travellerTypes: [
+				{
+					travellerTypeName: 'Groupie',
+					travellerTypeId: 0
+				},
+				{
+					travellerTypeName: 'Thrill Seeker',
+					travellerTypeId: 1
+				},
+				{
+					travellerTypeName: 'Gap Year',
+					travellerTypeId: 2
+				},
+				{
+					travellerTypeName: 'Frequent weekender',
+					travellerTypeId: 3
+				},
+				{
+					travellerTypeName: 'Holidaymaker',
+					travellerTypeId: 4
+				},
+				{
+					travellerTypeName: 'Functional/Business',
+					travellerTypeId: 5
+				},
+				{
+					travellerTypeName: 'Backpacker',
+					travellerTypeId: 6
+				}
+			]
     };
   },
   methods: {
