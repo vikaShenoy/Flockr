@@ -42,6 +42,8 @@ public class AuthController {
      */
     public CompletionStage<Result> signup(Request request) {
         JsonNode jsonRequest = request.body().asJson();
+
+        // check that there is a request body, if not return badRequest
         if (jsonRequest == null) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
