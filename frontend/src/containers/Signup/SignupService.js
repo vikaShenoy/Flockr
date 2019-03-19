@@ -1,4 +1,7 @@
+import axios from "axios";
+
 import { endpoint } from "../../utils/endpoint";
+
 
 /**
  * Signs up a user
@@ -11,17 +14,7 @@ import { endpoint } from "../../utils/endpoint";
  * @throws Error if status was not 201
  */
 export async function signup(user) {
-  const res = await fetch(endpoint("/users"), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(user)
-  });
-
-  if (res.status === 201) {
-    throw new Error(`Res status was ${res.status}`);
-  }
+  return axios.post(endpoint("/auth/travellers/signup"), user);
 }
 
 /**
