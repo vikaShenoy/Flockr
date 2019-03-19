@@ -13,8 +13,16 @@ object VuePlayHook {
 
     object NpmRunServe extends PlayRunHook {
 
-      
 
+
+      override def beforeStarted(): Unit = {
+        if (!(base / "../frontend" / "node_modules").exists())  
+          if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            Process("cmd /c npm install", base / "../frontend").!
+          } else {
+            Process("npm install", base / "../frontend").!
+          }
+      }
   
 
 //      override def beforeStarted(): Unit = {
