@@ -1,48 +1,55 @@
 <template>
+  <div id="root-container">
+    <div class="row">
+    <div class="col-lg-4">
+      <ProfilePic />
 
-  <div>
-    <v-select 
-        v-model="travellerTypeSelected"
-        :items="travellerTypes"
-        color="secondary"
-        label="Traveller Type"
-      >
-    </v-select>
+      <BasicInfo />
 
-    <v-btn color="secondary" depressed @click="addTravellerType()">Add</v-btn>
-  
-    <li v-for="selectedType in selectedTypes" v-bind:key="selectedType">
-      {{ selectedType }} <v-btn @click="deleteTravellerType(selectedType)">Delete</v-btn>
-    </li>
-    
+      <Photos />
+    </div>
+    <v-card class="col-lg-8" >
+      <NationalityPassports />
+      <TravellerTypes />
+      <Trips />
+    </v-card>
+    </div>
   </div>
 </template>
 
 <script>
+import ProfilePic from "./ProfilePic/ProfilePic";
+import NationalityPassports from "./NationalityPassports/NationalityPassports";
+import TravellerTypes from "./TravellerTypes/TravellerTypes";
+import BasicInfo from "./BasicInfo/BasicInfo";
+import Trips from "./Trips/Trips";
+import Photos from "./Photos/Photos";
+
 export default {
+  components: {
+    ProfilePic,
+    NationalityPassports,
+    BasicInfo,
+    TravellerTypes,
+    Trips,
+    Photos
+  },
   data() {
     return {
-      travellerTypes: ["Backpacker", "Somethingelse"],
-      selectedTypes: [],
-      travellerTypeSelected: null,
     };
   },
   methods: {
-    addTravellerType() {
-      this.travellerTypes.splice(this.travellerTypes.indexOf(this.travellerTypeSelected), 1);
-      this.selectedTypes.push(this.travellerTypeSelected);
-      this.travellerTypeSelected = null;
-    },
-    deleteTravellerType(selectedType) {
-      console.log(selectedType);
-      this.selectedTypes.splice(this.selectedTypes.indexOf(selectedType), 1); 
-      this.travellerTypes.push(selectedType);
-    }
   }
 };
 </script>
 
 <style lang="scss" scoped>
+  @import "../../styles/_variables.scss";
+
+  #root-container {
+    width: 100%;
+  }
+
 </style>
 
 

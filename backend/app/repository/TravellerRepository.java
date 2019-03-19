@@ -46,6 +46,31 @@ public class TravellerRepository {
     }
 
     /**
+     * Gets a user/traveller by their ID
+     * @param userId The ID of the user to get
+     * @return the user object
+     */
+    public CompletionStage<Optional<User>> getUserById(int userId) {
+        return supplyAsync(() -> {
+            Optional<User> user = User.find.query().
+                    where().eq("user_id", userId).findOneOrEmpty();
+            return user;
+        }, executionContext);
+    }
+
+    /**
+     * A function that gets the list of all the valid passports.
+     * @return the list of all the Passports
+     */
+    public CompletionStage<List<Passport>> getAllPassports() {
+        return supplyAsync(() -> {
+            List<Passport> passports = Passport.find.query().findList();
+            System.out.println(passports.get(0));
+            return passports;
+        }, executionContext);
+    }
+
+    /**
      * Gets a passport by it's ID
      * @param passportId The passport to get
      * @return The list of passports
@@ -55,6 +80,18 @@ public class TravellerRepository {
             Optional<Passport> passport = Passport.find.query().
                     where().eq("passport_id", passportId).findOneOrEmpty();
             return passport;
+        }, executionContext);
+    }
+
+    /**
+     * Gets a list of all nationalities
+     * @return <b>List</b> of nationalities
+     */
+    public CompletionStage<List<Nationality>> getAllNationalities() {
+        return supplyAsync(() -> {
+            List<Nationality> nationalities = Nationality.find.query().findList();
+            System.out.println(nationalities.get(0));
+            return nationalities;
         }, executionContext);
     }
 
