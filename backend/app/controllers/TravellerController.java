@@ -256,4 +256,19 @@ public class TravellerController extends Controller {
                 return ok("Successfully deleted nationality");
             }, httpExecutionContext.current());
     }
+
+    /**
+     * Get a list of all valid traveller types
+     * @param request unused request object
+     * @return ok with status 200 if types obtained, 401 if no token is provided
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getTravellerTypes(Http.Request request) {
+        return travellerRepository.getAllTravellerTypes()
+                .thenApplyAsync((types) -> {
+                    return ok(Json.toJson(types));
+                }, httpExecutionContext.current());
+    }
+
+
 }

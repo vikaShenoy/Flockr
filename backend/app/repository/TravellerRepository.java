@@ -122,4 +122,22 @@ public class TravellerRepository {
             return nationality;
         }, executionContext);
     }
+
+
+    /**
+     * Funtion that gets all of the valid traveller types in the database
+     * @return the list of traveller types
+     */
+    public CompletionStage<List<TravellerType>> getAllTravellerTypes() {
+        return supplyAsync(() -> {
+            List<TravellerType> types = TravellerType.find.query().findList();
+            System.out.println(types.get(0));
+            return types;
+        }, executionContext);
+    }
+
+
+
 }
+
+
