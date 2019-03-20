@@ -1,5 +1,5 @@
 <template>
-    <v-card
+    <v-card elevation="10"
             class="destination-card row col-md-12">
         <div class="title-card col-md-3">
             <div xs12 sm6 md3 class="name-header">
