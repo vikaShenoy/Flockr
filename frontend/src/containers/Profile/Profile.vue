@@ -8,18 +8,21 @@
 
       <Photos />
     </div>
-    <v-card class="col-lg-8" >
-      <NationalityPassports />
+
+    <div class="col-lg-8">
+      <Nationalities :userNationalities="nationalities" />
+      <Passports :userPassports="passports" />
       <TravellerTypes />
       <Trips />
-    </v-card>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import ProfilePic from "./ProfilePic/ProfilePic";
-import NationalityPassports from "./NationalityPassports/NationalityPassports";
+import Nationalities from "./Nationalities/Nationalities";
+import Passports from "./Passports/Passports";
 import TravellerTypes from "./TravellerTypes/TravellerTypes";
 import BasicInfo from "./BasicInfo/BasicInfo";
 import Trips from "./Trips/Trips";
@@ -28,7 +31,8 @@ import Photos from "./Photos/Photos";
 export default {
   components: {
     ProfilePic,
-    NationalityPassports,
+    Nationalities,
+    Passports,
     BasicInfo,
     TravellerTypes,
     Trips,
@@ -36,6 +40,26 @@ export default {
   },
   data() {
     return {
+      nationalities: [
+        {
+          nationalityId: 3,
+          nationalityName: "French"        
+        },
+        {
+          nationalityId: 4,
+          nationalityName: "German"
+        }
+    ],
+    passports: [
+      {
+        passportId: 3,
+        passportCountry: "French"        
+      },
+      {
+        passportId: 4,
+        passportCountry: "German"
+      }
+    ]
     };
   },
   methods: {

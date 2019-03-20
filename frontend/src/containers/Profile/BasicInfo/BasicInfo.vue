@@ -1,14 +1,10 @@
 <template>
   <div>
-    <div>
-      <div id="basic-info-header">
-    <h3>Basic Info</h3>
-  </div>
 
-  <div id="edit">
-  <v-btn v-if="!this.isEditing" small flat id="edit-btn" color="secondary" @click="toggleEditSave"><v-icon>edit</v-icon></v-btn>
-  <v-btn v-else small flat id="edit-btn" color="secondary" @click="toggleEditSave">Save</v-btn>
-  </div>
+  <div id="header">
+    <h3>Basic Info</h3>
+    <v-btn v-if="!this.isEditing" small flat id="edit-btn" color="secondary" @click="toggleEditSave"><v-icon>edit</v-icon></v-btn>
+    <v-btn v-else small flat id="edit-btn" color="secondary" @click="toggleEditSave">Save</v-btn>
   </div>
 
   <v-card id="basic-info">
@@ -281,12 +277,14 @@ export default {
     }
   }
 
-  #edit {
-    width: 60%;
-    display: inline-block;
-
-    #edit-btn {
-      float: right;
+  #header {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    > * {
+      flex-grow: 1;
     }
   }
 
