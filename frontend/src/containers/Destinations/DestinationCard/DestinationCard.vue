@@ -1,5 +1,5 @@
 <template>
-    <v-card
+    <v-card elevation="10"
             class="destination-card row col-md-12">
         <div class="title-card col-md-3">
             <h2 class="name-header">{{ destination.name }}</h2>
@@ -9,17 +9,17 @@
         </div>
         <div class="col-md-5">
             <div class="row">
-                <div class="basic-info"><p><b>Type</b></p></div><div class="basic-info">{{ destination.destType }}</div>
+                <div class="basic-info-label"><p><b>Type</b></p></div><div class="basic-info-label">{{ destination.destType }}</div>
             </div>
             <hr class="divider"/>
             <div class="row">
-                <div class="basic-info"><p><b>District</b></p></div><div class="basic-info">{{ destination.district }}</div>
+                <div class="basic-info-label"><p><b>District</b></p></div><div class="basic-info-label">{{ destination.district }}</div>
             </div>
             <hr class="divider"/>
         </div>
         <div class="col-md-4">
             <h2 class="name-header">{{ destination.country }}</h2>
-            <v-img src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
+            <v-img class="map" src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
         </div>
         <v-btn fab dark class="edit-button" id="edit-destination-button">
             <v-icon dark>edit</v-icon>
@@ -67,7 +67,12 @@
         margin: 0 0 20px;
     }
 
-    .basic-info {
+    .map {
+        margin: 0 0 20px;
+    }
+
+    .basic-info-label {
+        margin: 10px 0 10px;
         text-align: center;
         width: 50%;
     }
@@ -75,11 +80,12 @@
     .name-header {
         margin: 0 0 20px;
         text-align: center;
+        width: 100%
     }
 
     .destination-card {
         width: 100%;
-        display: flex;
+        margin: 10px 0 0;
     }
 
     .destinations-panel :hover #delete-destination-button {
@@ -95,7 +101,6 @@
         top: 30px;
         right: 30px;
         visibility: hidden;
-
     }
 
     .destination-card #delete-destination-button {
