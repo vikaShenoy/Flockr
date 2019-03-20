@@ -6,8 +6,9 @@
 				v-for="travellerType in travellerTypes"
 				:key="travellerType.travellerTypeId"
 				color="primary"
-				close="true"
+				:close="true"
 				text-color="white"
+				@input="removeTravellerType(travellerType.travellerTypeId)"
 			>
 				{{ travellerType.travellerTypeName }}
 			</v-chip>	
@@ -22,14 +23,21 @@ export default {
 			type: Array,
 			required: true
 		}
+	},
+	methods: {
+		removeTravellerType(travellerTypeId) {
+			// called when the user delete a traveller type
+			// the event is emitted for *some* parent component to handle it
+			this.$emit('delete-traveller-type', travellerTypeId);
+		}
 	}
 }
 </script>
 
 <style lang="scss" scoped>
-  .traveller-types {
-  	height: 50%;
-  }
+	.traveller-types {
+		height: 50%;
+	}
 </style>
 
 
