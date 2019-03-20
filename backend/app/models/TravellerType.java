@@ -20,6 +20,14 @@ public class TravellerType extends Model {
 
     private String travellerTypeName;
 
+    /**
+     * Create a new traveller type given the name
+     * @param travellerTypeName the name of the new traveller type
+     */
+    public TravellerType(String travellerTypeName) {
+        this.travellerTypeName = travellerTypeName;
+    }
+
     public int getTravellerTypeId() {
         return travellerTypeId;
     }

@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.*;
@@ -31,5 +32,10 @@ public class Gender extends Model {
     public void setGenderName(String genderName) {
         this.genderName = genderName;
     }
+
+    /**
+     * This is required by EBean to make queries on the database
+     */
+    public static final Finder<Integer, Gender> find = new Finder<>(Gender.class);
 }
 
