@@ -42,12 +42,8 @@ export default {
     return {
       nationalities: [
         {
-          nationalityId: 3,
-          nationalityName: "French"        
-        },
-        {
-          nationalityId: 4,
-          nationalityName: "German"
+          nationalityId: 1,
+          nationalityCountry: "New Zealand"        
         }
     ],
     passports: [
