@@ -21,7 +21,7 @@ POST         /api/travellers/:travellerId/travellerTypes/:travellerTypeId    con
 PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
 DELETE       /api/travellers/:travellerId/nationalities/:nationalityId  controllers.TravellerController.deleteNationalityForUser(travellerId: Int, nationalityId: Int, request: Request)
 DELETE       /api/travellers/:travellerId/passports/:passportId     controllers.TravellerController.removePassport(travellerId: Int, passportId: Int, request: Request)
-
+DELETE       /api/travellers/:travellerId/travellerTypes/:travellerTypeId   controllers.TravellerController.deleteTravellerType(travellerId : Int, travellerTypeId : Int, request : Request)
 
 # Map static resources from the /public folder to the /assets URL path
 GET          /assets/*file                             controllers.Assets.at(path="/public", file)

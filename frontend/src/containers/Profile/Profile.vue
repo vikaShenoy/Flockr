@@ -74,16 +74,19 @@ export default {
 	},
 	methods: {
 		async handleDeleteTravellerType(travellerTypeId) {
+			console.log("DELETE METHOD CALLED");
 			// catch event emitted when the user wants to delete a traveller type
 			const userId = 1; // TODO: change this to be the actual user id
-			const url = endpoint(`/travellers/${userId}/travellerType/${travellerTypeId}`);
+			const authToken = localStorage.getItem('authToken');
+			const url = endpoint(`/travellers/${userId}/travellerTypes/${travellerTypeId}`);
 			try {
 				await superagent
-					.del(url);
+					.del(url).set('Authorization', authToken);
 
 				// delets traveller type from the UI (will happen if request is successful)
 				this.travellerTypes = this.travellerTypes.filter((travellerType) => travellerType.travellerTypeId !== travellerTypeId);
 			} catch (err) {
+				console.log(err);
 				const message = `Error trying to delete traveller type ${travellerTypeId} for user ${userId}: ${err}`;
 				console.error(message);
 				// TODO: inform the user that couldn't delete traveller type

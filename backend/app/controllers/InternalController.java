@@ -67,6 +67,7 @@ public class InternalController {
         String passwordHash = security.hashPassword(password);
         String email = "luis@gmail.com";
         String token = security.generateToken();
+        System.out.println(token);
         Timestamp dateOfBirth = new Timestamp(637920534);
 
         // NOTE: new gender saved to database

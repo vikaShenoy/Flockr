@@ -270,5 +270,37 @@ public class TravellerController extends Controller {
                 }, httpExecutionContext.current());
     }
 
+    /**
+     * Delete a traveller type from a user
+     * @param travellerId The ID of the traveller to have traveller type deleted
+     * @param travellerTypeId The traveller type to delete
+     * @param request HTTP request object
+     * @return 200 if successful, 404 if the traveller type isn't present
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> deleteTravellerType(int travellerId, int travellerTypeId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        List<TravellerType> travellerTypes = user.getTravellerTypes();
+        boolean isPresent = false;
 
+        for (TravellerType travellerType : travellerTypes) {
+            if (travellerType.getTravellerTypeId() == travellerTypeId) {
+                travellerTypes.remove(travellerType);
+                user.setTravellerTypes(travellerTypes);
+                user.save();
+                isPresent = true;
+                break;
+            }
+        }
+
+        if (isPresent) {
+            return supplyAsync(() -> {
+                   return ok("Deleted traveller type.");
+                }, httpExecutionContext.current());
+        } else {
+            return supplyAsync(() -> {
+                   return notFound("Traveller type not found.");
+                }, httpExecutionContext.current());
+        }
+    }
 }
