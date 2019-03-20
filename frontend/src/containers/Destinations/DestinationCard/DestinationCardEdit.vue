@@ -5,11 +5,12 @@
             <div xs12 sm6 md3 class="name-header">
                 <v-text-field
                     label="Destination Name"
-                    :value="destination.name">
+                    :value="destination.destinationName"
+                    v-model="destination.destinationName">
                 </v-text-field>
             </div>
             <div class="body-card col-md-12">
-                <v-img src="https://picsum.photos/510/300?random"></v-img>
+                <v-img class="image" src="https://picsum.photos/510/300?random"></v-img>
             </div>
         </div>
         <div class="col-md-5">
@@ -17,9 +18,9 @@
                 <div class="basic-info-label"><p><b>Type</b></p></div>
                 <div xs12 sm6 md3 class="basic-info">
                     <v-text-field
-                            label="Solo"
-                            :value="destination.destType"
-                            solo
+                            label="Destination Type"
+                            :value="destination.destinationType"
+                            v-model="destination.destinationType"
                     ></v-text-field>
                 </div>
             </div>
@@ -28,9 +29,9 @@
                 <div class="basic-info-label"><p><b>District</b></p></div>
                 <div xs12 sm6 md3 class="basic-info">
                     <v-text-field
-                            label="Solo"
+                            label="District"
                             :value="destination.district"
-                            solo
+                            v-model="destination.district"
                     ></v-text-field>
                 </div>
             </div>
@@ -40,24 +41,27 @@
             <div xs12 sm6 md3 class="name-header">
                 <v-text-field
                         label="Destination Country"
-                        :value="destination.country">
+                        :value="destination.country"
+                        v-model="destination.country">
                 </v-text-field>
             </div>
             <div xs12 sm6 md3 class="name-header">
                 <v-text-field
                         label="Destination Latitude"
-                        :value="destination.lon">
+                        :value="destination.latitude"
+                        v-model="destination.latitude">
                 </v-text-field>
             </div>
             <div xs12 sm6 md3 class="name-header">
                 <v-text-field
                         label="Destination Longitude"
-                        :value="destination.lat">
+                        :value="destination.longitude"
+                        v-model="destination.longitude">
                 </v-text-field>
             </div>
-            <!--<v-img class="map" src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>-->
+            <!--<v-img class="image" src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>-->
         </div>
-        <v-btn fab dark class="edit-button" id="save-destination-button">
+        <v-btn fab dark id="save-destination-button" @click="onClick">
             <v-icon dark>check_circle</v-icon>
         </v-btn>
     </v-card>
@@ -72,11 +76,11 @@
           type: Number,
           required: true
         },
-        name: {
+        destinationName: {
           type: String,
           required: true
         },
-        destType: {
+        destinationType: {
           type: String,
           required: true
         },
@@ -88,14 +92,18 @@
           type: String,
           required: true
         },
-        lat: {
-          type: String,
+        latitude: {
+          type: Number,
           required: true
         },
-        lon: {
-          type: String,
+        longitude: {
+          type: Number,
           required: true
         }
+      },
+      onClick: {
+        type: Function,
+        required: true
       }
     }
   }
@@ -108,7 +116,7 @@
         margin: 0 0 20px;
     }
 
-    .map {
+    .image {
         margin: 0 0 20px;
     }
 

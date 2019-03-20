@@ -2,12 +2,18 @@
   <div style="width: 100%">
     <div class="page-title"><h1>Destinations</h1></div>
     <div class="destinations-panel destinations-card">
+      <DestinationCardEdit
+              v-for="newDestination in newDestinations"
+              v-bind:key="newDestination.id"
+              :destination="newDestination"
+              :onClick="saveNewDestination">
+      </DestinationCardEdit>
       <DestinationCard
               v-for="destination in destinations"
               v-bind:key="destination.id"
               :destination="destination">
       </DestinationCard>
-      <v-btn fab dark id="addDestinationButton">
+      <v-btn fab dark id="addDestinationButton" v-on:click="addNewDestinationCard">
         <v-icon dark>add</v-icon>
       </v-btn>
     </div>
@@ -16,11 +22,11 @@
 
 <script>
 import DestinationCard from "./DestinationCard/DestinationCard";
-// import DestinationCardEdit from "./DestinationCard/DestinationCardEdit";
+import DestinationCardEdit from "./DestinationCard/DestinationCardEdit";
 
 export default {
   components: {
-    // DestinationCardEdit,
+    DestinationCardEdit,
     DestinationCard
   },
   data() {
@@ -28,36 +34,53 @@ export default {
       destinations: [
         {
           "id": 15043,
-          "name": "1st Staircase",
-          "destType": "Place",
-          "district": "South Auckland",
-          "lat": -38.450361,
-          "lon": 174.642722,
+          "destinationName": "Christchurch",
+          "destinationType": "City",
+          "district": "Canterbury",
+          "latitude": 43.5321,
+          "longitude": 172.6362,
           "country": "New Zealand"
         },
         {
           "id": 15044,
-          "name": "1st Staircase",
-          "destType": "Place",
+          "destinationName": "1st Staircase",
+          "destinationType": "Place",
           "district": "South Auckland",
-          "lat": -38.450361,
-          "lon": 174.642722,
+          "latitude": -38.450361,
+          "longitude": 174.642722,
           "country": "New Zealand"
         },
         {
           "id": 15045,
-          "name": "1st Staircase",
-          "destType": "Place",
+          "destinationName": "1st Staircase",
+          "destinationType": "Place",
           "district": "South Auckland",
-          "lat": -38.450361,
-          "lon": 174.642722,
+          "latitude": -38.450361,
+          "longitude": 174.642722,
           "country": "New Zealand"
         }
-      ]
+      ],
+      newDestinations: []
     }
   },
   methods: {
-    // Methods here
+    addNewDestinationCard: function () {
+      this.newDestinations.unshift({
+        "id": 0,
+        "destinationName": "",
+        "destinationType": "",
+        "district": "",
+        "latitude": 0,
+        "longitude": 0,
+        "country": ""
+      });
+    },
+    saveNewDestination: function (event) {
+      // TODO: Implement validation of fields
+      let newDest = this.newDestinations.splice(this.newDestinations.indexOf(event.target.index), 1).pop();
+      this.destinations.unshift(newDest);
+      // TODO: Send the new destination to the back-end
+    }
   }
 }
 </script>
