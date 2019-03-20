@@ -3,10 +3,7 @@ package controllers;
 import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
-import models.Gender;
-import models.Passport;
-import models.User;
-import models.Nationality;
+import models.*;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -57,6 +54,36 @@ public class TravellerController extends Controller {
 
                 }, httpExecutionContext.current());
 
+    }
+
+    /**
+     * A function that adds a traveller type to a user based on the given user traveller ID
+     * @param travellerId the traveller ID
+     * @param request Http.Request the http request
+     * @return 200 if the request is successful, otherwise returns 500
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> addTravellerType(int travellerId, int travellerTypeId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        return travellerRepository.getTravellerTypeById(travellerTypeId)
+                .thenApplyAsync((travellerType) -> {
+                    if (!travellerType.isPresent()) {
+                        return notFound("The specified traveller type ID " + travellerTypeId + " is not valid.");
+                    }
+
+                    TravellerType type = travellerType.get();
+                    List<TravellerType> userTravellerTypes = user.getTravellerTypes();
+
+                    // If the user contains the traveller type, then do not add it again
+                    if (userTravellerTypes.contains(type)) {
+                        return notFound("The user with the ID " + travellerId + " has the specified traveller type ID " + travellerTypeId + " already.");
+                    }
+                    // Otherwise, add the traveller type
+                    userTravellerTypes.add(travellerType.get());
+                    user.setTravellerTypes(userTravellerTypes);
+                    user.save();
+                    return ok("Successfully added the specified traveller type to the user with ID " + travellerId + ".");
+                }, httpExecutionContext.current());
     }
 
     /**

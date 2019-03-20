@@ -16,6 +16,7 @@ GET          /api/travellers/passports                 controllers.TravellerCont
 GET          /api/travellers/:travellerId               controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
 POST         /api/travellers/:travellerId/passports    controllers.TravellerController.addPassport(travellerId: Int, request: Request)
 POST         /api/travellers/:travellerId/nationalities    controllers.TravellerController.addNationality(travellerId: Int, request: Request)
+POST         /api/travellers/:travellerId/travellerTypes/:travellerTypeId    controllers.TravellerController.addTravellerType(travellerId: Int, travellerTypeId: Int, request: Request)
 PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
 DELETE       /api/travellers/:travellerId/nationalities/:nationalityId  controllers.TravellerController.deleteNationalityForUser(travellerId: Int, nationalityId: Int, request: Request)
 DELETE       /api/travellers/:travellerId/passports/:passportId     controllers.TravellerController.removePassport(travellerId: Int, passportId: Int, request: Request)

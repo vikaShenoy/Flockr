@@ -4,6 +4,7 @@ import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import models.Passport;
 import models.Nationality;
+import models.TravellerType;
 import models.User;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
@@ -57,6 +58,20 @@ public class TravellerRepository {
             return user;
         }, executionContext);
     }
+
+    /**
+     * A function that gets the traveller type based on the given traveller type ID
+     * @param travellerTypeId The ID of the traveller type to get
+     * @return The Traveller Type
+     */
+    public CompletionStage<Optional<TravellerType>> getTravellerTypeById(int travellerTypeId) {
+        return supplyAsync(() -> {
+            Optional<TravellerType> travellerType = TravellerType.find.query().
+                    where().eq("traveller_type_id", travellerTypeId).findOneOrEmpty();
+            return travellerType;
+        }, executionContext);
+    }
+
 
     /**
      * A function that gets the list of all the valid passports.

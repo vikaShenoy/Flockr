@@ -71,7 +71,7 @@ public class User extends Model {
      * @param passports the traveller's passports
      * @param token the traveller's token
      */
-    public User(String firstName, String middleName, String lastName, String passwordHash, Gender gender, String email, List<Nationality> nationalities, Timestamp dateOfBirth, List<Passport> passports, String token) {
+    public User(String firstName, String middleName, String lastName, String passwordHash, Gender gender, String email, List<Nationality> nationalities, List<TravellerType> travellerTypes, Timestamp dateOfBirth, List<Passport> passports, String token) {
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
@@ -79,6 +79,7 @@ public class User extends Model {
         this.gender = gender;
         this.email = email;
         this.nationalities = nationalities;
+        this.travellerTypes = travellerTypes;
         this.dateOfBirth = dateOfBirth;
         this.passports =passports;
         this.token = token;
