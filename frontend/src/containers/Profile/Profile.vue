@@ -12,7 +12,7 @@
       <NationalityPassports />
       <TravellerTypes
 	  	:userTravellerTypes="userTravellerTypes"
-		v-on:delete-traveller-type="(travellerTypeId) => handleDeleteTravellerType(travellerTypeId)"
+		v-on:updates-traveller-types="(travellerTypeIds) => handleUpdateTravellerTypes(travellerTypeIds)"
 	  />
       <Trips />
     </v-card>
@@ -54,22 +54,23 @@ export default {
 		};
 	},
 	methods: {
-		async handleDeleteTravellerType(travellerTypeId) {
+		async handleUpdateTravellerTypes(travellerTypeIds) {
 			// catch event emitted when the user wants to delete a traveller type
 			const userId = 1; // TODO: change this to be the actual user id
 			const authToken = localStorage.getItem('authToken');
-			const url = endpoint(`/travellers/${userId}/travellerTypes/${travellerTypeId}`);
-			try {
-				await superagent
-					.del(url)
-					.set('Authorization', authToken);
+			const url = endpoint(`travellers/${userId}/travellerTypes`);
 
-				// deletes traveller type from the UI (will happen if request is successful)
-				this.travellerTypes = this.travellerTypes.filter((travellerType) => travellerType.travellerTypeId !== travellerTypeId);
+			try {
+				const res = await superagent
+					// TODO: send this request
+					.patch(url)
+					.set('Authorization', authToken)
+					.send({
+						travellerTypeIds: travellerTypeIds
+					});
+				this.userTravellerTypes = this.userTravellerTypes.filter(t => travellertypeIds.includes(t.travellerTypeId));
 			} catch (err) {
-				const message = `Error trying to delete traveller type ${travellerTypeId} for user ${userId}: ${err}`;
-				console.error(message);
-				// TODO: inform the user that couldn't delete traveller type
+				console.error(`Could not send PATCH traveller types for user ${userId}`)
 			}
 		}
 	}

@@ -1,18 +1,31 @@
 <template>
 	<div class="traveller-types">
-		<h2>Traveller Types</h2>
-		<ul>
-			<v-chip
-				v-for="travellerType in userTravellerTypes"
-				:key="travellerType.travellerTypeId"
-				color="primary"
-				:close="true"
-				text-color="white"
-				@input="removeTravellerType(travellerType.travellerTypeId)"
-			>
-				{{ travellerType.travellerTypeName }}
-			</v-chip>
-		</ul>
+
+		<div class="header">
+			<h3>Traveller Types</h3>
+			<v-btn small flat id="edit-btn" color="secondary" @click="toggleEditSave">
+				<v-icon v-if="!isEditing">edit</v-icon>
+				<span v-else>Save</span>
+			</v-btn>
+		</div>
+
+		<v-card class="traveller-types-card">
+			<div v-if="!isEditing">
+				<v-chip v-for="travellerType in userTravellerTypes" v-bind:key="travellerType.travellerTypeId" color="primary"
+					text-color="white">{{ travellerType.travellerTypeName }}</v-chip>
+			</div>
+
+			<v-combobox v-else v-model="userTravellerTypes" :items="allTravellertypes" :item-text="getTravellerTypeName"
+				label="Your traveller types" chips clearable solo multiple>
+
+				<template v-slot:selection="data">
+					<v-chip color="primary" text-color="white" :selected="data.selected" close @input="removeTravellerType(data.item.travellerTypeId)">
+						<strong>{{ data.item.travellerTypeName }}</strong>&nbsp;
+					</v-chip>
+				</template>
+			</v-combobox>
+
+		</v-card>
 	</div>
 </template>
 
@@ -59,6 +72,7 @@ export default {
 					travellerTypeId: 6
 				}
 			],
+			isEditing: false
 		}
 	},
 	methods: {
@@ -75,11 +89,19 @@ export default {
 				console.error('Could not get all traveller types: ', err);
 			}
 		},
-		removeTravellerType(travellerTypeId) {
-			// called when the user delete a traveller type
+		async toggleEditSave() {
+			if (this.isEditing) {
+				const travellerTypeIds = this.userTravellerTypes.map((t) => t.travellerTypeId);
+				this.updateTravellerTypes(travellerTypeIds);
+			}
+			this.isEditing = !this.isEditing;
+		},
+		updateTravellerTypes(travellerTypeIds) {
+			// called when the user updates their traveller types
 			// the event is emitted for *some* parent component to handle it
-			this.$emit('delete-traveller-type', travellerTypeId);
-		}
+			this.$emit('update-traveller-types', this.travellerTypeIds);
+		},
+		getTravellerTypeName: (travellerType) => travellerType.travellerTypeName
 	},
 	mounted() {
 		this.getAllTravellerTypes();
@@ -88,7 +110,7 @@ export default {
 		addableTravellerTypes: function computeAddableTravellerTypes() {
 			const userTravellerTypeIds = this.userTravellerTypes.map((travellerType) => travellerType.travellerTypeId);
 			return this.allTravellertypes.filter((travellerType) => !userTravellerTypeIds.includes(travellerType.travellerTypeId));
-		}
+		},
 	}
 }
 </script>
@@ -96,6 +118,22 @@ export default {
 <style lang="scss" scoped>
 	.traveller-types {
 		height: 50%;
+	}
+
+	.header {
+		width: 100%;
+		display: flex;
+		flex-flow: row nowrap;
+		justify-content: center;
+		align-items: center;
+
+		>* {
+			flex-grow: 1;
+		}
+	}
+
+	.traveller-types-card {
+		padding: 10px;
 	}
 </style>
 
