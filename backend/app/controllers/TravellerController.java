@@ -3,7 +3,7 @@ package controllers;
 import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
-import models.Gender;
+import com.typesafe.config.ConfigException;
 import models.Passport;
 import models.User;
 import models.Nationality;
@@ -15,10 +15,13 @@ import play.mvc.With;
 import repository.TravellerRepository;
 
 import javax.inject.Inject;
-import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -53,6 +56,7 @@ public class TravellerController extends Controller {
                     }
 
                     JsonNode userAsJson = Json.toJson(user);
+                    System.out.println(userAsJson);
 
                     return ok(userAsJson);
 
@@ -88,14 +92,18 @@ public class TravellerController extends Controller {
         }
 
         if (jsonBody.has("dateOfBirth")) {
-            Timestamp timestamp = new Timestamp(jsonBody.get("dateOfBirth").asInt());
-            user.setDateOfBirth(timestamp);
+            try {
+                String incomingDate = jsonBody.get("dateOfBirth").asText();
+                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
+                System.out.println("Date stored in db for user is: " + date);
+                user.setDateOfBirth(date);
+            } catch (ParseException e) {
+                System.out.println(e);
+            }
         }
 
-        if (jsonBody.has("genderId")) {
-            Gender gender = new Gender(null);
-            gender.setGenderId(jsonBody.get("genderId").asInt());
-            user.setGender(gender);
+        if (jsonBody.has("gender")) {
+            user.setGender(jsonBody.get("gender").asText());
         }
 
         if (jsonBody.has("nationalities")) {

@@ -1,16 +1,16 @@
 <template>
-  <div id="root-container">
+  <div id="root-container" v-if="userProfile">
     <div class="row">
     <div class="col-lg-4">
       <ProfilePic />
 
-      <BasicInfo />
+      <BasicInfo  :userProfile.sync="userProfile" />
 
       <Photos />
     </div>
 
     <div class="col-lg-8">
-      <Nationalities :userNationalities.sync="nationalities" />
+      <Nationalities :userNationalities.sync="userProfile.nationalities" />
       <Passports :userPassports="passports" />
       <TravellerTypes />
       <Trips />
@@ -28,6 +28,8 @@ import BasicInfo from "./BasicInfo/BasicInfo";
 import Trips from "./Trips/Trips";
 import Photos from "./Photos/Photos";
 
+import superagent from "superagent";
+
 export default {
   components: {
     ProfilePic,
@@ -38,27 +40,28 @@ export default {
     Trips,
     Photos
   },
-  data() {
-    return {
-      nationalities: [
-        {
-          nationalityId: 1,
-          nationalityCountry: "New Zealand"        
-        }
-    ],
-    passports: [
-      {
-        passportId: 3,
-        passportCountry: "French"        
-      },
-      {
-        passportId: 4,
-        passportCountry: "German"
-      }
-    ]
-    };
+  mounted() {
+    this.getUserInfo();
   },
   methods: {
+    async getUserInfo() {
+      const travellerId = this.$route.params.id;
+      const authToken = localStorage.getItem("authToken");
+      const res = await superagent.get(`http://localhost:9000/api/travellers/${travellerId}`)
+      .set("Authorization", authToken);
+
+      console.log(res.body);
+      // Change date format so that it displays on the basic info component. 
+      const formattedDate = new Date(res.body.dateOfBirth).toISOString().split('T')[0];
+      res.body.dateOfBirth = formattedDate;
+
+      this.userProfile = res.body;
+    }
+  },
+  data() {
+    return {
+      userProfile: null
+    }
   }
 };
 </script>

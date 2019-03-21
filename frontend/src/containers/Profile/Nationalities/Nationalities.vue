@@ -94,7 +94,12 @@ export default {
       
     },
 
-    getNationalityText: item => item.nationalityCountry
+    getNationalityText: item => item.nationalityCountry,
+
+    remove (item) {
+      this.userNat.splice(this.userNat.indexOf(item), 1);
+      this.userNat = [...this.userNat];
+    }
   },
 
   computed: {
@@ -108,11 +113,6 @@ export default {
       return this.userNat.map(nationality => nationality.nationalityId);
     }
   },
-
- 
-  
-
-
   props: ["userNationalities"]
 }
 </script>
