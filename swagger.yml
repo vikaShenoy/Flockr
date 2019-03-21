@@ -20,6 +20,11 @@ paths:
       tags:
         - auth
       summary: Sign's up a traveller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signupTraveller'
       responses:
         '201':
           description: OK
@@ -39,6 +44,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  '/auth/travellers/{email}/available':
+    get:
+      tags:
+        - auth
+      summary: Checks if an email is available
+      parameters:
+        - in: path
+          name: email
+          description: The email of the traveller
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email is available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Malformed request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+       
   '/auth/travellers/login':
     post:
       tags:
@@ -508,119 +551,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/travellers/{userId}/nationalities/{nationalityId}':
-    delete:
-      tags:
-        - travellers
-      summary: Delete a user's nationality
-      parameters:
-        - in: path
-          name: userId
-          description: ID of the traveller
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-        - in: path
-          name: nationalityId
-          description: ID of the nationality to delete for the traveller
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-      security:
-        - cookieAuth: []
-      responses:
-        '200':
-          description: Successfully deleted nationality
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/response'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '403':
-          description: >-
-            Profile has not been completed (Only if viewing other users'
-            nationalities)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  '/travellers/{userId}/nationalities':
-    post:
-      tags:
-        - travellers
-      summary: Adds a nationality to a user
-      parameters:
-        - in: path
-          name: userId
-          description: ID of the traveller
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                nationality:
-                  type: string
-              required:
-                - nationality
-      security:
-        - cookieAuth: []
-      responses:
-        '201':
-          description: Successfully added nationality
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/response'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '403':
-          description: >-
-            Profile has not been completed (Only if viewing other users
-            nationalities)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
   '/travellers/{userId}/trips':
     get:
       tags:
@@ -912,9 +842,9 @@ components:
         lastName:
           type: string
         dateOfBirth:
-          type: integer
+          type: string
           nullable: true
-          description: Specified as a unix timestamp
+          description: Specified as a specific format
         gender:
           type: string
           nullable: true
@@ -957,6 +887,18 @@ components:
           description: Specified as a unix timestamp
         gender:
           type: string
+        nationalities:
+          type: array
+          items:
+            type: number
+        passports:
+          type: array
+          items:
+            type: number
+        travellerTypes:
+          type: array
+          items:
+            type: number
     trip:
       type: object
       properties:
@@ -1030,8 +972,18 @@ components:
             type: integer
           destinationId:
             type: integer
+    signupTraveller:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
   securitySchemes:
-    cookieAuth:
-      type: apiKey
-      name: userId
-      in: cookie
+    Authorization:
+      type: http
+      scheme: bearer
