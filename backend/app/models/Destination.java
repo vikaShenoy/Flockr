@@ -3,6 +3,7 @@ package models;
 import javax.persistence.*;
 
 import io.ebean.*;
+import org.checkerframework.common.aliasing.qual.Unique;
 
 
 /**
@@ -11,21 +12,22 @@ import io.ebean.*;
 @Entity
 public class Destination extends Model {
 
+
     @Id
     private int destId;
 
     private String destName;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     private DestinationType destType;
 
 
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     private District destDistrict;
     private Double destLat;
     private Double destLon;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     private Country destCountry;
 
 

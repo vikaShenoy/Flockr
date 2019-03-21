@@ -72,45 +72,4 @@ public class DestinationRepository {
 
 
 
-
-
-
-    /**
-     * Inserts a Destination Type into the database
-     * @param destinationType to be inserted
-     * @return the destination type
-     */
-    public CompletionStage<DestinationType> insert(DestinationType destinationType) {
-        return supplyAsync(() -> {
-            destinationType.save();
-            return destinationType;
-        }, executionContext);
-    }
-
-
-    /**
-     * Inserts a district into the database
-     * @param district to be inserted
-     * @return the inserted district
-     */
-    public CompletionStage<District> insert(District district) {
-        return supplyAsync(() -> {
-            district.save();
-            return district;
-        }, executionContext);
-    }
-
-
-    /**
-     * Inserts a country into the database
-     * @param country to be inserted
-     * @return the inserted country
-     */
-    public CompletionStage<Country> insert(Country country) {
-        return supplyAsync(() -> {
-            country.save();
-            return country;
-        }, executionContext);
-    }
-
 }

@@ -74,30 +74,37 @@ public class DestinationController  extends Controller{
 
     }
 
-    //TODO: Isaac to finish this method
 
-//    public CompletionStage<Result> addDestination(Http.Request request) {
-//        JsonNode jsonRequest = request.body().asJson();
-//
-//        //Use the request Checker from the  AuthController to check the JSON is not empty
-//        if (AuthController.checkRequest(jsonRequest)) return supplyAsync(() -> {
-//            ObjectNode message = Json.newObject();
-//            message.put("message", "Please provide a valid request body according to the API spec");
-//            return badRequest(message);
-//        });
-//        String destinationName = jsonRequest.get("DestinationName").asText();
-//        int destinationType = jsonRequest.get("DestinationType").asInt();
-//        int district = jsonRequest.get("District").asInt();
-//        Long latitude = jsonRequest.get("Latitude").asLong();
-//        Long longitude = jsonRequest.get("Longitude").asLong();
-//        int country = jsonRequest.get("Country").asInt();
-//
-//        Destination destination = new Destination(destinationName,...);
-//
-//        return destinationRepository.insert(destination)
-//                .thenApplyAsync((insertedDestination) -> ok(Json.toJson(insertedDestination)), httpExecutionContext.current());
-//
-//    }
+    public CompletionStage<Result> addDestination(Http.Request request) {
+        JsonNode jsonRequest = request.body().asJson();
+
+        //Use the request Checker from the  AuthController to check the JSON is not empty
+        if (AuthController.checkRequest(jsonRequest)) return supplyAsync(() -> {
+            ObjectNode message = Json.newObject();
+            message.put("message", "Please provide a valid request body according to the API spec");
+            return badRequest(message);
+        });
+        String destinationName = jsonRequest.get("DestinationName").asText();
+        int destinationType = jsonRequest.get("DestinationType").asInt();
+        int district = jsonRequest.get("District").asInt();
+        Double latitude = jsonRequest.get("Latitude").asDouble();
+        Double longitude = jsonRequest.get("Longitude").asDouble();
+        int country = jsonRequest.get("Country").asInt();
+
+        DestinationType destinationTypeAdd = new DestinationType(null);
+        destinationTypeAdd.setDestTypeId(destinationType);
+        District districtAdd = new District(null);
+        districtAdd.setDistrictId(district);
+        Country countryAdd = new Country(null);
+        countryAdd.setCountryId(country);
+
+        Destination destination = new Destination(destinationName,destinationTypeAdd,districtAdd,
+                                                  latitude,longitude,countryAdd);
+
+        return destinationRepository.insert(destination)
+                .thenApplyAsync((insertedDestination) -> ok(Json.toJson(insertedDestination)), httpExecutionContext.current());
+
+    }
 
 
 

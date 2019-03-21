@@ -3,7 +3,9 @@ package models;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 @Entity
 public class DestinationType extends Model {
@@ -32,4 +34,7 @@ public class DestinationType extends Model {
     public void setDestTypeName(String destTypeName) {
         this.destTypeName = destTypeName;
     }
+
 }
+
+

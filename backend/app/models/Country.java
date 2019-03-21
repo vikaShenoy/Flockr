@@ -3,10 +3,13 @@ package models;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 @Entity
 public class Country extends Model {
+
 
     @Id
     private int countryId;

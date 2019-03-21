@@ -17,9 +17,6 @@ create table destination (
   dest_lat                      double,
   dest_lon                      double,
   dest_country_country_id       integer,
-  constraint uq_destination_dest_type_dest_type_id unique (dest_type_dest_type_id),
-  constraint uq_destination_dest_district_district_id unique (dest_district_district_id),
-  constraint uq_destination_dest_country_country_id unique (dest_country_country_id),
   constraint pk_destination primary key (dest_id)
 );
 
@@ -122,10 +119,13 @@ create table user_role (
   constraint pk_user_role primary key (user_role_id)
 );
 
+create index ix_destination_dest_type_dest_type_id on destination (dest_type_dest_type_id);
 alter table destination add constraint fk_destination_dest_type_dest_type_id foreign key (dest_type_dest_type_id) references destination_type (dest_type_id) on delete restrict on update restrict;
 
+create index ix_destination_dest_district_district_id on destination (dest_district_district_id);
 alter table destination add constraint fk_destination_dest_district_district_id foreign key (dest_district_district_id) references district (district_id) on delete restrict on update restrict;
 
+create index ix_destination_dest_country_country_id on destination (dest_country_country_id);
 alter table destination add constraint fk_destination_dest_country_country_id foreign key (dest_country_country_id) references country (country_id) on delete restrict on update restrict;
 
 create index ix_nationality_user_nationality on nationality_user (nationality_nationality_id);
@@ -159,10 +159,13 @@ alter table user add constraint fk_user_gender_gender_id foreign key (gender_gen
 # --- !Downs
 
 alter table destination drop constraint if exists fk_destination_dest_type_dest_type_id;
+drop index if exists ix_destination_dest_type_dest_type_id;
 
 alter table destination drop constraint if exists fk_destination_dest_district_district_id;
+drop index if exists ix_destination_dest_district_district_id;
 
 alter table destination drop constraint if exists fk_destination_dest_country_country_id;
+drop index if exists ix_destination_dest_country_country_id;
 
 alter table nationality_user drop constraint if exists fk_nationality_user_nationality;
 drop index if exists ix_nationality_user_nationality;
