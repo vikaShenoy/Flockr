@@ -1,10 +1,10 @@
 Feature: The user can authenticate
 
   # Test that a 200 code is returned on valid data
-  Scenario: A user tries to sign up with valid data
+  Scenario: A user tries to sign up with valid data with middle name
     Given that I have valid user data to sign up:
       | firstName | middleName | lastName | email               | password        |
-      | "Matias   | "Felipe"   | "Suarez" | "matias@email.com"  | "much-security" |
+      | "Matias"   | "Felipe"   | "Suarez" | "matias@email.com"  | "much-security" |
     When I make a "POST" request to "/api/auth/travellers/signup" with the data
     Then I should receive a 200 status code
 

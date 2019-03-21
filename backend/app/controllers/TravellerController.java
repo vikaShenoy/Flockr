@@ -119,6 +119,10 @@ public class TravellerController extends Controller {
             user.setNationalities(nationalities);
         }
 
+        if (jsonBody.has("gender")) {
+            user.setGender(jsonBody.get("gender").asText());
+        }
+
         return supplyAsync(() -> {
             travellerRepository.updateUser(user);
             return ok();
