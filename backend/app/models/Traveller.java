@@ -15,9 +15,6 @@ import io.ebean.*;
  */
 @Entity
 public class Traveller extends BaseModel {
-
-
-
     @Constraints.Required
     private String gender;
 
@@ -45,8 +42,6 @@ public class Traveller extends BaseModel {
 
     @Constraints.Required
     private String passports;
-
-    private controllers.TravellerData selectedTraveller;
 
     private LocalDateTime timestamp;
 
@@ -79,23 +74,6 @@ public class Traveller extends BaseModel {
         this.passports = passports;
     }
 
-    /**
-     *
-     * @param selectedTraveller the TravellerData controller that holds the form data
-     */
-    public Traveller(controllers.TravellerData selectedTraveller) {
-        this.firstName = selectedTraveller.getFirstName();
-        this.middleName = selectedTraveller.getMiddleName();
-        this.lastName = selectedTraveller.getLastName();
-        this.password = selectedTraveller.getPassword();
-        this.gender = selectedTraveller.getGender();
-        this.birthday = selectedTraveller.getBirthday();
-        this.emailAddress = selectedTraveller.getEmailAddress();
-        this.nationalities = selectedTraveller.getNationalities();
-        this.passports = selectedTraveller.getPassports();
-        this.timestamp = LocalDateTime.now();
-
-    }
 
     /**
      * This is required by EBean to make queries on the database

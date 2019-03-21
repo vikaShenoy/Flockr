@@ -4,6 +4,9 @@ version := "0.0.1-SNAPSHOT"
 
 scalaVersion := "2.12.8"
 
+import sbt._
+import scala.sys.process._
+
 lazy val myProject = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
 libraryDependencies += guice
@@ -18,4 +21,3 @@ libraryDependencies += "org.mockito" % "mockito-core" % "2.1.0" % Test
 testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
 
 javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation", "-Werror")
-
