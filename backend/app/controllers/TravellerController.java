@@ -183,6 +183,9 @@ public class TravellerController extends Controller {
                         return notFound();
                     }
                     List<Passport> passports = user.getPassports();
+                    if (!passports.contains(passport.get())) {
+                        return notFound();
+                    }
                     passports.remove(passport.get());
                     user.setPassports(passports);
                     user.save();
