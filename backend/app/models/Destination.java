@@ -14,87 +14,87 @@ public class Destination extends Model {
 
 
     @Id
-    private int destId;
+    private int destinationId;
 
-    private String destName;
-
-    @ManyToOne
-    private DestinationType destType;
-
+    private String destinationName;
 
     @ManyToOne
-    private District destDistrict;
-    private Double destLat;
-    private Double destLon;
+    private DestinationType destinationType;
+
 
     @ManyToOne
-    private Country destCountry;
+    private District destinationDistrict;
+    private Double destinationLat;
+    private Double destinationLon;
+
+    @ManyToOne
+    private Country destinationCountry;
 
 
-    public Destination(String destName, DestinationType destType, District destDistrict, Double destLat, Double destLon, Country destCountry) {
-        this.destName = destName;
-        this.destType = destType;
-        this.destDistrict = destDistrict;
-        this.destLat = destLat;
-        this.destLon = destLon;
-        this.destCountry = destCountry;
+    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry) {
+        this.destinationName = destinationName;
+        this.destinationType = destinationType;
+        this.destinationDistrict = destinationDistrict;
+        this.destinationLat = destinationLat;
+        this.destinationLon = destinationLon;
+        this.destinationCountry = destinationCountry;
     }
 
-    public int getDestId() {
-        return destId;
+    public int getDestinationId() {
+        return destinationId;
     }
 
-    public void setDestId(int destId) {
-        this.destId = destId;
+    public void setDestinationId(int destinationId) {
+        this.destinationId = destinationId;
     }
 
-    public String getDestName() {
-        return destName;
+    public String getDestinationName() {
+        return destinationName;
     }
 
-    public void setDestName(String destName) {
-        this.destName = destName;
+    public void setDestinationName(String destinationName) {
+        this.destinationName = destinationName;
     }
 
-    public DestinationType getDestType() {
-        return destType;
+    public DestinationType getDestinationType() {
+        return destinationType;
     }
 
-    public void setDestType(DestinationType destType) {
-        this.destType = destType;
+    public void setDestinationType(DestinationType destinationType) {
+        this.destinationType = destinationType;
     }
 
-    public District getDestDistrict() {
-        return destDistrict;
+    public District getDestinationDistrict() {
+        return destinationDistrict;
     }
 
-    public void setDestDistrict(District destDistrict) {
-        this.destDistrict = destDistrict;
+    public void setDestinationDistrict(District destinationDistrict) {
+        this.destinationDistrict = destinationDistrict;
     }
 
-    public Double getDestLat() {
-        return destLat;
+    public Double getDestinationLat() {
+        return destinationLat;
     }
 
-    public void setDestLat(Double destLat) {
-        this.destLat = destLat;
+    public void setDestinationLat(Double destinationLat) {
+        this.destinationLat = destinationLat;
     }
 
-    public Double getDestLon() {
-        return destLon;
+    public Double getDestinationLon() {
+        return destinationLon;
     }
 
-    public void setDestLon(Double destLon) {
-        this.destLon = destLon;
+    public void setDestinationLon(Double destinationLon) {
+        this.destinationLon = destinationLon;
     }
 
-    public Country getDestCountry() {
-        return destCountry;
+    public Country getDestinationCountry() {
+        return destinationCountry;
     }
 
-    public void setDestCountry(Country destCountry) {
-        this.destCountry = destCountry;
+    public void setDestinationCountry(Country destinationCountry) {
+        this.destinationCountry = destinationCountry;
     }
 
-    public static final Finder<Long, Destination> find = new Finder<>(Destination.class);
+    public static final Finder<Integer, Destination> find = new Finder<>(Destination.class);
 }

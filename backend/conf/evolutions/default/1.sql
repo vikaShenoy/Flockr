@@ -10,20 +10,20 @@ create table country (
 );
 
 create table destination (
-  dest_id                       integer auto_increment not null,
-  dest_name                     varchar(255),
-  dest_type_dest_type_id        integer,
-  dest_district_district_id     integer,
-  dest_lat                      double,
-  dest_lon                      double,
-  dest_country_country_id       integer,
-  constraint pk_destination primary key (dest_id)
+  destination_id                integer auto_increment not null,
+  destination_name              varchar(255),
+  destination_type_destination_type_id integer,
+  destination_district_district_id integer,
+  destination_lat               double,
+  destination_lon               double,
+  destination_country_country_id integer,
+  constraint pk_destination primary key (destination_id)
 );
 
 create table destination_type (
-  dest_type_id                  integer auto_increment not null,
-  dest_type_name                varchar(255),
-  constraint pk_destination_type primary key (dest_type_id)
+  destination_type_id           integer auto_increment not null,
+  destination_type_name         varchar(255),
+  constraint pk_destination_type primary key (destination_type_id)
 );
 
 create table district (
@@ -90,10 +90,10 @@ create table trip (
 create table trip_destination (
   trip_destination_id           integer auto_increment not null,
   trip_trip_id                  integer not null,
-  destination_dest_id           integer,
+  destination_destination_id    integer,
   trip_dest_arrival             timestamp,
   trip_dest_departure           timestamp,
-  constraint uq_trip_destination_destination_dest_id unique (destination_dest_id),
+  constraint uq_trip_destination_destination_destination_id unique (destination_destination_id),
   constraint pk_trip_destination primary key (trip_destination_id)
 );
 
@@ -119,14 +119,14 @@ create table user_role (
   constraint pk_user_role primary key (user_role_id)
 );
 
-create index ix_destination_dest_type_dest_type_id on destination (dest_type_dest_type_id);
-alter table destination add constraint fk_destination_dest_type_dest_type_id foreign key (dest_type_dest_type_id) references destination_type (dest_type_id) on delete restrict on update restrict;
+create index ix_destination_destination_type_destination_type_id on destination (destination_type_destination_type_id);
+alter table destination add constraint fk_destination_destination_type_destination_type_id foreign key (destination_type_destination_type_id) references destination_type (destination_type_id) on delete restrict on update restrict;
 
-create index ix_destination_dest_district_district_id on destination (dest_district_district_id);
-alter table destination add constraint fk_destination_dest_district_district_id foreign key (dest_district_district_id) references district (district_id) on delete restrict on update restrict;
+create index ix_destination_destination_district_district_id on destination (destination_district_district_id);
+alter table destination add constraint fk_destination_destination_district_district_id foreign key (destination_district_district_id) references district (district_id) on delete restrict on update restrict;
 
-create index ix_destination_dest_country_country_id on destination (dest_country_country_id);
-alter table destination add constraint fk_destination_dest_country_country_id foreign key (dest_country_country_id) references country (country_id) on delete restrict on update restrict;
+create index ix_destination_destination_country_country_id on destination (destination_country_country_id);
+alter table destination add constraint fk_destination_destination_country_country_id foreign key (destination_country_country_id) references country (country_id) on delete restrict on update restrict;
 
 create index ix_nationality_user_nationality on nationality_user (nationality_nationality_id);
 alter table nationality_user add constraint fk_nationality_user_nationality foreign key (nationality_nationality_id) references nationality (nationality_id) on delete restrict on update restrict;
@@ -151,21 +151,21 @@ alter table trip add constraint fk_trip_user_user_id foreign key (user_user_id) 
 create index ix_trip_destination_trip_trip_id on trip_destination (trip_trip_id);
 alter table trip_destination add constraint fk_trip_destination_trip_trip_id foreign key (trip_trip_id) references trip (trip_id) on delete restrict on update restrict;
 
-alter table trip_destination add constraint fk_trip_destination_destination_dest_id foreign key (destination_dest_id) references destination (dest_id) on delete restrict on update restrict;
+alter table trip_destination add constraint fk_trip_destination_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
 
 alter table user add constraint fk_user_gender_gender_id foreign key (gender_gender_id) references gender (gender_id) on delete restrict on update restrict;
 
 
 # --- !Downs
 
-alter table destination drop constraint if exists fk_destination_dest_type_dest_type_id;
-drop index if exists ix_destination_dest_type_dest_type_id;
+alter table destination drop constraint if exists fk_destination_destination_type_destination_type_id;
+drop index if exists ix_destination_destination_type_destination_type_id;
 
-alter table destination drop constraint if exists fk_destination_dest_district_district_id;
-drop index if exists ix_destination_dest_district_district_id;
+alter table destination drop constraint if exists fk_destination_destination_district_district_id;
+drop index if exists ix_destination_destination_district_district_id;
 
-alter table destination drop constraint if exists fk_destination_dest_country_country_id;
-drop index if exists ix_destination_dest_country_country_id;
+alter table destination drop constraint if exists fk_destination_destination_country_country_id;
+drop index if exists ix_destination_destination_country_country_id;
 
 alter table nationality_user drop constraint if exists fk_nationality_user_nationality;
 drop index if exists ix_nationality_user_nationality;
@@ -190,7 +190,7 @@ alter table trip drop constraint if exists fk_trip_user_user_id;
 alter table trip_destination drop constraint if exists fk_trip_destination_trip_trip_id;
 drop index if exists ix_trip_destination_trip_trip_id;
 
-alter table trip_destination drop constraint if exists fk_trip_destination_destination_dest_id;
+alter table trip_destination drop constraint if exists fk_trip_destination_destination_destination_id;
 
 alter table user drop constraint if exists fk_user_gender_gender_id;
 

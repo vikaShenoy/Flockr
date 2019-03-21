@@ -1,7 +1,5 @@
 package controllers;
 
-import actions.ActionState;
-import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Country;
@@ -12,12 +10,9 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import play.mvc.With;
 import repository.DestinationRepository;
 
 import javax.inject.Inject;
-import java.sql.Timestamp;
-import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -84,15 +79,15 @@ public class DestinationController  extends Controller{
             message.put("message", "Please provide a valid request body according to the API spec");
             return badRequest(message);
         });
-        String destinationName = jsonRequest.get("DestinationName").asText();
-        int destinationType = jsonRequest.get("DestinationType").asInt();
-        int district = jsonRequest.get("District").asInt();
-        Double latitude = jsonRequest.get("Latitude").asDouble();
-        Double longitude = jsonRequest.get("Longitude").asDouble();
-        int country = jsonRequest.get("Country").asInt();
+        String destinationName = jsonRequest.get("destinationName").asText();
+        int destinationType = jsonRequest.get("destinationType").asInt();
+        int district = jsonRequest.get("district").asInt();
+        Double latitude = jsonRequest.get("latitude").asDouble();
+        Double longitude = jsonRequest.get("longitude").asDouble();
+        int country = jsonRequest.get("country").asInt();
 
         DestinationType destinationTypeAdd = new DestinationType(null);
-        destinationTypeAdd.setDestTypeId(destinationType);
+        destinationTypeAdd.setDestinationTypeId(destinationType);
         District districtAdd = new District(null);
         districtAdd.setDistrictId(district);
         Country countryAdd = new Country(null);
