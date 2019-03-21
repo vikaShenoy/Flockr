@@ -16,6 +16,7 @@ import repository.TravellerRepository;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
@@ -72,6 +73,8 @@ public class TravellerController extends Controller {
 
         User user = request.attrs().get(ActionState.USER);
 
+
+
         if (jsonBody.has("firstName")) {
             user.setFirstName(jsonBody.get("firstName").asText());
         }
@@ -93,6 +96,19 @@ public class TravellerController extends Controller {
             Gender gender = new Gender(null);
             gender.setGenderId(jsonBody.get("genderId").asInt());
             user.setGender(gender);
+        }
+
+        if (jsonBody.has("nationalities")) {
+            JsonNode arrNode = jsonBody.get("nationalities");
+            ArrayList<Nationality> nationalities = new ArrayList<>();
+            for (JsonNode id : arrNode) {
+
+                Nationality nationality = new Nationality(null);
+                nationality.setNationalityId(id.asInt());
+                nationalities.add(nationality);
+
+            }
+            user.setNationalities(nationalities);
         }
 
         return supplyAsync(() -> {

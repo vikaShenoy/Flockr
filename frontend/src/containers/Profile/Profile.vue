@@ -10,7 +10,7 @@
     </div>
 
     <div class="col-lg-8">
-      <Nationalities :userNationalities="nationalities" />
+      <Nationalities :userNationalities.sync="nationalities" />
       <Passports :userPassports="passports" />
       <TravellerTypes />
       <Trips />

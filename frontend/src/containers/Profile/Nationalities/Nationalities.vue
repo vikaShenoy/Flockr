@@ -22,7 +22,7 @@
 
       <v-combobox
         v-else
-        v-model="this.userNationalities"
+        v-model="userNat"
         :items="this.allNationalities"
         :item-text="getNationalityText"
         label="Your favorite hobbies"
@@ -31,9 +31,7 @@
         solo
         multiple
       >
-        <!-- <template slot="item" slot-scope="data">
-          {{data.item.nationalityCountry}}
-        </template> -->
+
         <template v-slot:selection="data">
           <v-chip
             color="primary"
@@ -68,6 +66,7 @@ export default {
   data() {
     return {
       // These would be retreived from the request
+      userNat: [...this.userNationalities],
       allNationalities: [],
       isEditing: false
     };
@@ -80,8 +79,19 @@ export default {
       this.allNationalities = res.body;
     },
 
-    toggleEditSave() {
+    async toggleEditSave() {
+      if (this.isEditing) {
+        let nationalityIds = this.getNationalityIds;
+        console.log(this.userNat);
+        const res = await superagent.patch(endpoint('/travellers/7'))
+                                    .set('Authorization', localStorage.getItem('authToken'))
+                                    .send({nationalities: nationalityIds});
+        
+        this.$emit('update:userNationalities', this.userNat);
+          
+      }
       this.isEditing = !this.isEditing;
+      
     },
 
     getNationalityText: item => item.nationalityCountry
@@ -93,8 +103,14 @@ export default {
     },
     getAllNationalityNames() {
       return this.allNationalities.map((nationality => nationality.nationalityCountry));
+    },
+    getNationalityIds() {
+      return this.userNat.map(nationality => nationality.nationalityId);
     }
   },
+
+ 
+  
 
 
   props: ["userNationalities"]
