@@ -1,9 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Gender;
-import models.Nationality;
-import models.Passport;
+import models.*;
 import play.libs.Json;
 import play.mvc.Result;
 
@@ -26,6 +24,16 @@ public class InternalController {
             Gender gender2 = new Gender("Female");
             Gender gender3 = new Gender("Gender Diverse");
 
+            DestinationType destinationType1 = new DestinationType("Event");
+            DestinationType destinationType2 = new DestinationType("City");
+
+            District district1 = new District("Black Rock City");
+            District district2 = new District("New Farm");
+
+            Country country1 = new Country("United States of America");
+            Country country2 = new Country("Australia");
+
+
             gender1.save();
             gender2.save();
             gender3.save();
@@ -35,6 +43,19 @@ public class InternalController {
 
             nationality1.save();
             nationality2.save();
+            nationality3.save();
+
+            destinationType1.save();
+            destinationType2.save();
+
+            country1.save();
+            country2.save();
+
+            Destination destination1 = new Destination("Burning Man",destinationType1, district1, 12.1234,12.1234,country1 );
+            Destination destination2 = new Destination("Brisbane City",destinationType2, district2, 11.1234,11.1234,country2 );
+
+            destination1.save();
+            destination2.save();
 
             ObjectNode json = Json.newObject();
             json.put("message", "Success resampling the database");

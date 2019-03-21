@@ -20,6 +20,11 @@ PATCH        /api/travellers/:travellerId              controllers.TravellerCont
 DELETE       /api/travellers/:travellerId/nationalities/:nationalityId  controllers.TravellerController.deleteNationalityForUser(travellerId: Int, nationalityId: Int, request: Request)
 DELETE       /api/travellers/:travellerId/passports/:passportId     controllers.TravellerController.removePassport(travellerId: Int, passportId: Int, request: Request)
 
+# Destination Routes
+GET         /api/destinations                           controllers.DestinationController.getDestinations(request: Request)
+GET         /api/destinations/:destinationId            controllers.DestinationController.getDestination(destinationId: Int, request: Request)
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET          /assets/*file                             controllers.Assets.at(path="/public", file)
 
