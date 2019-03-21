@@ -2,16 +2,14 @@
   <div style="width: 100%">
     <div class="page-title"><h1>Destinations</h1></div>
     <div class="destinations-panel destinations-card">
-      <DestinationCardEdit
-              v-for="newDestination in newDestinations"
-              v-bind:key="newDestination.id"
-              :destination="newDestination"
-              :onClick="saveNewDestination">
-      </DestinationCardEdit>
       <DestinationCard
-              v-for="destination in destinations"
-              v-bind:key="destination.id"
-              :destination="destination">
+              v-for="(destination, index) in destinations"
+              v-bind:key="index"
+              :destination="destination.dest"
+              :editMode="destination.editMode"
+              :saveOnClick="saveDestination"
+              :deleteOnClick="deleteDestination"
+              :editOnClick="editDestination">
       </DestinationCard>
       <v-btn fab dark id="addDestinationButton" v-on:click="addNewDestinationCard">
         <v-icon dark>add</v-icon>
@@ -22,64 +20,103 @@
 
 <script>
 import DestinationCard from "./DestinationCard/DestinationCard";
-import DestinationCardEdit from "./DestinationCard/DestinationCardEdit";
 
 export default {
   components: {
-    DestinationCardEdit,
     DestinationCard
   },
   data() {
     return {
-      destinations: [
-        {
-          "id": 15043,
-          "destinationName": "Christchurch",
-          "destinationType": "City",
-          "district": "Canterbury",
-          "latitude": 43.5321,
-          "longitude": 172.6362,
-          "country": "New Zealand"
-        },
-        {
-          "id": 15044,
-          "destinationName": "1st Staircase",
-          "destinationType": "Place",
-          "district": "South Auckland",
-          "latitude": -38.450361,
-          "longitude": 174.642722,
-          "country": "New Zealand"
-        },
-        {
-          "id": 15045,
-          "destinationName": "1st Staircase",
-          "destinationType": "Place",
-          "district": "South Auckland",
-          "latitude": -38.450361,
-          "longitude": 174.642722,
-          "country": "New Zealand"
-        }
-      ],
-      newDestinations: []
+      destinations: []
     }
+  },
+  mounted: function () {
+    // TODO: implement getting all destinations here (and setting editMode to false by default)
+    // ----------------Test Code--------------
+    this.destinations.push({
+      dest: {
+        "id": 15043,
+        "destinationName": "Christchurch",
+        "destinationType": "City",
+        "district": "Canterbury",
+        "latitude": 43.5321,
+        "longitude": 172.6362,
+        "country": "New Zealand"
+      }, editMode: false
+    });
+    this.destinations.push({
+      dest: {
+        "id": 15044,
+        "destinationName": "1st Staircase",
+        "destinationType": "Place",
+        "district": "South Auckland",
+        "latitude": -38.450361,
+        "longitude": 174.642722,
+        "country": "New Zealand"
+      }, editMode: false
+    });
+    this.destinations.push({
+      dest: {
+        "id": 15045,
+        "destinationName": "1st Staircase",
+        "destinationType": "Place",
+        "district": "South Auckland",
+        "latitude": -38.450361,
+        "longitude": 174.642722,
+        "country": "New Zealand"
+      }, editMode: false
+    });
+    // ---------------End of test code---------------
   },
   methods: {
     addNewDestinationCard: function () {
-      this.newDestinations.unshift({
-        "id": 0,
-        "destinationName": "",
-        "destinationType": "",
-        "district": "",
-        "latitude": 0,
-        "longitude": 0,
-        "country": ""
+      this.destinations.unshift({
+        dest: {
+          "id": "",
+          "destinationName": "",
+          "destinationType": "",
+          "district": "",
+          "latitude": 0,
+          "longitude": 0,
+          "country": ""
+        }, editMode: true
       });
     },
-    saveNewDestination: function (event) {
+    saveDestination: async function (event) {
       // TODO: Implement validation of fields
-      let newDest = this.newDestinations.splice(this.newDestinations.indexOf(event.target.index), 1).pop();
-      this.destinations.unshift(newDest);
-      // TODO: Send the new destination to the back-end
+      let targetIndex = await this.getIndexOfDestinationFromEvent(event);
+      // TODO: Send the new destination to the back-end and update the id in destinations when confirmed.
+
+      // Set the editMode boolean for the target destination to false
+      this.destinations[targetIndex].editMode = false;
+    },
+    deleteDestination: async function (event) {
+      let targetIndex = await this.getIndexOfDestinationFromEvent(event);
+      // Check if the destination is a new one (not in the database)
+      if (!this.destinations[targetIndex].dest.id === "") {
+
+        // TODO: Send the delete command to the back end
+
+      }
+      // Remove the destination from the page
+      this.destinations.splice(targetIndex, 1);
+    },
+    editDestination: async function (event) {
+      let targetIndex = await this.getIndexOfDestinationFromEvent(event);
+      this.destinations[targetIndex].editMode = true;
+    },
+    getIndexOfDestinationFromEvent: function (event) {
+      let targetIndex = 0;
+      let destinationCards = event.target.parentNode.parentNode.childNodes;
+      let targetCard = event.target.parentNode;
+
+      // Iterate through destination cards till the target card is found and save the index
+      for(let i = 0; i < destinationCards.length; i++) {
+        if (destinationCards[i] === targetCard) {
+          targetIndex = i;
+        }
+      }
+      return targetIndex;
     }
   }
 }
