@@ -11,7 +11,7 @@
 
     <div class="col-lg-8">
       <Nationalities :userNationalities.sync="userProfile.nationalities" />
-      <Passports :userPassports="passports" />
+      <Passports :userPassports.sync="userProfile.passports" />
       <TravellerTypes />
       <Trips />
       </div>

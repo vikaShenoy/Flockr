@@ -119,6 +119,19 @@ public class TravellerController extends Controller {
             user.setNationalities(nationalities);
         }
 
+        if (jsonBody.has("passports")) {
+            JsonNode arrNode = jsonBody.get("passports");
+            ArrayList<Passport> passports = new ArrayList<>();
+            for (JsonNode id : arrNode) {
+
+                Passport passport = new Passport(null);
+                passport.setPassportId(id.asInt());
+                passports.add(passport);
+
+            }
+            user.setPassports(passports);
+        }
+
         if (jsonBody.has("gender")) {
             user.setGender(jsonBody.get("gender").asText());
         }
