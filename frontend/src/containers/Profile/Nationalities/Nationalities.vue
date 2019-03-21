@@ -18,6 +18,8 @@
           color="primary"
           text-color="white"
         >{{ nationality.nationalityCountry }}</v-chip>
+
+        <span v-if="!userNationalities.length">Please provide at least one Nationality</span>
       </div>
 
       <v-combobox
@@ -26,6 +28,7 @@
         :items="this.allNationalities"
         :item-text="getNationalityText"
         label="Your favorite hobbies"
+        :error-messages="nationalityErrors"
         chips
         clearable
         solo
@@ -68,7 +71,8 @@ export default {
       // These would be retreived from the request
       userNat: [...this.userNationalities],
       allNationalities: [],
-      isEditing: false
+      isEditing: false,
+      nationalityErrors: []
     };
   },
 
@@ -81,6 +85,13 @@ export default {
 
     async toggleEditSave() {
       if (this.isEditing) {
+        if (this.userNat.length === 0) {
+          this.nationalityErrors = ['Please select a nationality'];
+          return;
+        }
+
+        this.nationalityErrors = [];
+
         let nationalityIds = this.getNationalityIds;
         console.log(this.userNat);
         const res = await superagent.patch(endpoint('/travellers/7'))
