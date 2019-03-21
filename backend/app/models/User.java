@@ -32,10 +32,9 @@ public class User extends Model {
     @ManyToMany(mappedBy = "users")
     public List<Nationality> nationalities;
 
-    private Timestamp dateOfBirth;
+    private Date dateOfBirth;
 
-    @OneToOne
-    private Gender gender;
+    private String gender;
 
     @Constraints.Required
     private String email;
@@ -71,7 +70,7 @@ public class User extends Model {
      * @param passports the traveller's passports
      * @param token the traveller's token
      */
-    public User(String firstName, String middleName, String lastName, String passwordHash, Gender gender, String email, List<Nationality> nationalities, Timestamp dateOfBirth, List<Passport> passports, String token) {
+    public User(String firstName, String middleName, String lastName, String passwordHash, String gender, String email, List<Nationality> nationalities, Date dateOfBirth, List<Passport> passports, String token) {
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
@@ -141,19 +140,19 @@ public class User extends Model {
         this.nationalities = nationalities;
     }
 
-    public Timestamp getDateOfBirth() {
+    public Date getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(Timestamp dateOfBirth) {
+    public void setDateOfBirth(Date dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public Gender getGender() {
+    public String getGender() {
         return gender;
     }
 
-    public void setGender(Gender gender) {
+    public void setGender(String gender) {
         this.gender = gender;
     }
 

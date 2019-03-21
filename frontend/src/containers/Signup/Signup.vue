@@ -192,18 +192,22 @@ export default {
       if (!validFields) return;
 
       try {
-        const { token } = await signup({
+        console.log(1);
+        const { token, userId } = await signup({
           firstName: this.firstName,
           lastName: this.lastName,
           email: this.email,
           password: this.password,
         });
 
-        localStorage.setItem("userToken", token);
-        this.$router.push("/profile");
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("userId", userId);
+
+        this.$router.push(`/profile/${userId}`);
         
       } catch (e) {
-        console.log("Signs up a user");
+        console.log(e);
+        
       }
     }
   }
