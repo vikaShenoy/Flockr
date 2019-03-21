@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 
 
@@ -14,7 +15,9 @@ import { endpoint } from "../../utils/endpoint";
  * @throws Error if status was not 201
  */
 export async function signup(user) {
-  return axios.post(endpoint("/auth/travellers/signup"), user);
+  const response = await superagent.post(endpoint("/auth/travellers/signup"))
+  .send(user);
+  return response.body
 }
 
 /**

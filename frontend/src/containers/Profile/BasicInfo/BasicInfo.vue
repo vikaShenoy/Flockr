@@ -15,7 +15,7 @@
       </div>
       
       <div class="item-value">
-        <span v-if="!this.isEditing">{{ firstName }}</span>
+        <span v-if="!this.isEditing">{{ userProfile.firstName }}</span>
         <v-text-field
           v-else
           v-model="firstName"
@@ -36,7 +36,7 @@
       </div>
 
       <div class="item-value">
-        <span v-if="!this.isEditing"> {{ middleName }} </span>
+        <span v-if="!this.isEditing"> {{ userProfile.middleName }} </span>
         <v-text-field
           v-else
           v-model="middleName"
@@ -58,7 +58,7 @@
       </div>
 
       <div class="item-value"> 
-      <span v-if="!this.isEditing">{{ lastName }}</span>
+      <span v-if="!this.isEditing">{{ userProfile.lastName }}</span>
       <v-text-field
         v-else
         v-model="lastName"
@@ -77,12 +77,33 @@
       </div>
 
       <div class="item-value">
-        <span v-if="!this.isEditing">{{ dateOfBirth }}</span>
-        <input
-          v-else
-          type="date"
-          v-model="dateOfBirth"
-        >
+        <span v-if="!this.isEditing">{{ userProfile.dateOfBirth }}</span>
+          <v-menu
+        v-else
+        ref="dateMenu"
+        v-model="dateMenu"
+        :close-on-content-click="false"
+        :nudge-right="40"
+        :return-value.sync="dateOfBirth"
+        lazy
+        transition="scale-transition"
+        offset-y
+        full-width
+      >
+        <template v-slot:activator="{ on }">
+          <v-text-field
+            v-model="dateOfBirth"
+            label="Select a date"
+            readonly
+            v-on="on"
+          ></v-text-field>
+        </template>
+        <v-date-picker v-model="dateOfBirth" no-title scrollable>
+          <v-spacer></v-spacer>
+          <v-btn flat color="primary" @click="dateMenu = false">Cancel</v-btn>
+          <v-btn flat color="primary" @click="$refs.dateMenu.save(dateOfBirth)">OK</v-btn>
+        </v-date-picker>
+      </v-menu>
       </div>
       </div>
     </div>
@@ -96,12 +117,9 @@
       </div>
 
       <div class="item-value">
-        <span v-if="!this.isEditing">{{ gender.genderName }}</span>
-        <select v-else v-model="gender.genderName">
-          <option>Male</option>
-          <option>Female</option>
-          <option>Other</option>
-        </select>
+        <span v-if="!this.isEditing">{{ userProfile.gender }}</span>
+        <v-select v-else v-model="gender" :items="genderOptions">
+        </v-select>
       </div>
     </div>
   </v-card>
@@ -113,78 +131,65 @@
       }
     }
 <script>
-const superagent = require('superagent');
+import superagent from 'superagent';
 
 export default {
+  props: ["userProfile"],
   data() {
     return {
+      isEditing: false,
+      dateMenu: false,
+      firstName: "",
+      lastName: "",
+      middleName: "",
+      dateOfBirth: "",
+      gender: "",
       firstNameErrors: [],
       middleNameErrors: [],
       lastNameErrors: [],
       hasInvalidCredentials: false,
       isEditing: false,
-      firstName: "Vikas",
-      middleName: "Nothing",
-      lastName: "Shenoy",
-      dateOfBirth: "26/07/1998",
-      gender: {
-        genderName: "Male"
-      },
-      "nationalities": [
-        {
-          "nationalityId": 1,
-          "nationalityName": "NZ"
-        }
-      ],
-      "passports": [
-        {
-          "passportId": 1,
-          "passportCountry": "Passports"
-        }
-      ],
-      "travellerTypes": [
-        {
-          "travellerTypeId": 1,
-          "travellerTypeName": "string"
-        }
-      ]
+      genderOptions: ["Male", "Female", "Other"]
     };
   },
   methods: {
     toggleEditSave() {
       if (this.isEditing && !this.hasInvalidCredentials) {
         this.sendUserDataToServer();
+        const userProfile = this.userProfile;
+
+        userProfile.firstName = this.firstName;
+        userProfile.middleName = this.middleName;
+        userProfile.lastName = this.lastName;
+        userProfile.dateOfBirth = this.dateOfBirth;
+
+        userProfile.gender = this.gender;
+
+        this.$emit('update:userProfile', userProfile);
+        
         this.isEditing = false;
       } else {
         this.isEditing = true;
       }
     },
 
-    async getUserDataFromServer() {
-      try {
-        const res = await superagent.get('http://localhost:9000/travellers/1');
-        this.firstName = res.body.firstName;
-        this.middleName = res.body.middleName;
-        this.lastName = res.body.lastName;
-        this.dateOfBirth = res.body.dateOfBirth;
-        this.gender = res.body.gender;
-      } catch (err) {
-        console.info(`Error getting user profile data, not updating any data: ${err}`);
-      }
-    },
-
     async sendUserDataToServer() {
       try {
-        console.log("INSERT PATCH REQUEST HERE");
-        const res = await superagent.patch('http://localhost:9000/travellers/1')
+        const userId = localStorage.getItem("userId");
+        const date = this.dateOfBirth
+        console.log("The date being sent is: " + date);
+
+        const res = await superagent.patch(`http://localhost:9000/api/travellers/${userId}`)
+          .set("Authorization", localStorage.getItem("authToken"))
           .send(
             {firstName: this.firstName,
             middleName: this.middleName,
             lastName: this.lastName,
-            dateOfBirth: this.dateOfBirth,
+            dateOfBirth: date,
             gender: this.gender
           }).then(console.log("Successfully sent user data."));
       } catch(err) {
+        console.log(err);
         console.info(`Error saving user profile data: ${err}`);
       }
     },
@@ -204,7 +209,7 @@ export default {
     },
 
     validateMiddleName() {
-      if (!this.middleName || /\d/.test(this.middleName)) {
+      if (!this.middleName) {
         this.middleNameErrors = ["Name is required"];
         this.hasInvalidCredentials = true;
       } else if (/\d/.test(this.middleName)) {
@@ -218,7 +223,7 @@ export default {
     },
 
     validateLastName() {
-      if (!this.lastName || /\d/.test(this.lastname)) {
+      if (!this.lastName) {
         this.lastNameErrors = ["Name is required"];
         this.hasInvalidCredentials = true;
       } else if (/\d/.test(this.lastName)) {
@@ -229,14 +234,21 @@ export default {
         this.hasInvalidCredentials = false;
       }
       return this.lastNameErrors.length === 0;
+    },
+    
+    setEditState() {
+
+      this.firstName = this.userProfile.firstName;
+      this.middleName = this.userProfile.middleName;
+      this.lastName = this.userProfile.lastName;
+      this.dateOfBirth = this.userProfile.date;
+      this.gender = this.userProfile.gender;
     }
     
   },
 
   mounted: function() {
-    // will run after the component is rendered
-    console.log('Component\'s been mounted');
-    this.getUserDataFromServer();
+    this.setEditState();
   }
 }
 </script>
