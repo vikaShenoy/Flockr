@@ -3,6 +3,7 @@ package repository;
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import models.Destination;
+import models.User;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
 
@@ -42,4 +43,19 @@ public class DestinationRepository {
             return destinations;
         }, executionContext);
     }
+
+
+    /**
+     * Gets a destination by it's ID
+     * @param destinationId The ID of the destination to get
+     * @return the destination object
+     */
+    public CompletionStage<Optional<Destination>> getDestinationById(int destinationId) {
+        return supplyAsync(() -> {
+            Optional<Destination> destination = Destination.find.query().
+                    where().eq("dest_id", destinationId).findOneOrEmpty();
+            return destination;
+        }, executionContext);
+    }
+
 }

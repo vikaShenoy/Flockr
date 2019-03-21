@@ -50,4 +50,27 @@ public class DestinationController  extends Controller{
                 }, httpExecutionContext.current());
     }
 
+    /**
+     * A function that retrieves a destination details based on the destination ID given
+     * @param destinationId the destination Id of the destination to retrieve
+     * @param request request Object
+     * @return destination details as a Json object
+     */
+
+    public CompletionStage<Result> getDestination(int destinationId, Http.Request request) {
+
+        return destinationRepository.getDestinationById(destinationId)
+                .thenApplyAsync((destination) -> {
+                    if (!destination.isPresent()) {
+                        return notFound();
+                    }
+
+                    JsonNode userAsJson = Json.toJson(destination);
+
+                    return ok(userAsJson);
+
+                }, httpExecutionContext.current());
+
+    }
+
 }
