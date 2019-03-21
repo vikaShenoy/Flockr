@@ -1,31 +1,49 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.ebean.Model;
 
-import java.util.ArrayList;
+import javax.persistence.*;
+import java.util.List;
 
-public class Trip {
-    private ArrayList<TripDestination> tripDestinations;
+@Entity
+public class Trip extends Model {
 
-    private int tripUserId;
-
+    @Id
     private int tripId;
 
-    public ArrayList<TripDestination> getTripDestinations() {
-        return tripDestinations;
-    }
+    @OneToOne
+    private User user;
 
-    public int getTripUserId() {
-        return tripUserId;
+    @OneToMany(cascade = CascadeType.PERSIST)
+    private List<TripDestination> tripDestinations;
+
+
+    public Trip(List<TripDestination> tripDestinations, User user) {
+        this.tripDestinations = tripDestinations;
+        this.user = user;
     }
 
     public int getTripId() {
         return tripId;
     }
 
-    public Trip(@JsonProperty("tripDestinations") ArrayList<TripDestination> tripDestinations, @JsonProperty("tripUserId") int tripUserId, @JsonProperty("tripId") int tripId) {
+    public void setTripId(int tripId) {
         this.tripId = tripId;
-        this.tripUserId = tripUserId;
+    }
+
+    public List<TripDestination> getTripDestinations() {
+        return tripDestinations;
+    }
+
+    public void setTripDestinations(List<TripDestination> tripDestinations) {
         this.tripDestinations = tripDestinations;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

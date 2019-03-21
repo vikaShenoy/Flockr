@@ -1,18 +1,35 @@
 package models;
 
-/**
- * An enum to represent possible traveller types
- */
-public enum TravellerType {
-    GROUPIE (1), THRILLSEEKER (2), GAP_YEAR (3), FREQUENT_WEEKENDER (4), HOLIDAYMAKER (5), FUNCTIONAL_BUSINESS (6), BACKPACKER (7);
+import io.ebean.Finder;
+import io.ebean.Model;
 
-    private final int typeCode;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import java.rmi.MarshalledObject;
+import java.util.List;
 
-    TravellerType(int typeCode) {
-        this.typeCode = typeCode;
+@Entity
+public class TravellerType extends Model {
+
+    @ManyToMany
+    private List<User> users;
+
+    @Id
+    private int travellerTypeId;
+
+    private String travellerTypeName;
+
+    public int getTravellerTypeId() {
+        return travellerTypeId;
     }
 
-    public int getTravellerType() {
-        return this.typeCode;
+    public String getTravellerTypeName() {
+        return travellerTypeName;
     }
+
+    /**
+     * This is required by EBean to make queries on the database
+     */
+    public static final Finder<Integer, TravellerType> find = new Finder<>(TravellerType.class);
 }

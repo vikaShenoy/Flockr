@@ -1,69 +1,60 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TripDestination {
+import io.ebean.Model;
 
-    public int tripDestinationId;
-    private String location;
-    private String startDate;
-    private String startTime;
-    private String endDate;
-    private String endTime;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import java.util.Date;
 
-    public TripDestination(@JsonProperty("location") String location, @JsonProperty("startDate") String startDate, @JsonProperty("startTime") String startTime, @JsonProperty("endDate") String endDate, @JsonProperty("endTime") String endTime, @JsonProperty("tripDestinationId") int tripDestinationId) {
-        this.tripDestinationId = tripDestinationId;
-        this.location = location;
-        this.startDate = startDate;
-        this.startTime = startTime;
-        this.endDate = endDate;
-        this.endTime = endTime;
-        this.tripDestinationId = tripDestinationId;
-    }
+@Entity
+public class TripDestination extends Model {
 
+    @Id
+    private int tripDestinationId;
 
+    @OneToOne
+    private Destination destination;
 
-    public String getLocation() {
-        return location;
+    private Date tripDestArrival;
+    private Date tripDestDeparture;
+
+    public TripDestination(Destination destination, Date tripDestArrival, Date tripDestDeparture) {
+        this.destination = destination;
+        this.tripDestArrival = tripDestArrival;
+        this.tripDestDeparture = tripDestDeparture;
     }
 
     public int getTripDestinationId() {
         return tripDestinationId;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setTripDestinationId(int tripDestinationId) {
+        this.tripDestinationId = tripDestinationId;
     }
 
-    public String getEndDate() {
-        return endDate;
+    public Destination getDestination() {
+        return destination;
     }
 
-    public String getEndTime() {
-        return endTime;
+    public void setDestination(Destination destination) {
+        this.destination = destination;
     }
 
-    public String getStartDate() {
-        return startDate;
+    public Date getTripDestArrival() {
+        return tripDestArrival;
     }
 
-    public String getStartTime() {
-        return startTime;
+    public void setTripDestArrival(Date tripDestArrival) {
+        this.tripDestArrival = tripDestArrival;
     }
 
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
+    public Date getTripDestDeparture() {
+        return tripDestDeparture;
     }
 
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-
-    public void setStartDate(String startDate) {
-        this.startDate = startDate;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
+    public void setTripDestDeparture(Date tripDestDeparture) {
+        this.tripDestDeparture = tripDestDeparture;
     }
 }
