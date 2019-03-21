@@ -7,10 +7,9 @@
               v-bind:key="index"
               :destination="destination.dest"
               :editMode="destination.editMode"
-              :saveOnClick="saveDestination"
               :deleteOnClick="deleteDestination"
-              :editOnClick="editDestination">
-      </DestinationCard>
+              @editModeChanged="changeEditMode"
+      ></DestinationCard>
       <v-btn fab dark id="addDestinationButton" v-on:click="addNewDestinationCard">
         <v-icon dark>add</v-icon>
       </v-btn>
@@ -82,16 +81,9 @@ export default {
         }, editMode: true
       });
     },
-    saveDestination: async function (event) {
-      // TODO: Implement validation of fields
-      let targetIndex = await this.getIndexOfDestinationFromEvent(event);
-      // TODO: Send the new destination to the back-end and update the id in destinations when confirmed.
 
-      // Set the editMode boolean for the target destination to false
-      this.destinations[targetIndex].editMode = false;
-    },
     deleteDestination: async function (event) {
-      let targetIndex = await this.getIndexOfDestinationFromEvent(event);
+      let targetIndex = await this.getIndexOfDestinationFromTarget(event.target.parentNode);
       // Check if the destination is a new one (not in the database)
       if (!this.destinations[targetIndex].dest.id === "") {
 
@@ -101,18 +93,19 @@ export default {
       // Remove the destination from the page
       this.destinations.splice(targetIndex, 1);
     },
-    editDestination: async function (event) {
-      let targetIndex = await this.getIndexOfDestinationFromEvent(event);
-      this.destinations[targetIndex].editMode = true;
+
+    changeEditMode: async function (value, target) {
+      let targetIndex = await this.getIndexOfDestinationFromTarget(target);
+      this.destinations[targetIndex].editMode = value;
     },
-    getIndexOfDestinationFromEvent: function (event) {
+
+    getIndexOfDestinationFromTarget: function (target) {
       let targetIndex = 0;
-      let destinationCards = event.target.parentNode.parentNode.childNodes;
-      let targetCard = event.target.parentNode;
+      let destinationCards = target.parentNode.childNodes;
 
       // Iterate through destination cards till the target card is found and save the index
       for(let i = 0; i < destinationCards.length; i++) {
-        if (destinationCards[i] === targetCard) {
+        if (destinationCards[i] === target) {
           targetIndex = i;
         }
       }
