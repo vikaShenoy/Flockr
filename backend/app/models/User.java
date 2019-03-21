@@ -92,8 +92,9 @@ public class User extends Model {
      * @param passwordHash Traveller's hashed password
      * @param token Traveller's token
      */
-    public User(String firstName, String lastName, String email, String passwordHash, String token) {
+    public User(String firstName, String middleName, String lastName, String email, String passwordHash, String token) {
         this.firstName = firstName;
+        this.middleName = middleName;
         this.lastName = lastName;
         this.email = email;
         this.passwordHash = passwordHash;
