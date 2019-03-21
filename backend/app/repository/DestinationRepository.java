@@ -2,8 +2,7 @@ package repository;
 
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
-import models.Destination;
-import models.User;
+import models.*;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
 
@@ -55,6 +54,62 @@ public class DestinationRepository {
             Optional<Destination> destination = Destination.find.query().
                     where().eq("dest_id", destinationId).findOneOrEmpty();
             return destination;
+        }, executionContext);
+    }
+
+
+    /**
+     * Inserts a destination into the database
+     * @param destination the destination to be inserted
+     * @return the destination object
+     */
+    public CompletionStage<Destination> insert(Destination destination) {
+        return supplyAsync(() -> {
+            destination.save();
+            return destination;
+        }, executionContext);
+    }
+
+
+
+
+
+
+    /**
+     * Inserts a Destination Type into the database
+     * @param destinationType to be inserted
+     * @return the destination type
+     */
+    public CompletionStage<DestinationType> insert(DestinationType destinationType) {
+        return supplyAsync(() -> {
+            destinationType.save();
+            return destinationType;
+        }, executionContext);
+    }
+
+
+    /**
+     * Inserts a district into the database
+     * @param district to be inserted
+     * @return the inserted district
+     */
+    public CompletionStage<District> insert(District district) {
+        return supplyAsync(() -> {
+            district.save();
+            return district;
+        }, executionContext);
+    }
+
+
+    /**
+     * Inserts a country into the database
+     * @param country to be inserted
+     * @return the inserted country
+     */
+    public CompletionStage<Country> insert(Country country) {
+        return supplyAsync(() -> {
+            country.save();
+            return country;
         }, executionContext);
     }
 

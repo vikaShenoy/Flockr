@@ -3,10 +3,11 @@ package controllers;
 import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
-import models.Gender;
-import models.Passport;
-import models.User;
-import models.Nationality;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.Country;
+import models.Destination;
+import models.DestinationType;
+import models.District;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -65,12 +66,40 @@ public class DestinationController  extends Controller{
                         return notFound();
                     }
 
-                    JsonNode userAsJson = Json.toJson(destination);
+                    JsonNode destAsJson = Json.toJson(destination);
 
-                    return ok(userAsJson);
+                    return ok(destAsJson);
 
                 }, httpExecutionContext.current());
 
     }
 
+    //TODO: Isaac to finish this method
+
+//    public CompletionStage<Result> addDestination(Http.Request request) {
+//        JsonNode jsonRequest = request.body().asJson();
+//
+//        //Use the request Checker from the  AuthController to check the JSON is not empty
+//        if (AuthController.checkRequest(jsonRequest)) return supplyAsync(() -> {
+//            ObjectNode message = Json.newObject();
+//            message.put("message", "Please provide a valid request body according to the API spec");
+//            return badRequest(message);
+//        });
+//        String destinationName = jsonRequest.get("DestinationName").asText();
+//        int destinationType = jsonRequest.get("DestinationType").asInt();
+//        int district = jsonRequest.get("District").asInt();
+//        Long latitude = jsonRequest.get("Latitude").asLong();
+//        Long longitude = jsonRequest.get("Longitude").asLong();
+//        int country = jsonRequest.get("Country").asInt();
+//
+//        Destination destination = new Destination(destinationName,...);
+//
+//        return destinationRepository.insert(destination)
+//                .thenApplyAsync((insertedDestination) -> ok(Json.toJson(insertedDestination)), httpExecutionContext.current());
+//
+//    }
+
+
+
 }
+
