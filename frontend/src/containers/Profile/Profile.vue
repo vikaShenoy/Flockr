@@ -11,8 +11,8 @@
     <v-card class="col-lg-8" >
       <NationalityPassports />
       <TravellerTypes
-	  	:travellerTypes="travellerTypes"
-			v-on:delete-traveller-type="(travellerTypeId) => handleDeleteTravellerType(travellerTypeId)"
+	  	:userTravellerTypes="userTravellerTypes"
+		v-on:delete-traveller-type="(travellerTypeId) => handleDeleteTravellerType(travellerTypeId)"
 	  />
       <Trips />
     </v-card>
@@ -41,52 +41,32 @@ export default {
 	},
 	data() {
 		return {
-			travellerTypes: [{
+			userTravellerTypes: [
+				{
 					travellerTypeName: 'Groupie',
 					travellerTypeId: 0
 				},
 				{
 					travellerTypeName: 'Thrill Seeker',
 					travellerTypeId: 1
-				},
-				{
-					travellerTypeName: 'Gap Year',
-					travellerTypeId: 2
-				},
-				{
-					travellerTypeName: 'Frequent weekender',
-					travellerTypeId: 3
-				},
-				{
-					travellerTypeName: 'Holidaymaker',
-					travellerTypeId: 4
-				},
-				{
-					travellerTypeName: 'Functional/Business',
-					travellerTypeId: 5
-				},
-				{
-					travellerTypeName: 'Backpacker',
-					travellerTypeId: 6
 				}
 			]
 		};
 	},
 	methods: {
 		async handleDeleteTravellerType(travellerTypeId) {
-			console.log("DELETE METHOD CALLED");
 			// catch event emitted when the user wants to delete a traveller type
 			const userId = 1; // TODO: change this to be the actual user id
 			const authToken = localStorage.getItem('authToken');
 			const url = endpoint(`/travellers/${userId}/travellerTypes/${travellerTypeId}`);
 			try {
 				await superagent
-					.del(url).set('Authorization', authToken);
+					.del(url)
+					.set('Authorization', authToken);
 
-				// delets traveller type from the UI (will happen if request is successful)
+				// deletes traveller type from the UI (will happen if request is successful)
 				this.travellerTypes = this.travellerTypes.filter((travellerType) => travellerType.travellerTypeId !== travellerTypeId);
 			} catch (err) {
-				console.log(err);
 				const message = `Error trying to delete traveller type ${travellerTypeId} for user ${userId}: ${err}`;
 				console.error(message);
 				// TODO: inform the user that couldn't delete traveller type
