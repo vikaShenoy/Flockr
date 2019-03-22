@@ -27,7 +27,7 @@
         v-model="userNat"
         :items="this.allNationalities"
         :item-text="getNationalityText"
-        label="Your favorite hobbies"
+        label="Your nationality"
         :error-messages="nationalityErrors"
         chips
         clearable

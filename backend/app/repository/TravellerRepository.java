@@ -65,7 +65,6 @@ public class TravellerRepository {
     public CompletionStage<List<Passport>> getAllPassports() {
         return supplyAsync(() -> {
             List<Passport> passports = Passport.find.query().findList();
-            System.out.println(passports.get(0));
             return passports;
         }, executionContext);
     }

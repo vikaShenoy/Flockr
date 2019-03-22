@@ -130,7 +130,7 @@ export default {
       return this.emailErrors.length === 0;
     },
     /**
-     * Checks the following errors and renders and renders if an error exists
+     * Checks the following errors and renVikasders and renders if an error exists
      * - Checks if password is blank
      * - Checks if password and confirm password don't match
      * @returns {Promise<boolean>} True if there are no errors, false otherwise 
@@ -192,7 +192,6 @@ export default {
       if (!validFields) return;
 
       try {
-        console.log(1);
         const { token, userId } = await signup({
           firstName: this.firstName,
           lastName: this.lastName,

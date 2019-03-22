@@ -88,7 +88,7 @@ public class TravellerController extends Controller {
         }
 
         if (jsonBody.has("lastName")) {
-            user.setLastName(jsonBody.get("firstName").asText());
+            user.setLastName(jsonBody.get("lastName").asText());
         }
 
         if (jsonBody.has("dateOfBirth")) {
@@ -148,6 +148,7 @@ public class TravellerController extends Controller {
      * @return a status code 200 if the request is successful, otherwise returns 500.
      */
     public CompletionStage<Result> getAllPassports(Http.Request request) {
+        System.out.println(1);
         return travellerRepository.getAllPassports()
                 .thenApplyAsync((passports) -> {
                     return ok(Json.toJson(passports));

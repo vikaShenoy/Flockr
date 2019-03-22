@@ -79,23 +79,25 @@
       <div class="item-value">
         <span v-if="!this.isEditing">{{ userProfile.dateOfBirth }}</span>
           <v-menu
-        v-else
-        ref="dateMenu"
-        v-model="dateMenu"
-        :close-on-content-click="false"
-        :nudge-right="40"
-        :return-value.sync="dateOfBirth"
-        lazy
-        transition="scale-transition"
-        offset-y
-        full-width
-      >
+            v-else
+            ref="dateMenu"
+            v-model="dateMenu"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            :return-value.sync="dateOfBirth"
+            lazy
+            transition="scale-transition"
+            offset-y
+            full-width
+          >
         <template v-slot:activator="{ on }">
           <v-text-field
             v-model="dateOfBirth"
             label="Select a date"
+            @blur="validateDate"
             readonly
             v-on="on"
+            :error-messages="dateOfBirthErrors"
           ></v-text-field>
         </template>
         <v-date-picker v-model="dateOfBirth" no-title scrollable>
@@ -118,7 +120,7 @@
 
       <div class="item-value">
         <span v-if="!this.isEditing">{{ userProfile.gender }}</span>
-        <v-select v-else v-model="gender" :items="genderOptions">
+        <v-select v-else @blur="validateGender" :error-messages="genderErrors" v-model="gender" :items="genderOptions">
         </v-select>
       </div>
     </div>
@@ -147,14 +149,27 @@ export default {
       firstNameErrors: [],
       middleNameErrors: [],
       lastNameErrors: [],
+      dateOfBirthErrors: [],
+      genderErrors: [],
       hasInvalidCredentials: false,
       isEditing: false,
       genderOptions: ["Male", "Female", "Other"]
     };
   },
   methods: {
+    /**
+     * Called when use saves edited details. Toggles edit state. Sends a patch request
+     * to server, with user's data.
+     */
     toggleEditSave() {
-      if (this.isEditing && !this.hasInvalidCredentials) {
+      
+      if (this.isEditing) {
+        const validFields = this.validateFields();
+
+        if (!validFields) {
+          return;
+        }
+
         this.sendUserDataToServer();
         const userProfile = this.userProfile;
 
@@ -173,11 +188,14 @@ export default {
       }
     },
 
+    /**
+     * Sends user data to a server in a patch request. 
+     */
     async sendUserDataToServer() {
       try {
         const userId = localStorage.getItem("userId");
-        const date = this.dateOfBirth
-        console.log("The date being sent is: " + date);
+        const date = this.dateOfBirth;
+        
 
         const res = await superagent.patch(`http://localhost:9000/api/travellers/${userId}`)
           .set("Authorization", localStorage.getItem("authToken"))
@@ -185,15 +203,31 @@ export default {
             {firstName: this.firstName,
             middleName: this.middleName,
             lastName: this.lastName,
-            dateOfBirth: date,
+            dateOfBirth: this.dateOfBirth,
             gender: this.gender
           }).then(console.log("Successfully sent user data."));
       } catch(err) {
         console.log(err);
-        console.info(`Error saving user profile data: ${err}`);
+        console.info(`Error saving uservalidateGenders profile data: ${err}`);
       }
     },
+    validateFields() {
+      const fields = [
+        this.validateFirstName(),
+        this.validateLastName(),
+        this.validateMiddleName(),
+        this.validateDate(),
+        this.validateGender()
+      ];
 
+      return fields.every(field => field);
+    },
+
+    /**
+     * Checks if the first name the user has entered in to the edit 
+     * field is non empty and non-numeric. Sets error messages
+     * Returns a boolean for whether the name has errors or not. 
+     */
     validateFirstName() {
       if (!this.firstName) {
         this.firstNameErrors = ["Name is required"];
@@ -228,23 +262,40 @@ export default {
         this.hasInvalidCredentials = true;
       } else if (/\d/.test(this.lastName)) {
         this.lastNameErrors = ["No numbers allowed"];
-        this.hasInvalidCredentials = true;
+        this.hashasInvalidCredneInvalidCredentials = true;
       } else {
         this.lastNameErrors = [];
         this.hasInvalidCredentials = false;
       }
       return this.lastNameErrors.length === 0;
     },
-    
-    setEditState() {
 
+    validateDate() {
+      console.log(1);
+      if (!this.dateOfBirth) {
+        this.dateOfBirthErrors = ["Date is required"];
+        this.hasInvalidCredentials;
+      } else {
+        this.dateOfBirthErrors = [];
+        this.hasInvalidCredentials = false;
+      }
+      return this.dateOfBirthErrors.length === 0;
+    },
+    validateGender() {
+      if (!this.gender) {
+        this.genderErrors = ["Gender is required"];
+      } else {
+        this.genderErrors = [];
+      }
+      return this.genderErrors.length === 0;
+    },
+    setEditState() {
       this.firstName = this.userProfile.firstName;
       this.middleName = this.userProfile.middleName;
       this.lastName = this.userProfile.lastName;
-      this.dateOfBirth = this.userProfile.date;
+      this.dateOfBirth = this.userProfile.dateOfBirth;
       this.gender = this.userProfile.gender;
     }
-    
   },
 
   mounted: function() {

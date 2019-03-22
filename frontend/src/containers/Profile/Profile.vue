@@ -29,6 +29,7 @@ import Trips from "./Trips/Trips";
 import Photos from "./Photos/Photos";
 
 import superagent from "superagent";
+import moment from "moment";
 
 export default {
   components: {
@@ -52,7 +53,7 @@ export default {
 
       console.log(res.body);
       // Change date format so that it displays on the basic info component. 
-      const formattedDate = new Date(res.body.dateOfBirth).toISOString().split('T')[0];
+      const formattedDate = res.body.dateOfBirth ? moment(res.body.dateOfBirth).format("YYYY-MM-DD") : "";
       res.body.dateOfBirth = formattedDate;
 
       this.userProfile = res.body;
