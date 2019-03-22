@@ -1,11 +1,9 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 
 /**
  * A district within a country that is linked destination.
@@ -19,8 +17,12 @@ public class District extends Model {
 
     private String districtName;
 
-    public District (String districtName) {
+    @ManyToOne
+    private Country country;
+
+    public District (String districtName, Country country) {
         this.districtName = districtName;
+        this.country = country;
     }
 
     public String getDistrictName() {
@@ -38,4 +40,15 @@ public class District extends Model {
     public void setDistrictId(int districtId) {
         this.districtId = districtId;
     }
+
+    public Country getCountry() {
+        return country;
+    }
+
+    public void setCountry(Country country) {
+        this.country = country;
+    }
+
+    public static final Finder<Integer, District> find = new Finder<>(District.class);
+
 }

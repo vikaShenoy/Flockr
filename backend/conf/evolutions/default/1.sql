@@ -29,6 +29,7 @@ create table destination_type (
 create table district (
   district_id                   integer auto_increment not null,
   district_name                 varchar(255),
+  country_country_id            integer,
   constraint pk_district primary key (district_id)
 );
 
@@ -128,6 +129,9 @@ alter table destination add constraint fk_destination_destination_district_distr
 create index ix_destination_destination_country_country_id on destination (destination_country_country_id);
 alter table destination add constraint fk_destination_destination_country_country_id foreign key (destination_country_country_id) references country (country_id) on delete restrict on update restrict;
 
+create index ix_district_country_country_id on district (country_country_id);
+alter table district add constraint fk_district_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
+
 create index ix_nationality_user_nationality on nationality_user (nationality_nationality_id);
 alter table nationality_user add constraint fk_nationality_user_nationality foreign key (nationality_nationality_id) references nationality (nationality_id) on delete restrict on update restrict;
 
@@ -166,6 +170,9 @@ drop index if exists ix_destination_destination_district_district_id;
 
 alter table destination drop constraint if exists fk_destination_destination_country_country_id;
 drop index if exists ix_destination_destination_country_country_id;
+
+alter table district drop constraint if exists fk_district_country_country_id;
+drop index if exists ix_district_country_country_id;
 
 alter table nationality_user drop constraint if exists fk_nationality_user_nationality;
 drop index if exists ix_nationality_user_nationality;

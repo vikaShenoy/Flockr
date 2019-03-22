@@ -23,6 +23,7 @@ DELETE       /api/travellers/:travellerId/passports/:passportId     controllers.
 # Destination Routes
 GET         /api/destinations                           controllers.DestinationController.getDestinations(request: Request)
 GET         /api/destinations/countries                 controllers.DestinationController.getCountries()
+GET         /api/destinations/countries/:countryId/districts  controllers.DestinationController.getDistricts(countryId: Int)
 GET         /api/destinations/types                     controllers.DestinationController.getDestinationTypes()
 GET         /api/destinations/:destinationId            controllers.DestinationController.getDestination(destinationId: Int, request: Request)
 #TODO: Isaac To Finish this

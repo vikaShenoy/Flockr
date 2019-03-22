@@ -95,7 +95,7 @@ public class DestinationRepository {
 
     /**
      * Gets a list of countries
-     * @return The list of countries
+     * @return The list of countries Json
      */
     public CompletionStage<List<DestinationType>> getDestinationTypes() {
         return supplyAsync(() -> {
@@ -103,6 +103,19 @@ public class DestinationRepository {
             return destinationTypes;
         }, executionContext);
     }
+
+    /**
+     * Gets a list of districts
+     * @param countryId The country id to get the districts from
+     * @return The list of districts as Json
+     */
+    public CompletionStage<List<District>> getDistricts(int countryId) {
+        return supplyAsync(() -> {
+            List<District> districts = District.find.query().where()
+                    .eq("country_country_id", countryId).findList();
+            return districts;
+        }, executionContext);
+   }
 
 
 

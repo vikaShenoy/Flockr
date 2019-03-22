@@ -99,7 +99,7 @@ public class DestinationController  extends Controller{
 
         DestinationType destinationTypeAdd = new DestinationType(null);
         destinationTypeAdd.setDestinationTypeId(destinationType);
-        District districtAdd = new District(null);
+        District districtAdd = new District(null, null);
         districtAdd.setDistrictId(district);
         Country countryAdd = new Country(null);
         countryAdd.setCountryId(country);
@@ -145,7 +145,7 @@ public class DestinationController  extends Controller{
         Country country = new Country(null);
         country.setCountryId(countryId);
 
-        District district = new District(null);
+        District district = new District(null, null);
         district.setDistrictId(districtId);
 
         destination.setDestinationName(destinationName);
@@ -196,5 +196,16 @@ public class DestinationController  extends Controller{
                 }, httpExecutionContext.current())
                 .exceptionally(e -> internalServerError());
     }
+
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getDistricts(int countryId) {
+
+        return destinationRepository.getDistricts(countryId)
+                .thenApplyAsync(districts -> {
+                    JsonNode districtsJson = Json.toJson(districts);
+                    return ok(districtsJson);
+                }, httpExecutionContext.current());
+    }
+
 }
 
