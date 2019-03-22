@@ -2,8 +2,7 @@ package repository;
 
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
-import models.Destination;
-import models.User;
+import models.*;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
 
@@ -57,5 +56,20 @@ public class DestinationRepository {
             return destination;
         }, executionContext);
     }
+
+
+    /**
+     * Inserts a destination into the database
+     * @param destination the destination to be inserted
+     * @return the destination object
+     */
+    public CompletionStage<Destination> insert(Destination destination) {
+        return supplyAsync(() -> {
+            destination.save();
+            return destination;
+        }, executionContext);
+    }
+
+
 
 }

@@ -33,6 +33,9 @@ public class InternalController {
             Country country1 = new Country("United States of America");
             Country country2 = new Country("Australia");
 
+            district1.save();
+            district2.save();
+
 
             gender1.save();
             gender2.save();

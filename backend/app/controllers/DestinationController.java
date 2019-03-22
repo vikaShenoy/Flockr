@@ -1,22 +1,18 @@
 package controllers;
 
-import actions.ActionState;
-import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
-import models.Gender;
-import models.Passport;
-import models.User;
-import models.Nationality;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.Country;
+import models.Destination;
+import models.DestinationType;
+import models.District;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import play.mvc.With;
 import repository.DestinationRepository;
 
 import javax.inject.Inject;
-import java.sql.Timestamp;
-import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -65,12 +61,53 @@ public class DestinationController  extends Controller{
                         return notFound();
                     }
 
-                    JsonNode userAsJson = Json.toJson(destination);
+                    JsonNode destAsJson = Json.toJson(destination);
 
-                    return ok(userAsJson);
+                    return ok(destAsJson);
 
                 }, httpExecutionContext.current());
 
     }
 
+
+    /**
+     * Function to add destinations to the database
+     * @param request the HTTP post request.
+     * @return a completion stage with the new json object or a bad request error/
+     */
+
+    public CompletionStage<Result> addDestination(Http.Request request) {
+        JsonNode jsonRequest = request.body().asJson();
+
+        //Use the request Checker from the  AuthController to check the JSON is not empty
+        if (AuthController.checkRequest(jsonRequest)) return supplyAsync(() -> {
+            ObjectNode message = Json.newObject();
+            message.put("message", "Please provide a valid request body according to the API spec");
+            return badRequest(message);
+        });
+        String destinationName = jsonRequest.get("destinationName").asText();
+        int destinationType = jsonRequest.get("destinationType").asInt();
+        int district = jsonRequest.get("district").asInt();
+        Double latitude = jsonRequest.get("latitude").asDouble();
+        Double longitude = jsonRequest.get("longitude").asDouble();
+        int country = jsonRequest.get("country").asInt();
+
+        DestinationType destinationTypeAdd = new DestinationType(null);
+        destinationTypeAdd.setDestinationTypeId(destinationType);
+        District districtAdd = new District(null);
+        districtAdd.setDistrictId(district);
+        Country countryAdd = new Country(null);
+        countryAdd.setCountryId(country);
+
+        Destination destination = new Destination(destinationName,destinationTypeAdd,districtAdd,
+                                                  latitude,longitude,countryAdd);
+
+        return destinationRepository.insert(destination)
+                .thenApplyAsync((insertedDestination) -> ok(Json.toJson(insertedDestination)), httpExecutionContext.current());
+
+    }
+
+
+
 }
+

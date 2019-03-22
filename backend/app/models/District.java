@@ -3,10 +3,17 @@ package models;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
+/**
+ * A district within a country that is linked destination.
+ */
 @Entity
 public class District extends Model {
+
+
     @Id
     private int districtId;
 
@@ -26,5 +33,9 @@ public class District extends Model {
 
     public void setDistrictName(String districtName) {
         this.districtName = districtName;
+    }
+
+    public void setDistrictId(int districtId) {
+        this.districtId = districtId;
     }
 }

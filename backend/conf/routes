@@ -23,6 +23,8 @@ DELETE       /api/travellers/:travellerId/passports/:passportId     controllers.
 # Destination Routes
 GET         /api/destinations                           controllers.DestinationController.getDestinations(request: Request)
 GET         /api/destinations/:destinationId            controllers.DestinationController.getDestination(destinationId: Int, request: Request)
+#TODO: Isaac To Finish this
+POST        /api/destinations                         controllers.DestinationController.addDestination(request: Request)
 
 
 # Map static resources from the /public folder to the /assets URL path

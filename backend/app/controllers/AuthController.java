@@ -44,13 +44,11 @@ public class AuthController {
         JsonNode jsonRequest = request.body().asJson();
 
         // check that there is a request body, if not return badRequest
-        if (jsonRequest == null) {
-            return supplyAsync(() -> {
-                ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid request body according to the API spec");
-                return badRequest(message);
-            });
-        }
+        if (checkRequest(jsonRequest)) return supplyAsync(() -> {
+            ObjectNode message = Json.newObject();
+            message.put("message", "Please provide a valid request body according to the API spec");
+            return badRequest(message);
+        });
         String firstName = jsonRequest.get("firstName").asText();
         String lastName = jsonRequest.get("lastName").asText();
         String email = jsonRequest.get("email").asText();
@@ -65,5 +63,12 @@ public class AuthController {
         return authRepository.insert(user)
         .thenApplyAsync((insertedUser) -> ok(Json.toJson(insertedUser)), httpExecutionContext.current());
 
+    }
+
+    static boolean checkRequest(JsonNode jsonRequest) {
+        if (jsonRequest == null) {
+            return true;
+        }
+        return false;
     }
 }
