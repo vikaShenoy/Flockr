@@ -7,7 +7,9 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
-
+/**
+ * A district within a country that is linked destination.
+ */
 @Entity
 public class District extends Model {
 

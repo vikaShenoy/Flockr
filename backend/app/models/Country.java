@@ -7,6 +7,10 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
+/**
+ * A country that is linked to a destination.
+ */
+
 @Entity
 public class Country extends Model {
 

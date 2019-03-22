@@ -70,6 +70,12 @@ public class DestinationController  extends Controller{
     }
 
 
+    /**
+     * Function to add destinations to the database
+     * @param request the HTTP post request.
+     * @return a completion stage with the new json object or a bad request error/
+     */
+
     public CompletionStage<Result> addDestination(Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
 
