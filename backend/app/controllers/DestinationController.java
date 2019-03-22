@@ -1,7 +1,9 @@
 package controllers;
 
+import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.NotFoundException;
 import models.Country;
 import models.Destination;
 import models.DestinationType;
@@ -10,9 +12,11 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.With;
 import repository.DestinationRepository;
 
 import javax.inject.Inject;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -101,7 +105,61 @@ public class DestinationController  extends Controller{
 
     }
 
+    /**
+     * Endpoint to get update a destinations details
+     * @param request Request body to get json body from
+     * @param destinationId The destination ID to update
+     * @return Returns the http response which can be
+     *         - Ok - User was updated successfully
+     *
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> updateDestination(Http.Request request, int destinationId) {
+       return destinationRepository.getDestinationById(destinationId)
+       .thenComposeAsync((optionalDest) -> {
+        if (!optionalDest.isPresent()) {
+            throw new CompletionException(new NotFoundException());
+        }
+        JsonNode jsonBody = request.body().asJson();
+
+        String destinationName =  jsonBody.get("destinationName").asText();
+        int destinationTypeId = jsonBody.get("destinationTypeId").asInt();
+        int countryId = jsonBody.get("countryId").asInt();
+        int districtId = jsonBody.get("districtId").asInt();
+        double latitude = jsonBody.get("latitude").asDouble();
+        double longitude = jsonBody.get("longitude").asDouble();
+
+        Destination destination = optionalDest.get();
 
 
+        DestinationType destType = new DestinationType(null);
+        destType.setDestinationTypeId(destinationTypeId);
+
+        Country country = new Country(null);
+        country.setCountryId(countryId);
+
+        District district = new District(null);
+        district.setDistrictId(districtId);
+
+        destination.setDestinationName(destinationName);
+        destination.setDestinationType(destType);
+        destination.setDestinationCountry(country);
+        destination.setDestinationDistrict(district);
+        destination.setDestinationLat(latitude);
+        destination.setDestinationLon(longitude);
+
+        return destinationRepository.update(destination);
+        }, httpExecutionContext.current())
+       .thenApplyAsync((Destination) -> (Result) ok(), httpExecutionContext.current())
+       .exceptionally(e -> {
+            try {
+                throw e.getCause();
+            } catch (NotFoundException notFoundE) {
+                return notFound();
+            } catch (Throwable ee) {
+                return internalServerError();
+            }
+       });
+    }
 }
 

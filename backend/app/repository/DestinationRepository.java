@@ -52,7 +52,7 @@ public class DestinationRepository {
     public CompletionStage<Optional<Destination>> getDestinationById(int destinationId) {
         return supplyAsync(() -> {
             Optional<Destination> destination = Destination.find.query().
-                    where().eq("dest_id", destinationId).findOneOrEmpty();
+                    where().eq("destination_id", destinationId).findOneOrEmpty();
             return destination;
         }, executionContext);
     }
@@ -70,6 +70,17 @@ public class DestinationRepository {
         }, executionContext);
     }
 
+    /**
+     * Updates a destination
+     * @param destination The destination to update
+     * @return  The destination that was updated
+     */
+    public CompletionStage<Destination> update(Destination destination) {
+        return supplyAsync(() -> {
+            destination.update();
+            return destination;
+        }, executionContext);
+    }
 
 
 }
