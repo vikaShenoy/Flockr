@@ -5,6 +5,11 @@ import io.ebean.Model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+
+/**
+ * A type of destination that is linked to the destination object.
+ */
+
 @Entity
 public class DestinationType extends Model {
 

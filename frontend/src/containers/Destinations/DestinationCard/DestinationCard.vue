@@ -5,13 +5,13 @@
             <div v-if="editMode" class="name-header">
                 <v-text-field
                         label="Destination Name"
-                        :value="destination.destinationName"
-                        v-model="destination.destinationName"
+                        :value="destination.destName"
+                        v-model="destination.destName"
                         @blur="validateName"
                         :error-messages="nameErrors"
                 ></v-text-field>
             </div>
-            <h2 v-else class="name-header">{{ destination.destinationName }}</h2>
+            <h2 v-else class="name-header">{{ destination.destName }}</h2>
             <div class="body-card col-md-12">
                 <v-img class="image" src="https://picsum.photos/510/300?random"></v-img>
             </div>
@@ -22,13 +22,13 @@
                 <div v-if="editMode" class="basic-info">
                     <v-text-field
                             label="Destination Type"
-                            :value="destination.destinationType"
-                            v-model="destination.destinationType"
+                            :value="destination.destType.destTypeName"
+                            v-model="destination.destType.destTypeName"
                             @blur="validateType"
                             :error-messages="typeErrors"
                     ></v-text-field>
                 </div>
-                <div v-else class="basic-info-label">{{ destination.destinationType }}</div>
+                <div v-else class="basic-info-label">{{ destination.destType.destTypeName }}</div>
             </div>
             <hr class="divider"/>
             <div class="row">
@@ -36,13 +36,13 @@
                 <div v-if="editMode" class="basic-info">
                     <v-text-field
                             label="District"
-                            :value="destination.district"
-                            v-model="destination.district"
+                            :value="destination.destDistrict.districtName"
+                            v-model="destination.destDistrict.districtName"
                             @blur="validateDistrict"
                             :error-messages="districtErrors"
                     ></v-text-field>
                 </div>
-                <div v-else class="basic-info-label">{{ destination.district }}</div>
+                <div v-else class="basic-info-label">{{ destination.destDistrict.districtName }}</div>
             </div>
             <hr class="divider"/>
         </div>
@@ -50,18 +50,18 @@
             <div v-if="editMode" class="name-header">
                 <v-text-field
                         label="Destination Country"
-                        :value="destination.country"
-                        v-model="destination.country"
+                        :value="destination.destCountry.countryName"
+                        v-model="destination.destCountry.countryName"
                         @blur="validateCountry"
                         :error-messages="countryErrors"
                 ></v-text-field>
             </div>
-            <h2 v-else class="name-header">{{ destination.country }}</h2>
+            <h2 v-else class="name-header">{{ destination.destCountry.countryName }}</h2>
             <div v-if="editMode" class="name-header">
                 <v-text-field
                         label="Destination Latitude"
-                        :value="destination.latitude"
-                        v-model="destination.latitude"
+                        :value="destination.destLat"
+                        v-model="destination.destLat"
                         v-on:keypress="isValidLatitude"
                         @blur="validateLatitude"
                         :error-messages="latitudeErrors"
@@ -70,12 +70,12 @@
             <div v-if="editMode" class="name-header">
                 <v-text-field
                         label="Destination Longitude"
-                        :value="destination.longitude"
-                        v-model="destination.longitude"
+                        :value="destination.destLon"
+                        v-model="destination.destLon"
                         v-on:keypress="isValidLongitude"
                         @blur="validateLongitude"
                         :error-messages="longitudeErrors"
-                ></v-text-field>
+                ></v-text-field>undefined
             </div>
             <v-img v-else class="image" src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
         </div>
@@ -233,7 +233,7 @@
       },
 
       validateName: function () {
-        if (this.destination.destinationName === "") {
+        if (this.destination.destName === "") {
           this.nameErrors = [ "Name is required" ];
           this.hasInvalidName = true;
         } else {
@@ -243,10 +243,10 @@
       },
 
       validateType: function () {
-        if (this.destination.destinationType === "") {
+        if (this.destination.destType.destTypeName === "") {
           this.typeErrors = [ "Type is required" ];
           this.hasInvalidType = true;
-        } else if (/\d/.test(this.destination.destinationType)) {
+        } else if (/\d/.test(this.destination.destType.destTypeName)) {
           this.typeErrors = [ "No numbers allowed" ];
           this.hasInvalidType = true;
         } else {
@@ -256,7 +256,7 @@
       },
 
       validateDistrict: function () {
-        if (this.destination.district === "") {
+        if (this.destination.destDistrict.districtName === "") {
           this.districtErrors = [ "District is required" ];
           this.hasInvalidDistrict = true;
         } else {
@@ -266,10 +266,10 @@
       },
 
       validateCountry: function () {
-        if (this.destination.country === "") {
+        if (this.destination.destCountry.countryName === "") {
           this.countryErrors = ["Country is required"];
           this.hasInvalidCountry = true;
-        } else if (/\d/.test(this.destination.country)) {
+        } else if (/\d/.test(this.destination.destCountry.countryName)) {
           this.countryErrors = ["No numbers allowed"];
           this.hasInvalidCountry = true;
         } else {
@@ -278,7 +278,7 @@
         }
       },
       validateLatitude: function () {
-        if (this.destination.latitude === "") {
+        if (this.destination.destLat === "") {
           this.latitudeErrors = ["Latitude is required"];
           this.hasInvalidLatitude = true;
         } else {
@@ -288,7 +288,7 @@
       },
 
       validateLongitude: function () {
-        if (this.destination.longitude === "") {
+        if (this.destination.destLon === "") {
           this.longitudeErrors = ["Longitude is required"];
           this.hasInvalidlongitude = true;
         } else {
