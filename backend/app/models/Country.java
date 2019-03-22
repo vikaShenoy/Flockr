@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
@@ -39,4 +40,6 @@ public class Country extends Model {
     public void setCountryName(String countryName) {
         this.countryName = countryName;
     }
+
+    public static final Finder<Integer, Country> find = new Finder<>(Country.class);
 }

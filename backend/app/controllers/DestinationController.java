@@ -167,5 +167,19 @@ public class DestinationController  extends Controller{
             }
        });
     }
+
+    /**
+     * Endpoint to get all countries
+     * @return The countries as json
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getCountries() {
+        return destinationRepository.getCountries()
+                .thenApplyAsync(countries -> {
+                    JsonNode countriesJson = Json.toJson(countries);
+                    return ok(countriesJson);
+                }, httpExecutionContext.current())
+                .exceptionally(e -> internalServerError());
+    }
 }
 
