@@ -211,6 +211,10 @@ export default {
         console.info(`Error saving uservalidateGenders profile data: ${err}`);
       }
     },
+    /**
+     * Checks whether all the form fields have been filled in correctly.
+     * Returns true if all fields have no errors.
+     */
     validateFields() {
       const fields = [
         this.validateFirstName(),
@@ -231,56 +235,61 @@ export default {
     validateFirstName() {
       if (!this.firstName) {
         this.firstNameErrors = ["Name is required"];
-        this.hasInvalidCredentials = true;
       } else if (/\d/.test(this.firstName)) {
         this.firstNameErrors = ["No numbers allowed"];
-        this.hasInvalidCredentials = true;
       } else {
         this.firstNameErrors = [];
-        this.hasInvalidCredentials = false;
       }
       return this.firstNameErrors.length === 0;
     },
 
+    /**
+     * Checks if the middle name the user has entered in to the edit 
+     * field is non empty and non-numeric. Sets error messages.
+     * Returns a boolean for whether the name has errors or not. 
+     */
     validateMiddleName() {
       if (!this.middleName) {
         this.middleNameErrors = ["Name is required"];
-        this.hasInvalidCredentials = true;
       } else if (/\d/.test(this.middleName)) {
         this.middleNameErrors = ["No numbers allowed"];
-        this.hasInvalidCredentials = true;
       } else {
         this.middleNameErrors = [];
-        this.hasInvalidCredentials = false;
       }
       return this.middleNameErrors.length === 0;
     },
 
+    /**
+     * Checks if the last name the user has entered in to the edit 
+     * field is non empty and non-numeric. Sets error messages.
+     * Returns a boolean for whether the name has errors or not. 
+     */
     validateLastName() {
       if (!this.lastName) {
         this.lastNameErrors = ["Name is required"];
-        this.hasInvalidCredentials = true;
       } else if (/\d/.test(this.lastName)) {
         this.lastNameErrors = ["No numbers allowed"];
-        this.hashasInvalidCredneInvalidCredentials = true;
       } else {
         this.lastNameErrors = [];
-        this.hasInvalidCredentials = false;
       }
       return this.lastNameErrors.length === 0;
     },
 
+    /**
+     * Checks if date is non-empty. Returns true if so.
+     */
     validateDate() {
       console.log(1);
       if (!this.dateOfBirth) {
         this.dateOfBirthErrors = ["Date is required"];
-        this.hasInvalidCredentials;
       } else {
         this.dateOfBirthErrors = [];
-        this.hasInvalidCredentials = false;
       }
       return this.dateOfBirthErrors.length === 0;
     },
+    /**
+     * Checks if gender is non-empty. Returns true if so.
+     */
     validateGender() {
       if (!this.gender) {
         this.genderErrors = ["Gender is required"];
@@ -289,6 +298,10 @@ export default {
       }
       return this.genderErrors.length === 0;
     },
+    /**
+     * Sets the fields so that when edit is clicked, they 
+     * still display the user's info.
+     */
     setEditState() {
       this.firstName = this.userProfile.firstName;
       this.middleName = this.userProfile.middleName;
