@@ -18,101 +18,90 @@
 </template>
 
 <script>
-import DestinationCard from "./DestinationCard/DestinationCard";
 
-export default {
-  components: {
-    DestinationCard
-  },
-  data() {
-    return {
-      destinations: []
-    }
-  },
-  mounted: function () {
-    // TODO: implement getting all destinations here (and setting editMode to false by default)
-    // ----------------Test Code--------------
-    this.destinations.push({
-      dest: {
-        "id": 15043,
-        "destinationName": "Christchurch",
-        "destinationType": "City",
-        "district": "Canterbury",
-        "latitude": 43.5321,
-        "longitude": 172.6362,
-        "country": "New Zealand"
-      }, editMode: false
-    });
-    this.destinations.push({
-      dest: {
-        "id": 15044,
-        "destinationName": "1st Staircase",
-        "destinationType": "Place",
-        "district": "South Auckland",
-        "latitude": -38.450361,
-        "longitude": 174.642722,
-        "country": "New Zealand"
-      }, editMode: false
-    });
-    this.destinations.push({
-      dest: {
-        "id": 15045,
-        "destinationName": "1st Staircase",
-        "destinationType": "Place",
-        "district": "South Auckland",
-        "latitude": -38.450361,
-        "longitude": 174.642722,
-        "country": "New Zealand"
-      }, editMode: false
-    });
-    // ---------------End of test code---------------
-  },
-  methods: {
-    addNewDestinationCard: function () {
-      this.destinations.unshift({
-        dest: {
-          "id": "",
-          "destinationName": "",
-          "destinationType": "",
-          "district": "",
-          "latitude": 0,
-          "longitude": 0,
-          "country": ""
-        }, editMode: true
-      });
+  import DestinationCard from "./DestinationCard/DestinationCard";
+  import { endpoint } from "../../utils/endpoint";
+  const axios = require("axios");
+
+  export default {
+    components: {
+      DestinationCard
     },
-
-    deleteDestination: async function (event) {
-      let targetIndex = await this.getIndexOfDestinationFromTarget(event.target.parentNode);
-      // Check if the destination is a new one (not in the database)
-      if (!this.destinations[targetIndex].dest.id === "") {
-
-        // TODO: Send the delete command to the back end
-
+    data() {
+      return {
+        destinations: []
       }
-      // Remove the destination from the page
-      this.destinations.splice(targetIndex, 1);
     },
-
-    changeEditMode: async function (value, target) {
-      let targetIndex = await this.getIndexOfDestinationFromTarget(target);
-      this.destinations[targetIndex].editMode = value;
+    mounted: function () {
+      let currentDestinations;
+      axios.get(endpoint("/destinations"))
+              .then(response => {
+                currentDestinations = response.data;
+                for (let index in currentDestinations) {
+                  this.destinations.push({
+                    dest: currentDestinations[index],
+                    editMode: false
+                  });
+                }
+              })
+              .catch(error => alert(error));
     },
+    methods: {
+      addNewDestinationCard: function () {
+        this.destinations.unshift({
+          dest: {
+            "destId": "",
+            "destName": "",
+            "destType": {
+              destTypeId: "",
+              destTypeName: ""
+            },
+            "destDistrict": {
+              districtId: "",
+              districtName: ""
+            },
+            "destLat": 0,
+            "destLon": 0,
+            "destCountry": {
+              countryId: "",
+              countryName: ""
+            }
+          }, editMode: true
+        });
+      },
 
-    getIndexOfDestinationFromTarget: function (target) {
-      let targetIndex = 0;
-      let destinationCards = target.parentNode.childNodes;
+      deleteDestination: async function (event) {
+        let targetIndex = await this.getIndexOfDestinationFromTarget(event.target.parentNode);
+        // Check if the destination is a new one (not in the database)
+        if (!this.destinations[targetIndex].dest.id === "") {
 
-      // Iterate through destination cards till the target card is found and save the index
-      for(let i = 0; i < destinationCards.length; i++) {
-        if (destinationCards[i] === target) {
-          targetIndex = i;
+          // TODO: Send the delete command to the back end
+
         }
+        // Remove the destination from the page
+        this.destinations.splice(targetIndex, 1);
+      },
+
+      changeEditMode: async function (value, target) {
+        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
+        this.destinations[targetIndex].editMode = value;
+      },
+
+      getIndexOfDestinationFromTarget: function (target) {
+        let targetIndex = 0;
+        let destinationCards = target.parentNode.childNodes;
+
+        // Iterate through destination cards till the target card is found and save the index
+        for(let i = 0; i < destinationCards.length; i++) {
+          if (destinationCards[i] === target) {
+            targetIndex = i;
+          }
+        }
+        return targetIndex;
       }
-      return targetIndex;
     }
   }
-}
+
 </script>
 
 <style lang="scss" scoped>
