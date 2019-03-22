@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.LoggedIn;
+import akka.actor.FSM;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.NotFoundException;
@@ -178,6 +179,20 @@ public class DestinationController  extends Controller{
                 .thenApplyAsync(countries -> {
                     JsonNode countriesJson = Json.toJson(countries);
                     return ok(countriesJson);
+                }, httpExecutionContext.current())
+                .exceptionally(e -> internalServerError());
+    }
+
+    /**
+     * Endpoint to get destination types
+     * @return The destination types as json
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getDestinationTypes() {
+        return destinationRepository.getDestinationTypes()
+                .thenApplyAsync(destinationTypes -> {
+                    JsonNode destinationTypesJson = Json.toJson(destinationTypes);
+                    return ok(destinationTypesJson);
                 }, httpExecutionContext.current())
                 .exceptionally(e -> internalServerError());
     }

@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
@@ -38,6 +39,7 @@ public class DestinationType extends Model {
         this.destinationTypeName = destinationTypeName;
     }
 
+    public static final Finder<Integer, DestinationType> find = new Finder<>(DestinationType.class);
 }
 
 

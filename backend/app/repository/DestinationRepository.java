@@ -93,5 +93,17 @@ public class DestinationRepository {
         }, executionContext);
     }
 
+    /**
+     * Gets a list of countries
+     * @return The list of countries
+     */
+    public CompletionStage<List<DestinationType>> getDestinationTypes() {
+        return supplyAsync(() -> {
+            List<DestinationType> destinationTypes = DestinationType.find.query().findList();
+            return destinationTypes;
+        }, executionContext);
+    }
+
+
 
 }
