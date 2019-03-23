@@ -2,33 +2,39 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.UnauthorizedException;
 import play.libs.Json;
 import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
 import models.User;
+import play.mvc.With;
 import repository.AuthRepository;
+import repository.TravellerRepository;
+import scala.reflect.internal.Trees;
 import util.Security;
 
 import javax.inject.Inject;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import util.Responses;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static play.mvc.Results.badRequest;
-import static play.mvc.Results.ok;
+import static play.mvc.Results.*;
 
 /**
  * Controller handling authentication endpoints
  */
 public class AuthController {
     private final AuthRepository authRepository;
+    private final TravellerRepository travellerRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final Security security;
     private final Responses responses;
 
     @Inject
-    public AuthController(AuthRepository authRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses) {
+    public AuthController(AuthRepository authRepository, TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses) {
         this.authRepository = authRepository;
+        this.travellerRepository = travellerRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
         this.responses = responses;
@@ -152,4 +158,48 @@ public class AuthController {
                 .thenApplyAsync((insertedUser) -> ok(Json.toJson(insertedUser)), httpExecutionContext.current());
     }
 
-}
+    /**
+     * Logs a user in
+     * @param request - Request to get JSon fields from
+     * @return Either users data if valid credentials, otherwise sends unauthorized
+     */
+    public CompletionStage<Result> login(Request request) {
+        JsonNode jsonBody = request.body().asJson();
+
+        String email = jsonBody.get("email").asText();
+        String password = jsonBody.get("password").asText();
+        String hashedPassword = this.security.hashPassword(password);
+
+        return authRepository.getUserByCredentials(email, hashedPassword)
+                .thenComposeAsync((optionalUser) -> {
+                    if (!optionalUser.isPresent()) {
+                        throw new CompletionException(new UnauthorizedException());
+                    }
+
+                    User user = optionalUser.get();
+
+                    if (!security.comparePasswordAndHash(password, user.getPasswordHash())) {
+                        throw new CompletionException(new UnauthorizedException());
+                    }
+
+                    String token = this.security.generateToken();
+                    user.setToken(token);
+
+                    return travellerRepository.updateUser(user);
+                }, httpExecutionContext.current())
+                .thenApplyAsync((user) -> {
+                            JsonNode userJson = Json.toJson(user);
+                            return ok(userJson);
+                        }
+                        , httpExecutionContext.current())
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (UnauthorizedException noAuthError) {
+                        return unauthorized();
+                    } catch (Throwable genericError) {
+                        return internalServerError();
+                    }
+                });
+    }
+    }

@@ -40,10 +40,11 @@ public class TravellerRepository {
      * @param user The user to update
      * @return Nothing
      */
-    public CompletionStage<Void> updateUser(User user) {
-        return runAsync(() -> {
+    public CompletionStage<User> updateUser(User user) {
+        return supplyAsync(() -> {
             user.update();
-        });
+            return user;
+        }, executionContext);
     }
 
     /**

@@ -53,6 +53,23 @@ public class AuthRepository {
                     .eq("token", token)
                     .findOneOrEmpty();
            return user;
-        });
+        }, executionContext);
+    }
+
+    /**
+     * Gets a user by their credentials
+     */
+    public CompletionStage<Optional<User>> getUserByCredentials(String email, String hashedPassword) {
+        return supplyAsync(() -> {
+            Optional<User> user = User.find
+                    .query()
+                    .fetch("passports")
+                    .fetch("nationalities")
+                    .fetch("travellerTypes")
+                    .where()
+                    .eq("email", email)
+                    .findOneOrEmpty();
+            return user;
+        }, executionContext);
     }
 }
