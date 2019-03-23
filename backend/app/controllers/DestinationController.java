@@ -169,6 +169,33 @@ public class DestinationController  extends Controller{
        });
     }
 
+    @With(LoggedIn.class)
+    public CompletionStage<Result> deleteDestination(int destinationId, Http.Request request) {
+        return destinationRepository.getDestinationById(destinationId)
+                .thenApplyAsync((optionalDestination) -> {
+                    if(!optionalDestination.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
+                    Destination destination = optionalDestination.get();
+                    destination.delete();
+                    ObjectNode success = Json.newObject();
+                    success.put("message", "Successfully deleted the given destination id");
+                    return destinationRepository.update(destination);
+                }, httpExecutionContext.current())
+                .thenApplyAsync((Destination) -> (Result) ok("Successfully deleted the given destination id"), httpExecutionContext.current())
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (NotFoundException notFoundE) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "The given destination id is not found");
+                        return notFound(message);
+                    } catch (Throwable ee) {
+                        return internalServerError();
+                    }
+                });
+    }
+
     /**
      * Endpoint to get all countries
      * @return The countries as json

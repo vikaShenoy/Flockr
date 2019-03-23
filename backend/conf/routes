@@ -26,6 +26,8 @@ GET         /api/destinations/countries                 controllers.DestinationC
 GET         /api/destinations/countries/:countryId/districts  controllers.DestinationController.getDistricts(countryId: Int)
 GET         /api/destinations/types                     controllers.DestinationController.getDestinationTypes()
 GET         /api/destinations/:destinationId            controllers.DestinationController.getDestination(destinationId: Int, request: Request)
+DELETE      /api/destinations/:destinationId            controllers.DestinationController.deleteDestination(destinationId: Int, request: Request)
+
 #TODO: Isaac To Finish this
 POST        /api/destinations                           controllers.DestinationController.addDestination(request: Request)
 PUT         /api/destinations/:destinationId            controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
