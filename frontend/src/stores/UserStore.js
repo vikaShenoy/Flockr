@@ -29,7 +29,7 @@ const UserStore = {
     loggedIn() {
       return UserStore.data.userId;
     },
-    signout() {
+    logout() {
       UserStore.data.userId = null;
       UserStore.data.firstName = null;
       UserStore.data.middleName = null;

@@ -9,6 +9,7 @@ POST         /api/internal/resample                    controllers.InternalContr
 # Auth routes
 POST         /api/auth/travellers/signup               controllers.AuthController.signup(request: Request)
 POST         /api/auth/travellers/login                controllers.AuthController.login(request: Request)
+POST         /api/auth/travellers/logout               controllers.AuthController.logout(request: Request)
 
 
 # Traveller routes

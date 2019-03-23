@@ -16,7 +16,7 @@
       <v-list-tile
         v-for="item in itemsToShow"
         :key="item.title"
-        @click="$router.push(item.url === '/profile' ? `/profile/${userStore.userId}` : item.url)"
+        @click="navClicked(item.url)"
         class="nav-item"
       >
         <v-list-tile-action>
@@ -34,6 +34,7 @@
 <script>
 
 import UserStore from "../../../stores/UserStore";
+import { logout } from "./NavbarService";
 
 export default {
   data() {
@@ -42,8 +43,8 @@ export default {
       items: [
         {
           title: "Home",
-          icon: "dashboard",
           url: "/",
+          icon: "dashboard",
           loggedIn: true,
           loggedOut: true
         },
@@ -102,12 +103,37 @@ export default {
         },
         {
           title: "Log out",
+          url: "/logout",
           icon: "power_settings_new",
           loggedIn: true,
           loggedOut: false
         }
       ]
     };
+  },
+  methods: {
+    /**
+     * Run when the nav was clicked on
+     * @param {string} url - The url of nav item that was clicked on
+     */
+    async navClicked(url) {
+      switch (url) {
+        case "/profile":
+          this.$router.push(`/profile/${UserStore.data.userId}`)
+          break;
+        case "/logout":
+          await logout();
+          UserStore.methods.logout();
+          localStorage.removeItem("userId");
+          localStorage.removeItem("authToken");
+          this.$router.push("/");
+          break;
+        default:
+          this.$router.push(url)
+          break;
+      }
+    }
+
   },
   computed: {
     /**
@@ -121,6 +147,10 @@ export default {
         return (item.loggedIn && loggedIn && (item.profileCompleted && profileCompleted || !item.profileCompleted)) || item.loggedOut && !loggedIn;
       });
     },
+    /**
+     * Event handler called when nav item has been clicked
+     * @param {string} url - The url of the nav item
+     */
   }
 }
 </script>

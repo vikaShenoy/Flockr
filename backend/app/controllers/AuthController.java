@@ -1,5 +1,7 @@
 package controllers;
 
+import actions.ActionState;
+import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.UnauthorizedException;
@@ -202,4 +204,16 @@ public class AuthController {
                     }
                 });
     }
+
+    @With(LoggedIn.class)
+    public CompletionStage<Result> logout(Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        user.setToken(null);
+
+        return travellerRepository.updateUser(user)
+                .thenApplyAsync((u) -> {
+                    return ok();
+                }, httpExecutionContext.current());
+
     }
+}
