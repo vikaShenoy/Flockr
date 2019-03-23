@@ -91,11 +91,11 @@ public class DestinationController  extends Controller{
             return badRequest(message);
         });
         String destinationName = jsonRequest.get("destinationName").asText();
-        int destinationType = jsonRequest.get("destinationType").asInt();
-        int district = jsonRequest.get("district").asInt();
+        int destinationType = jsonRequest.get("destinationTypeId").asInt();
+        int district = jsonRequest.get("districtId").asInt();
         Double latitude = jsonRequest.get("latitude").asDouble();
         Double longitude = jsonRequest.get("longitude").asDouble();
-        int country = jsonRequest.get("country").asInt();
+        int country = jsonRequest.get("countryId").asInt();
 
         DestinationType destinationTypeAdd = new DestinationType(null);
         destinationTypeAdd.setDestinationTypeId(destinationType);
