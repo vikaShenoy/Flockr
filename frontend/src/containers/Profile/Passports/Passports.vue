@@ -102,7 +102,8 @@ export default {
         } catch (e) {
           // Add error handling later
         }
-
+        // Set nationalities state of UserStore
+        UserStore.data.passports = this.userPass;
         this.$emit("update:userPassports", this.userPass);
       }
 

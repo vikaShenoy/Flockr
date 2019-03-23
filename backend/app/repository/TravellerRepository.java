@@ -84,12 +84,11 @@ public class TravellerRepository {
 
     /**
      * Gets a list of all nationalities
-     * @return <b>List</b> of nationalities
+     * @return List of nationalities
      */
     public CompletionStage<List<Nationality>> getAllNationalities() {
         return supplyAsync(() -> {
             List<Nationality> nationalities = Nationality.find.query().findList();
-            System.out.println(nationalities.get(0));
             return nationalities;
         }, executionContext);
     }
@@ -104,6 +103,25 @@ public class TravellerRepository {
             Optional<Nationality> nationality = Nationality.find.query().
                     where().eq("nationality_id", nationalityId).findOneOrEmpty();
             return nationality;
+        }, executionContext);
+    }
+
+    /**
+     * Gets a list of travellers
+     */
+    public CompletionStage<List<User>> getTravellers() {
+        return supplyAsync(() -> {
+            List<User> user = User.find.query()
+                    .fetch("passports")              // contacts is a OneToMany path
+                    .fetch("travellerTypes")
+                    .fetch("nationalities")
+                    .where()
+                    .isNotNull("middle_name")
+                    .isNotNull("gender")
+                    .isNotNull("date_of_birth")
+                    .isNotEmpty("nationalities")
+                    .findList();
+            return user;
         }, executionContext);
     }
 }

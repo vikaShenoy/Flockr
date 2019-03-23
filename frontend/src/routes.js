@@ -4,6 +4,7 @@ import Home from "./containers/Home/Home.vue";
 import Signup from "./containers/Signup/Signup.vue";
 import Login from "./containers/Login/Login.vue";
 import Profile from "./containers/Profile/Profile.vue"
+import Travellers from "./containers/Travellers/Travellers.vue";
 import Destinations from "./containers/Destinations/Destinations.vue";
 import Trips from "./containers/Trips/Trips.vue";
 
@@ -17,6 +18,11 @@ const routes = [
   {
     path: "/profile/:id",
     component: Profile,
+    beforeEnter: loggedIn
+  },
+  {
+    path: "/travellers",
+    component: Travellers,
     beforeEnter: loggedIn
   },
   {

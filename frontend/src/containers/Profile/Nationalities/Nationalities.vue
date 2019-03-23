@@ -93,7 +93,6 @@ export default {
      * be updated
      */
     async toggleEditSave() {
-      console.log("I made it here");
       if (this.isEditing) {
         if (this.userNat.length === 0) {
           this.nationalityErrors = ["Please select a nationality"];
@@ -110,6 +109,8 @@ export default {
           // Add error handling later
         }
 
+        // Set nationalities state of UserStore
+        UserStore.data.nationalities = this.userNat;
         this.$emit("update:userNationalities", this.userNat);
       }
       this.isEditing = !this.isEditing;

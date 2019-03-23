@@ -16,9 +16,8 @@
       <v-list-tile
         v-for="item in itemsToShow"
         :key="item.title"
+        @click="$router.push(item.url === '/profile' ? `/profile/${userStore.userId}` : item.url)"
         class="nav-item"
-        @click="$router.push(item.url)"
-        
       >
         <v-list-tile-action>
           <v-icon class="nav-icon">{{ item.icon }}</v-icon>
@@ -52,6 +51,7 @@ export default {
           title: "Search Travellers",
           icon: "search",
           url: "/search",
+          profileCompleted: true,
           loggedIn: true,
           loggedOut: false
         },
@@ -59,6 +59,7 @@ export default {
           title: "Destinations",
           icon: "location_on",
           url: "/destinations",
+          profileCompleted: true,
           loggedIn: true,
           loggedOut: false
         },
@@ -66,6 +67,7 @@ export default {
           title: "Trips",
           icon: "navigation",
           url: "/trips",
+          profileCompleted: true,
           loggedIn: true,
           loggedOut: false
         },
@@ -91,6 +93,14 @@ export default {
           loggedOut: false
         },
         {
+          title: "Travellers",
+          icon: "supervisor_account",
+          url: "/travellers",
+          profileCompleted: true,
+          loggedIn: true,
+          loggedOut: false
+        },
+        {
           title: "Log out",
           icon: "power_settings_new",
           loggedIn: true,
@@ -104,8 +114,12 @@ export default {
      * Computed property which filters nav items to show
      */
     itemsToShow() {
-      const userLoggedIn = UserStore.methods.loggedIn();
-      return this.items.filter(item => item.loggedIn && userLoggedIn || item.loggedOut && !userLoggedIn);
+      const loggedIn = UserStore.methods.loggedIn();
+      const profileCompleted = UserStore.methods.profileCompleted();
+
+      return this.items.filter(item => {
+        return (item.loggedIn && loggedIn && (item.profileCompleted && profileCompleted || !item.profileCompleted)) || item.loggedOut && !loggedIn;
+      });
     },
   }
 }

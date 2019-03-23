@@ -32,6 +32,7 @@
             v-model="firstName"
             color="secondary"
             :rules="fieldRules"
+            :maxlength="50"
           >
           </v-text-field>
         </div>
@@ -52,6 +53,7 @@
             v-model="middleName"
             color="secondary"
             :rules="fieldRules"
+            :maxlength="50"
           >
           </v-text-field>
         </div>
@@ -72,6 +74,7 @@
             v-model="lastName"
             color="secondary"
             :rules="fieldRules"
+            :maxlength="50"
           >
           </v-text-field>
         </div>
@@ -199,7 +202,6 @@ export default {
         }
 
         this.sendUserDataToServer();
-        console.log("Gender is: ", this.gender); 
         const userProfile = this.userProfile;
 
         userProfile.firstName = this.firstName;
@@ -208,6 +210,7 @@ export default {
         userProfile.dateOfBirth = this.dateOfBirth;
         userProfile.gender = this.gender;
 
+        UserStore.methods.setData(userProfile);
         this.$emit("update:userProfile", userProfile);
         this.isEditing = false;
       } else {

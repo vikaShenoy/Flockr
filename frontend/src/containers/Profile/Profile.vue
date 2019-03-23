@@ -1,5 +1,13 @@
 <template>
   <div id="root-container" v-if="userProfile">
+    <v-alert
+      :value="shouldShowBanner()"
+      color="info"
+      icon="info"
+    >
+    Please fill in your full profile before using the site
+    </v-alert>
+    
     <div class="row">
     <div class="col-lg-4">
       <ProfilePic />
@@ -30,8 +38,10 @@ import Photos from "./Photos/Photos";
 
 import superagent from "superagent";
 import moment from "moment";
-
+import UserStore from "../../stores/UserStore";
 import { getUser } from "./ProfileService";
+
+
 
 export default {
   components: {
@@ -61,6 +71,9 @@ export default {
       user.dateOfBirth = formattedDate;
 
       this.userProfile = user;
+    },
+    shouldShowBanner() {
+      return !(this.userProfile.firstName && this.userProfile.lastName && this.userProfile.middleName && this.userProfile.gender && this.userProfile.dateOfBirth && this.userProfile.nationalities.length);
     }
   },
   data() {
