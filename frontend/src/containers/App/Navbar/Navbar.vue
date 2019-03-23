@@ -130,7 +130,7 @@ export default {
 
   #navbar {
     background-color: $primary;
-    position: fixed;
+    position: fixed !important;
   }
 
   #title-box {
