@@ -1,79 +1,90 @@
 <template>
-  <div id="root-container">
+  <div id="root-container" v-if="userProfile">
+    <v-alert
+      :value="shouldShowBanner()"
+      color="info"
+      icon="info"
+    >
+    Please fill in your full profile before using the site
+    </v-alert>
+    
     <div class="row">
     <div class="col-lg-4">
-      <ProfilePic />
+      <ProfilePic :userId="userProfile.userId"/>
 
-      <BasicInfo />
+      <BasicInfo :userProfile.sync="userProfile" />
 
       <Photos />
     </div>
-    <v-card class="col-lg-8" >
-      <NationalityPassports />
+
+    <div class="col-lg-8">
+      <Nationalities :userNationalities.sync="userProfile.nationalities" :userId="userProfile.userId" />
+      <Passports :userPassports.sync="userProfile.passports" :userId="userProfile.userId" />
       <TravellerTypes
-	  	:userTravellerTypes="userTravellerTypes"
-		v-on:updates-traveller-types="(travellerTypeIds) => handleUpdateTravellerTypes(travellerTypeIds)"
-	  />
+        :userTravellerTypes.sync="userProfile.travellerTypes"
+        :userId="userProfile.userId"
+      />
       <Trips />
-    </v-card>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import ProfilePic from "./ProfilePic/ProfilePic";
-import NationalityPassports from "./NationalityPassports/NationalityPassports";
+import Nationalities from "./Nationalities/Nationalities";
+import Passports from "./Passports/Passports";
 import TravellerTypes from "./TravellerTypes/TravellerTypes";
 import BasicInfo from "./BasicInfo/BasicInfo";
 import Trips from "./Trips/Trips";
 import Photos from "./Photos/Photos";
-import {endpoint} from '../../utils/endpoint';
-const superagent = require('superagent');
+
+import superagent from "superagent";
+import moment from "moment";
+import UserStore from "../../stores/UserStore";
+import { endpoint } from '../../utils/endpoint';
+import { getUser } from "./ProfileService";
+
 
 export default {
 	components: {
 		ProfilePic,
-		NationalityPassports,
+    Nationalities,
+    Passports,
 		BasicInfo,
 		TravellerTypes,
 		Trips,
 		Photos
-	},
-	data() {
-		return {
-			userTravellerTypes: [
-				{
-					travellerTypeName: 'Groupie',
-					travellerTypeId: 0
-				},
-				{
-					travellerTypeName: 'Thrill Seeker',
-					travellerTypeId: 1
-				}
-			]
-		};
-	},
-	methods: {
-		async handleUpdateTravellerTypes(travellerTypeIds) {
-			// catch event emitted when the user wants to delete a traveller type
-			const userId = 1; // TODO: change this to be the actual user id
-			const authToken = localStorage.getItem('authToken');
-			const url = endpoint(`travellers/${userId}/travellerTypes`);
+  },
+  data() {
+    return {
+      userProfile: null,
+      userTravellerTypes: []
+    }
+  },
+  mounted() {
+    this.getUserInfo();
+  },
+  methods: {
+    /**
+     * Gets a users info and sets the users state
+     */
+    async getUserInfo() {
+      const userId = this.$route.params.id;
 
-			try {
-				const res = await superagent
-					// TODO: send this request
-					.patch(url)
-					.set('Authorization', authToken)
-					.send({
-						travellerTypeIds: travellerTypeIds
-					});
-				this.userTravellerTypes = this.userTravellerTypes.filter(t => travellertypeIds.includes(t.travellerTypeId));
-			} catch (err) {
-				console.error(`Could not send PATCH traveller types for user ${userId}`)
-			}
-		}
-	}
+      const user = await getUser(userId);
+      
+      // Change date format so that it displays on the basic info component. 
+      const formattedDate = user.dateOfBirth ? moment(user.dateOfBirth).format("YYYY-MM-DD") : "";
+      
+      user.dateOfBirth = formattedDate;
+
+      this.userProfile = user;
+    },
+    shouldShowBanner() {
+      return !(this.userProfile.firstName && this.userProfile.lastName && this.userProfile.middleName && this.userProfile.gender && this.userProfile.dateOfBirth && this.userProfile.nationalities.length && this.userProfile.travellerTypes.length);
+    }
+  }
 };
 </script>
 

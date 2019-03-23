@@ -1,29 +1,23 @@
 # Routes
 
 # Home page
-GET          /                                                                  controllers.HomeController.index(request: Request)
+GET          /                                         controllers.HomeController.index(request: Request)
 
 #Interval routes
-POST         /api/internal/resample                                             controllers.InternalController.resample
+POST         /api/internal/resample                    controllers.InternalController.resample
 
 # Auth routes
-POST         /api/auth/travellers/signup                                        controllers.AuthController.signup(request: Request)
+POST         /api/auth/travellers/signup               controllers.AuthController.signup(request: Request)
 
 
 # Traveller routes
-GET          /api/travellers/nationalities                                      controllers.TravellerController.getNationalities(request: Request)
-GET          /api/travellers/passports                                          controllers.TravellerController.getAllPassports(request: Request)
+GET          /api/travellers                           controllers.TravellerController.getTravellers()
+GET          /api/travellers/nationalities             controllers.TravellerController.getNationalities(request: Request)
+GET          /api/travellers/passports                 controllers.TravellerController.getAllPassports(request: Request)
 GET          /api/travellers/types                                              controllers.TravellerController.getTravellerTypes(request: Request)
 GET          /api/travellers/:travellerId                                       controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
-POST         /api/travellers/:travellerId/passports                             controllers.TravellerController.addPassport(travellerId: Int, request: Request)
-POST         /api/travellers/:travellerId/nationalities                         controllers.TravellerController.addNationality(travellerId: Int, request: Request)
-POST         /api/travellers/:travellerId/travellerTypes/:travellerTypeId       controllers.TravellerController.addTravellerType(travellerId: Int, travellerTypeId: Int, request: Request)
 PATCH        /api/travellers/:travellerId                                       controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
-DELETE       /api/travellers/:travellerId/nationalities/:nationalityId          controllers.TravellerController.deleteNationalityForUser(travellerId: Int, nationalityId: Int, request: Request)
-DELETE       /api/travellers/:travellerId/passports/:passportId                 controllers.TravellerController.removePassport(travellerId: Int, passportId: Int, request: Request)
-DELETE       /api/travellers/:travellerId/travellerTypes/:travellerTypeId       controllers.TravellerController.deleteTravellerType(travellerId : Int, travellerTypeId : Int, request : Request)
-
 # Map static resources from the /public folder to the /assets URL path
-GET          /assets/*file                                                      controllers.Assets.at(path="/public", file)
+GET          /assets/*file                             controllers.Assets.at(path="/public", file)
 
 

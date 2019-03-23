@@ -1,140 +1,174 @@
 <template>
-	<div class="traveller-types">
+  <div class="traveller-types">
 
-		<div class="header">
-			<h3>Traveller Types</h3>
-			<v-btn small flat id="edit-btn" color="secondary" @click="toggleEditSave">
-				<v-icon v-if="!isEditing">edit</v-icon>
-				<span v-else>Save</span>
-			</v-btn>
-		</div>
+    <div class="header">
+      <h3>Traveller Types</h3>
+      <div>
+        <v-btn
+					v-if="userStore.userId === userId"
+          small
+          flat
+          id="edit-btn"
+          color="secondary"
+          @click="toggleEditSave"
+        >
+          <v-icon v-if="!isEditing">edit</v-icon>
+          <span v-else>Save</span>
+        </v-btn>
+      </div>
+    </div>
 
-		<v-card class="traveller-types-card">
-			<div v-if="!isEditing">
-				<v-chip v-for="travellerType in userTravellerTypes" v-bind:key="travellerType.travellerTypeId" color="primary"
-					text-color="white">{{ travellerType.travellerTypeName }}</v-chip>
-			</div>
+    <v-card class="traveller-types-card">
+      <div v-if="!isEditing">
+        <v-chip
+          v-for="travellerType in userTravellerTypes"
+          v-bind:key="travellerType.travellerTypeId"
+          color="primary"
+          text-color="white"
+        >{{ travellerType.travellerTypeName }}</v-chip>
 
-			<v-combobox v-else v-model="userTravellerTypes" :items="allTravellertypes" :item-text="getTravellerTypeName"
-				label="Your traveller types" chips clearable solo multiple>
+				<span v-if="!userTravellerTypes.length">Please provide at least one traveller type</span>
+      </div>
 
-				<template v-slot:selection="data">
-					<v-chip color="primary" text-color="white" :selected="data.selected" close @input="removeTravellerType(data.item.travellerTypeId)">
-						<strong>{{ data.item.travellerTypeName }}</strong>&nbsp;
-					</v-chip>
-				</template>
-			</v-combobox>
 
-		</v-card>
-	</div>
+      <v-combobox
+        v-else
+        v-model="editingTravellerTypes"
+        :items="allTravellerTypes"
+        :item-text="getTravellerTypeName"
+        :error-messages="travellerTypeErrors"
+        label="Your traveller types"
+        chips
+        clearable
+        solo
+        multiple
+      >
+
+        <template v-slot:selection="data">
+          <v-chip
+            color="primary"
+            text-color="white"
+            :selected="data.selected"
+            close
+            @input="removeTravellerType(data.item)"
+          >
+            <strong>{{ data.item.travellerTypeName }}</strong>&nbsp;
+          </v-chip>
+        </template>
+      </v-combobox>
+
+    </v-card>
+  </div>
 </template>
 
 <script>
-const superagent = require('superagent');
-const {endpoint} = require('../../../utils/endpoint');
+import superagent from "superagent";
+import UserStore from "../../../stores/UserStore";
+import { endpoint } from "../../../utils/endpoint";
+import { getAllTravellerTypes, updateTravellerTypes } from "./TravellerTypesService";
 
 export default {
 	props: {
 		userTravellerTypes:  {
 			type: Array,
 			required: true
+		},
+		userId: {
+			type: Number,
+			required: true
 		}
 	},
 	data() {
 		return {
-			allTravellertypes: [
-				{
-					travellerTypeName: 'Groupie',
-					travellerTypeId: 0
-				},
-				{
-					travellerTypeName: 'Thrill Seeker',
-					travellerTypeId: 1
-				},
-				{
-					travellerTypeName: 'Gap Year',
-					travellerTypeId: 2
-				},
-				{
-					travellerTypeName: 'Frequent weekender',
-					travellerTypeId: 3
-				},
-				{
-					travellerTypeName: 'Holidaymaker',
-					travellerTypeId: 4
-				},
-				{
-					travellerTypeName: 'Functional/Business',
-					travellerTypeId: 5
-				},
-				{
-					travellerTypeName: 'Backpacker',
-					travellerTypeId: 6
-				}
-			],
-			isEditing: false
+			userStore: UserStore.data,
+			allTravellerTypes: [],
+			isEditing: false,
+			editingTravellerTypes: [...this.userTravellerTypes],
+			travellerTypeErrors: []
 		}
-	},
-	methods: {
-		async getAllTravellerTypes() {
-			const url = endpoint('/travellers/types');
-			const authToken = localStorage.getItem('authToken');
-			try {
-				const res = await superagent
-					.get(url)
-					.set('Authorization', authToken);
-				// set all traveller types to be the API response
-				this.allTravellerTypes = res.body;
-			} catch (err) {
-				console.error('Could not get all traveller types: ', err);
-			}
-		},
-		async toggleEditSave() {
-			if (this.isEditing) {
-				const travellerTypeIds = this.userTravellerTypes.map((t) => t.travellerTypeId);
-				this.updateTravellerTypes(travellerTypeIds);
-			}
-			this.isEditing = !this.isEditing;
-		},
-		updateTravellerTypes(travellerTypeIds) {
-			// called when the user updates their traveller types
-			// the event is emitted for *some* parent component to handle it
-			this.$emit('update-traveller-types', this.travellerTypeIds);
-		},
-		getTravellerTypeName: (travellerType) => travellerType.travellerTypeName
 	},
 	mounted() {
 		this.getAllTravellerTypes();
 	},
-	computed: {
-		addableTravellerTypes: function computeAddableTravellerTypes() {
-			const userTravellerTypeIds = this.userTravellerTypes.map((travellerType) => travellerType.travellerTypeId);
-			return this.allTravellertypes.filter((travellerType) => !userTravellerTypeIds.includes(travellerType.travellerTypeId));
+	methods: {
+		/**
+		 * Gets all traveller types
+		 */
+		async getAllTravellerTypes() {
+			try {
+				const travellerTypes = await getAllTravellerTypes();
+				this.allTravellerTypes = travellerTypes;
+			} catch (err) {
+				// Add error handling later
+			}
 		},
+		/**
+		 * Toggles between edit and save, if saving, then update traveller types
+		 */
+		async toggleEditSave() {
+			if (this.isEditing) {
+				if (this.editingTravellerTypes.length === 0) {
+					this.travellerTypeErrors = ["Please select a traveller type"];
+					return;
+				} 
+
+				this.travellerTypeErrors = [];
+
+				const travellerTypeIds = this.editingTravellerTypes.map(t => t.travellerTypeId);
+
+				try {
+					const userId = this.$route.params.id;
+					await updateTravellerTypes(userId, travellerTypeIds);
+				} catch (e) {
+					// Add error handling later
+				}
+
+				// Set traveller types in global user state
+				UserStore.data.travellerTypes = this.editingTravellerTypes;
+				this.$emit("update:userTravellerTypes", this.editingTravellerTypes);
+
+			}
+			this.isEditing = !this.isEditing;
+		},
+		/**
+		 * Gets just the name from traveller type objects
+		 */
+		getTravellerTypeName: (travellerType) => travellerType.travellerTypeName,
+    /**
+     * Removes a traveller type in edit mode
+     */
+    removeTravellerType(item) {
+      this.editingTravellerTypes.splice(this.editingTravellerTypes.indexOf(item), 1);
+      this.editingTravellerTypes = [...this.editingTravellerTypes];
+    }
 	}
 }
 </script>
 
 <style lang="scss" scoped>
-	.traveller-types {
-		height: 50%;
-	}
+.traveller-types {
+  height: 50%;
+}
 
-	.header {
-		width: 100%;
-		display: flex;
-		flex-flow: row nowrap;
-		justify-content: center;
-		align-items: center;
+.header {
+  width: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
 
-		>* {
-			flex-grow: 1;
-		}
-	}
+  > * {
+    flex-grow: 1;
+  }
+}
 
-	.traveller-types-card {
-		padding: 10px;
-	}
+.traveller-types-card {
+  padding: 10px;
+}
+
+#edit-btn {
+  float: right;
+}
 </style>
 
 

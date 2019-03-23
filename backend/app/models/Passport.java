@@ -25,6 +25,10 @@ public class Passport extends Model {
         return passportId;
     }
 
+    public void setPassportId(int passportId) {
+        this.passportId = passportId;
+    }
+
     public String getPassportCountry() {
         return passportCountry;
     }

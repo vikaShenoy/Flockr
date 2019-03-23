@@ -27,6 +27,10 @@ public class Nationality extends Model {
         return nationalityId;
     }
 
+    public void setNationalityId(int nationalityId) {
+        this.nationalityId = nationalityId;
+    }
+
     public String getNationalityCountry() {
         return nationalityCountry;
     }

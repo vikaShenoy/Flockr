@@ -34,13 +34,14 @@ export default {
 #app {
   display: flex;
   flex-direction: row;
-  height: 100vh;
+  height: 200%;
 }
 
 #content {
   display: flex;
-  height: 100vh;
+  height: 100%;
   width: calc(100% - 240px);
+  margin-left: 240px;
 }
 
 </style>

@@ -4,8 +4,11 @@ import Home from "./containers/Home/Home.vue";
 import Signup from "./containers/Signup/Signup.vue";
 import Login from "./containers/Login/Login.vue";
 import Profile from "./containers/Profile/Profile.vue"
+import Travellers from "./containers/Travellers/Travellers.vue";
 import Destinations from "./containers/Destinations/Destinations.vue";
 import Trips from "./containers/Trips/Trips.vue";
+
+import { loggedIn } from "./utils/auth";
 
 const routes = [
   {
@@ -13,8 +16,14 @@ const routes = [
     component: Home
   },
   {
-    path: "/profile",
-    component: Profile
+    path: "/profile/:id",
+    component: Profile,
+    beforeEnter: loggedIn
+  },
+  {
+    path: "/travellers",
+    component: Travellers,
+    beforeEnter: loggedIn
   },
   {
     path: "/signup",
@@ -22,15 +31,17 @@ const routes = [
   },
   {
     path: "/login",
-    component: Login
+    component: Login,
   },
   {
     path: "/destinations",
-    component: Destinations
+    component: Destinations,
+    beforeEnter: loggedIn
   },
   {
     path: "/trips",
-    component: Trips
+    component: Trips,
+    beforeEnter: loggedIn
   },
 ];
 

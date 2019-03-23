@@ -60,27 +60,12 @@ public class TravellerRepository {
     }
 
     /**
-     * A function that gets the traveller type based on the given traveller type ID
-     * @param travellerTypeId The ID of the traveller type to get
-     * @return The Traveller Type
-     */
-    public CompletionStage<Optional<TravellerType>> getTravellerTypeById(int travellerTypeId) {
-        return supplyAsync(() -> {
-            Optional<TravellerType> travellerType = TravellerType.find.query().
-                    where().eq("traveller_type_id", travellerTypeId).findOneOrEmpty();
-            return travellerType;
-        }, executionContext);
-    }
-
-
-    /**
      * A function that gets the list of all the valid passports.
      * @return the list of all the Passports
      */
     public CompletionStage<List<Passport>> getAllPassports() {
         return supplyAsync(() -> {
             List<Passport> passports = Passport.find.query().findList();
-            System.out.println(passports.get(0));
             return passports;
         }, executionContext);
     }
@@ -100,12 +85,11 @@ public class TravellerRepository {
 
     /**
      * Gets a list of all nationalities
-     * @return <b>List</b> of nationalities
+     * @return List of nationalities
      */
     public CompletionStage<List<Nationality>> getAllNationalities() {
         return supplyAsync(() -> {
             List<Nationality> nationalities = Nationality.find.query().findList();
-            System.out.println(nationalities.get(0));
             return nationalities;
         }, executionContext);
     }
@@ -138,6 +122,24 @@ public class TravellerRepository {
 
 
 
+
+    /**
+     * Gets a list of travellers
+     */
+    public CompletionStage<List<User>> getTravellers() {
+        return supplyAsync(() -> {
+            List<User> user = User.find.query()
+                    .fetch("passports")              // contacts is a OneToMany path
+                    .fetch("travellerTypes")
+                    .fetch("nationalities")
+                    .where()
+                    .isNotNull("middle_name")
+                    .isNotNull("gender")
+                    .isNotNull("date_of_birth")
+                    .isNotEmpty("nationalities")
+                    .isNotEmpty("travellerTypes")
+                    .findList();
+            return user;
+        }, executionContext);
+    }
 }
-
-

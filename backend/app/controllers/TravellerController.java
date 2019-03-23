@@ -3,7 +3,11 @@ package controllers;
 import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
-import models.*;
+import com.typesafe.config.ConfigException;
+import models.Passport;
+import models.TravellerType;
+import models.User;
+import models.Nationality;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -12,9 +16,13 @@ import play.mvc.With;
 import repository.TravellerRepository;
 
 import javax.inject.Inject;
-import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -57,36 +65,6 @@ public class TravellerController extends Controller {
     }
 
     /**
-     * A function that adds a traveller type to a user based on the given user traveller ID
-     * @param travellerId the traveller ID
-     * @param request Http.Request the http request
-     * @return 200 if the request is successful, otherwise returns 500
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> addTravellerType(int travellerId, int travellerTypeId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-        return travellerRepository.getTravellerTypeById(travellerTypeId)
-                .thenApplyAsync((travellerType) -> {
-                    if (!travellerType.isPresent()) {
-                        return notFound("The specified traveller type ID " + travellerTypeId + " is not valid.");
-                    }
-
-                    TravellerType type = travellerType.get();
-                    List<TravellerType> userTravellerTypes = user.getTravellerTypes();
-
-                    // If the user contains the traveller type, then do not add it again
-                    if (userTravellerTypes.contains(type)) {
-                        return notFound("The user with the ID " + travellerId + " has the specified traveller type ID " + travellerTypeId + " already.");
-                    }
-                    // Otherwise, add the traveller type
-                    userTravellerTypes.add(travellerType.get());
-                    user.setTravellerTypes(userTravellerTypes);
-                    user.save();
-                    return ok("Successfully added the specified traveller type to the user with ID " + travellerId + ".");
-                }, httpExecutionContext.current());
-    }
-
-    /**
      * Updates a travellers details
       * @param travellerId Redundant ID
      * @param request Object to get the JSOn data
@@ -108,18 +86,63 @@ public class TravellerController extends Controller {
         }
 
         if (jsonBody.has("lastName")) {
-            user.setLastName(jsonBody.get("firstName").asText());
+            user.setLastName(jsonBody.get("lastName").asText());
         }
 
         if (jsonBody.has("dateOfBirth")) {
-            Timestamp timestamp = new Timestamp(jsonBody.get("dateOfBirth").asInt());
-            user.setDateOfBirth(timestamp);
+            try {
+                String incomingDate = jsonBody.get("dateOfBirth").asText();
+                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
+                System.out.println("Date stored in db for user is: " + date);
+                user.setDateOfBirth(date);
+            } catch (ParseException e) {
+                System.out.println(e);
+            }
         }
 
-        if (jsonBody.has("genderId")) {
-            Gender gender = new Gender(null);
-            gender.setGenderId(jsonBody.get("genderId").asInt());
-            user.setGender(gender);
+        if (jsonBody.has("gender")) {
+            user.setGender(jsonBody.get("gender").asText());
+        }
+
+        if (jsonBody.has("nationalities")) {
+            JsonNode arrNode = jsonBody.get("nationalities");
+            ArrayList<Nationality> nationalities = new ArrayList<>();
+            for (JsonNode id : arrNode) {
+
+                Nationality nationality = new Nationality(null);
+                nationality.setNationalityId(id.asInt());
+                nationalities.add(nationality);
+
+            }
+            user.setNationalities(nationalities);
+        }
+
+        if (jsonBody.has("passports")) {
+            JsonNode arrNode = jsonBody.get("passports");
+            ArrayList<Passport> passports = new ArrayList<>();
+            for (JsonNode id : arrNode) {
+
+                Passport passport = new Passport(null);
+                passport.setPassportId(id.asInt());
+                passports.add(passport);
+
+            }
+            user.setPassports(passports);
+        }
+
+       if (jsonBody.has("travellerTypes")) {
+            JsonNode arrNode = jsonBody.get("travellerTypes");
+            ArrayList<TravellerType> travellerTypes = new ArrayList<>();
+            for (JsonNode id : arrNode) {
+                TravellerType travellerType = new TravellerType(null);
+                travellerType.setTravellerTypeId(id.asInt());
+                travellerTypes.add(travellerType);
+            }
+            user.setTravellerTypes(travellerTypes);
+        }
+
+        if (jsonBody.has("gender")) {
+            user.setGender(jsonBody.get("gender").asText());
         }
 
         return supplyAsync(() -> {
@@ -131,7 +154,7 @@ public class TravellerController extends Controller {
     /**
      * A function that gets a list of all the passports and returns a 200 ok code to the HTTP client
      * @param request Http.Request the HTTP request
-     * @return CompletionStage<Result> the completion function to be called on completion
+     * @return a status code 200 if the request is successful, otherwise returns 500.
      */
     public CompletionStage<Result> getAllPassports(Http.Request request) {
         return travellerRepository.getAllPassports()
@@ -140,55 +163,6 @@ public class TravellerController extends Controller {
                 }, httpExecutionContext.current());
     }
 
-    /**
-     * Adds a passport to a user
-     * @param travellerId Redundant ID
-     * @param request Object to get the passportId to add
-     * @return 200 if request was successful, 500 otherwise
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> addPassport(int travellerId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-
-
-        int passportId = request.body().asJson().get("passportId").asInt();
-
-        return travellerRepository.getPassportById(passportId)
-                .thenApplyAsync((passport) -> {
-                    if (!passport.isPresent()) {
-                        return notFound();
-                    }
-                    List<Passport> passports = user.getPassports();
-                    passports.add(passport.get());
-                    user.setPassports(passports);
-                    user.save();
-                    return ok();
-                }, httpExecutionContext.current());
-    }
-
-    /**
-     * Deletes a passport from the user
-     * @param travellerId the traveller ID
-     * @param passportId the passport ID
-     * @return 200 OK if the request was successful, 500 if not
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> removePassport(int travellerId, int passportId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-
-        return travellerRepository.getPassportById(passportId)
-                .thenApplyAsync((passport) -> {
-                    if (!passport.isPresent()) {
-                        return notFound();
-                    }
-                    List<Passport> passports = user.getPassports();
-                    passports.remove(passport.get());
-                    user.setPassports(passports);
-                    user.save();
-                    System.out.println(user.getPassports());
-                    return ok();
-                }, httpExecutionContext.current());
-    }
 
     /**
      * Gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
@@ -202,59 +176,14 @@ public class TravellerController extends Controller {
                 }, httpExecutionContext.current());
     }
 
-    /**
-     * Adds a nationality to the user
-     * @param travellerId the traveller ID
-     * @param request Object to get the nationality to add.
-     * @return <b>CompletionStage&ltResult&gt</b> the method to be run on completion
-     */
+
     @With(LoggedIn.class)
-    public CompletionStage<Result> addNationality(int travellerId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-        int nationalityId = request.body().asJson().get("nationalityId").asInt();
-
-        return travellerRepository.getNationalityById(nationalityId)
-            .thenApplyAsync((nationality) -> {
-                if (!nationality.isPresent()) {
-                    return notFound();
-                }
-                List<Nationality> nationalities = user.getNationalities();
-                nationalities.add(nationality.get());
-                user.setNationalities(nationalities);
-                user.save();
-                return ok();
-            }, httpExecutionContext.current());
-    }
-
-    /**
-     * Delete a nationality for a logged in user given a nationality id in the request body
-     * @param travellerId the traveller for which we want to delete the nationality
-     * @param request the request passed by the routes file
-     * @return a response with status code as specified in API spec
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> deleteNationalityForUser(int travellerId, int nationalityId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-        return travellerRepository.getNationalityById(nationalityId)
-            .thenApplyAsync((optionalNationality) -> {
-                if (!optionalNationality.isPresent()) {
-                    return notFound("Could not find nationality " + nationalityId);
-                }
-                // now that we know that the nationality definitely exists
-                // extract the Nationality from the Optional<Nationality> object
-                Nationality nationality = optionalNationality.get();
-                List<Nationality> userNationalities = user.getNationalities();
-
-                // return not found if the user did not have that nationality already
-                if (!userNationalities.contains(nationality)) {
-                    return notFound("User does not have nationality " + nationalityId);
-                }
-
-                userNationalities.remove(nationality);
-                user.setNationalities(userNationalities);
-                user.save();
-                return ok("Successfully deleted nationality");
-            }, httpExecutionContext.current());
+    public CompletionStage<Result> getTravellers() {
+        return travellerRepository.getTravellers()
+                .thenApplyAsync(travellers -> {
+                    JsonNode travellersJson = Json.toJson(travellers);
+                    return ok(travellersJson);
+                }, httpExecutionContext.current());
     }
 
     /**
@@ -268,39 +197,5 @@ public class TravellerController extends Controller {
                 .thenApplyAsync((types) -> {
                     return ok(Json.toJson(types));
                 }, httpExecutionContext.current());
-    }
-
-    /**
-     * Delete a traveller type from a user
-     * @param travellerId The ID of the traveller to have traveller type deleted
-     * @param travellerTypeId The traveller type to delete
-     * @param request HTTP request object
-     * @return 200 if successful, 404 if the traveller type isn't present
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> deleteTravellerType(int travellerId, int travellerTypeId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-        List<TravellerType> travellerTypes = user.getTravellerTypes();
-        boolean isPresent = false;
-
-        for (TravellerType travellerType : travellerTypes) {
-            if (travellerType.getTravellerTypeId() == travellerTypeId) {
-                travellerTypes.remove(travellerType);
-                user.setTravellerTypes(travellerTypes);
-                user.save();
-                isPresent = true;
-                break;
-            }
-        }
-
-        if (isPresent) {
-            return supplyAsync(() -> {
-                   return ok("Deleted traveller type.");
-                }, httpExecutionContext.current());
-        } else {
-            return supplyAsync(() -> {
-                   return notFound("Traveller type not found.");
-                }, httpExecutionContext.current());
-        }
     }
 }

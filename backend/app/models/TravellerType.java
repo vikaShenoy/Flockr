@@ -36,6 +36,11 @@ public class TravellerType extends Model {
         return travellerTypeName;
     }
 
+    public void setTravellerTypeId(int travellerTypeId) {
+        this.travellerTypeId = travellerTypeId;
+    }
+
+
     /**
      * This is required by EBean to make queries on the database
      */
