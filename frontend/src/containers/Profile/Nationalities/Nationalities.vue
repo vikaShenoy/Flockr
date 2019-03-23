@@ -1,15 +1,21 @@
 <template>
   <div>
-
-  <div id="header">
-    <h3>Nationalities</h3>
-    <v-btn small flat id="edit-btn" color="secondary" @click="toggleEditSave">
-      <v-icon v-if="!isEditing">edit</v-icon>
-      <span v-else>Save</span>
-      </v-btn>
-  </div>
-
-
+    <div id="header">
+      <h3>Nationalities</h3>
+      <div>
+        <v-btn
+          v-if="userStore.userId === userId"
+          small
+          flat
+          id="edit-btn"
+          color="secondary"
+          @click="toggleEditSave"
+        >
+          <v-icon v-if="!isEditing">edit</v-icon>
+          <span v-else>Save</span>
+        </v-btn>
+      </div>
+    </div>
     <v-card id="nationalities">
       <div v-if="!isEditing">
         <v-chip
@@ -47,27 +53,22 @@
           </v-chip>
         </template>
       </v-combobox>
-
     </v-card>
-
-
   </div>
 </template>
 
 <script>
-
 import superagent from "superagent";
-import { endpoint } from '../../../utils/endpoint';
+import UserStore from "../../../stores/UserStore";
+import { getNationalities, updateNationalities } from "./NationalityService.js";
 
 export default {
-  // otherNationalities specifies nationalities that a user doesn't have
-
   mounted() {
     this.getNationalities();
   },
-
   data() {
     return {
+      userStore: UserStore.data,
       // These would be retreived from the request
       userNat: [...this.userNationalities],
       allNationalities: [],
@@ -75,57 +76,67 @@ export default {
       nationalityErrors: []
     };
   },
-
   methods: {
+    /**
+     * Gets all nationalities
+     */
     async getNationalities() {
-      const res = await superagent.get(endpoint('/travellers/nationalities'));
-      console.log(res.body);
-      this.allNationalities = res.body;
+      try {
+        const nationalities = await getNationalities();
+        this.allNationalities = nationalities;
+      } catch (e) {
+        // Add error handling later
+      }
     },
-
+    /**
+     * Toggles between editing and saving, if saving, then nationalities will
+     * be updated
+     */
     async toggleEditSave() {
+      console.log("I made it here");
       if (this.isEditing) {
         if (this.userNat.length === 0) {
-          this.nationalityErrors = ['Please select a nationality'];
+          this.nationalityErrors = ["Please select a nationality"];
           return;
         }
 
         this.nationalityErrors = [];
 
-        let nationalityIds = this.getNationalityIds;
-        console.log(this.userNat);
-        const res = await superagent.patch(endpoint('/travellers/7'))
-                                    .set('Authorization', localStorage.getItem('authToken'))
-                                    .send({nationalities: nationalityIds});
-        
-        this.$emit('update:userNationalities', this.userNat);
-          
+        const userId = this.$route.params.id;
+        const nationalityIds = this.getNationalityIds;
+        try {
+          await updateNationalities(userId, nationalityIds);
+        } catch (e) {
+          // Add error handling later
+        }
+
+        this.$emit("update:userNationalities", this.userNat);
       }
       this.isEditing = !this.isEditing;
-      
     },
-
+    /**
+     * Gets the nationality country from the list of nationalities
+     */
     getNationalityText: item => item.nationalityCountry,
-
-    remove (item) {
+    /**
+     * Removes a nationality in edit mode
+     */
+    remove(item) {
       this.userNat.splice(this.userNat.indexOf(item), 1);
       this.userNat = [...this.userNat];
     }
   },
 
   computed: {
-    getNationalityNames() {
-      return this.userNationalities.map((userNationality => userNationality.nationalityCountry));
-    },
-    getAllNationalityNames() {
-      return this.allNationalities.map((nationality => nationality.nationalityCountry));
-    },
+    /**
+     * Gets nationality ID's from nationality objects
+     */
     getNationalityIds() {
       return this.userNat.map(nationality => nationality.nationalityId);
     }
   },
-  props: ["userNationalities"]
-}
+  props: ["userNationalities", "userId"]
+};
 </script>
 
 <style lang="scss" scoped>
@@ -144,6 +155,9 @@ export default {
   }
 }
 
+#edit-btn {
+  float: right;
+}
 </style>
 
 

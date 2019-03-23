@@ -26,6 +26,9 @@ const UserStore = {
       UserStore.gender = user.gender;
       UserStore.timestamp = user.timestamp; 
     },
+    loggedIn() {
+      return UserStore.data.userId;
+    },
     signout() {
       UserStore.data.userId = null;
       UserStore.data.firstName = null;

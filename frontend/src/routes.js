@@ -7,6 +7,8 @@ import Profile from "./containers/Profile/Profile.vue"
 import Destinations from "./containers/Destinations/Destinations.vue";
 import Trips from "./containers/Trips/Trips.vue";
 
+import { loggedIn } from "./utils/auth";
+
 const routes = [
   {
     path: "/",
@@ -14,7 +16,8 @@ const routes = [
   },
   {
     path: "/profile/:id",
-    component: Profile
+    component: Profile,
+    beforeEnter: loggedIn
   },
   {
     path: "/signup",
@@ -22,15 +25,17 @@ const routes = [
   },
   {
     path: "/login",
-    component: Login
+    component: Login,
   },
   {
     path: "/destinations",
-    component: Destinations
+    component: Destinations,
+    beforeEnter: loggedIn
   },
   {
     path: "/trips",
-    component: Trips
+    component: Trips,
+    beforeEnter: loggedIn
   },
 ];
 

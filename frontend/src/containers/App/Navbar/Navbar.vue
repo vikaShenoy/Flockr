@@ -14,11 +14,11 @@
 
     <v-list dense class="pt-0">
       <v-list-tile
-        v-for="item in items"
+        v-for="item in itemsToShow"
         :key="item.title"
         class="nav-item"
         @click="$router.push(item.url)"
-        v-if="shouldShowNavbar(item)"
+        
       >
         <v-list-tile-action>
           <v-icon class="nav-icon">{{ item.icon }}</v-icon>
@@ -29,32 +29,17 @@
         </v-list-tile-content>
       </v-list-tile>
     </v-list>
-
-    <v-divider class="light-divider"></v-divider>
-    
-    <v-list dense class="pt-0">
-      <v-list-tile
-        v-for="item in supplementaryItems"
-        :key="item.title"
-        class="nav-item"
-        @click="$router.push(item.url)"
-      >
-        <v-list-tile-action>
-          <v-icon class="nav-icon">{{ item.icon }}</v-icon>
-        </v-list-tile-action>
-
-        <v-list-tile-content>
-          <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
-    </v-list>
-  </v-navigation-drawer>
+ </v-navigation-drawer>
 </template>
 
 <script>
+
+import UserStore from "../../../stores/UserStore";
+
 export default {
   data() {
     return {
+      userStore: UserStore.data,
       items: [
         {
           title: "Home",
@@ -83,9 +68,7 @@ export default {
           url: "/trips",
           loggedIn: true,
           loggedOut: false
-        }
-      ],
-      supplementaryItems: [
+        },
         {
           title: "Sign up",
           icon: "person_add",
@@ -116,15 +99,14 @@ export default {
       ]
     };
   },
-  methods: {
+  computed: {
     /**
-     * Decides if a nav-item should be shown or not
-     * @param {string} loggedIn - Indicates if nav item should be shown when signed in
-     * @param {string} loggedOut - indicates if the nav item should be shown when logged out
+     * Computed property which filters nav items to show
      */
-    shouldShowNavbar(loggedIn, loggedOut) {
-      return loggedIn || loggedOut;
-    }
+    itemsToShow() {
+      const userLoggedIn = UserStore.methods.loggedIn();
+      return this.items.filter(item => item.loggedIn && userLoggedIn || item.loggedOut && !userLoggedIn);
+    },
   }
 }
 </script>
@@ -134,6 +116,7 @@ export default {
 
   #navbar {
     background-color: $primary;
+    position: fixed;
   }
 
   #title-box {

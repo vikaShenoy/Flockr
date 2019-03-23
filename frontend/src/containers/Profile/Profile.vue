@@ -4,15 +4,15 @@
     <div class="col-lg-4">
       <ProfilePic />
 
-      <BasicInfo  :userProfile.sync="userProfile" />
+      <BasicInfo :userProfile.sync="userProfile" />
 
       <Photos />
     </div>
 
     <div class="col-lg-8">
-      <Nationalities :userNationalities.sync="userProfile.nationalities" />
-      <Passports :userPassports.sync="userProfile.passports" />
-      <TravellerTypes />
+      <Nationalities :userNationalities.sync="userProfile.nationalities" :userId="userProfile.userId" />
+      <Passports :userPassports.sync="userProfile.passports" :userId="userProfile.userId" />
+      <TravellerTypes :userProfile="userProfile" />
       <Trips />
       </div>
     </div>
@@ -31,6 +31,8 @@ import Photos from "./Photos/Photos";
 import superagent from "superagent";
 import moment from "moment";
 
+import { getUser } from "./ProfileService";
+
 export default {
   components: {
     ProfilePic,
@@ -45,18 +47,20 @@ export default {
     this.getUserInfo();
   },
   methods: {
+    /**
+     * Gets a users info and sets the users state
+     */
     async getUserInfo() {
-      const travellerId = this.$route.params.id;
-      const authToken = localStorage.getItem("authToken");
-      const res = await superagent.get(`http://localhost:9000/api/travellers/${travellerId}`)
-      .set("Authorization", authToken);
+      const userId = this.$route.params.id;
 
-      console.log(res.body);
+      const user = await getUser(userId);
+      
       // Change date format so that it displays on the basic info component. 
-      const formattedDate = res.body.dateOfBirth ? moment(res.body.dateOfBirth).format("YYYY-MM-DD") : "";
-      res.body.dateOfBirth = formattedDate;
+      const formattedDate = user.dateOfBirth ? moment(user.dateOfBirth).format("YYYY-MM-DD") : "";
+      
+      user.dateOfBirth = formattedDate;
 
-      this.userProfile = res.body;
+      this.userProfile = user;
     }
   },
   data() {
