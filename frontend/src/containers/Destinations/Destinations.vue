@@ -5,9 +5,11 @@
       <DestinationCard
               v-for="(destination, index) in destinations"
               v-bind:key="index"
-              :destination="destination.dest"
+              :destination="destination.destinationObject"
               :editMode="destination.editMode"
               :deleteOnClick="deleteDestination"
+              :destinationTypes="destinationTypes"
+              :countries="countries"
               @editModeChanged="changeEditMode"
       ></DestinationCard>
       <v-btn fab dark id="addDestinationButton" v-on:click="addNewDestinationCard">
@@ -18,7 +20,7 @@
 </template>
 
 <script>
-
+// TODO: Move all endpoint calls to the destinationsService.js file
   import DestinationCard from "./DestinationCard/DestinationCard";
   import { endpoint } from "../../utils/endpoint";
   const axios = require("axios");
@@ -29,7 +31,15 @@
     },
     data() {
       return {
-        destinations: []
+        destinations: [],
+        countries: {
+          names: [],
+          ids: []
+        },
+        destinationTypes: {
+          names: [],
+          ids: []
+        }
       }
     },
     mounted: function () {
@@ -39,9 +49,29 @@
                 currentDestinations = response.data;
                 for (let index in currentDestinations) {
                   this.destinations.push({
-                    dest: currentDestinations[index],
+                    destinationObject: currentDestinations[index],
                     editMode: false
                   });
+                }
+              })
+              .catch(error => alert(error));
+      let currentCountries;
+      axios.get(endpoint("/destinations/countries"))
+              .then(response => {
+                currentCountries = response.data;
+                for (let index in currentCountries) {
+                  this.countries.names.push(currentCountries[index].countryName);
+                  this.countries.ids.push(currentCountries[index].countryId);
+                }
+              })
+              .catch(error => alert(error));
+      let currentDestinationTypes;
+      axios.get(endpoint("/destinations/types"))
+              .then(response => {
+                currentDestinationTypes = response.data;
+                for (let index in currentDestinationTypes) {
+                  this.destinationTypes.names.push(currentDestinationTypes[index].destinationTypeName);
+                  this.destinationTypes.ids.push(currentDestinationTypes[index].destinationTypeId);
                 }
               })
               .catch(error => alert(error));
@@ -49,22 +79,22 @@
     methods: {
       addNewDestinationCard: function () {
         this.destinations.unshift({
-          dest: {
-            "destId": "",
-            "destName": "",
-            "destType": {
-              destTypeId: "",
-              destTypeName: ""
+          destinationObject: {
+            destinationId: null,
+            destinationName: "",
+            destinationType: {
+              destinationTypeId: null,
+              destinationTypeName: null
             },
-            "destDistrict": {
-              districtId: "",
-              districtName: ""
+            destinationDistrict: {
+              districtId: null,
+              districtName: null
             },
-            "destLat": 0,
-            "destLon": 0,
-            "destCountry": {
-              countryId: "",
-              countryName: ""
+            destinationLat: "",
+            destinationLon: "",
+            destinationCountry: {
+              countryId: null,
+              countryName: null
             }
           }, editMode: true
         });
@@ -73,12 +103,12 @@
       deleteDestination: async function (event) {
         let targetIndex = await this.getIndexOfDestinationFromTarget(event.target.parentNode);
         // Check if the destination is a new one (not in the database)
-        if (!this.destinations[targetIndex].dest.id === "") {
-
-          // TODO: Send the delete command to the back end
-
-        }
-        // Remove the destination from the page
+        // TODO: Uncomment this when delete endpoint has been implemented
+        // if (!(this.destinations[targetIndex].destinationObject.destinationId === "")) {
+        //   axios.delete(endpoint("/destinations/" + this.destinations[targetIndex].destinationObject.destinationId))
+        //           .then(response => (console.log(response.message)))
+        //           .catch(error => alert(error));
+        // }
         this.destinations.splice(targetIndex, 1);
       },
 
@@ -99,7 +129,7 @@
         }
         return targetIndex;
       }
-    }
+    },
   }
 
 </script>

@@ -5,13 +5,13 @@
             <div v-if="editMode" class="name-header">
                 <v-text-field
                         label="Destination Name"
-                        :value="destination.destName"
-                        v-model="destination.destName"
+                        :value="destination.destinationName"
+                        v-model="destination.destinationName"
                         @blur="validateName"
                         :error-messages="nameErrors"
                 ></v-text-field>
             </div>
-            <h2 v-else class="name-header">{{ destination.destName }}</h2>
+            <h2 v-else class="name-header">{{ destination.destinationName }}</h2>
             <div class="body-card col-md-12">
                 <v-img class="image" src="https://picsum.photos/510/300?random"></v-img>
             </div>
@@ -20,48 +20,52 @@
             <div class="row">
                 <div class="basic-info-label"><p><b>Type</b></p></div>
                 <div v-if="editMode" class="basic-info">
-                    <v-text-field
+                    <v-select
                             label="Destination Type"
-                            :value="destination.destType.destTypeName"
-                            v-model="destination.destType.destTypeName"
+                            :items="destinationTypes.names"
+                            :value="destination.destinationType.destinationTypeName"
+                            v-model="destination.destinationType.destinationTypeName"
                             @blur="validateType"
                             :error-messages="typeErrors"
-                    ></v-text-field>
+                    ></v-select>
                 </div>
-                <div v-else class="basic-info-label">{{ destination.destType.destTypeName }}</div>
+                <div v-else class="basic-info-label">{{ destination.destinationType.destinationTypeName }}</div>
             </div>
             <hr class="divider"/>
             <div class="row">
                 <div class="basic-info-label"><p><b>District</b></p></div>
                 <div v-if="editMode" class="basic-info">
-                    <v-text-field
+                    <v-select
                             label="District"
-                            :value="destination.destDistrict.districtName"
-                            v-model="destination.destDistrict.districtName"
+                            :items="districts.names"
+                            :disabled="districtDisabled"
+                            :value="destination.destinationDistrict.districtName"
+                            v-model="destination.destinationDistrict.districtName"
                             @blur="validateDistrict"
                             :error-messages="districtErrors"
-                    ></v-text-field>
+                    ></v-select>
                 </div>
-                <div v-else class="basic-info-label">{{ destination.destDistrict.districtName }}</div>
+                <div v-else class="basic-info-label">{{ destination.destinationDistrict.districtName }}</div>
             </div>
             <hr class="divider"/>
         </div>
         <div class="col-md-4">
             <div v-if="editMode" class="name-header">
-                <v-text-field
+                <v-select
                         label="Destination Country"
-                        :value="destination.destCountry.countryName"
-                        v-model="destination.destCountry.countryName"
+                        :items="countries.names"
+                        :value="destination.destinationCountry.countryName"
+                        v-model="destination.destinationCountry.countryName"
                         @blur="validateCountry"
                         :error-messages="countryErrors"
-                ></v-text-field>
+                ></v-select>
             </div>
-            <h2 v-else class="name-header">{{ destination.destCountry.countryName }}</h2>
+            <h2 v-else class="name-header">{{ destination.destinationCountry.countryName }}</h2>
             <div v-if="editMode" class="name-header">
                 <v-text-field
                         label="Destination Latitude"
-                        :value="destination.destLat"
-                        v-model="destination.destLat"
+                        :value="destination.destinationLat"
+                        v-model="destination.destinationLat"
                         v-on:keypress="isValidLatitude"
                         @blur="validateLatitude"
                         :error-messages="latitudeErrors"
@@ -70,12 +74,12 @@
             <div v-if="editMode" class="name-header">
                 <v-text-field
                         label="Destination Longitude"
-                        :value="destination.destLon"
-                        v-model="destination.destLon"
+                        :value="destination.destinationLon"
+                        v-model="destination.destinationLon"
                         v-on:keypress="isValidLongitude"
                         @blur="validateLongitude"
                         :error-messages="longitudeErrors"
-                ></v-text-field>undefined
+                ></v-text-field>
             </div>
             <v-img v-else class="image" src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
         </div>
@@ -92,6 +96,10 @@
 </template>
 
 <script>
+
+  const axios = require("axios");
+  import { endpoint } from "../../../utils/endpoint";
+
   export default {
     name: "DestinationCard",
 
@@ -106,22 +114,40 @@
           required: true
         },
         destinationType: {
-          type: String,
-          required: true
+          destinationTypeName: {
+            type: String,
+            required: true
+          },
+          destinationTypeId: {
+            type: Number,
+            required: true
+          }
         },
-        district: {
-          type: String,
-          required: true
+        destinationDistrict: {
+          districtName: {
+            type: String,
+            required: true
+          },
+          districtId: {
+            type: Number,
+            required: true
+          }
         },
-        country: {
-          type: String,
-          required: true
+        destinationCountry: {
+          countryName: {
+            type: String,
+            required: true
+          },
+          countryId: {
+            type: Number,
+            required: true
+          }
         },
-        latitude: {
+        destinationLat: {
           type: Number,
           required: true
         },
-        longitude: {
+        destinationLon: {
           type: Number,
           required: true
         }
@@ -130,13 +156,57 @@
         type: Boolean,
         required: true
       },
+      countries: {
+        names: {
+          type: Array,
+          required: true
+        },
+        ids: {
+          type: Array,
+          required: true
+        }
+      },
+      destinationTypes: {
+        names: {
+          type: Array,
+          required: true
+        },
+        ids: {
+          type: Array,
+          required: true
+        }
+      },
       deleteOnClick: {
         type: Function,
         required: true
       }
     },
 
+    computed: {
+      countryName() {
+        return this.destination.destinationCountry.countryName;
+      },
+      typeName() {
+        return this.destination.destinationType.destinationTypeName;
+      },
+      districtName() {
+        return this.destination.destinationDistrict.districtName;
+      }
+    },
+
     watch: {
+
+      typeName() {
+        this.onTypeChanged();
+      },
+
+      countryName() {
+        this.onCountryChanged();
+      },
+
+      districtName() {
+        this.onDistrictChanged();
+      },
 
       'editMode': {
         handler: 'onEditModeChanged',
@@ -181,6 +251,11 @@
 
     data() {
       return {
+        districts: {
+          names: [],
+          ids: []
+        },
+        districtDisabled: false,
         nameErrors: [],
         typeErrors: [],
         districtErrors: [],
@@ -202,12 +277,34 @@
       saveDestination: async function () {
         await this.validateAll();
         if (!this.hasInvalidInput) {
-          this.dataEditMode = !this.dataEditMode;
+          let destinationValues = {
+            "destinationName": this.destination.destinationName,
+            "destinationTypeId": this.destination.destinationType.destinationTypeId,
+            "countryId": this.destination.destinationCountry.countryId,
+            "districtId": this.destination.destinationDistrict.districtId,
+            "latitude": this.destination.destinationLat,
+            "longitude": this.destination.destinationLon,
+          };
           // If the destination is new
-          if (this.destination.id === "") {
-            // TODO: Send the new destination to the back-end and update the id in destinations when confirmed
+          if (this.destination.destinationId === null) {
+            axios.post(endpoint("/destinations"), destinationValues)
+                .then(response => {
+                  if (response.request.status === 200) {
+                    this.dataEditMode = !this.dataEditMode;
+                  }
+                })
+                .catch(error => alert(error));
           } else {
-            // TODO: Send the modified destination to the back-end
+            axios.put(endpoint("/destinations/" + this.destination.destinationId), destinationValues,
+                {headers: {
+                  "content-type": "application/JSON"
+                  }})
+                .then(response => {
+                  if (response.request.status === 200) {
+                    this.dataEditMode = !this.dataEditMode;
+                  }
+                })
+                .catch(error => alert(error));
           }
         }
       },
@@ -233,7 +330,7 @@
       },
 
       validateName: function () {
-        if (this.destination.destName === "") {
+        if (this.destination.destinationName === "") {
           this.nameErrors = [ "Name is required" ];
           this.hasInvalidName = true;
         } else {
@@ -243,10 +340,10 @@
       },
 
       validateType: function () {
-        if (this.destination.destType.destTypeName === "") {
+        if (this.destination.destinationType.destinationTypeName === null) {
           this.typeErrors = [ "Type is required" ];
           this.hasInvalidType = true;
-        } else if (/\d/.test(this.destination.destType.destTypeName)) {
+        } else if (/\d/.test(this.destination.destinationType.destinationTypeName)) {
           this.typeErrors = [ "No numbers allowed" ];
           this.hasInvalidType = true;
         } else {
@@ -256,7 +353,7 @@
       },
 
       validateDistrict: function () {
-        if (this.destination.destDistrict.districtName === "") {
+        if (this.destination.destinationDistrict.districtName === null) {
           this.districtErrors = [ "District is required" ];
           this.hasInvalidDistrict = true;
         } else {
@@ -266,10 +363,10 @@
       },
 
       validateCountry: function () {
-        if (this.destination.destCountry.countryName === "") {
+        if (this.destination.destinationCountry.countryName === null) {
           this.countryErrors = ["Country is required"];
           this.hasInvalidCountry = true;
-        } else if (/\d/.test(this.destination.destCountry.countryName)) {
+        } else if (/\d/.test(this.destination.destinationCountry.countryName)) {
           this.countryErrors = ["No numbers allowed"];
           this.hasInvalidCountry = true;
         } else {
@@ -278,7 +375,7 @@
         }
       },
       validateLatitude: function () {
-        if (this.destination.destLat === "") {
+        if (this.destination.destinationLat === "") {
           this.latitudeErrors = ["Latitude is required"];
           this.hasInvalidLatitude = true;
         } else {
@@ -288,7 +385,7 @@
       },
 
       validateLongitude: function () {
-        if (this.destination.destLon === "") {
+        if (this.destination.destinationLon === "") {
           this.longitudeErrors = ["Longitude is required"];
           this.hasInvalidlongitude = true;
         } else {
@@ -316,10 +413,66 @@
         }
       },
 
+      onTypeChanged () {
+        let typeIndex = this.destinationTypes.names.indexOf(this.destination.destinationType.destinationTypeName);
+        this.destination.destinationType.destinationTypeId = this.destinationTypes.ids[typeIndex];
+      },
+
+      onCountryChanged () {
+        let countryIndex = this.countries.names.indexOf(this.destination.destinationCountry.countryName);
+        this.destination.destinationCountry.countryId = this.countries.ids[countryIndex];
+        this.destination.destinationDistrict.districtName = null;
+        this.destination.destinationDistrict.districtId = null;
+        if (this.destination.destinationCountry.countryName !== null) {
+          axios.get(endpoint("/destinations/countries/" + this.countries.ids[countryIndex] + "/districts"))
+              .then(response => {
+                let currentDistricts = response.data;
+                this.districts = {
+                  names: [],
+                  ids: []
+                };
+                for (let index in currentDistricts) {
+                  this.districts.names.push(currentDistricts[index].districtName);
+                  this.districts.ids.push(currentDistricts[index].districtId);
+                }
+              })
+              .catch(error => alert(error));
+          this.districtDisabled = false;
+        } else {
+          this.districtDisabled = true;
+        }
+      },
+
+      onDistrictChanged () {
+        let districtIndex = this.districts.names.indexOf(this.destination.destinationDistrict.districtName);
+        this.destination.destinationDistrict.districtId = this.districts.ids[districtIndex];
+      },
+
       validityCheck: function () {
         // Invalid input is true if any of the individual inputs are true
         this.hasInvalidInput = this.hasInvalidName || this.hasInvalidType || this.hasInvalidDistrict ||
             this.hasInvalidCountry || this.hasInvalidLatitude || this.hasInvalidlongitude;
+      }
+    },
+
+    mounted: function() {
+      if (this.destination.destinationCountry.countryName !== null) {
+        axios.get(endpoint("/destinations/countries/" + this.destination.destinationCountry.countryId + "/districts"))
+            .then(response => {
+              let currentDistricts = response.data;
+              this.districts = {
+                names: [],
+                ids: []
+              };
+              for (let index in currentDistricts) {
+                this.districts.names.push(currentDistricts[index].districtName);
+                this.districts.ids.push(currentDistricts[index].districtId);
+              }
+            })
+            .catch(error => alert(error));
+        this.districtDisabled = false;
+      } else {
+        this.districtDisabled = true;
       }
     }
   }
