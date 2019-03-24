@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.*;
@@ -47,4 +48,6 @@ public class Trip extends Model {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public static final Finder<Integer, Trip> find = new Finder<>(Trip.class);
 }

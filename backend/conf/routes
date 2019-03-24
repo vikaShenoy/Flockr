@@ -34,8 +34,9 @@ DELETE      /api/destinations/:destinationId            controllers.DestinationC
 POST        /api/destinations                           controllers.DestinationController.addDestination(request: Request)
 PUT         /api/destinations/:destinationId            controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
 
+# Trip routes
 POST        /api/trips                                  controllers.TripController.addTrip(request: Request)
-
+DELETE      /travellers/:travellerId/trips/:tripId      controllers.TripController.deleteTrip(travellerId : Int, tripId : Int, request : Request)
 
 # Map static resources from the /public folder to the /assets URL path
 GET          /assets/*file                             controllers.Assets.at(path="/public", file)
