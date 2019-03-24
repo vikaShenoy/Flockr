@@ -40,6 +40,7 @@ export default {
 #content {
   display: flex;
   height: 100%;
+  margin-left: 220px;
   width: calc(100% - 240px);
   margin-left: 240px;
 }

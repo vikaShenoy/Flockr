@@ -3,9 +3,8 @@ package models;
 
 import io.ebean.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
+import java.sql.Time;
 import java.util.Date;
 
 @Entity
@@ -14,16 +13,26 @@ public class TripDestination extends Model {
     @Id
     private int tripDestinationId;
 
-    @OneToOne
+
+    @ManyToOne
+    @JoinColumn
+    private Trip trip;
+
+    @ManyToOne
+    @JoinColumn
     private Destination destination;
 
-    private Date tripDestArrival;
-    private Date tripDestDeparture;
+    private Date arrivalDate;
+    private int arrivalTime;
+    private Date departureDate;
+    private int departureTime;
 
-    public TripDestination(Destination destination, Date tripDestArrival, Date tripDestDeparture) {
+    public TripDestination(Destination destination, Date arrivalDate, int arrivalTime, Date departureDate, int departureTime) {
         this.destination = destination;
-        this.tripDestArrival = tripDestArrival;
-        this.tripDestDeparture = tripDestDeparture;
+        this.arrivalDate = arrivalDate;
+        this.arrivalTime = arrivalTime;
+        this.departureDate = departureDate;
+        this.departureTime = departureTime;
     }
 
     public int getTripDestinationId() {
@@ -42,19 +51,19 @@ public class TripDestination extends Model {
         this.destination = destination;
     }
 
-    public Date getTripDestArrival() {
-        return tripDestArrival;
+    public Date getArrivalDate() {
+        return arrivalDate;
     }
 
-    public void setTripDestArrival(Date tripDestArrival) {
-        this.tripDestArrival = tripDestArrival;
+    public int getArrivalTime() {
+        return arrivalTime;
     }
 
-    public Date getTripDestDeparture() {
-        return tripDestDeparture;
+    public Date getDepartureDate() {
+        return departureDate;
     }
 
-    public void setTripDestDeparture(Date tripDestDeparture) {
-        this.tripDestDeparture = tripDestDeparture;
+    public int getDepartureTime() {
+        return departureTime;
     }
 }

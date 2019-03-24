@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.*;
 import models.Nationality;
 import models.Passport;
+import models.*;
 import play.libs.Json;
 import play.mvc.Result;
 import play.mvc.With;
@@ -30,12 +31,42 @@ public class InternalController {
 
             Nationality nationality1 = new Nationality("New Zealand");
             Nationality nationality2 = new Nationality("Australia");
+            Nationality nationality3 = new Nationality("Afghanistan");
+
+            DestinationType destinationType1 = new DestinationType("Event");
+            DestinationType destinationType2 = new DestinationType("City");
+
+
+
+            Country country1 = new Country("United States of America");
+            Country country2 = new Country("Australia");
+
+            District district1 = new District("Black Rock City", country1);
+            District district2 = new District("New Farm", country2);
+
+            country1.save();
+            country2.save();
+
+            district1.save();
+            district2.save();
 
             passport1.save();
             passport2.save();
 
             nationality1.save();
             nationality2.save();
+            nationality3.save();
+
+            destinationType1.save();
+            destinationType2.save();
+
+
+
+            Destination destination1 = new Destination("Burning Man",destinationType1, district1, 12.1234,12.1234,country1 );
+            Destination destination2 = new Destination("Brisbane City",destinationType2, district2, 11.1234,11.1234,country2 );
+
+            destination1.save();
+            destination2.save();
 
 
             TravellerType travellerType1 = new TravellerType("Outdoor");

@@ -109,6 +109,11 @@ public class AuthController {
         }
 
         String middleName = "";
+        if (checkRequest(jsonRequest)) return supplyAsync(() -> {
+            ObjectNode message = Json.newObject();
+            message.put("message", "Please provide a valid request body according to the API spec");
+            return badRequest(message);
+        });
         String firstName = jsonRequest.get("firstName").asText();
         String lastName = jsonRequest.get("lastName").asText();
         String email = jsonRequest.get("email").asText();
@@ -228,5 +233,12 @@ public class AuthController {
                     }
                     return ok();
                 }, httpExecutionContext.current());
+    }
+
+    static boolean checkRequest(JsonNode jsonRequest) {
+        if (jsonRequest == null) {
+            return true;
+        }
+        return false;
     }
 }

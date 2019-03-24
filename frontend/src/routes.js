@@ -7,6 +7,8 @@ import Profile from "./containers/Profile/Profile.vue"
 import Travellers from "./containers/Travellers/Travellers.vue";
 import Destinations from "./containers/Destinations/Destinations.vue";
 import Trips from "./containers/Trips/Trips.vue";
+import AddTrip from "./containers/AddTrip/AddTrip.vue";
+import Trip from "./containers/Trip/Trip.vue";
 
 import { loggedIn } from "./utils/auth";
 
@@ -43,6 +45,16 @@ const routes = [
     component: Trips,
     beforeEnter: loggedIn
   },
+  {
+    path: "/trips/add",
+    component: AddTrip,
+    beforeEnter: loggedIn
+  },
+  {
+    path: "/trip/:id",
+    component: Trip,
+    beforeEnter: loggedIn
+  }
 ];
 
 const router = new VueRouter({

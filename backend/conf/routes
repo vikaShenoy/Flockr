@@ -19,6 +19,24 @@ GET          /api/travellers/passports                 controllers.TravellerCont
 GET          /api/travellers/types                                              controllers.TravellerController.getTravellerTypes(request: Request)
 GET          /api/travellers/:travellerId                                       controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
 PATCH        /api/travellers/:travellerId                                       controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
+GET          /api/travellers/:travellerId               controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
+PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
+
+# Destination Routes
+GET         /api/destinations                           controllers.DestinationController.getDestinations(request: Request)
+GET         /api/destinations/countries                 controllers.DestinationController.getCountries()
+GET         /api/destinations/countries/:countryId/districts  controllers.DestinationController.getDistricts(countryId: Int)
+GET         /api/destinations/types                     controllers.DestinationController.getDestinationTypes()
+GET         /api/destinations/:destinationId            controllers.DestinationController.getDestination(destinationId: Int, request: Request)
+DELETE      /api/destinations/:destinationId            controllers.DestinationController.deleteDestination(destinationId: Int, request: Request)
+
+#TODO: Isaac To Finish this
+POST        /api/destinations                           controllers.DestinationController.addDestination(request: Request)
+PUT         /api/destinations/:destinationId            controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
+
+POST        /api/trips                                  controllers.TripController.addTrip(request: Request)
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET          /assets/*file                             controllers.Assets.at(path="/public", file)
 

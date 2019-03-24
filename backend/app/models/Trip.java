@@ -14,7 +14,8 @@ public class Trip extends Model {
     @OneToOne
     private User user;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     private List<TripDestination> tripDestinations;
 
 
