@@ -20,10 +20,8 @@
 </template>
 
 <script>
-// TODO: Move all endpoint calls to the destinationsService.js file
   import DestinationCard from "./DestinationCard/DestinationCard";
-  import { endpoint } from "../../utils/endpoint";
-  const axios = require("axios");
+  import {requestCountries, requestDestinations, requestDestinationTypes, sendDeleteDestination} from "./DestinationsService";
 
   export default {
     components: {
@@ -42,39 +40,44 @@
         }
       }
     },
-    mounted: function () {
+    mounted: async function () {
       let currentDestinations;
-      axios.get(endpoint("/destinations"))
-              .then(response => {
-                currentDestinations = response.data;
-                for (let index in currentDestinations) {
-                  this.destinations.push({
-                    destinationObject: currentDestinations[index],
-                    editMode: false
-                  });
-                }
-              })
-              .catch(error => alert(error));
+      try {
+        currentDestinations = await requestDestinations();
+
+        for (let index in currentDestinations) {
+          this.destinations.push({
+            destinationObject: currentDestinations[index],
+            editMode: false
+          });
+        }
+      } catch(error) {
+        console.log(error);
+      }
       let currentCountries;
-      axios.get(endpoint("/destinations/countries"))
-              .then(response => {
-                currentCountries = response.data;
-                for (let index in currentCountries) {
-                  this.countries.names.push(currentCountries[index].countryName);
-                  this.countries.ids.push(currentCountries[index].countryId);
-                }
-              })
-              .catch(error => alert(error));
+
+      try {
+        currentCountries = await requestCountries();
+
+        for (let index in currentCountries) {
+          this.countries.names.push(currentCountries[index].countryName);
+          this.countries.ids.push(currentCountries[index].countryId);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+
       let currentDestinationTypes;
-      axios.get(endpoint("/destinations/types"))
-              .then(response => {
-                currentDestinationTypes = response.data;
-                for (let index in currentDestinationTypes) {
-                  this.destinationTypes.names.push(currentDestinationTypes[index].destinationTypeName);
-                  this.destinationTypes.ids.push(currentDestinationTypes[index].destinationTypeId);
-                }
-              })
-              .catch(error => alert(error));
+      try {
+        currentDestinationTypes = await requestDestinationTypes();
+
+        for (let index in currentDestinationTypes) {
+          this.destinationTypes.names.push(currentDestinationTypes[index].destinationTypeName);
+          this.destinationTypes.ids.push(currentDestinationTypes[index].destinationTypeId);
+        }
+      } catch (error) {
+        console.log(error);
+      }
     },
     methods: {
       addNewDestinationCard: function () {
@@ -103,12 +106,13 @@
       deleteDestination: async function (event) {
         let targetIndex = await this.getIndexOfDestinationFromTarget(event.target.parentNode);
         // Check if the destination is a new one (not in the database)
-        // TODO: Uncomment this when delete endpoint has been implemented
-        // if (!(this.destinations[targetIndex].destinationObject.destinationId === "")) {
-        //   axios.delete(endpoint("/destinations/" + this.destinations[targetIndex].destinationObject.destinationId))
-        //           .then(response => (console.log(response.message)))
-        //           .catch(error => alert(error));
-        // }
+        if (!(this.destinations[targetIndex].destinationObject.destinationId === "")) {
+          try {
+            sendDeleteDestination(this.destinations[targetIndex].destinationObject.destinationId);
+          } catch(error) {
+            console.log(error);
+          }
+        }
         this.destinations.splice(targetIndex, 1);
       },
 

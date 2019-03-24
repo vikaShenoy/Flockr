@@ -161,7 +161,6 @@
   </div>
 </template>
 <script>
-import superagent from "superagent";
 import UserStore from "../../../stores/UserStore";
 import { rules, updateBasicInfo } from "./BasicInfoService.js";
 import moment from "moment";

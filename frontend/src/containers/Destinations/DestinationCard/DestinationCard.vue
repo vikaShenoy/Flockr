@@ -97,8 +97,7 @@
 
 <script>
 
-  const axios = require("axios");
-  import { endpoint } from "../../../utils/endpoint";
+  import {sendUpdateDestination, sendAddDestination, requestDistricts} from "../DestinationsService.js";
 
   export default {
     name: "DestinationCard",
@@ -277,7 +276,7 @@
       saveDestination: async function () {
         await this.validateAll();
         if (!this.hasInvalidInput) {
-          let destinationValues = {
+          let destinationInfo = {
             "destinationName": this.destination.destinationName,
             "destinationTypeId": this.destination.destinationType.destinationTypeId,
             "countryId": this.destination.destinationCountry.countryId,
@@ -287,24 +286,19 @@
           };
           // If the destination is new
           if (this.destination.destinationId === null) {
-            axios.post(endpoint("/destinations"), destinationValues)
-                .then(response => {
-                  if (response.request.status === 200) {
-                    this.dataEditMode = !this.dataEditMode;
-                  }
-                })
-                .catch(error => alert(error));
+            try {
+              await sendAddDestination(destinationInfo);
+              this.dataEditMode = !this.dataEditMode;
+            } catch (error) {
+              console.log(error);
+            }
           } else {
-            axios.put(endpoint("/destinations/" + this.destination.destinationId), destinationValues,
-                {headers: {
-                  "content-type": "application/JSON"
-                  }})
-                .then(response => {
-                  if (response.request.status === 200) {
-                    this.dataEditMode = !this.dataEditMode;
-                  }
-                })
-                .catch(error => alert(error));
+            try {
+              await sendUpdateDestination(destinationInfo, this.destination.destinationId);
+              this.dataEditMode = !this.dataEditMode;
+            } catch (error) {
+              console.log(error);
+            }
           }
         }
       },
@@ -418,26 +412,26 @@
         this.destination.destinationType.destinationTypeId = this.destinationTypes.ids[typeIndex];
       },
 
-      onCountryChanged () {
+      async onCountryChanged() {
         let countryIndex = this.countries.names.indexOf(this.destination.destinationCountry.countryName);
         this.destination.destinationCountry.countryId = this.countries.ids[countryIndex];
         this.destination.destinationDistrict.districtName = null;
         this.destination.destinationDistrict.districtId = null;
         if (this.destination.destinationCountry.countryName !== null) {
-          axios.get(endpoint("/destinations/countries/" + this.countries.ids[countryIndex] + "/districts"))
-              .then(response => {
-                let currentDistricts = response.data;
-                this.districts = {
-                  names: [],
-                  ids: []
-                };
-                for (let index in currentDistricts) {
-                  this.districts.names.push(currentDistricts[index].districtName);
-                  this.districts.ids.push(currentDistricts[index].districtId);
-                }
-              })
-              .catch(error => alert(error));
-          this.districtDisabled = false;
+          try {
+            let currentDistricts = await requestDistricts(this.destination.destinationCountry.countryId);
+            this.districts = {
+              names: [],
+              ids: []
+            };
+            for (let index in currentDistricts) {
+              this.districts.names.push(currentDistricts[index].districtName);
+              this.districts.ids.push(currentDistricts[index].districtId);
+            }
+            this.districtDisabled = false;
+          } catch (error) {
+            console.log(error);
+          }
         } else {
           this.districtDisabled = true;
         }
@@ -455,22 +449,22 @@
       }
     },
 
-    mounted: function() {
+    mounted: async function() {
       if (this.destination.destinationCountry.countryName !== null) {
-        axios.get(endpoint("/destinations/countries/" + this.destination.destinationCountry.countryId + "/districts"))
-            .then(response => {
-              let currentDistricts = response.data;
-              this.districts = {
-                names: [],
-                ids: []
-              };
-              for (let index in currentDistricts) {
-                this.districts.names.push(currentDistricts[index].districtName);
-                this.districts.ids.push(currentDistricts[index].districtId);
-              }
-            })
-            .catch(error => alert(error));
-        this.districtDisabled = false;
+        try {
+          let currentDistricts = await requestDistricts(this.destination.destinationCountry.countryId);
+          this.districts = {
+            names: [],
+            ids: []
+          };
+          for (let index in currentDistricts) {
+            this.districts.names.push(currentDistricts[index].districtName);
+            this.districts.ids.push(currentDistricts[index].districtId);
+          }
+          this.districtDisabled = false;
+        } catch (error) {
+          console.log(error);
+        }
       } else {
         this.districtDisabled = true;
       }
