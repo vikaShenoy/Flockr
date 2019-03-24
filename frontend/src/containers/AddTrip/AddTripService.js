@@ -13,9 +13,9 @@ export function addTrip(tripName, tripDestinations) {
 
     transformedTripDestination.destinationId = tripDestination.destinationId;
     transformedTripDestination.arrivalDate = moment(tripDestination.arrivalDate).valueOf();
-    transformedTripDestination.arrivalTime = moment.duration(tripDestination.arrivalTime).asMinutes();
+    transformedTripDestination.arrivalTime = tripDestination.arrivalTime === null ? null : moment.duration(tripDestination.arrivalTime).asMinutes();
     transformedTripDestination.departureDate = moment(tripDestination.departureDate).valueOf(); 
-    transformedTripDestination.departureTime = moment.duration(tripDestination.departureTime).asMinutes();
+    transformedTripDestination.departureTime = tripDestination.departureTime === null ? null : moment.duration(tripDestination.departureTime).asMinutes();
 
     return transformedTripDestination;
   }); 

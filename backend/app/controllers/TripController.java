@@ -58,11 +58,12 @@ public class TripController extends Controller {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD");
         List<TripDestination> tripDestinations = new ArrayList<>();
         for (JsonNode tripDestinationJson : tripDestinationsJson) {
+
             int destinationId = tripDestinationJson.get("destinationId").asInt();
             Date arrivalDate = new Date(tripDestinationJson.get("arrivalDate").asLong());
-            int arrivalTime = tripDestinationJson.get("arrivalTime").asInt();
+            int arrivalTime = tripDestinationJson.get("arrivalTime").asInt(-1);
             Date departureDate = new Timestamp(tripDestinationJson.get("departureDate").asLong());
-            int departureTime = tripDestinationJson.get("departureTime").asInt();
+            int departureTime = tripDestinationJson.get("departureTime").asInt(-1);
 
             Destination destination = new Destination(null, null, null, null, null, null);
             destination.setDestinationId(destinationId);

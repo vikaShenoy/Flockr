@@ -6,7 +6,7 @@
 
     <h2>Add Trip</h2>
 
-    <v-form>
+    <v-form ref="addTripForm">
       <v-text-field
         v-model="tripName"
         label="Trip Name"
@@ -46,6 +46,14 @@ const rules = {
   required: field => !!field || "Field required" 
 };
 
+const tripDestination = {
+  destinationId: null,
+  arrivalDate: null,
+  arrivalTime: null,
+  departureDate: null,
+  departureTime: null,
+};
+
 export default {
   components: {
     TripTable
@@ -53,29 +61,44 @@ export default {
   data() {
     return {
      tripName: "",
-     tripDestinations: [
-        {
-          destinationId: null,
-          arrivalDate: "",
-          arrivalTime: "",
-          departureDate: "",
-          departureTime: "",
-        }
-      ],
-      tripNameRules: [rules.required] 
+     tripDestinations: [{...tripDestination}, {...tripDestination}],
+      tripNameRules: [rules.required],
     };
   },
   methods: {
+    /**
+     * Adds an empty destination
+     */
     addDestination() {
-      this.tripDestinations.push({
-        destinationId: null,
-        arrivalDate: "",
-        arrivalTime: "",
-        departureDate: "",
-        departureTime: ""
-      });
+      this.tripDestinations.push({...tripDestination});
     },
+    /**
+     * Iterates through destinations and check and renders error message
+     * if destinations are contiguous
+     */
+    contiguousDestinations() {
+      let foundContiguousDestination = false;
+      for (let i = 1; i < this.tripDestinations.length; i++) {
+
+        if (this.tripDestinations[i].destinationId === this.tripDestinations[i - 1].destinationId) {
+          this.$set(this.tripDestinations[i], "destinationErrors", ["Destination is same as last destination"]);
+          foundContiguousDestination = true;
+          continue;
+        }
+        this.tripDestinations[i].destinationErrors = [];
+      }
+      return foundContiguousDestination;
+    },
+    /**
+     * Validates fields before sending a request to add a trip
+     */
     async addTrip() {
+      const validFields = this.$refs.addTripForm.validate();
+      const contiguousDestinations = this.contiguousDestinations();
+      if (!validFields || contiguousDestinations)  {
+        return;
+      }
+
       try {
         await addTrip(this.tripName, this.tripDestinations);
       } catch (e) {

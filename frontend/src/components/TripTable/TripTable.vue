@@ -14,6 +14,7 @@
           item-value="destinationId"
           color="secondary"
           :rules="fieldRules"
+          :error-messages="props.item.destinationErrors"
         ></v-select>
       </td>
       <td>

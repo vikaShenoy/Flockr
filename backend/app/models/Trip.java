@@ -11,7 +11,7 @@ public class Trip extends Model {
     @Id
     private int tripId;
 
-    @OneToOne
+    @ManyToOne
     private User user;
 
 

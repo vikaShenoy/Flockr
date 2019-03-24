@@ -66,4 +66,20 @@ public class TripDestination extends Model {
     public int getDepartureTime() {
         return departureTime;
     }
+
+    public void setArrivalDate(Date arrivalDate) {
+        this.arrivalDate = arrivalDate;
+    }
+
+    public void setDepartureDate(Date departureDate) {
+        this.departureDate = departureDate;
+    }
+
+    public void setArrivalTime(int arrivalTime) {
+        this.arrivalTime = arrivalTime;
+    }
+
+    public void setDepartureTime(int departureTime) {
+        this.departureTime = departureTime;
+    }
 }
