@@ -72,4 +72,20 @@ public class AuthRepository {
             return user;
         }, executionContext);
     }
+
+       /**
+     * Gets a user by their email
+     * @param email The email of the user
+     * @return The user (which may not exist)
+     */
+    public CompletionStage<Optional<User>> getUserByEmail(String email) {
+        return supplyAsync(() -> {
+            Optional<User> user = ebeanServer.find(User.class)
+                    .select("userId")
+                    .where()
+                    .eq("email", email)
+                    .findOneOrEmpty();
+           return user;
+        }, executionContext);
+    }
 }

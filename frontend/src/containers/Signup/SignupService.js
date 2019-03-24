@@ -26,10 +26,11 @@ export async function signup(user) {
  * @returns {Promise<boolean>} True if the email is taken, false otherwise
  */
 export async function emailTaken(email) {
-  // const res = await fetch(endpoint(`/users/email/${email}`), {
-  //   method: "GET"
-  // });
+  try {
+    const res = await superagent.get(endpoint(`/auth/travellers/${email}/available`));
+  } catch (e) {
+    return true;
+  }
 
-  // return res.status === 409;
   return false;
 }

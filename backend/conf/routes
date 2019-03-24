@@ -10,7 +10,7 @@ POST         /api/internal/resample                    controllers.InternalContr
 POST         /api/auth/travellers/signup               controllers.AuthController.signup(request: Request)
 POST         /api/auth/travellers/login                controllers.AuthController.login(request: Request)
 POST         /api/auth/travellers/logout               controllers.AuthController.logout(request: Request)
-
+GET          /api/auth/travellers/:email/available     controllers.AuthController.checkEmailAvailable(email: String)
 
 # Traveller routes
 GET          /api/travellers                           controllers.TravellerController.getTravellers()

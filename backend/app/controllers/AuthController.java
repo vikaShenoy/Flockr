@@ -216,4 +216,17 @@ public class AuthController {
                 }, httpExecutionContext.current());
 
     }
+
+    public CompletionStage<Result> checkEmailAvailable(String email) {
+        if (email.isEmpty()) {
+            return supplyAsync(() -> badRequest());
+        }
+        return authRepository.getUserByEmail(email)
+                .thenApplyAsync((user) -> {
+                    if (user.isPresent()) {
+                        return status(409);
+                    }
+                    return ok();
+                }, httpExecutionContext.current());
+    }
 }
