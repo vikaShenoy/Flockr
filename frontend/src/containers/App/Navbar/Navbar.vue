@@ -14,11 +14,10 @@
 
     <v-list dense class="pt-0">
       <v-list-tile
-        v-for="item in items"
+        v-for="item in itemsToShow"
         :key="item.title"
+        @click="navClicked(item.url)"
         class="nav-item"
-        @click="$router.push(item.url)"
-        v-if="shouldShowNavbar(item)"
       >
         <v-list-tile-action>
           <v-icon class="nav-icon">{{ item.icon }}</v-icon>
@@ -29,37 +28,23 @@
         </v-list-tile-content>
       </v-list-tile>
     </v-list>
-
-    <v-divider class="light-divider"></v-divider>
-    
-    <v-list dense class="pt-0">
-      <v-list-tile
-        v-for="item in supplementaryItems"
-        :key="item.title"
-        class="nav-item"
-        @click="$router.push(item.url)"
-      >
-        <v-list-tile-action>
-          <v-icon class="nav-icon">{{ item.icon }}</v-icon>
-        </v-list-tile-action>
-
-        <v-list-tile-content>
-          <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
-    </v-list>
-  </v-navigation-drawer>
+ </v-navigation-drawer>
 </template>
 
 <script>
+
+import UserStore from "../../../stores/UserStore";
+import { logout } from "./NavbarService";
+
 export default {
   data() {
     return {
+      userStore: UserStore.data,
       items: [
         {
           title: "Home",
-          icon: "dashboard",
           url: "/",
+          icon: "dashboard",
           loggedIn: true,
           loggedOut: true
         },
@@ -67,6 +52,7 @@ export default {
           title: "Search Travellers",
           icon: "search",
           url: "/search",
+          profileCompleted: true,
           loggedIn: true,
           loggedOut: false
         },
@@ -74,6 +60,7 @@ export default {
           title: "Destinations",
           icon: "location_on",
           url: "/destinations",
+          profileCompleted: true,
           loggedIn: true,
           loggedOut: false
         },
@@ -81,11 +68,10 @@ export default {
           title: "Trips",
           icon: "navigation",
           url: "/trips",
+          profileCompleted: true,
           loggedIn: true,
           loggedOut: false
-        }
-      ],
-      supplementaryItems: [
+        },
         {
           title: "Sign up",
           icon: "person_add",
@@ -108,7 +94,16 @@ export default {
           loggedOut: false
         },
         {
+          title: "Travellers",
+          icon: "supervisor_account",
+          url: "/travellers",
+          profileCompleted: true,
+          loggedIn: true,
+          loggedOut: false
+        },
+        {
           title: "Log out",
+          url: "/logout",
           icon: "power_settings_new",
           loggedIn: true,
           loggedOut: false
@@ -118,13 +113,44 @@ export default {
   },
   methods: {
     /**
-     * Decides if a nav-item should be shown or not
-     * @param {string} loggedIn - Indicates if nav item should be shown when signed in
-     * @param {string} loggedOut - indicates if the nav item should be shown when logged out
+     * Run when the nav was clicked on
+     * @param {string} url - The url of nav item that was clicked on
      */
-    shouldShowNavbar(loggedIn, loggedOut) {
-      return loggedIn || loggedOut;
+    async navClicked(url) {
+      switch (url) {
+        case "/profile":
+          this.$router.push(`/profile/${UserStore.data.userId}`);
+          break;
+        case "/logout":
+          await logout();
+          UserStore.methods.logout();
+          localStorage.removeItem("userId");
+          localStorage.removeItem("authToken");
+          this.$router.push("/");
+          break;
+        default:
+          this.$router.push(url);
+          break;
+      }
     }
+
+  },
+  computed: {
+    /**
+     * Computed property which filters nav items to show
+     */
+    itemsToShow() {
+      const loggedIn = UserStore.methods.loggedIn();
+      const profileCompleted = UserStore.methods.profileCompleted();
+
+      return this.items.filter(item => {
+        return (item.loggedIn && loggedIn && (item.profileCompleted && profileCompleted || !item.profileCompleted)) || item.loggedOut && !loggedIn;
+      });
+    },
+    /**
+     * Event handler called when nav item has been clicked
+     * @param {string} url - The url of the nav item
+     */
   }
 }
 </script>
@@ -134,7 +160,7 @@ export default {
 
   #navbar {
     background-color: $primary;
-    position:fixed;
+    position: fixed !important;
   }
 
   #title-box {

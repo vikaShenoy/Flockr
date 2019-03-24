@@ -1,15 +1,21 @@
 <template>
   <div>
-
-  <div id="header">
-    <h3>Nationalities</h3>
-    <v-btn small flat id="edit-btn" color="secondary" @click="toggleEditSave">
-      <v-icon v-if="!isEditing">edit</v-icon>
-      <span v-else>Save</span>
-      </v-btn>
-  </div>
-
-
+    <div id="header">
+      <h3>Nationalities</h3>
+      <div>
+        <v-btn
+          v-if="userStore.userId === userId"
+          small
+          flat
+          id="edit-btn"
+          color="secondary"
+          @click="toggleEditSave"
+        >
+          <v-icon v-if="!isEditing">edit</v-icon>
+          <span v-else>Save</span>
+        </v-btn>
+      </div>
+    </div>
     <v-card id="nationalities">
       <div v-if="!isEditing">
         <v-chip
@@ -18,22 +24,23 @@
           color="primary"
           text-color="white"
         >{{ nationality.nationalityCountry }}</v-chip>
+
+        <span v-if="!userNationalities.length">Please provide at least one Nationality</span>
       </div>
 
       <v-combobox
         v-else
-        v-model="this.userNationalities"
+        v-model="userNat"
         :items="this.allNationalities"
         :item-text="getNationalityText"
-        label="Your favorite hobbies"
+        label="Your nationality"
+        :error-messages="nationalityErrors"
         chips
         clearable
         solo
         multiple
       >
-        <!-- <template slot="item" slot-scope="data">
-          {{data.item.nationalityCountry}}
-        </template> -->
+
         <template v-slot:selection="data">
           <v-chip
             color="primary"
@@ -46,59 +53,91 @@
           </v-chip>
         </template>
       </v-combobox>
-
     </v-card>
-
-
   </div>
 </template>
 
 <script>
-
 import superagent from "superagent";
-import { endpoint } from '../../../utils/endpoint';
+import UserStore from "../../../stores/UserStore";
+import { getNationalities, updateNationalities } from "./NationalityService.js";
 
 export default {
-  // otherNationalities specifies nationalities that a user doesn't have
-
   mounted() {
     this.getNationalities();
   },
-
   data() {
     return {
+      userStore: UserStore.data,
       // These would be retreived from the request
+      userNat: [...this.userNationalities],
       allNationalities: [],
-      isEditing: false
+      isEditing: false,
+      nationalityErrors: []
     };
   },
-
   methods: {
+    /**
+     * Gets all nationalities
+     */
     async getNationalities() {
-      const res = await superagent.get(endpoint('/travellers/nationalities'));
-      console.log(res.body);
-      this.allNationalities = res.body;
+      try {
+        const nationalities = await getNationalities();
+        this.allNationalities = nationalities;
+      } catch (e) {
+        // Add error handling later
+      }
     },
+    /**
+     * Toggles between editing and saving, if saving, then nationalities will
+     * be updated
+     */
+    async toggleEditSave() {
+      if (this.isEditing) {
+        if (this.userNat.length === 0) {
+          this.nationalityErrors = ["Please select a nationality"];
+          return;
+        }
 
-    toggleEditSave() {
+        this.nationalityErrors = [];
+
+        const userId = this.$route.params.id;
+        const nationalityIds = this.getNationalityIds;
+        try {
+          await updateNationalities(userId, nationalityIds);
+        } catch (e) {
+          // Add error handling later
+        }
+
+        // Set nationalities state of UserStore
+        UserStore.data.nationalities = this.userNat;
+        this.$emit("update:userNationalities", this.userNat);
+      }
       this.isEditing = !this.isEditing;
     },
-
-    getNationalityText: item => item.nationalityCountry
-  },
-
-  computed: {
-    getNationalityNames() {
-      return this.userNationalities.map((userNationality => userNationality.nationalityCountry));
-    },
-    getAllNationalityNames() {
-      return this.allNationalities.map((nationality => nationality.nationalityCountry));
+    /**
+     * Gets the nationality country from the list of nationalities
+     */
+    getNationalityText: item => item.nationalityCountry,
+    /**
+     * Removes a nationality in edit mode
+     */
+    remove(item) {
+      this.userNat.splice(this.userNat.indexOf(item), 1);
+      this.userNat = [...this.userNat];
     }
   },
 
-
-  props: ["userNationalities"]
-}
+  computed: {
+    /**
+     * Gets nationality ID's from nationality objects
+     */
+    getNationalityIds() {
+      return this.userNat.map(nationality => nationality.nationalityId);
+    }
+  },
+  props: ["userNationalities", "userId"]
+};
 </script>
 
 <style lang="scss" scoped>
@@ -117,6 +156,9 @@ export default {
   }
 }
 
+#edit-btn {
+  float: right;
+}
 </style>
 
 

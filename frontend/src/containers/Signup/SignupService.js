@@ -1,5 +1,6 @@
-import axios from "axios";
+// import axios from "axios";
 
+import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 
 
@@ -14,7 +15,9 @@ import { endpoint } from "../../utils/endpoint";
  * @throws Error if status was not 201
  */
 export async function signup(user) {
-  return axios.post(endpoint("/auth/travellers/signup"), user);
+  const response = await superagent.post(endpoint("/auth/travellers/signup"))
+  .send(user);
+  return response.body
 }
 
 /**
@@ -23,10 +26,11 @@ export async function signup(user) {
  * @returns {Promise<boolean>} True if the email is taken, false otherwise
  */
 export async function emailTaken(email) {
-  // const res = await fetch(endpoint(`/users/email/${email}`), {
-  //   method: "GET"
-  // });
+  try {
+    const res = await superagent.get(endpoint(`/auth/travellers/${email}/available`));
+  } catch (e) {
+    return true;
+  }
 
-  // return res.status === 409;
   return false;
 }

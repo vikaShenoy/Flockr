@@ -53,6 +53,39 @@ public class AuthRepository {
                     .eq("token", token)
                     .findOneOrEmpty();
            return user;
-        });
+        }, executionContext);
+    }
+
+    /**
+     * Gets a user by their credentials
+     */
+    public CompletionStage<Optional<User>> getUserByCredentials(String email, String hashedPassword) {
+        return supplyAsync(() -> {
+            Optional<User> user = User.find
+                    .query()
+                    .fetch("passports")
+                    .fetch("nationalities")
+                    .fetch("travellerTypes")
+                    .where()
+                    .eq("email", email)
+                    .findOneOrEmpty();
+            return user;
+        }, executionContext);
+    }
+
+       /**
+     * Gets a user by their email
+     * @param email The email of the user
+     * @return The user (which may not exist)
+     */
+    public CompletionStage<Optional<User>> getUserByEmail(String email) {
+        return supplyAsync(() -> {
+            Optional<User> user = ebeanServer.find(User.class)
+                    .select("userId")
+                    .where()
+                    .eq("email", email)
+                    .findOneOrEmpty();
+           return user;
+        }, executionContext);
     }
 }

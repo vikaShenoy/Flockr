@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>Photos</h3>
+    <h3 style="margin-bottom: 4px;margin-top: 4px;">Photos</h3>
 
     <v-card id="photos">
       <div class="row">

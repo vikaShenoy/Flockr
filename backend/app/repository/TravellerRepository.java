@@ -4,9 +4,11 @@ import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import models.Passport;
 import models.Nationality;
+import models.TravellerType;
 import models.User;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
+import play.mvc.Http;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -39,10 +41,11 @@ public class TravellerRepository {
      * @param user The user to update
      * @return Nothing
      */
-    public CompletionStage<Void> updateUser(User user) {
-        return runAsync(() -> {
+    public CompletionStage<User> updateUser(User user) {
+        return supplyAsync(() -> {
             user.update();
-        });
+            return user;
+        }, executionContext);
     }
 
     /**
@@ -65,7 +68,6 @@ public class TravellerRepository {
     public CompletionStage<List<Passport>> getAllPassports() {
         return supplyAsync(() -> {
             List<Passport> passports = Passport.find.query().findList();
-            System.out.println(passports.get(0));
             return passports;
         }, executionContext);
     }
@@ -85,12 +87,11 @@ public class TravellerRepository {
 
     /**
      * Gets a list of all nationalities
-     * @return <b>List</b> of nationalities
+     * @return List of nationalities
      */
     public CompletionStage<List<Nationality>> getAllNationalities() {
         return supplyAsync(() -> {
             List<Nationality> nationalities = Nationality.find.query().findList();
-            System.out.println(nationalities.get(0));
             return nationalities;
         }, executionContext);
     }
@@ -105,6 +106,42 @@ public class TravellerRepository {
             Optional<Nationality> nationality = Nationality.find.query().
                     where().eq("nationality_id", nationalityId).findOneOrEmpty();
             return nationality;
+        }, executionContext);
+    }
+
+
+    /**
+     * Funtion that gets all of the valid traveller types in the database
+     * @return the list of traveller types
+     */
+    public CompletionStage<List<TravellerType>> getAllTravellerTypes() {
+        return supplyAsync(() -> {
+            List<TravellerType> types = TravellerType.find.query().findList();
+            System.out.println(types.get(0));
+            return types;
+        }, executionContext);
+    }
+
+
+
+
+    /**
+     * Gets a list of travellers
+     */
+    public CompletionStage<List<User>> getTravellers() {
+        return supplyAsync(() -> {
+            List<User> user = User.find.query()
+                    .fetch("passports")              // contacts is a OneToMany path
+                    .fetch("travellerTypes")
+                    .fetch("nationalities")
+                    .where()
+                    .isNotNull("middle_name")
+                    .isNotNull("gender")
+                    .isNotNull("date_of_birth")
+                    .isNotEmpty("nationalities")
+                    .isNotEmpty("travellerTypes")
+                    .findList();
+            return user;
         }, executionContext);
     }
 }

@@ -2,13 +2,20 @@
   <div id="profile-pic-box">
     <img src="./tempProfilePic.jpg" id="profile-pic">
 
-    <v-btn id="edit-btn" outline  color="secondary">Edit</v-btn>
+    <v-btn id="edit-btn" v-if="userStore.userId === userId" outline  color="secondary">Edit</v-btn>
   </div>
 </template>
 
 <script>
+import UserStore from "../../../stores/UserStore";
+
 export default {
-  
+  props: ["userId"],
+  data() {
+    return {
+      userStore: UserStore.data
+    };
+  }
 }
 </script>
 
