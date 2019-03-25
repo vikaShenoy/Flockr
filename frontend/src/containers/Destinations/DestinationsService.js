@@ -71,7 +71,7 @@ export async function sendDeleteDestination(destinationId) {
  * @returns {Promise<>} contains nothing
  */
 export async function sendAddDestination(destinationInfo) {
-  const res = await superagent.push(endpoint("/destinations"))
+  const res = await superagent.post(endpoint("/destinations"))
       .set("Authorization", localStorage.getItem("authToken"))
       .send(destinationInfo);
 
