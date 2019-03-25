@@ -38,7 +38,6 @@ public class DestinationRepository {
     public CompletionStage<List<Destination>> getDestinations() {
         return supplyAsync(() -> {
             List<Destination> destinations = Destination.find.query().findList();
-            System.out.println(destinations.get(0));
             return destinations;
         }, executionContext);
     }
