@@ -86,9 +86,9 @@ create table trip_destination (
   trip_trip_id                  integer,
   destination_destination_id    integer,
   arrival_date                  timestamp,
-  arrival_time                  integer,
+  arrival_time                  integer not null,
   departure_date                timestamp,
-  departure_time                integer,
+  departure_time                integer not null,
   constraint pk_trip_destination primary key (trip_destination_id)
 );
 

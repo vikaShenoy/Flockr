@@ -97,24 +97,21 @@ public class TripController extends Controller {
         User user = request.attrs().get(ActionState.USER);
         int userId = user.getUserId();
         return tripRepository.getTripByIds(tripId, userId).
-                thenApplyAsync((optionalTrip) -> {
+                thenComposeAsync((optionalTrip) -> {
                     if (!optionalTrip.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     Trip trip = optionalTrip.get();
-                    // Delete and update database to remove the trip.
-                    trip.delete();
-                    return tripRepository.update(trip);
-                }, httpExecutionContext.current()).
-                thenApplyAsync((Trip) -> (Result) ok("Successfully deleted the given trip id."), httpExecutionContext.current())
+                    tripRepository.deleteTrip(trip);
+                    return tripRepository.deleteTrip(trip);
+                }, httpExecutionContext.current())
+                .thenApplyAsync((trip) -> (Result) ok(), httpExecutionContext.current())
                 // Exceptions / error checking
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
                     } catch (NotFoundException notFoundE) {
-                        ObjectNode message = Json.newObject();
-                        message.put("Message", "The given trip id can't be found.");
-                        return notFound(message);
+                        return notFound("Trip id was not found");
                     } catch (Throwable ee) {
                         return internalServerError();
                     }
