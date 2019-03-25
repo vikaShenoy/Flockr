@@ -186,6 +186,118 @@ public class TravellerController extends Controller {
                 }, httpExecutionContext.current());
     }
 
+
+    /**
+     * A function that adds a passport to a user based on the given user ID
+     * @param travellerId the traveller ID
+     * @param request Object to get the passportId to add
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> addPassport(int travellerId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+
+        int passportId = request.body().asJson().get("passportId").asInt();
+
+        return travellerRepository.getPassportById(passportId)
+                .thenApplyAsync((passport) -> {
+                    if (!passport.isPresent()) {
+                        return notFound();
+                    }
+                    List<Passport> passports = user.getPassports();
+                    passports.add(passport.get());
+                    user.setPassports(passports);
+                    user.save();
+                    return ok();
+                }, httpExecutionContext.current());
+    }
+
+
+    /**
+     * A function that deletes a passport from a user based on the given user ID
+     * @param travellerId the traveller ID
+     * @param passportId the passport ID
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> removePassport(int travellerId, int passportId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+        return travellerRepository.getPassportById(passportId)
+                .thenApplyAsync((passport) -> {
+                    if (!passport.isPresent()) {
+                        return notFound();
+                    }
+                    List<Passport> passports = user.getPassports();
+                    passports.remove(passport.get());
+                    user.setPassports(passports);
+                    user.save();
+                    System.out.println(user.getPassports());
+                    return ok();
+                }, httpExecutionContext.current());
+    }
+
+
+    /**
+     * A function that adds a nationality to the user based on the user ID given
+     * @param travellerId the traveller ID
+     * @param request Object to get the nationality to add.
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> addNationality(int travellerId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        int nationalityId = request.body().asJson().get("nationalityId").asInt();
+
+        return travellerRepository.getNationalityById(nationalityId)
+                .thenApplyAsync((nationality) -> {
+                    if (!nationality.isPresent()) {
+                        return notFound();
+                    }
+                    List<Nationality> nationalities = user.getNationalities();
+                    nationalities.add(nationality.get());
+                    user.setNationalities(nationalities);
+                    user.save();
+                    return ok();
+                }, httpExecutionContext.current());
+    }
+
+
+    /**
+     * Deletes a nationality for a logged in user given a nationality id in the request body
+     * @param travellerId the traveller for which we want to delete the nationality
+     * @param request the request passed by the routes file
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> deleteNationalityForUser(int travellerId, int nationalityId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        return travellerRepository.getNationalityById(nationalityId)
+                .thenApplyAsync((optionalNationality) -> {
+                    if (!optionalNationality.isPresent()) {
+                        return notFound("Could not find nationality " + nationalityId);
+                    }
+                    // now that we know that the nationality definitely exists
+                    // extract the Nationality from the Optional<Nationality> object
+                    Nationality nationality = optionalNationality.get();
+                    List<Nationality> userNationalities = user.getNationalities();
+
+                    // return not found if the user did not have that nationality already
+                    if (!userNationalities.contains(nationality)) {
+                        return notFound("User does not have nationality " + nationalityId);
+                    }
+
+                    userNationalities.remove(nationality);
+                    user.setNationalities(userNationalities);
+                    user.save();
+                    return ok("Successfully deleted nationality");
+                }, httpExecutionContext.current());
+    }
+
+
+
+
     /**
      * Get a list of all valid traveller types
      * @param request unused request object
