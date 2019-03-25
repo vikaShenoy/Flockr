@@ -21,7 +21,7 @@ export function addTrip(tripName, tripDestinations) {
   }); 
 
 
-  return superagent.post(endpoint("/trips"))
+  return superagent.post(endpoint(`/travellers/${localStorage.getItem("userId")}/trips`))
   .set("Authorization", localStorage.getItem("authToken"))
   .send({
     tripName,

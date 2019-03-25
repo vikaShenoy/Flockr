@@ -78,6 +78,7 @@ create table traveller_type_user (
 create table trip (
   trip_id                       integer auto_increment not null,
   user_user_id                  integer,
+  trip_name                     varchar(255),
   constraint pk_trip primary key (trip_id)
 );
 
@@ -86,9 +87,9 @@ create table trip_destination (
   trip_trip_id                  integer,
   destination_destination_id    integer,
   arrival_date                  timestamp,
-  arrival_time                  integer,
+  arrival_time                  integer not null,
   departure_date                timestamp,
-  departure_time                integer,
+  departure_time                integer not null,
   constraint pk_trip_destination primary key (trip_destination_id)
 );
 

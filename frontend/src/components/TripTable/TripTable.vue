@@ -18,146 +18,16 @@
         ></v-select>
       </td>
       <td>
-        <v-menu
-          ref="arrivalDateMenu"
-          v-model="arrivalDateMenu"
-          :close-on-content-click="false"
-          :nudge-right="40"
-          :return-value.sync="props.item.arrivalDate"
-          lazy
-          transition="scale-transition"
-          offset-y
-          full-width
-        >
-          <template v-slot:activator="{ on }">
-            <v-text-field
-              class="edit-field"
-              v-model="props.item.arrivalDate"
-              readonly
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            color="primary"
-            ref="picker"
-            :min="currentDate"
-            v-model="props.item.arrivalDate"
-            scrollable
-          >
-            <v-spacer></v-spacer>
-            <v-btn
-              flat
-              color="primary"
-              @click="arrivalDateMenu = false"
-            >Cancel</v-btn>
-            <v-btn
-              flat
-              color="primary"
-              @click="$refs.arrivalDateMenu.save(props.item.arrivalDate)"
-            >OK</v-btn>
-          </v-date-picker>
-        </v-menu>
+        <v-text-field v-model="props.item.arrivalDate" type="date"></v-text-field>
       </td>
       <td>
-        <v-menu
-          ref="arrivalTimeMenu"
-          v-model="arrivalTimeMenu"
-          :close-on-content-click="false"
-          :nudge-right="40"
-          :return-value.sync="props.item.arrivalTime"
-          lazy
-          transition="scale-transition"
-          offset-y
-          full-width
-          max-width="290px"
-          min-width="290px"
-        >
-          <template v-slot:activator="{ on }">
-            <v-text-field
-              v-model="props.item.arrivalTime"
-              readonly
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-time-picker
-            color="primary"
-            v-if="arrivalTimeMenu"
-            v-model="props.item.arrivalTime"
-            full-width
-            @click:minute="$refs.arrivalTimeMenu.save(props.item.arrivalTime)"
-          ></v-time-picker>
-        </v-menu>
+        <v-text-field v-model="props.item.arrivalTime" type="time"></v-text-field>
       </td>
       <td>
-        <v-menu
-          ref="departureDateMenu"
-          v-model="departureDateMenu"
-          :close-on-content-click="false"
-          :nudge-right="40"
-          :return-value.sync="props.item.departureDate"
-          lazy
-          transition="scale-transition"
-          offset-y
-          full-width
-        >
-          <template v-slot:activator="{ on }">
-            <v-text-field
-              class="edit-field"
-              v-model="props.item.departureDate"
-              readonly
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            color="primary"
-            ref="picker"
-            :min="currentDate"
-            v-model="props.item.departureDate"
-            scrollable
-          >
-            <v-spacer></v-spacer>
-            <v-btn
-              flat
-              color="primary"
-              @click="props.item.departureDateMenu = false"
-            >Cancel</v-btn>
-            <v-btn
-              flat
-              color="primary"
-              @click="$refs.departureDateMenu.save(props.item.departureDate)"
-            >OK</v-btn>
-          </v-date-picker>
-        </v-menu>
+        <v-text-field v-model="props.item.departureDate" type="date"></v-text-field>
       </td>
       <td>
-        <v-menu
-          ref="departureTimeMenu"
-          v-model="departureTimeMenu"
-          :close-on-content-click="false"
-          :nudge-right="40"
-          :return-value.sync="props.item.departureTime"
-          lazy
-          transition="scale-transition"
-          offset-y
-          full-width
-          max-width="290px"
-          min-width="290px"
-        >
-          <template v-slot:activator="{ on }">
-            <v-text-field
-              v-model="props.item.departureTime"
-              readonly
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-time-picker
-            color="primary"
-            v-if="departureTimeMenu"
-            v-model="props.item.departureTime"
-            full-width
-            @click:minute="$refs.departureTimeMenu.save(props.item.departureTime)"
-          ></v-time-picker>
-        </v-menu>
+        <v-text-field v-model="props.item.departureTime" type="time"></v-text-field>
       </td>
     </template>
   </v-data-table>
@@ -222,8 +92,12 @@ export default {
       } catch (e) {
         // add error handling later
       }
+    },
+    save(index) {
+      console.log(this.$refs[`arrivalDateMenu${index}`].save(this.tripDestinations[index].arrivalDate));
+      // $refs[`arrivalDateMenu${props.index}`].save(props.item.arrivalDate) 
     }
-  }
+  },
 };
 </script>
 

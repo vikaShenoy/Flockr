@@ -53,7 +53,7 @@ public class TripController extends Controller {
      * @return A result object
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> addTrip(Http.Request request) {
+    public CompletionStage<Result> addTrip(int travellerId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         JsonNode jsonBody = request.body().asJson();
 
@@ -76,7 +76,7 @@ public class TripController extends Controller {
             tripDestinations.add(tripDestination);
         }
 
-        Trip trip = new Trip(tripDestinations, user);
+        Trip trip = new Trip(tripDestinations, user, tripName);
 
         return tripRepository.saveTrip(trip)
                 .thenApplyAsync((updatedTrip) -> {
@@ -84,6 +84,23 @@ public class TripController extends Controller {
                     return ok(tripIdJson);
                 }, httpExecutionContext.current());
     }
+
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getTrip(int travellerId, int tripId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        int userId = user.getUserId();
+
+        return tripRepository.getTripByIds(tripId, userId)
+                .thenApplyAsync((optionalTrip) -> {
+                    if (!optionalTrip.isPresent())  {
+                        return notFound();
+                    }
+                    Trip trip = optionalTrip.get();
+                    JsonNode tripJson = Json.toJson(trip);
+                    return ok(tripJson);
+                });
+    }
+
 
     /**
      * Endpoint to delete a user's trip.

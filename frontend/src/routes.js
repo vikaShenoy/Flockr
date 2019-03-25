@@ -9,6 +9,7 @@ import Destinations from "./containers/Destinations/Destinations.vue";
 import Trips from "./containers/Trips/Trips.vue";
 import AddTrip from "./containers/AddTrip/AddTrip.vue";
 import Trip from "./containers/Trip/Trip.vue";
+import EditTrip from "./containers/EditTrip/EditTrip.vue";
 
 import { loggedIn } from "./utils/auth";
 
@@ -51,8 +52,13 @@ const routes = [
     beforeEnter: loggedIn
   },
   {
-    path: "/trip/:id",
+    path: "/trips/:id",
     component: Trip,
+    beforeEnter: loggedIn
+  },
+  {
+    path: "/trips/:id/edit",
+    component: EditTrip,
     beforeEnter: loggedIn
   }
 ];

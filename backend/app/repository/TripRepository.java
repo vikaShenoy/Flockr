@@ -53,7 +53,7 @@ public class TripRepository {
         return supplyAsync(() -> {
             Optional<Trip> trip = Trip.find.query().
                     where().eq("trip_id", tripId)
-                    .eq("user_id", userId)
+                    .eq("user_user_id", userId)
                     .findOneOrEmpty();
             return trip;
         }, executionContext);
