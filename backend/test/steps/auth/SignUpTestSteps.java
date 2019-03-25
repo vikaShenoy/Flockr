@@ -1,4 +1,4 @@
-package steps;
+package steps.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.AbstractModule;
@@ -27,13 +27,17 @@ import java.util.Map;
 
 import static play.test.Helpers.route;
 
-public class AuthTestingSteps {
+public class SignUpTestSteps {
     @Inject
     private Application application;
 
     private JsonNode userData;
     private Result result;
+    private Result signUpResponse;
 
+    /**
+     * Set up the backend server
+     */
     @Before
     public void setUp() {
         Module testModule = new AbstractModule() {
@@ -49,6 +53,9 @@ public class AuthTestingSteps {
     }
 
 
+    /**
+     * Stop the backend server
+     */
     @After
     public void tearDown() {
         Helpers.stop(application);
@@ -71,9 +78,9 @@ public class AuthTestingSteps {
     @When("I make a {string} request to {string} with the data")
     public void iMakeARequestToWithTheData(String requestMethod, String endpoint) {
         Http.RequestBuilder request = Helpers.fakeRequest()
-            .method(requestMethod)
-            .uri(endpoint)
-            .bodyJson(this.userData);
+                .method(requestMethod)
+                .uri(endpoint)
+                .bodyJson(this.userData);
         this.result = route(application, request);
     }
 

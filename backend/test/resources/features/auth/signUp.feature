@@ -1,4 +1,4 @@
-Feature: The user can authenticate
+Feature: The user can sign up
 
   # Test that a 200 code is returned on valid data
   Scenario: A user tries to sign up with valid data with middle name
@@ -12,7 +12,7 @@ Feature: The user can authenticate
   Scenario: A user tries to sign up without a lastname
     Given that I have incomplete user data to sign up:
       | firstName | middleName | email            | password |
-    | Jose      | Manuel      | jose@gmail.com | much-security |
+      | Jose      | Manuel      | jose@gmail.com | much-security |
     When I make a "POST" request to "/api/auth/travellers/signup" with the data
     Then I should receive a 400 status code
 

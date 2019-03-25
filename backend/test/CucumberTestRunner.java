@@ -14,6 +14,6 @@ import cucumber.api.SnippetType;
         glue = "steps",
         snippets = SnippetType.CAMELCASE
 )
-public class GenericTestRunner {
+public class CucumberTestRunner {
 
 }
