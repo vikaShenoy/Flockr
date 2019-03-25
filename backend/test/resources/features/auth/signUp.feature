@@ -3,9 +3,9 @@ Feature: The user can sign up
   # Test that a 200 code is returned on valid data
   Scenario: A user tries to sign up with valid data with middle name
     Given that I have valid user data to sign up:
-      | firstName | middleName | lastName | email        | password        |
-      | Matias   | Felipe   | Suarez | matias@email.com  | much-security |
-    When I make a "POST" request to "/api/auth/travellers/signup" with the data
+      | firstName | middleName | lastName | email            | password      |
+      | Matias    | Felipe     | Suarez   | matias@email.com | much-security |
+    When I make an "POST" request to "/api/auth/travellers/signup" with the data
     Then I should receive a 200 status code
 
   # Test that a 400 code is returned on *some* incomplete data
