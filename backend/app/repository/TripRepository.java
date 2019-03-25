@@ -2,6 +2,7 @@ package repository;
 
 import models.Trip;
 
+import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -44,6 +45,17 @@ public class TripRepository {
     }
 
     /**
+     * Delete a trip.
+     * @param trip The trip to delete.
+     */
+    public CompletionStage<Trip> deleteTrip(Trip trip) {
+        return supplyAsync(() -> {
+            trip.delete();
+            return trip;
+        }, executionContext);
+    }
+
+    /**
      * Get a trip by its tripId and userId.
      * @param tripId The id of the trip to find.
      * @param userId The user id of the trip to find.
@@ -53,7 +65,7 @@ public class TripRepository {
         return supplyAsync(() -> {
             Optional<Trip> trip = Trip.find.query().
                     where().eq("trip_id", tripId)
-                    .eq("user_id", userId)
+                    .eq("user_user_id", userId)
                     .findOneOrEmpty();
             return trip;
         }, executionContext);
