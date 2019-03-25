@@ -17,6 +17,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
 import repository.TripRepository;
+import util.TripUtil;
 
 import javax.inject.Inject;
 import java.sql.Time;
@@ -40,11 +41,13 @@ public class TripController extends Controller {
 
     private final TripRepository tripRepository;
     private final HttpExecutionContext httpExecutionContext;
+    private final TripUtil tripUtil;
 
     @Inject
-    public TripController(TripRepository tripRepository, HttpExecutionContext httpExecutionContext) {
+    public TripController(TripRepository tripRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil) {
         this.tripRepository = tripRepository;
         this.httpExecutionContext = httpExecutionContext;
+        this.tripUtil = tripUtil;
     }
 
     /**
@@ -60,21 +63,8 @@ public class TripController extends Controller {
         String tripName = jsonBody.get("tripName").asText();
         JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD");
-        List<TripDestination> tripDestinations = new ArrayList<>();
-        for (JsonNode tripDestinationJson : tripDestinationsJson) {
 
-            int destinationId = tripDestinationJson.get("destinationId").asInt();
-            Date arrivalDate = new Date(tripDestinationJson.get("arrivalDate").asLong());
-            int arrivalTime = tripDestinationJson.get("arrivalTime").asInt(-1);
-            Date departureDate = new Timestamp(tripDestinationJson.get("departureDate").asLong());
-            int departureTime = tripDestinationJson.get("departureTime").asInt(-1);
-
-            Destination destination = new Destination(null, null, null, null, null, null);
-            destination.setDestinationId(destinationId);
-
-            TripDestination tripDestination = new TripDestination(destination, arrivalDate, arrivalTime, departureDate, departureTime);
-            tripDestinations.add(tripDestination);
-        }
+        List<TripDestination> tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
 
         Trip trip = new Trip(tripDestinations, user, tripName);
 
@@ -114,28 +104,66 @@ public class TripController extends Controller {
         User user = request.attrs().get(ActionState.USER);
         int userId = user.getUserId();
         return tripRepository.getTripByIds(tripId, userId).
-                thenApplyAsync((optionalTrip) -> {
+                thenComposeAsync((optionalTrip) -> {
                     if (!optionalTrip.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     Trip trip = optionalTrip.get();
-                    // Delete and update database to remove the trip.
-                    trip.delete();
-                    return tripRepository.update(trip);
-                }, httpExecutionContext.current()).
-                thenApplyAsync((Trip) -> (Result) ok("Successfully deleted the given trip id."), httpExecutionContext.current())
+                    return tripRepository.deleteTrip(trip);
+                }, httpExecutionContext.current())
+                .thenApplyAsync((trip) -> (Result) ok(), httpExecutionContext.current())
                 // Exceptions / error checking
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
-                    } catch (NotFoundException notFoundE) {
-                        ObjectNode message = Json.newObject();
-                        message.put("Message", "The given trip id can't be found.");
-                        return notFound(message);
-                    } catch (Throwable ee) {
+                    } catch (NotFoundException notFoundError) {
+                        return notFound("Trip id was not found");
+                    } catch (Throwable serverError) {
                         return internalServerError();
                     }
                 });
         }
+
+
+    /**
+     * Endpoint to get update a trips destinations
+     * @param request Request body to get json body from
+     * @param tripId The trip ID to update
+     * @param userId The id of the user that the trip belongs to
+     * @return Returns the http response which can be
+     *         - Ok - Trip was updated successfully
+     *
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> updateTrip(Http.Request request, int userId, int tripId) {
+        return tripRepository.getTripByIds(tripId, userId)
+                .thenComposeAsync((optionalTrip) -> {
+                    if (!optionalTrip.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
+                    JsonNode jsonBody = request.body().asJson();
+                    String tripName = jsonBody.get("tripName").asText();
+                    JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
+
+                    List<TripDestination> tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+
+                    Trip trip = optionalTrip.get();
+
+                    trip.setTripDestinations(tripDestinations);
+                    trip.setTripName(tripName);
+
+                    return tripRepository.update(trip);
+                }, httpExecutionContext.current())
+                .thenApplyAsync((Destination) -> (Result) ok(), httpExecutionContext.current())
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (NotFoundException notFoundError) {
+                        return notFound();
+                    } catch (Throwable serverError) {
+                        return internalServerError();
+                    }
+                });
+    }
 }
 

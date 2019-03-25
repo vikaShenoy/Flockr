@@ -51,13 +51,27 @@ export async function getTrip(tripId) {
  * @param {Object[]} tripDestinations - The edited trip destinations
  */
 export function editTrip(tripId, tripName, tripDestinations) {
+
+   const transformedTripDestinations = tripDestinations.map(tripDestination => {
+    const transformedTripDestination = {};
+
+    transformedTripDestination.destinationId = tripDestination.destinationId;
+    transformedTripDestination.arrivalDate = moment(tripDestination.arrivalDate).valueOf();
+    transformedTripDestination.arrivalTime = tripDestination.arrivalTime === null ? null : moment.duration(tripDestination.arrivalTime).asMinutes();
+    transformedTripDestination.departureDate = moment(tripDestination.departureDate).valueOf(); 
+    transformedTripDestination.departureTime = tripDestination.departureTime === null ? null : moment.duration(tripDestination.departureTime).asMinutes();
+
+    return transformedTripDestination;
+  }); 
+
+
   const userId = localStorage.getItem("userId");
   const authToken = localStorage.getItem("authToken");
-  
+
   return superagent.put(endpoint(`/travellers/${userId}/trips/${tripId}`))
     .set("Authorization", authToken)
     .send({
       tripName,
-      tripDestinations
+      tripDestinations: transformedTripDestinations
     });
 }

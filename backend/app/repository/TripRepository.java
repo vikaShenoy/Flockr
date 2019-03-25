@@ -2,6 +2,7 @@ package repository;
 
 import models.Trip;
 
+import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -39,6 +40,17 @@ public class TripRepository {
     public CompletionStage<Trip> update(Trip trip) {
         return supplyAsync(() -> {
             trip.update();
+            return trip;
+        }, executionContext);
+    }
+
+    /**
+     * Delete a trip.
+     * @param trip The trip to delete.
+     */
+    public CompletionStage<Trip> deleteTrip(Trip trip) {
+        return supplyAsync(() -> {
+            trip.delete();
             return trip;
         }, executionContext);
     }
