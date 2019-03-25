@@ -19,6 +19,9 @@ import util.Security;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import util.Responses;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static play.mvc.Results.*;
@@ -49,7 +52,7 @@ public class AuthController {
      * @return true or false depending on the content of the string
      */
     public boolean isAlpha(String name) {
-        return name.matches("[a-zA-Z ]+");
+        return name.matches("[a-zA-Z]+");
     }
 
     /**
@@ -119,7 +122,8 @@ public class AuthController {
         // Middle name is optional and checks if the middle name is a valid name
         if (jsonRequest.has("middleName")) {
             middleName = jsonRequest.get("middleName").asText();
-            if (!(isAlpha(middleName)) || (middleName.length() < 2)) {
+            if (!isAlpha(middleName) || (middleName.length() < 2)) {
+                System.err.println("Invalid middleName: " +  middleName);
                 return supplyAsync(() -> {
                     ObjectNode message = Json.newObject();
                     message.put("message", "Please provide a valid middle name that contains only letters and has at least 2 characters");
