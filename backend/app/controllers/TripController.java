@@ -120,5 +120,56 @@ public class TripController extends Controller {
                     }
                 });
         }
+
+
+    /**
+     * Endpoint to get update a trips destinations
+     * @param request Request body to get json body from
+     * @param tripId The trip ID to update
+     * @param userId The id of the user that the trip belongs to
+     * @return Returns the http response which can be
+     *         - Ok - Trip was updated successfully
+     *
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> updateTrip(Http.Request request, int userId, int tripId) {
+        return tripRepository.getTripByIds(tripId, userId)
+                .thenComposeAsync((optionalTrip) -> {
+                    if (!optionalTrip.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
+                    JsonNode jsonBody = request.body().asJson();
+                    List<TripDestination> tripDestinations = new ArrayList<>();
+                    for (JsonNode tripDestinationJson : jsonBody) {
+
+                        int destinationId = tripDestinationJson.get("destinationId").asInt();
+                        Date arrivalDate = new Date(tripDestinationJson.get("arrivalDate").asLong());
+                        int arrivalTime = tripDestinationJson.get("arrivalTime").asInt(-1);
+                        Date departureDate = new Timestamp(tripDestinationJson.get("departureDate").asLong());
+                        int departureTime = tripDestinationJson.get("departureTime").asInt(-1);
+
+                        Destination destination = new Destination(null, null, null, null, null, null);
+                        destination.setDestinationId(destinationId);
+
+                        TripDestination tripDestination = new TripDestination(destination, arrivalDate, arrivalTime, departureDate, departureTime);
+                        tripDestinations.add(tripDestination);
+                    }
+
+                    Trip trip = optionalTrip.get();
+
+
+                    return tripRepository.update(trip);
+                }, httpExecutionContext.current())
+                .thenApplyAsync((Destination) -> (Result) ok(), httpExecutionContext.current())
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (NotFoundException notFoundE) {
+                        return notFound();
+                    } catch (Throwable ee) {
+                        return internalServerError();
+                    }
+                });
+    }
 }
 
