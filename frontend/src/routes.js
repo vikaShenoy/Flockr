@@ -6,6 +6,7 @@ import Login from "./containers/Login/Login.vue";
 import Profile from "./containers/Profile/Profile.vue"
 import Travellers from "./containers/Travellers/Travellers.vue";
 import Destinations from "./containers/Destinations/Destinations.vue";
+import SearchTravellers from "./containers/SearchTravellers/SearchTravellers.vue";
 import Trips from "./containers/Trips/Trips.vue";
 
 import { loggedIn } from "./utils/auth";
@@ -32,6 +33,10 @@ const routes = [
   {
     path: "/login",
     component: Login,
+  },
+  {
+    path: "/search",
+    component: SearchTravellers
   },
   {
     path: "/destinations",
