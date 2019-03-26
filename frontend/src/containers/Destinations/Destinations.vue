@@ -147,11 +147,10 @@
   width: 100%;
   padding: 15px;
   text-align: left;
-  background: black;
-  color: $primary;
-  font-size: 30px;
+  background: $primary;
+  font-size: 20px;
   h1 {
-    color: white;
+    color: $darker-white;
   }
 }
 
@@ -172,7 +171,7 @@
 }
 
 .destinations-card {
-  padding: 150px 50px 50px;
+  padding: 110px 50px 50px;
 }
 
 #addDestinationButton {

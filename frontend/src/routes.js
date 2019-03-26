@@ -36,7 +36,8 @@ const routes = [
   },
   {
     path: "/search",
-    component: SearchTravellers
+    component: SearchTravellers,
+    beforeEnter: loggedIn
   },
   {
     path: "/destinations",
