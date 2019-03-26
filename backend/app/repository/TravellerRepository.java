@@ -2,6 +2,8 @@ package repository;
 
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
+import io.ebean.ExpressionList;
+import io.ebean.Query;
 import models.Passport;
 import models.Nationality;
 import models.TravellerType;
@@ -14,9 +16,11 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Contains database calls for all things traveller related
@@ -144,4 +148,49 @@ public class TravellerRepository {
             return user;
         }, executionContext);
     }
+
+
+
+    /**
+     * Function to search through the user database
+     * @param nationality nationality id
+     * @param gender gender string
+     * @param dateMin min age Date
+     * @param dateMax max age Date
+     * @param traveller_type traveller type Id
+     * @return List of users or empty list
+     */
+    public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax, int traveller_type) {
+        AtomicBoolean found = new AtomicBoolean(false);
+
+        return supplyAsync(() -> {
+           ExpressionList<User> query = User.find.query()
+                    .fetch("travellerTypes").where();
+           if (!gender.isEmpty()) {
+               query = query.eq("gender", gender);
+           }
+           if (traveller_type != -1)     {
+               query = query.where().eq("traveller_type_id", traveller_type);
+           }
+           query = query.where().between("dateOfBirth", dateMin, dateMax);
+           List<User> users = query.findList();
+
+            for (int i = 0; i <users.size(); i++) {
+                found.set(false);
+                List<Nationality>natsToCheck = users.get(i).getNationalities();
+                for (int j = 0; j < natsToCheck.size(); j++) {
+                    if(natsToCheck.get(j).getNationalityId() == nationality) {
+                        found.set(true);
+                    }
+
+                }
+                if (found.get() == false) {
+                    users.remove(i);
+
+                }
+            }
+            return users;
+        }, executionContext);
+    }
+
 }

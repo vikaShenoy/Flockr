@@ -14,6 +14,7 @@ GET          /api/auth/travellers/:email/available     controllers.AuthControlle
 
 # Traveller routes
 GET          /api/travellers                           controllers.TravellerController.getTravellers()
+GET          /api/travellers/search/                   controllers.TravellerController.searchTravellers(request: Request)
 GET          /api/travellers/nationalities             controllers.TravellerController.getNationalities(request: Request)
 GET          /api/travellers/passports                 controllers.TravellerController.getAllPassports(request: Request)
 GET          /api/travellers/types                     controllers.TravellerController.getTravellerTypes(request: Request)
@@ -32,7 +33,7 @@ GET         /api/destinations/types                     controllers.DestinationC
 GET         /api/destinations/:destinationId            controllers.DestinationController.getDestination(destinationId: Int, request: Request)
 DELETE      /api/destinations/:destinationId            controllers.DestinationController.deleteDestination(destinationId: Int, request: Request)
 
-#TODO: Isaac To Finish this
+
 POST        /api/destinations                           controllers.DestinationController.addDestination(request: Request)
 PUT         /api/destinations/:destinationId            controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
 

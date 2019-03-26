@@ -307,4 +307,66 @@ public class TravellerController extends Controller {
                     return ok(Json.toJson(types));
                 }, httpExecutionContext.current());
     }
+
+
+
+    /**
+     * Allows the front-end to search for a traveller.
+     * @param request
+     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> searchTravellers(Http.Request request) {
+        int nationality;
+        nationality = -1;
+        int travellerType;
+        travellerType = -1;
+        long ageMin;
+        ageMin = -1;
+        long ageMax;
+        ageMax = -1;
+        String gender = "";
+        try {
+            String nationalityQuery = request.getQueryString("nationality");
+            if (!nationalityQuery.isEmpty())
+                nationality = Integer.parseInt(nationalityQuery);
+        } catch (Exception e){ System.out.println("No Parameter nationality");}
+        try {
+            String ageMinQuery = request.getQueryString("ageMin");
+            if (!ageMinQuery.isEmpty())
+                ageMin = Long.parseLong(ageMinQuery);
+        } catch (Exception e){ System.out.println("No Parameter ageMin");}
+        try {
+            String ageMaxQuery = request.getQueryString("ageMax");
+            if(!ageMaxQuery.isEmpty())
+                ageMax = Long.parseLong(ageMaxQuery);
+        } catch (Exception e){ System.out.println("No Parameter ageMax");}
+        try {
+            String travellerTypeQuery = request.getQueryString("travellerType");
+            if (!travellerTypeQuery.isEmpty())
+                travellerType = Integer.parseInt(travellerTypeQuery);
+        } catch (Exception e){ System.out.println("No Parameter travellerType");}
+        try {
+            gender = request.getQueryString("gender");
+        } catch (Exception e){ System.out.println("No Parameter gender");}
+        Date dateMin = new Date(ageMin);
+        Date dateMax = new Date(ageMax);
+
+        System.out.println("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
+
+        return travellerRepository.searchUser(nationality,gender,dateMin,dateMax,travellerType)  //Just for testing purposes
+                .thenApplyAsync((user) -> {
+                    if (user.isEmpty()) {
+                        return notFound("No Users Found");
+                    }
+
+                    JsonNode userAsJson = Json.toJson(user);
+                    System.out.println(userAsJson);
+
+                    return ok(userAsJson);
+
+                }, httpExecutionContext.current());
+
+    }
+
 }
