@@ -7,13 +7,18 @@ import Profile from "./containers/Profile/Profile.vue"
 import Travellers from "./containers/Travellers/Travellers.vue";
 import Destinations from "./containers/Destinations/Destinations.vue";
 import Trips from "./containers/Trips/Trips.vue";
+import AddTrip from "./containers/AddTrip/AddTrip.vue";
+import Trip from "./containers/Trip/Trip.vue";
+import EditTrip from "./containers/EditTrip/EditTrip.vue";
 
-import { loggedIn } from "./utils/auth";
+import { loggedIn, loggedInOrOut } from "./utils/auth";
 
+// All routes need to be annotated with loggedIn or loggedInOrOut
 const routes = [
   {
     path: "/",
-    component: Home
+    component: Home,
+    beforeEnter: loggedInOrOut
   },
   {
     path: "/profile/:id",
@@ -27,22 +32,39 @@ const routes = [
   },
   {
     path: "/signup",
-    component: Signup 
+    component: Signup,
+    beforeEnter: loggedInOrOut
   },
   {
     path: "/login",
     component: Login,
+    beforeEnter: loggedInOrOut
   },
   {
     path: "/destinations",
     component: Destinations,
-    beforeEnter: loggedIn
+    beforeEnter: loggedIn,
   },
   {
     path: "/trips",
     component: Trips,
-    // beforeEnter: loggedIn
+    beforeEnter: loggedIn
   },
+  {
+    path: "/trips/add",
+    component: AddTrip,
+    beforeEnter: loggedIn
+  },
+  {
+    path: "/trips/:id",
+    component: Trip,
+    beforeEnter: loggedIn
+  },
+  {
+    path: "/trips/:id/edit",
+    component: EditTrip,
+    beforeEnter: loggedIn
+  }
 ];
 
 const router = new VueRouter({

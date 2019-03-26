@@ -1,24 +1,22 @@
 <template>
-    <div class="trip-container">
-        <v-card>
+    <div id="trip-container">
             <h2>{{trip.tripName}}</h2>
             <v-timeline>
-                <TimelineDestination
-                    v-for="(destination, index) in trip.destinations"
-                    :key="destination.destinationName"
-                    :destination="destination"
+                <TripDestination
+                    v-for="(tripDestination, index) in trip.tripDestinations"
+                    :key="tripDestination.destinationName"
+                    :tripDestination="tripDestination"
                     :alignRight="index % 2 === 0 ? true : false"
                 />
             </v-timeline>
-        </v-card>
     </div>    
 </template>
 
 
 <script>
-import TimelineDestination from './TimelineDestination';
+import TripDestination from "./TripDestination/TripDestination";
 export default {
-    name: 'Trip',
+    name: "Trip",
     props: {
         trip: {
             tripName: String,
@@ -26,13 +24,13 @@ export default {
         }
     },
     components: {
-        TimelineDestination
+       TripDestination 
     }
 }
 </script>
 
 <style lang="scss" scoped>
-    .trip-container {
+    #trip-container {
         width: 100%;
     }
 

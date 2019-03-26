@@ -161,7 +161,6 @@
   </div>
 </template>
 <script>
-import superagent from "superagent";
 import UserStore from "../../../stores/UserStore";
 import { rules, updateBasicInfo } from "./BasicInfoService.js";
 import moment from "moment";
@@ -184,7 +183,6 @@ export default {
       dateOfBirthErrors: [],
       genderErrors: [],
       hasInvalidCredentials: false,
-      isEditing: false,
       genderOptions: ["Male", "Female", "Other"],
       fieldRules: [rules.required, rules.noNumbers],
       dateRules: [rules.required],
@@ -322,8 +320,8 @@ b {
   }
 
   .v-text-field {
-    padding-top: 0px;
-    margin-top: 0px;
+    padding-top: 0;
+    margin-top: 0;
   }
 }
 </style>

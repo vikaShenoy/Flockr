@@ -1,4 +1,4 @@
-package steps.auth;
+package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.AbstractModule;
@@ -25,19 +25,16 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import static play.test.Helpers.route;
 
-public class SignUpTestSteps {
+public class DestinationTestingSteps {
     @Inject
     private Application application;
-
     private JsonNode userData;
     private Result result;
-    private Result signUpResponse;
 
-    /**
-     * Set up the backend server
-     */
     @Before
     public void setUp() {
         Module testModule = new AbstractModule() {
@@ -49,32 +46,35 @@ public class SignUpTestSteps {
                 .builder(new ApplicationLoader.Context(Environment.simple()))
                 .overrides(testModule);
         Guice.createInjector(builder.applicationModule()).injectMembers(this);
+
         Helpers.start(application);
     }
 
-    /**
-     * Stop the backend server
-     */
     @After
     public void tearDown() {
         Helpers.stop(application);
     }
 
-    @Given("that I have valid user data to sign up:")
-    public void thatIHaveValidUserDataToSignUp(DataTable dataTable) {
+    @Given("that I have destination data to create with:")
+    public void thatIHaveDestinationDataToCreateWith(DataTable dataTable) {
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
         this.userData = Json.toJson(firstRow);
+
+        Http.RequestBuilder resample = Helpers.fakeRequest()
+                .method("POST")
+                .uri("/api/internal/resample");
+        Result result = route(application, resample);
     }
 
-    @Given("that I have incomplete user data to sign up:")
-    public void thatIHaveIncompleteUserDataToSignUp(DataTable dataTable) {
-        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
-        Map<String, String> firstRow = list.get(0);
-        this.userData = Json.toJson(firstRow);
+    @Given("that I have a destination created")
+    public void thatIHaveADestinationCreated() {
+        Http.RequestBuilder resample = Helpers.fakeRequest()
+                .method("POST")
+                .uri("/api/internal/resample");
     }
 
-    @When("I make an {string} request to {string} with the data")
+    @When("I make a {string} request to {string} with the data")
     public void iMakeARequestToWithTheData(String requestMethod, String endpoint) {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method(requestMethod)
@@ -83,8 +83,18 @@ public class SignUpTestSteps {
         this.result = route(application, request);
     }
 
-    @Then("I should receive a {int} status code")
-    public void iShouldReceiveAStatusCode(Integer expectedStatusCode) {
+    @Then("I should receive an {int} status code")
+    public void iShouldReceieveAnStatusCode(Integer expectedStatusCode) {
         Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
     }
+
+    @Then("I should receive a {int} status code when checking for the destination")
+    public void iShouldReceiveAStatusCodeWhenCheckingForTheDestination(Integer expectedStatusCode) {
+        Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
+                .method("GET")
+                .uri("/api/destinations/1");
+        Result result = route(application, checkDeletion);
+        Assert.assertEquals(expectedStatusCode, (Integer) result.status());
+    }
+
 }

@@ -32,6 +32,9 @@ public class SmokeTestingTestSteps {
     private Result result; // the result returned by the backend
 
 
+    /**
+     * Set up the backend server
+     */
     @Before
     public void setUp() {
         Module testModule = new AbstractModule() {
@@ -47,6 +50,9 @@ public class SmokeTestingTestSteps {
     }
 
 
+    /**
+     * Stop the backend server
+     */
     @After
     public void tearDown() {
         Helpers.stop(application);

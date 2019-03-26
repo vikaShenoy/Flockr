@@ -3,7 +3,7 @@
         <v-timeline-item :style="{width: '90%', marginLeft: '5%'}" color="primary" small :right="alignRight">
             <v-card>
                 <v-card-title class="primary">
-                    <h3 class="white--text font-weight-light">{{destination.destinationName}}</h3>
+                    <h3 class="white--text font-weight-light">{{tripDestination.destinationName}}</h3>
                 </v-card-title>
                 <v-container>
                     <v-layout>
@@ -11,7 +11,7 @@
                             <v-icon size="30">flight_takeoff</v-icon>
                         </v-flex>
                         <v-flex xs10>
-                            <p>{{destination.arrivalDate}}</p>
+                            <p>{{tripDestination.arrival}}</p>
                         </v-flex>
                     </v-layout>
                     <v-layout>
@@ -19,7 +19,7 @@
                             <v-icon size="30">flight_landing</v-icon>
                         </v-flex>
                         <v-flex xs10>
-                            <p>{{destination.departureDate}}</p>
+                            <p>{{tripDestination.departure}}</p>
                         </v-flex>
                     </v-layout>
                 </v-container>
@@ -33,7 +33,7 @@
 export default {
     name: 'TimelineDestination',
     props: {
-        destination: {
+        tripDestination: {
             destinationName: String,
             arrivalDate: String,
             departureDate: String,

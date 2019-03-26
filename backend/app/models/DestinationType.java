@@ -1,35 +1,45 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+
+/**
+ * A type of destination that is linked to the destination object.
+ */
+
 @Entity
 public class DestinationType extends Model {
 
     @Id
-    private int destTypeId;
+    private int destinationTypeId;
 
-    private String destTypeName;
+    private String destinationTypeName;
 
-    public DestinationType(String destTypeName) {
-        this.destTypeName = destTypeName;
+    public DestinationType(String destinationTypeName) {
+        this.destinationTypeName = destinationTypeName;
     }
 
-    public int getDestTypeId() {
-        return destTypeId;
+    public int getDestinationTypeId() {
+        return destinationTypeId;
     }
 
-    public void setDestTypeId(int destTypeId) {
-        this.destTypeId = destTypeId;
+    public void setDestinationTypeId(int destinationTypeId) {
+        this.destinationTypeId = destinationTypeId;
     }
 
-    public String getDestTypeName() {
-        return destTypeName;
+    public String getDestinationTypeName() {
+        return destinationTypeName;
     }
 
-    public void setDestTypeName(String destTypeName) {
-        this.destTypeName = destTypeName;
+    public void setDestinationTypeName(String destinationTypeName) {
+        this.destinationTypeName = destinationTypeName;
     }
+
+    public static final Finder<Integer, DestinationType> find = new Finder<>(DestinationType.class);
 }
+
+

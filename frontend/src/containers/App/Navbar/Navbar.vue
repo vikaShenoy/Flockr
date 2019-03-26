@@ -119,7 +119,7 @@ export default {
     async navClicked(url) {
       switch (url) {
         case "/profile":
-          this.$router.push(`/profile/${UserStore.data.userId}`)
+          this.$router.push(`/profile/${UserStore.data.userId}`);
           break;
         case "/logout":
           await logout();
@@ -129,7 +129,7 @@ export default {
           this.$router.push("/");
           break;
         default:
-          this.$router.push(url)
+          this.$router.push(url);
           break;
       }
     }
@@ -143,9 +143,9 @@ export default {
       const loggedIn = UserStore.methods.loggedIn();
       const profileCompleted = UserStore.methods.profileCompleted();
 
-      // return this.items.filter(item => {
-      //   return (item.loggedIn && loggedIn && (item.profileCompleted && profileCompleted || !item.profileCompleted)) || item.loggedOut && !loggedIn;
-      // });
+      return this.items.filter(item => {
+        return (item.loggedIn && loggedIn && (item.profileCompleted && profileCompleted || !item.profileCompleted)) || item.loggedOut && !loggedIn;
+      });
 
       return this.items;
     },

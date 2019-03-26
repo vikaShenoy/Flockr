@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.*;
@@ -11,16 +12,19 @@ public class Trip extends Model {
     @Id
     private int tripId;
 
-    @OneToOne
+    @ManyToOne
     private User user;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
+    private String tripName;
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     private List<TripDestination> tripDestinations;
 
 
-    public Trip(List<TripDestination> tripDestinations, User user) {
+    public Trip(List<TripDestination> tripDestinations, User user, String tripName) {
         this.tripDestinations = tripDestinations;
         this.user = user;
+        this.tripName = tripName;
     }
 
     public int getTripId() {
@@ -46,4 +50,14 @@ public class Trip extends Model {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public String getTripName() {
+        return tripName;
+    }
+
+    public void setTripName(String tripName) {
+        this.tripName = tripName;
+    }
+
+    public static final Finder<Integer, Trip> find = new Finder<>(Trip.class);
 }
