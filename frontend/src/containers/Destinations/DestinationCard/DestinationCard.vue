@@ -309,16 +309,26 @@
 
       isValidLatitude: function (event) {
         let currentValue = event.target.value + event.key;
-        // Prevent the keystroke if the value would be out of a valid latitude range or not numeric
-        if (isNaN(currentValue) || parseFloat(currentValue) > 90 || parseFloat(currentValue) < -90) {
+
+        // Allow the keystroke if the value is the negative sign
+        if (currentValue == '-') {
+          return;
+        }
+        // Prevent the keystroke if the value would be out of a valid latitude range or not numeric or -0 or 0 followed by any other number
+        if (isNaN(currentValue) || parseFloat(currentValue) > 90 || parseFloat(currentValue) < -90 || currentValue == '-0' || (currentValue.charAt(0) == '0') && currentValue.length > 1) {
           event.preventDefault();
         }
       },
 
       isValidLongitude: function (event) {
         let currentValue = event.target.value + event.key;
-        // Prevent the keystroke if the value would be out of a valid latitude range or not numeric
-        if (isNaN(currentValue) || parseFloat(currentValue) > 180 || parseFloat(currentValue) < -180) {
+
+        // Allow the keystroke if the value is the negative sign
+        if (currentValue == '-') {
+          return;
+        }
+        // Prevent the keystroke if the value would be out of a valid latitude range or not numeric or -0 or 0 followed by any other number
+        if (isNaN(currentValue) || parseFloat(currentValue) > 180 || parseFloat(currentValue) < -180 || currentValue == '-0' || (currentValue.charAt(0) == '0') && currentValue.length > 1) {
           event.preventDefault();
         }
       },
