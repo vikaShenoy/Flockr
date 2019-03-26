@@ -7,7 +7,7 @@ import moment from "moment";
  * @param {string} tripName 
  * @param {object[]} tripDestinations 
  */
-export function addTrip(tripName, tripDestinations) {
+export async function addTrip(tripName, tripDestinations) {
   const transformedTripDestinations = tripDestinations.map(tripDestination => {
     const transformedTripDestination = {};
 
@@ -21,10 +21,11 @@ export function addTrip(tripName, tripDestinations) {
   }); 
 
 
-  return superagent.post(endpoint(`/travellers/${localStorage.getItem("userId")}/trips`))
+  const res = await superagent.post(endpoint(`/travellers/${localStorage.getItem("userId")}/trips`))
   .set("Authorization", localStorage.getItem("authToken"))
   .send({
     tripName,
     tripDestinations: transformedTripDestinations
   });
+  return res.body;
 }

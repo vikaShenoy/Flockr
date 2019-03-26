@@ -112,7 +112,8 @@ export default {
 
       if (!validFields) return;
       try {
-        await addTrip(this.tripName, this.tripDestinations);
+        const tripId = await addTrip(this.tripName, this.tripDestinations);
+        this.$router.push(`/trips/${tripId}`); 
       } catch (e) {
         console.log(e);
         // Add error handling here later
