@@ -295,9 +295,6 @@ public class TravellerController extends Controller {
                 }, httpExecutionContext.current());
     }
 
-
-
-
     /**
      * Get a list of all valid traveller types
      * @param request unused request object
