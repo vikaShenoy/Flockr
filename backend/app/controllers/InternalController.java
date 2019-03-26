@@ -6,6 +6,7 @@ import models.Nationality;
 import models.Passport;
 import play.libs.Json;
 import play.mvc.Result;
+import play.mvc.With;
 import util.Security;
 
 import java.sql.Timestamp;
@@ -68,16 +69,26 @@ public class InternalController {
             tripDestinations.add(new TripDestination(destination2, new Date(), 34, new Date(), 23));
 
 
-
             TravellerType travellerType1 = new TravellerType("Outdoor");
             travellerType1.save();
 
-            TravellerType travellerType2 = new TravellerType("Up-market");
+            TravellerType travellerType2 = new TravellerType("Thrillseeker");
             travellerType2.save();
 
-            TravellerType travellerType3 = new TravellerType("Weekend Warrior");
+            TravellerType travellerType3 = new TravellerType("Gap year");
             travellerType3.save();
 
+            TravellerType travellerType4 = new TravellerType("Frequent weekender");
+            travellerType4.save();
+
+            TravellerType travellerType5 = new TravellerType("Holidaymaker");
+            travellerType5.save();
+
+            TravellerType travellerType6 = new TravellerType("Functional/business");
+            travellerType6.save();
+
+            TravellerType travellerType7 = new TravellerType("Backpacker");
+            travellerType7.save();
 
             User user = generateMockUser();
 
