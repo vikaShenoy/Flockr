@@ -42,6 +42,8 @@ export default {
   height: 100%;
   width: calc(100% - 240px);
   margin-left: 240px;
+  padding-left: 0px;
+  padding-right: 0px;
 }
 
 </style>
