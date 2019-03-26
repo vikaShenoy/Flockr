@@ -62,8 +62,6 @@ public class TripController extends Controller {
 
         String tripName = jsonBody.get("tripName").asText();
         JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD");
-
         List<TripDestination> tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
 
         Trip trip = new Trip(tripDestinations, user, tripName);

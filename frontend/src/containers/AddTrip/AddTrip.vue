@@ -61,7 +61,7 @@ export default {
   data() {
     return {
      tripName: "",
-     tripDestinations: [{...tripDestination}, {...tripDestination}],
+     tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
       tripNameRules: [rules.required],
     };
   },
@@ -70,7 +70,7 @@ export default {
      * Adds an empty destination
      */
     addDestination() {
-      this.tripDestinations.push({...tripDestination});
+      this.tripDestinations.push({...tripDestination, id: this.tripDestinations.length});
     },
     /**
      * Iterates through destinations and check and renders error message
@@ -78,9 +78,11 @@ export default {
      */
     contiguousDestinations() {
       let foundContiguousDestination = false;
-      for (let i = 1; i < this.tripDestinations.length; i++) {
 
-        if (this.tripDestinations[i].destinationId === this.tripDestinations[i - 1].destinationId) {
+      this.$set(this.tripDestinations[0], "destinationErrors", []);
+
+      for (let i = 1; i < this.tripDestinations.length; i++) {
+        if (this.tripDestinations[i].destinationId === this.tripDestinations[i - 1].destinationId && this.tripDestinations[i].destinationId) {
           this.$set(this.tripDestinations[i], "destinationErrors", ["Destination is same as last destination"]);
           foundContiguousDestination = true;
           continue;
@@ -90,21 +92,35 @@ export default {
       return foundContiguousDestination;
     },
     /**
-     * Validates fields before sending a request to add a trip
+     * Validates and renders errors if there are any
+     * @returns {boolean} True if fields are valid, false otherwise
      */
-    async addTrip() {
+    validate() {
       const validFields = this.$refs.addTripForm.validate();
       const contiguousDestinations = this.contiguousDestinations();
       if (!validFields || contiguousDestinations)  {
-        return;
+        return false;
       }
 
+      return true;
+    },
+    /**
+     * Validates fields before sending a request to add a trip
+     */
+    async addTrip() {
+      const validFields = this.validate();
+
+      if (!validFields) return;
       try {
         await addTrip(this.tripName, this.tripDestinations);
       } catch (e) {
         console.log(e);
         // Add error handling here later
       }
+    },
+    update(hello) {
+      this.tripDestinations = [];
+
     }
   }
 };

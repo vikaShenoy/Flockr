@@ -16,7 +16,7 @@
       >
       </v-text-field>
 
-      <TripTable :tripDestinations="tripDestinations" />
+      <TripTable :tripDestinations="tripDestinations" :isEditing="true"/>
 
       <v-btn
         depressed
@@ -92,7 +92,7 @@ export default {
      */
     addDestination() {
       // ... spread operator clones object instead of referencing
-      this.tripDestinations.push({...tripDestination});
+      this.tripDestinations.push({...tripDestination, id: this.tripDestination.length});
     },
     /**
      * Iterates through destinations and check and renders error message
@@ -102,7 +102,7 @@ export default {
       let foundContiguousDestination = false;
       for (let i = 1; i < this.tripDestinations.length; i++) {
 
-        if (this.tripDestinations[i].destinationId === this.tripDestinations[i - 1].destinationId) {
+        if (this.tripDestinations[i].destinationId === this.tripDestinations[i - 1].destinationId && this.tripDestinations[i].destinationId) {
           this.$set(this.tripDestinations[i], "destinationErrors", ["Destination is same as last destination"]);
           foundContiguousDestination = true;
           continue;

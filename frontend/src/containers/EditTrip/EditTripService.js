@@ -20,8 +20,9 @@ function formatTime(time) {
 export function transformTripResponse(trip) {
   return {
     tripName: trip.tripName,
-    tripDestinations: trip.tripDestinations.map(tripDestination => {
+    tripDestinations: trip.tripDestinations.map((tripDestination, index) => {
       return {
+        id: index,
         destinationId: tripDestination.destination.destinationId,
         arrivalDate: tripDestination.arrivalDate === 0 ? null : moment(tripDestination.arrivalDate).format("YYYY-MM-DD"),
         arrivalTime: tripDestination.arrivalTime === -1 ? null : formatTime(moment.duration(tripDestination.arrivalTime, "minutes")),
@@ -52,9 +53,10 @@ export async function getTrip(tripId) {
  */
 export function editTrip(tripId, tripName, tripDestinations) {
 
-   const transformedTripDestinations = tripDestinations.map(tripDestination => {
+   const transformedTripDestinations = tripDestinations.map((tripDestination, index)  => {
     const transformedTripDestination = {};
-
+    
+    transformedTripDestination.id = index;
     transformedTripDestination.destinationId = tripDestination.destinationId;
     transformedTripDestination.arrivalDate = moment(tripDestination.arrivalDate).valueOf();
     transformedTripDestination.arrivalTime = tripDestination.arrivalTime === null ? null : moment.duration(tripDestination.arrivalTime).asMinutes();
