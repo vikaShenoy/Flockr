@@ -14,7 +14,7 @@ GET          /api/auth/travellers/:email/available     controllers.AuthControlle
 
 # Traveller routes
 GET          /api/travellers                           controllers.TravellerController.getTravellers()
-GET          /api/travellers/search/                   controllers.TravellerController.searchTravellers(request: Request)
+GET          /api/travellers/search                    controllers.TravellerController.searchTravellers(request: Request)
 GET          /api/travellers/nationalities             controllers.TravellerController.getNationalities(request: Request)
 GET          /api/travellers/passports                 controllers.TravellerController.getAllPassports(request: Request)
 GET          /api/travellers/types                     controllers.TravellerController.getTravellerTypes(request: Request)

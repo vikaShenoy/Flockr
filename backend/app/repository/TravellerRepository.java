@@ -166,7 +166,7 @@ public class TravellerRepository {
         return supplyAsync(() -> {
            ExpressionList<User> query = User.find.query()
                     .fetch("travellerTypes").where();
-           if (!gender.isEmpty()) {
+           if (gender != null) {
                query = query.eq("gender", gender);
            }
            if (traveller_type != -1)     {
@@ -175,20 +175,23 @@ public class TravellerRepository {
            query = query.where().between("dateOfBirth", dateMin, dateMax);
            List<User> users = query.findList();
 
-            for (int i = 0; i <users.size(); i++) {
-                found.set(false);
-                List<Nationality>natsToCheck = users.get(i).getNationalities();
-                for (int j = 0; j < natsToCheck.size(); j++) {
-                    if(natsToCheck.get(j).getNationalityId() == nationality) {
-                        found.set(true);
-                    }
+           if (nationality != -1) {
 
-                }
-                if (found.get() == false) {
-                    users.remove(i);
+               for (int i = 0; i < users.size(); i++) {
+                   found.set(false);
+                   List<Nationality> natsToCheck = users.get(i).getNationalities();
+                   for (int j = 0; j < natsToCheck.size(); j++) {
+                       if (natsToCheck.get(j).getNationalityId() == nationality) {
+                           found.set(true);
+                       }
 
-                }
-            }
+                   }
+                   if (found.get() == false) {
+                       users.remove(i);
+
+                   }
+               }
+           }
             return users;
         }, executionContext);
     }
