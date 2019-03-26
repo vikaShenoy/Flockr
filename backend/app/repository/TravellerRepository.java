@@ -121,7 +121,6 @@ public class TravellerRepository {
     public CompletionStage<List<TravellerType>> getAllTravellerTypes() {
         return supplyAsync(() -> {
             List<TravellerType> types = TravellerType.find.query().findList();
-            System.out.println(types.get(0));
             return types;
         }, executionContext);
     }

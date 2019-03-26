@@ -122,8 +122,7 @@ public class AuthController {
         // Middle name is optional and checks if the middle name is a valid name
         if (jsonRequest.has("middleName")) {
             middleName = jsonRequest.get("middleName").asText();
-            if (!isAlpha(middleName) || (middleName.length() < 2)) {
-                System.err.println("Invalid middleName: " +  middleName);
+            if (!(isAlpha(middleName)) || (middleName.length() < 2)) {
                 return supplyAsync(() -> {
                     ObjectNode message = Json.newObject();
                     message.put("message", "Please provide a valid middle name that contains only letters and has at least 2 characters");

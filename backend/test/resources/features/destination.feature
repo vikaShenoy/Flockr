@@ -4,7 +4,7 @@ Feature: The user can manage destinations
   Scenario: A user tries to create a destination with valid data
     Given that I have destination data to create with:
       | destinationName | destinationTypeId | districtId | latitude | longitude | countryId |
-      | Lower Hutt | 1     | 1 |  -41.2 | 174.9 | 1                                        |
+      | Lower Hutt      | 1                 | 1          | -41.2    | 174.9     | 1                                        |
     When I make a "POST" request to "/api/destinations" with the data
     Then I should receive an 200 status code
 

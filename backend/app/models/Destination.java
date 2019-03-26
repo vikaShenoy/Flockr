@@ -5,6 +5,8 @@ import javax.persistence.*;
 import io.ebean.*;
 import org.checkerframework.common.aliasing.qual.Unique;
 
+import java.util.List;
+
 
 /**
  * A destination that a traveller can choose to go to
@@ -20,6 +22,10 @@ public class Destination extends Model {
 
     @ManyToOne
     private DestinationType destinationType;
+
+    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
+    private List<TripDestination> tripDestinations;
+
 
 
     @ManyToOne
