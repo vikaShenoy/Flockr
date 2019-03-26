@@ -1,5 +1,8 @@
 # SENG302 Team 500
 
+![Master Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/master/pipeline.svg?style=flat)
+![Dev Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/dev/pipeline.svg?style=flat)
+
 Project split into:
 - API backend using Play and Java
 - Front end using Vue.js
