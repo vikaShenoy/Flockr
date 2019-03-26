@@ -1,7 +1,7 @@
 # Routes
 
 # Home page
-GET          /                                         controllers.HomeController.index(request: Request)
+GET          /                                         controllers.Assets.at(path="/public/vue-front-end-goes-here", file="index.html")
 
 #Interval routes
 POST         /api/internal/resample                    controllers.InternalController.resample
@@ -45,4 +45,4 @@ PUT         /api/travellers/:travellerId/trips/:tripId      controllers.TripCont
 # Map static resources from the /public folder to the /assets URL path
 GET          /assets/*file                             controllers.Assets.at(path="/public", file)
 
-
+GET          /*file                                    controllers.Assets.at(path="/public/vue-front-end-goes-here", file)
