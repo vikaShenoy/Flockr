@@ -19,6 +19,9 @@ import util.Security;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import util.Responses;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static play.mvc.Results.*;
@@ -49,7 +52,7 @@ public class AuthController {
      * @return true or false depending on the content of the string
      */
     public boolean isAlpha(String name) {
-        return name.matches("[a-zA-Z ]+");
+        return name.matches("[a-zA-Z]+");
     }
 
     /**
@@ -109,11 +112,6 @@ public class AuthController {
         }
 
         String middleName = "";
-        if (checkRequest(jsonRequest)) return supplyAsync(() -> {
-            ObjectNode message = Json.newObject();
-            message.put("message", "Please provide a valid request body according to the API spec");
-            return badRequest(message);
-        });
         String firstName = jsonRequest.get("firstName").asText();
         String lastName = jsonRequest.get("lastName").asText();
         String email = jsonRequest.get("email").asText();
@@ -233,12 +231,5 @@ public class AuthController {
                     }
                     return ok();
                 }, httpExecutionContext.current());
-    }
-
-    static boolean checkRequest(JsonNode jsonRequest) {
-        if (jsonRequest == null) {
-            return true;
-        }
-        return false;
     }
 }

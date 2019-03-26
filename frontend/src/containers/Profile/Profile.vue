@@ -39,10 +39,7 @@ import BasicInfo from "./BasicInfo/BasicInfo";
 import Trips from "./Trips/Trips";
 import Photos from "./Photos/Photos";
 
-import superagent from "superagent";
 import moment from "moment";
-import UserStore from "../../stores/UserStore";
-import { endpoint } from '../../utils/endpoint';
 import { getUser } from "./ProfileService";
 
 

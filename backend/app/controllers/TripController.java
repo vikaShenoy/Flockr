@@ -4,6 +4,7 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.BadRequestException;
 import exceptions.NotFoundException;
 import exceptions.ServerErrorException;
 import models.Destination;
@@ -62,14 +63,19 @@ public class TripController extends Controller {
 
         String tripName = jsonBody.get("tripName").asText();
         JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
-        List<TripDestination> tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+        List<TripDestination> tripDestinations;
+        try {
+            tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+        } catch (BadRequestException e) {
+           return supplyAsync(() -> badRequest());
+        }
 
         Trip trip = new Trip(tripDestinations, user, tripName);
 
         return tripRepository.saveTrip(trip)
                 .thenApplyAsync((updatedTrip) -> {
                     JsonNode tripIdJson = Json.toJson(trip.getTripId());
-                    return ok(tripIdJson);
+                    return created(tripIdJson);
                 }, httpExecutionContext.current());
     }
 
@@ -143,7 +149,12 @@ public class TripController extends Controller {
                     String tripName = jsonBody.get("tripName").asText();
                     JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
 
-                    List<TripDestination> tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+                    List<TripDestination> tripDestinations;
+                    try {
+                         tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+                    } catch (BadRequestException e) {
+                        throw new CompletionException(new BadRequestException());
+                    }
 
                     Trip trip = optionalTrip.get();
 
@@ -158,6 +169,8 @@ public class TripController extends Controller {
                         throw e.getCause();
                     } catch (NotFoundException notFoundError) {
                         return notFound();
+                    } catch (BadRequestException badRequestError) {
+                        return badRequest();
                     } catch (Throwable serverError) {
                         return internalServerError();
                     }

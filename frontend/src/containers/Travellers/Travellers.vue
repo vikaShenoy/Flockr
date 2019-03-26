@@ -16,11 +16,11 @@
 </template>
 
 <script>
-import Traveller from "./Traveller/Traveller";
+  import Traveller from "./Traveller/Traveller";
 
-import { getTravellers } from "./TravellersService";
+  import {getTravellers} from "./TravellersService";
 
-export default {
+  export default {
   components: {
     Traveller
   },
@@ -35,9 +35,7 @@ export default {
   methods: {
     async getTravellers() {
       try {
-        const travellers = await getTravellers();
-
-        this.travellers = travellers;
+        this.travellers = await getTravellers();
       } catch (e) {
         console.log(e);
         // Add error handling later

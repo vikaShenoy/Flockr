@@ -4,14 +4,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.*;
 import models.Nationality;
 import models.Passport;
-import models.*;
 import play.libs.Json;
 import play.mvc.Result;
-import play.mvc.With;
 import util.Security;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
@@ -36,8 +35,6 @@ public class InternalController {
             DestinationType destinationType1 = new DestinationType("Event");
             DestinationType destinationType2 = new DestinationType("City");
 
-
-
             Country country1 = new Country("United States of America");
             Country country2 = new Country("Australia");
 
@@ -60,13 +57,16 @@ public class InternalController {
             destinationType1.save();
             destinationType2.save();
 
-
-
-            Destination destination1 = new Destination("Burning Man",destinationType1, district1, 12.1234,12.1234,country1 );
-            Destination destination2 = new Destination("Brisbane City",destinationType2, district2, 11.1234,11.1234,country2 );
+            Destination destination1 = new Destination("Burning Man",destinationType1, district1, 12.1234,12.1234, country1 );
+            Destination destination2 = new Destination("Brisbane City",destinationType2, district2, 11.1234,11.1234, country2 );
 
             destination1.save();
             destination2.save();
+
+            List<TripDestination> tripDestinations = new ArrayList<>();
+            tripDestinations.add(new TripDestination(destination1, new Date(), 450, new Date(), 550));
+            tripDestinations.add(new TripDestination(destination2, new Date(), 34, new Date(), 23));
+
 
 
             TravellerType travellerType1 = new TravellerType("Outdoor");
@@ -79,7 +79,11 @@ public class InternalController {
             travellerType3.save();
 
 
-            generateMockUser();
+            User user = generateMockUser();
+
+            Trip trip = new Trip(tripDestinations, user, "My trip name");
+
+            trip.save();
 
             ObjectNode json = Json.newObject();
             json.put("message", "Success resampling the database");
@@ -92,7 +96,7 @@ public class InternalController {
      * Create a user and save to database.
      * NOTE: also creates a passport, nationality, traveller type and gender in the database
      */
-    public void generateMockUser() {
+    public User generateMockUser() {
         Security security = new Security();
 
         String firstName = "Luis";
@@ -101,7 +105,7 @@ public class InternalController {
         String password = "so-secure";
         String passwordHash = security.hashPassword(password);
         String email = "luis@gmail.com";
-        String token = security.generateToken();
+        String token = "some-token";
         Timestamp dateOfBirth = new Timestamp(637920534);
 
         // NOTE: new nationality saved to database
@@ -130,5 +134,7 @@ public class InternalController {
 
         User user = new User(firstName, middleName, lastName, passwordHash, "Male", email, nationalityList, travellerTypeList, dateOfBirth, passportList, token);
         user.save();
+
+        return user;
     }
 }

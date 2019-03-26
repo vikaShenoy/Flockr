@@ -71,9 +71,7 @@ public class DestinationController  extends Controller{
                     return ok(destAsJson);
 
                 }, httpExecutionContext.current());
-
     }
-
 
     /**
      * Function to add destinations to the database
@@ -84,31 +82,37 @@ public class DestinationController  extends Controller{
     public CompletionStage<Result> addDestination(Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
 
-        //Use the request Checker from the  AuthController to check the JSON is not empty
-        if (AuthController.checkRequest(jsonRequest)) return supplyAsync(() -> {
-            ObjectNode message = Json.newObject();
-            message.put("message", "Please provide a valid request body according to the API spec");
-            return badRequest(message);
-        });
-        String destinationName = jsonRequest.get("destinationName").asText();
-        int destinationType = jsonRequest.get("destinationTypeId").asInt();
-        int district = jsonRequest.get("districtId").asInt();
-        Double latitude = jsonRequest.get("latitude").asDouble();
-        Double longitude = jsonRequest.get("longitude").asDouble();
-        int country = jsonRequest.get("countryId").asInt();
+        // check that the request has a body
+        if (jsonRequest == null) {
+            return supplyAsync(() -> {
+                ObjectNode message = Json.newObject();
+                message.put("message", "Please provide a valid request body according to the API spec");
+                return badRequest(message);
+            });
+        }
 
-        DestinationType destinationTypeAdd = new DestinationType(null);
-        destinationTypeAdd.setDestinationTypeId(destinationType);
-        District districtAdd = new District(null, null);
-        districtAdd.setDistrictId(district);
-        Country countryAdd = new Country(null);
-        countryAdd.setCountryId(country);
+        try {
+            String destinationName = jsonRequest.get("destinationName").asText();
+            int destinationType = jsonRequest.get("destinationTypeId").asInt();
+            int district = jsonRequest.get("districtId").asInt();
+            Double latitude = jsonRequest.get("latitude").asDouble();
+            Double longitude = jsonRequest.get("longitude").asDouble();
+            int country = jsonRequest.get("countryId").asInt();
 
-        Destination destination = new Destination(destinationName,destinationTypeAdd,districtAdd,
-                                                  latitude,longitude,countryAdd);
+            DestinationType destinationTypeAdd = new DestinationType(null);
+            destinationTypeAdd.setDestinationTypeId(destinationType);
+            District districtAdd = new District(null, null);
+            districtAdd.setDistrictId(district);
+            Country countryAdd = new Country(null);
+            countryAdd.setCountryId(country);
+            Destination destination = new Destination(destinationName,destinationTypeAdd,districtAdd,
+                    latitude,longitude,countryAdd);
 
-        return destinationRepository.insert(destination)
-                .thenApplyAsync((insertedDestination) -> ok(Json.toJson(insertedDestination)), httpExecutionContext.current());
+            return destinationRepository.insert(destination)
+                    .thenApplyAsync((insertedDestination) -> ok(Json.toJson(insertedDestination)), httpExecutionContext.current());
+        } catch (Exception e) {
+            return supplyAsync(() -> badRequest());
+        }
 
     }
 

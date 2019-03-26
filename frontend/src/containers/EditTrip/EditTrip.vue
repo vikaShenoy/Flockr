@@ -124,6 +124,7 @@ export default {
       try {
         const tripId = this.$route.params.id;
         await editTrip(tripId, this.tripName, this.tripDestinations);
+        this.$router.push(`/trips/${tripId}`)
       } catch (e) {
         console.log(e);
         // Add error handling here later
