@@ -62,9 +62,7 @@
 </template>
 
 <script>
-import superagent from "superagent";
 import UserStore from "../../../stores/UserStore";
-import { endpoint } from "../../../utils/endpoint";
 import { getAllTravellerTypes, updateTravellerTypes } from "./TravellerTypesService";
 
 export default {

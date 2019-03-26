@@ -58,7 +58,6 @@
 </template>
 
 <script>
-import superagent from "superagent";
 import UserStore from "../../../stores/UserStore";
 import { getNationalities, updateNationalities } from "./NationalityService.js";
 
