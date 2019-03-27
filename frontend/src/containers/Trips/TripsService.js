@@ -81,7 +81,7 @@ export function transformTrips(trips) {
     let tripStatus;
 
     if (!tripStart || !tripEnd) {
-      tripStatus = "Undefined";
+      tripStatus = "Unknown";
     } else if (currentTime.isAfter(tripStart) && currentTime.isBefore(tripEnd)) {
       tripStatus = "Ongoing";
     } else if (currentTime.isBefore(tripStart)) {
@@ -89,7 +89,7 @@ export function transformTrips(trips) {
     } else if (currentTime.isAfter(tripEnd)) {
       tripStatus = "Passed";
     } else {
-      tripStatus = "Undefined";
+      tripStatus = "Unknown";
     }
 
     return {

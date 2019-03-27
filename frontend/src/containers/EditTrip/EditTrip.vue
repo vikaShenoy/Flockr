@@ -92,7 +92,7 @@ export default {
      */
     addDestination() {
       // ... spread operator clones object instead of referencing
-      this.tripDestinations.push({...tripDestination, id: this.tripDestination.length});
+      this.tripDestinations.push({...tripDestination, id: this.tripDestinations.length});
     },
     /**
      * Iterates through destinations and check and renders error message
