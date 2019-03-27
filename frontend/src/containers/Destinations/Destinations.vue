@@ -11,6 +11,7 @@
               :destinationTypes="destinationTypes"
               :countries="countries"
               @editModeChanged="changeEditMode"
+              @idChanged="changeIdOfDestination"
       ></DestinationCard>
       <v-btn fab dark id="addDestinationButton" v-on:click="addNewDestinationCard">
         <v-icon dark>add</v-icon>
@@ -119,6 +120,11 @@
       changeEditMode: async function (value, target) {
         let targetIndex = await this.getIndexOfDestinationFromTarget(target);
         this.destinations[targetIndex].editMode = value;
+      },
+
+      changeIdOfDestination: async function (value, target) {
+        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
+        this.destinations[targetIndex].destinationObject.destinationId = value;
       },
 
       getIndexOfDestinationFromTarget: function (target) {

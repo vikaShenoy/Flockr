@@ -190,6 +190,9 @@
       },
       districtName() {
         return this.destination.destinationDistrict.districtName;
+      },
+      destinationId() {
+        return this.destination.destinationId;
       }
     },
 
@@ -205,6 +208,10 @@
 
       districtName() {
         this.onDistrictChanged();
+      },
+
+      destinationId() {
+        this.onDestinationIdChanged();
       },
 
       'editMode': {
@@ -287,7 +294,9 @@
           // If the destination is new
           if (this.destination.destinationId === null) {
             try {
-              await sendAddDestination(destinationInfo);
+              let newDestination = await sendAddDestination(destinationInfo);
+              console.log(newDestination);
+              this.destination.destinationId = newDestination.destinationId;
               this.dataEditMode = !this.dataEditMode;
             } catch (error) {
               console.log(error);
@@ -444,6 +453,12 @@
           }
         } else {
           this.districtDisabled = true;
+        }
+      },
+
+      onDestinationIdChanged () {
+        if (this.$el) {
+          this.$emit('idChanged', this.destination.destinationId, this.$el);
         }
       },
 
