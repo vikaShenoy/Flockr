@@ -1,5 +1,8 @@
 # SENG302 Team 500
 
+![Master Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/master/pipeline.svg?style=flat)
+![Dev Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/dev/pipeline.svg?style=flat)
+
 Project split into:
 - API backend using Play and Java
 - Front end using Vue.js
@@ -13,12 +16,22 @@ Project split into:
 ## Project Structure for Front End
 `// TODO: Raf to complete this` 
 
-## How to run the back end
+## How to run the back end in dev mode
 ```bash
 cd backend
 sbt run
 ```
 And open <http://localhost:9000/>
+
+## How to run the back end in production mode
+```bash
+# create an environment variable
+export APPLICATION_SECRET=[insert a random string as your secret]
+# check that the environment variable was successfully created
+printenv | grep APPLICATION_SECRET
+# run the production server
+bash [binary file name, as of right now: "seng202-team-500"]
+```
 
 ## How to run the front end
 ```bash

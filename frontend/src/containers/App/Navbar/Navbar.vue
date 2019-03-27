@@ -146,6 +146,8 @@ export default {
       return this.items.filter(item => {
         return (item.loggedIn && loggedIn && (item.profileCompleted && profileCompleted || !item.profileCompleted)) || item.loggedOut && !loggedIn;
       });
+
+      return this.items;
     },
     /**
      * Event handler called when nav item has been clicked

@@ -97,9 +97,6 @@ public class TripTestingSteps {
     @Then("I send a request to add a trip")
     public void iSendARequestToAddATrip() {
         ObjectNode jsonBody = Json.newObject();
-
-
-
         jsonBody.set("tripName", Json.toJson(this.tripName));
         jsonBody.set("tripDestinations", Json.toJson(this.tripDestinations));
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
@@ -136,9 +133,20 @@ public class TripTestingSteps {
         this.result = route(application, checkCreation);
     }
 
+    @When("I send a request to get trips")
+    public void iSendARequestToGetTrips() {
+        Http.RequestBuilder checkCreation = Helpers.fakeRequest()
+                .method("GET")
+                .uri("/api/travellers/1/trips")
+                .header("Authorization",  "some-token");
+
+        this.result = route(application, checkCreation);
+    }
 
     @Then("The server should return a {int} status")
     public void theServerShouldReturnAstatus(int status) {
         Assert.assertEquals(status, this.result.status());
     }
+
+
 }

@@ -1,7 +1,7 @@
 # Routes
 
 # Home page
-GET          /                                         controllers.HomeController.index(request: Request)
+GET          /                                         controllers.Assets.at(path="/public/vue-front-end-goes-here", file="index.html")
 
 #Interval routes
 POST         /api/internal/resample                    controllers.InternalController.resample
@@ -17,10 +17,6 @@ GET          /api/travellers                           controllers.TravellerCont
 GET          /api/travellers/search                    controllers.TravellerController.searchTravellers(request: Request)
 GET          /api/travellers/nationalities             controllers.TravellerController.getNationalities(request: Request)
 GET          /api/travellers/passports                 controllers.TravellerController.getAllPassports(request: Request)
-GET          /api/travellers/types                                              controllers.TravellerController.getTravellerTypes(request: Request)
-GET          /api/travellers/:travellerId                                       controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
-PATCH        /api/travellers/:travellerId                                       controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
-GET          /api/travellers/:travellerId               controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
 GET          /api/travellers/types                     controllers.TravellerController.getTravellerTypes(request: Request)
 GET          /api/travellers/:travellerId              controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
 PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
@@ -38,6 +34,7 @@ POST        /api/destinations                           controllers.DestinationC
 PUT         /api/destinations/:destinationId            controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
 
 # Trip routes
+GET         /api/travellers/:travellerId/trips      controllers.TripController.getTrips(request: Request, travellerId: Int)
 POST        /api/travellers/:travellerId/trips              controllers.TripController.addTrip(travellerId: Int, request: Request)
 DELETE      /api/travellers/:travellerId/trips/:tripId      controllers.TripController.deleteTrip(travellerId : Int, tripId : Int, request : Request)
 GET         /api/travellers/:travellerId/trips/:tripId      controllers.TripController.getTrip(travellerId: Int, tripId: Int, request: Request)
@@ -46,4 +43,4 @@ PUT         /api/travellers/:travellerId/trips/:tripId      controllers.TripCont
 # Map static resources from the /public folder to the /assets URL path
 GET          /assets/*file                             controllers.Assets.at(path="/public", file)
 
-
+GET          /*file                                    controllers.Assets.at(path="/public/vue-front-end-goes-here", file)
