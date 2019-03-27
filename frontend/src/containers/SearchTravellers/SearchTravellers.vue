@@ -73,7 +73,7 @@
                     ></v-select>
                     <div class="col-md-3 row">
                         <v-btn id="searchButton" color="secondary" depressed v-on:click="search" class="button col-md-5">Search</v-btn>
-                        <v-btn id="clearButton" color="secondary" depressed v-on:click="clearFilters" class="button col-md-5">Clear Filters</v-btn>
+                        <v-btn id="clearButton" color="secondary" depressed v-on:click="clearFilters" class="button col-md-5">Clear</v-btn>
                     </div>
                 </div>
             </v-card>
