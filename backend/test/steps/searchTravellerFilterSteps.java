@@ -1,6 +1,8 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
@@ -37,10 +39,12 @@ public class searchTravellerFilterSteps {
     @Inject
     private Application application;
     private ArrayList<JsonNode> searchResults;
-    private PlayResultToJson result;
+    private Result result;
+    private String authToken;
+    private ArrayNode array;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         Module testModule = new AbstractModule() {
             @Override
             public void configure() {
@@ -72,113 +76,130 @@ public class searchTravellerFilterSteps {
         Assert.assertEquals(200, result.status());
     }
 
+    @Given("I have logged in with email {string} and password {string}")
+    public void iHaveLoggedInWithEmailAndPassword(String email, String password) throws IOException {
+
+        ObjectNode reqJsonBody = Json.newObject();
+        reqJsonBody.put("email", email);
+        reqJsonBody.put("password", password);
+
+        Http.RequestBuilder loginRequest = Helpers.fakeRequest()
+                .method("POST")
+                .bodyJson(reqJsonBody)
+                .uri("/api/auth/travellers/login");
+        Result loginResult = route(application, loginRequest);
+        JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
+        this.authToken = authenticationResponseAsJson.get("token").asText();
+        Assert.assertEquals(200, loginResult.status());
+        Assert.assertNotNull(this.authToken);
+    }
+
     @Given("the database has been populated with test data")
     public void theDatabaseHasBeenPopulatedWithTestData() throws IOException {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
+                .header("authorization", this.authToken)
                 .uri("/api/travellers");
         Result result = route(application, request);
-
-//        Assert.assertTrue(this.result.convertResultToJson(result).isArray());
-    }
-
-    @Given("I have logged in with email {string} and password {string}")
-    public void iHaveLoggedInWithEmailAndPassword(String email, String password) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+        ArrayNode array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
+        Assert.assertTrue(array.size() > 0);
     }
 
     @When("I request nationalities from the database")
-    public void iRequestNationalitiesFromTheDatabase() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    public void iRequestNationalitiesFromTheDatabase() throws IOException {
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("GET")
+                .header("authorization", this.authToken)
+                .uri("/api/travellers/nationalities");
+        Result result = route(application, request);
+        this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
+
+        Assert.assertTrue(array.size() > 0);
+        Assert.assertEquals(200, result.status());
     }
 
     @Then("I get a list of all nationalities as follows:")
     public void iGetAListOfAllNationalitiesAsFollows(DataTable dataTable) {
-        // Write code here that turns the phrase above into concrete actions
-        // For automatic transformation, change DataTable to one of
-        // E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
-        // Map<K, List<V>>. E,K,V must be a String, Integer, Float,
-        // Double, Byte, Short, Long, BigInteger or BigDecimal.
-        //
-        // For other transformations you can register a DataTableType.
+
+        List<Map<String,String>> expectedResults = dataTable.asMaps();
+        for (int i = 0; i < expectedResults.size(); i++) {
+            Assert.assertEquals(Integer.parseInt(expectedResults.get(i).get("nationalityId")), this.array.get(i).get("nationalityId").asInt());
+            Assert.assertEquals(expectedResults.get(i).get("nationalityName"), this.array.get(i).get("nationalityCountry").asText());
+        }
     }
 
-    @When("I request travellers from the {int}")
-    public void iRequestTravellersFromThe(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
+    @When("I request travellers from the {int} nationality id")
+    public void iRequestTravellersFromTheNationalityId(Integer nationalityId) throws IOException {
+
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("GET")
+                .header("authorization", this.authToken)
+                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&nationality=" + nationalityId);
+        Result result = route(application, request);
+        this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
+
+        Assert.assertTrue(array.size() > 0);
+        Assert.assertEquals(200, result.status());
     }
 
-    @Then("I get the following [{string}, {string}, {string}]")
-    public void iGetTheFollowing(String string, String string2, String string3) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    @Then("I get the following [{string}] emails")
+    public void iGetTheFollowing(String email) {
+        Assert.assertEquals(email, this.array.get(0).get("email").asText());
     }
 
-    @Then("I get the following [{string}, {string}]")
-    public void iGetTheFollowing(String string, String string2) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    @When("I request travellers from the Male gender")
+    public void iRequestTravellersFromTheMaleGender() throws IOException {
+
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("GET")
+                .header("authorization", this.authToken)
+                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Male");
+        Result result = route(application, request);
+        this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
+
+        Assert.assertTrue(array.size() > 0);
+        Assert.assertEquals(200, result.status());
     }
 
-    @When("I request travellers from the Not a Country")
-    public void iRequestTravellersFromTheNotACountry() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    @When("I request travellers from the Female gender")
+    public void iRequestTravellersFromTheFemaleGender() throws IOException {
+
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("GET")
+                .header("authorization", this.authToken)
+                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Female");
+        Result result = route(application, request);
+        this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
+
+        Assert.assertTrue(array.size() > 0);
+        Assert.assertEquals(200, result.status());
     }
 
-    @Then("I get the following []")
-    public void iGetTheFollowing() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
+    @When("I request travellers from the Other gender")
+    public void iRequestTravellersFromTheOtherGender() throws IOException {
 
-    @When("I request travellers from the male")
-    public void iRequestTravellersFromTheMale() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("GET")
+                .header("authorization", this.authToken)
+                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Other");
+        Result result = route(application, request);
+        this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
-    @Then("I get the following [{string}, {string}, {string}, {string}, {string}]")
-    public void iGetTheFollowing(String string, String string2, String string3, String string4, String string5) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @When("I request travellers from the female")
-    public void iRequestTravellersFromTheFemale() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @Then("I get the following [{string}, {string}, {string}, {string}]")
-    public void iGetTheFollowing(String string, String string2, String string3, String string4) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @When("I request travellers from the other")
-    public void iRequestTravellersFromTheOther() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @Then("I get the following [{string}]")
-    public void iGetTheFollowing(String string) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @When("I request travellers in the range {int} to {int}")
-    public void iRequestTravellersInTheRangeTo(Integer int1, Integer int2) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+        Assert.assertTrue(array.size() > 0);
+        Assert.assertEquals(200, result.status());
     }
 
     @When("I request travellers of the type {int}")
-    public void iRequestTravellersOfTheType(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    public void iRequestTravellersOfTheType(Integer travellerTypeId) throws IOException {
+
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("GET")
+                .header("authorization", this.authToken)
+                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&travellerType=" + travellerTypeId.toString());
+        Result result = route(application, request);
+        this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
+
+        Assert.assertTrue(array.size() > 0);
+        Assert.assertEquals(200, result.status());
     }
 }

@@ -28,10 +28,13 @@ public class InternalController {
         return supplyAsync(() -> {
             Passport passport1 = new Passport("NZ");
             Passport passport2 = new Passport("Australia");
+            Passport passport3 = new Passport("Peru");
+            Passport passport4 = new Passport("Bolivia");
 
             Nationality nationality1 = new Nationality("New Zealand");
             Nationality nationality2 = new Nationality("Australia");
             Nationality nationality3 = new Nationality("Afghanistan");
+            Nationality nationality4 = new Nationality("Peru");
 
             DestinationType destinationType1 = new DestinationType("Event");
             DestinationType destinationType2 = new DestinationType("City");
@@ -50,10 +53,13 @@ public class InternalController {
 
             passport1.save();
             passport2.save();
+            passport3.save();
+            passport4.save();
 
             nationality1.save();
             nationality2.save();
             nationality3.save();
+            nationality4.save();
 
             destinationType1.save();
             destinationType2.save();
@@ -70,29 +76,49 @@ public class InternalController {
 
 
             TravellerType travellerType1 = new TravellerType("Outdoor");
-            travellerType1.save();
-
             TravellerType travellerType2 = new TravellerType("Thrillseeker");
-            travellerType2.save();
-
             TravellerType travellerType3 = new TravellerType("Gap year");
-            travellerType3.save();
-
             TravellerType travellerType4 = new TravellerType("Frequent weekender");
-            travellerType4.save();
-
             TravellerType travellerType5 = new TravellerType("Holidaymaker");
-            travellerType5.save();
-
             TravellerType travellerType6 = new TravellerType("Functional/business");
-            travellerType6.save();
-
             TravellerType travellerType7 = new TravellerType("Backpacker");
+
+            travellerType1.save();
+            travellerType2.save();
+            travellerType3.save();
+            travellerType4.save();
+            travellerType5.save();
+            travellerType6.save();
             travellerType7.save();
 
-            User user = generateMockUser();
+            List<Nationality> nationalityList = new ArrayList<>();
+            nationalityList.add(nationality4);
 
-            Trip trip = new Trip(tripDestinations, user, "My trip name");
+            List<TravellerType> travellerTypeList = new ArrayList<>();
+            travellerTypeList.add(travellerType7);
+
+            List<Passport> passports = new ArrayList<>();
+            passports.add(passport3);
+            passports.add(passport4);
+
+            User user1 = generateMockUser("Luis", "Sebastian", "Ruiz", "so-secure", "luis@gmail.com", "Male", "some-token", nationalityList, travellerTypeList, passports);
+            nationalityList.remove(0);
+            nationalityList.add(nationality3);
+            travellerTypeList.remove(0);
+            travellerTypeList.add(travellerType2);
+            passports.remove(1);
+            passports.remove(0);
+            passports.add(passport3);
+            generateMockUser("Peter", "", "Andre", "in-your-town", "p.andre@hotmail.com", "Other", "token-token", nationalityList, travellerTypeList, passports);
+            nationalityList.remove(0);
+            nationalityList.add(nationality1);
+            travellerTypeList.remove(0);
+            travellerTypeList.add(travellerType1);
+            passports.remove(0);
+            passports.add(passport1);
+            generateMockUser("Steven", "middle", "Austin", "stone-cold", "stoney-steve@gmail.com", "Female", "big-token", nationalityList, travellerTypeList, passports);
+
+            Trip trip = new Trip(tripDestinations, user1, "My trip name");
 
             trip.save();
 
@@ -107,43 +133,13 @@ public class InternalController {
      * Create a user and save to database.
      * NOTE: also creates a passport, nationality, traveller type and gender in the database
      */
-    public User generateMockUser() {
+    public User generateMockUser(String firstName, String middleName, String lastName, String password, String email, String gender, String token, List<Nationality> nationalities, List<TravellerType> travellerTypes, List<Passport> passports) {
         Security security = new Security();
 
-        String firstName = "Luis";
-        String middleName = "Sebastian";
-        String lastName = "Ruiz";
-        String password = "so-secure";
         String passwordHash = security.hashPassword(password);
-        String email = "luis@gmail.com";
-        String token = "some-token";
         Timestamp dateOfBirth = new Timestamp(637920534);
 
-        // NOTE: new nationality saved to database
-        Nationality nationality = new Nationality("Peru");
-        nationality.save();
-
-        List<Nationality> nationalityList = new ArrayList<>();
-        nationalityList.add(nationality);
-
-        // NOTE: new traveller type saved to database
-        TravellerType travellerType = new TravellerType("Backpacker");
-        travellerType.save();
-
-        List<TravellerType> travellerTypeList = new ArrayList<>();
-        travellerTypeList.add(travellerType);
-
-        // NOTE: 2 new passports saved to database
-        Passport peruPassport = new Passport("Peru");
-        Passport boliviaPassport = new Passport("Bolivia");
-        peruPassport.save();
-        boliviaPassport.save();
-
-        List<Passport> passportList = new ArrayList<>();
-        passportList.add(peruPassport);
-        passportList.add(boliviaPassport);
-
-        User user = new User(firstName, middleName, lastName, passwordHash, "Male", email, nationalityList, travellerTypeList, dateOfBirth, passportList, token);
+        User user = new User(firstName, middleName, lastName, passwordHash, gender, email, nationalities, travellerTypes, dateOfBirth, passports, token);
         user.save();
 
         return user;
