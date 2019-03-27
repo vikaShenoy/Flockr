@@ -1,7 +1,6 @@
 Feature: The user can search travellers
 
   Scenario: I can get a list of available nationalities from the database
-    Given the backend server is operating
     And I have logged in with email "luis@gmail.com" and password "so-secure"
     And the database has been populated with test data
     When I request nationalities from the database
@@ -14,7 +13,6 @@ Feature: The user can search travellers
 
 
   Scenario Outline: The user can search a traveller by nationality id
-    Given the backend server is operating
     And I have logged in with email "luis@gmail.com" and password "so-secure"
     And the database has been populated with test data
     When I request travellers from the <nationalityId> nationality id
@@ -28,7 +26,6 @@ Feature: The user can search travellers
 
 
   Scenario Outline: The user can search a traveller by gender
-    Given the backend server is operating
     And I have logged in with email "luis@gmail.com" and password "so-secure"
     And the database has been populated with test data
     When I request travellers from the <gender> gender
@@ -58,7 +55,6 @@ Feature: The user can search travellers
 
 
   Scenario Outline: The user can search a traveller by traveller type
-    Given the backend server is operating
     And I have logged in with email "luis@gmail.com" and password "so-secure"
     And the database has been populated with test data
     When I request travellers of the type <travellerTypeId>

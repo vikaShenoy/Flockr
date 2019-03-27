@@ -67,15 +67,6 @@ public class searchTravellerFilterSteps {
         Helpers.stop(application);
     }
 
-    @Given("the backend server is operating")
-    public void theBackendServerIsOperating() {
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/");
-        Result result = route(application, request);
-        Assert.assertEquals(200, result.status());
-    }
-
     @Given("I have logged in with email {string} and password {string}")
     public void iHaveLoggedInWithEmailAndPassword(String email, String password) throws IOException {
 

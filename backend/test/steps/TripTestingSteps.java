@@ -60,14 +60,6 @@ public class TripTestingSteps {
     @After
     public void tearDown() { Helpers.stop(application); }
 
-    @Given("I have resampled")
-    public void iHaveResampled() {
-        Http.RequestBuilder resample = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/internal/resample");
-        Result result = route(application, resample);
-    }
-
     @When("I have a trip named {string}")
     public void iHaveATripNamed(String tripName) {
         this.tripName = tripName;
