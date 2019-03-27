@@ -10,10 +10,7 @@ import models.Destination;
 import models.DestinationType;
 import models.District;
 import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.With;
+import play.mvc.*;
 import repository.DestinationRepository;
 
 import javax.inject.Inject;
@@ -117,7 +114,7 @@ public class DestinationController  extends Controller{
     }
 
     /**
-     * Endpoint to get update a destinations details
+     * Endpoint to update a destination's details
      * @param request Request body to get json body from
      * @param destinationId The destination ID to update
      * @return Returns the http response which can be
@@ -173,20 +170,25 @@ public class DestinationController  extends Controller{
        });
     }
 
+    /**
+     * Endpoint to delete a destination given its id
+     * @param destinationId the id of the destination that we want to delete
+     * @param request the request sent by the routes file
+     * @return a Play result
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteDestination(int destinationId, Http.Request request) {
         return destinationRepository.getDestinationById(destinationId)
-                .thenApplyAsync((optionalDestination) -> {
+                .thenComposeAsync((optionalDestination) -> {
                     if(!optionalDestination.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     Destination destination = optionalDestination.get();
-                    destination.delete();
                     ObjectNode success = Json.newObject();
                     success.put("message", "Successfully deleted the given destination id");
-                    return destinationRepository.update(destination);
+                    return this.destinationRepository.deleteDestination(destination.getDestinationId());
                 }, httpExecutionContext.current())
-                .thenApplyAsync((Destination) -> (Result) ok("Successfully deleted the given destination id"), httpExecutionContext.current())
+                .thenApplyAsync(destId -> (Result) ok(), httpExecutionContext.current())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
@@ -194,7 +196,7 @@ public class DestinationController  extends Controller{
                         ObjectNode message = Json.newObject();
                         message.put("message", "The given destination id is not found");
                         return notFound(message);
-                    } catch (Throwable ee) {
+                    } catch (Throwable serverError) {
                         return internalServerError();
                     }
                 });

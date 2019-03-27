@@ -114,8 +114,19 @@ public class DestinationRepository {
                     .eq("country_country_id", countryId).findList();
             return districts;
         }, executionContext);
-   }
+    }
 
+    /**
+     * Delete a destination given a destination by id
+     * @param destinationId the id of the destination we are trying to delete
+     * @return the id of the destination that was deleted
+     */
+    public CompletionStage<Integer> deleteDestination(int destinationId) {
+        return supplyAsync(() -> {
+            Destination.find.deleteById(destinationId);
+            return destinationId;
+        }, executionContext);
+    }
 
 
 }

@@ -31,8 +31,7 @@ public class TravellerRepository {
 
     /**
      * Dependency injection
-     *
-     * @param ebeanConfig      ebean config to use
+     * @param ebeanConfig ebean config to use
      * @param executionContext Context to run completion stages on
      */
     @Inject
@@ -43,7 +42,6 @@ public class TravellerRepository {
 
     /**
      * Updates a users details
-     *
      * @param user The user to update
      * @return Nothing
      */
@@ -56,7 +54,6 @@ public class TravellerRepository {
 
     /**
      * Gets a user/traveller by their ID
-     *
      * @param userId The ID of the user to get
      * @return the user object
      */
@@ -70,7 +67,6 @@ public class TravellerRepository {
 
     /**
      * A function that gets the list of all the valid passports.
-     *
      * @return the list of all the Passports
      */
     public CompletionStage<List<Passport>> getAllPassports() {
@@ -82,7 +78,6 @@ public class TravellerRepository {
 
     /**
      * Gets a passport by it's ID
-     *
      * @param passportId The passport to get
      * @return The list of passports
      */
@@ -96,7 +91,6 @@ public class TravellerRepository {
 
     /**
      * Gets a list of all nationalities
-     *
      * @return List of nationalities
      */
     public CompletionStage<List<Nationality>> getAllNationalities() {
@@ -108,7 +102,6 @@ public class TravellerRepository {
 
     /**
      * Gets a nationality by it's ID
-     *
      * @param nationalityId The nationality to get
      * @return The list of nationalities
      */
@@ -123,7 +116,6 @@ public class TravellerRepository {
 
     /**
      * Funtion that gets all of the valid traveller types in the database
-     *
      * @return the list of traveller types
      */
     public CompletionStage<List<TravellerType>> getAllTravellerTypes() {
@@ -157,11 +149,10 @@ public class TravellerRepository {
 
     /**
      * Function to search through the user database
-     *
-     * @param nationality    nationality id
-     * @param gender         gender string
-     * @param dateMin        min age Date
-     * @param dateMax        max age Date
+     * @param nationality nationality id
+     * @param gender gender string
+     * @param dateMin min age Date
+     * @param dateMax max age Date
      * @param traveller_type traveller type Id
      * @return List of users or empty list
      */
@@ -169,34 +160,39 @@ public class TravellerRepository {
         AtomicBoolean found = new AtomicBoolean(false);
 
         return supplyAsync(() -> {
-            ExpressionList<User> query = User.find.query()
+           ExpressionList<User> query = User.find.query()
                     .fetch("travellerTypes").where();
-            if (gender != null) {
-                query = query.eq("gender", gender);
-            }
-            if (traveller_type != -1) {
-                query = query.where().eq("traveller_type_id", traveller_type);
-            }
-            query = query.where().between("dateOfBirth", dateMax, dateMin);
-            List<User> users = query.findList();
+           if (gender != null) {
+               query = query.eq("gender", gender);
+           }
+           if (traveller_type != -1)     {
+               query = query.where().eq("traveller_type_id", traveller_type);
+           }
+           query = query.where().between("dateOfBirth", dateMax, dateMin)
+                   .isNotNull("dateOfBirth")
+                   .isNotNull("gender")
+                   .isNotEmpty("travellerTypes");
 
-            if (nationality != -1) {
+           List<User> users = query.findList();
 
-                for (int i = 0; i < users.size(); i++) {
-                    found.set(false);
-                    List<Nationality> natsToCheck = users.get(i).getNationalities();
-                    for (int j = 0; j < natsToCheck.size(); j++) {
-                        if (natsToCheck.get(j).getNationalityId() == nationality) {
-                            found.set(true);
-                        }
+           if (nationality != -1) {
 
-                    }
-                    if (found.get() == false) {
-                        users.remove(i);
-                        i--;
-                    }
-                }
-            }
+               for (int i = 0; i < users.size(); i++) {
+                   found.set(false);
+                   List<Nationality> natsToCheck = users.get(i).getNationalities();
+                   for (int j = 0; j < natsToCheck.size(); j++) {
+                       if (natsToCheck.get(j).getNationalityId() == nationality) {
+                           found.set(true);
+                       }
+
+                   }
+                   if (!found.get()) {
+                       users.remove(i);
+                       i--;
+
+                   }
+               }
+           }
             return users;
         }, executionContext);
     }
