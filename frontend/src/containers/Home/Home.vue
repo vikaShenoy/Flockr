@@ -7,21 +7,6 @@
   </div>
 </template>
 
-<script>
-import { resample } from "./HomeService";
-
-export default {
-  mounted() {
-    try {
-      resample(); 
-    } catch (e) {
-      console.log(e);
-    }
-  }  
-}
-</script>
-
-
 <style lang="scss" scoped>
 @import "../../styles/_variables.scss";
   #home {
