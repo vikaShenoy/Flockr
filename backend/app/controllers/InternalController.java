@@ -75,12 +75,12 @@ public class InternalController {
             tripDestinations.add(new TripDestination(destination2, new Date(), 34, new Date(), 23));
 
 
-            TravellerType travellerType1 = new TravellerType("Outdoor");
+            TravellerType travellerType1 = new TravellerType("Groupies");
             TravellerType travellerType2 = new TravellerType("Thrillseeker");
-            TravellerType travellerType3 = new TravellerType("Gap year");
-            TravellerType travellerType4 = new TravellerType("Frequent weekender");
+            TravellerType travellerType3 = new TravellerType("Gap Year");
+            TravellerType travellerType4 = new TravellerType("Frequent Weekender");
             TravellerType travellerType5 = new TravellerType("Holidaymaker");
-            TravellerType travellerType6 = new TravellerType("Functional/business");
+            TravellerType travellerType6 = new TravellerType("Functional/Business");
             TravellerType travellerType7 = new TravellerType("Backpacker");
 
             travellerType1.save();
