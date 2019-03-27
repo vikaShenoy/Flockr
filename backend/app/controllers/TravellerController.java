@@ -356,10 +356,6 @@ public class TravellerController extends Controller {
 
         return travellerRepository.searchUser(nationality,gender,dateMin,dateMax,travellerType)  //Just for testing purposes
                 .thenApplyAsync((user) -> {
-                    if (user.isEmpty()) {
-                        return notFound("No Users Found");
-                    }
-
                     JsonNode userAsJson = Json.toJson(user);
                     System.out.println(userAsJson);
 

@@ -171,7 +171,11 @@ public class TravellerRepository {
            if (traveller_type != -1)     {
                query = query.where().eq("traveller_type_id", traveller_type);
            }
-           query = query.where().between("dateOfBirth", dateMin, dateMax);
+           query = query.where().between("dateOfBirth", dateMax, dateMin)
+                   .isNotNull("dateOfBirth")
+                   .isNotNull("gender")
+                   .isNotEmpty("travellerTypes");
+
            List<User> users = query.findList();
 
            if (nationality != -1) {
@@ -185,8 +189,9 @@ public class TravellerRepository {
                        }
 
                    }
-                   if (found.get() == false) {
+                   if (!found.get()) {
                        users.remove(i);
+                       i--;
 
                    }
                }
