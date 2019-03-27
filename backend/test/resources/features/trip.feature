@@ -53,6 +53,11 @@ Feature: The user can manage trips
       When I send a request to get a trip with id 3
        Then The server should return a 404 status
 
+     Scenario: A user tries to get a list of their trips
+       Given I have resampled
+      When I send a request to get trips
+       Then The server should return a 200 status
+
 
 
 
