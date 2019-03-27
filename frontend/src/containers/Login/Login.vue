@@ -13,31 +13,32 @@
       Invalid Credentials
     </v-alert>
 
-    <v-text-field
-      v-model="email"
-      label="Email"
-      color="secondary"
-      @blur="validateEmail"
-      :error-messages="emailErrors"
-    >
-    </v-text-field>
+    <v-form ref="form">
+      <v-text-field
+        v-model="email"
+        label="Email"
+        color="secondary"
+        :rules="fieldRules"
+      >
+      </v-text-field>
 
-    <v-text-field
-      type="password"
-      v-model="password"
-      label="Password"
-      color="secondary"
-      @blur="validatePassword"
-      :error-messages="passwordErrors"
-    >
-    </v-text-field>
+      <v-text-field
+        type="password"
+        v-model="password"
+        label="Password"
+        color="secondary"
+        :rules="fieldRules"
+      >
+      </v-text-field>
 
-    <v-btn
-      color="secondary"
-      depressed
-      class="col-sm-4 offset-sm-4"
-      @click="login()"
-    >Log in</v-btn>
+      <v-btn
+        color="secondary"
+        depressed
+        class="col-sm-4 offset-sm-4"
+        @click="login()"
+      >Log in</v-btn>
+
+    </v-form>
 
   </v-card>
 </template>
@@ -45,6 +46,7 @@
 <script>
 
 import { login } from "./LoginService.js";
+import UserStore from "../../stores/UserStore";
 
 export default {
   data() {
@@ -53,45 +55,25 @@ export default {
       password: "",
       emailErrors: [],
       passwordErrors: [],
-      hasInvalidCredentials: false
+      hasInvalidCredentials: false,
+      fieldRules: [field => !!field || "Field is required"]
     };
   },
   methods: {
     /**
-     * Validates email and renders an error if there is one
+     * Firstly validates form before logging in user if fields are valid
      */
-    validateEmail() {
-      if (!this.email) {
-        this.emailErrors = ["Email is required"];
-      } else {
-        this.emailErrors = [];
-      }
-
-      return this.emailErrors.length === 0;
-    },
-    /**
-     * Validates password and renders an error if there is one
-     */
-    validatePassword() {
-      if (!this.password) {
-        this.passwordErrors = ["Password is required"];
-      } else {
-        this.passwordErrors = [];
-      }
-
-      return this.passwordErrors.length === 0;
-    },
-    /**
-     * Validates fields before logging in user
-     */
-    async login() {
-      const validEmail = this.validateEmail();
-      const validPassword = this.validatePassword();
-
-      if (!validEmail || !validPassword)  return;
+   async login() {
+     if (!this.$refs.form.validate()) {
+       return;
+     }
 
       try {
-        await login(this.email, this.password);
+        const user = await login(this.email, this.password);
+        UserStore.methods.setData(user);
+        localStorage.setItem("authToken", user.token);
+        localStorage.setItem("userId", user.userId);
+        this.$router.push(`/profile/${user.userId}`);
       } catch (e) {
         this.hasInvalidCredentials = true;         
       }

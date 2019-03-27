@@ -12,6 +12,7 @@
       label="First Name"
       @blur="validateFirstName()"
       :error-messages="firstNameErrors"
+      :maxlength="50"
     ></v-text-field>
 
     <v-text-field
@@ -20,6 +21,7 @@
       label="Last Name"
       @blur="validateLastName()"
       :error-messages="lastNameErrors"
+      :maxlength="50"
     >
     </v-text-field>
 
@@ -30,6 +32,7 @@
       @blur="validateEmail()"
       :error-messages="emailErrors"
       autocomplete="off"
+      :maxlength="320"
     >
     </v-text-field>
 
@@ -41,6 +44,7 @@
       label="Password"
       @blur="validatePassword()"
       :error-messages="passwordErrors"
+      :maxlength="50"
     ></v-text-field>
 
     <v-text-field
@@ -50,6 +54,7 @@
       label="Confirm Password"
       @blur="validateConfirmPassword()"
       :error-messages="confirmPasswordErrors"
+      :maxlength="50"
     ></v-text-field>
 
     <v-btn
@@ -130,7 +135,7 @@ export default {
       return this.emailErrors.length === 0;
     },
     /**
-     * Checks the following errors and renders and renders if an error exists
+     * Checks the following errors and renVikasders and renders if an error exists
      * - Checks if password is blank
      * - Checks if password and confirm password don't match
      * @returns {Promise<boolean>} True if there are no errors, false otherwise 
@@ -139,6 +144,8 @@ export default {
 
       if (!this.password) {
         this.passwordErrors = ["Password is required"];
+      } else if (this.password.length < 6) {
+        this.passwordErrors = ["Password has to be atleast 6 characters long"];
       } else if (this.confirmPassword && (this.password !== this.confirmPassword)) {
         this.passwordErrors = ["Passwords are not identical"];
         this.confirmPasswordErrors = ["Passwords are not identical"];
@@ -158,6 +165,8 @@ export default {
 
       if (!this.confirmPassword) {
         this.confirmPasswordErrors = ["Confirm Password is required"];
+      } else if (this.confirmPassword.length < 6) {
+        this.confirmPasswordErrors = ["Confirm Password has to be at least 6 characters"];
       } else if (this.password && (this.password !== this.confirmPassword)) {
         this.passwordErrors = [];
         this.confirmPasswordErrors = ["Passwords are not identical"];
@@ -192,14 +201,21 @@ export default {
       if (!validFields) return;
 
       try {
-        await signup({
+        const { token, userId } = await signup({
           firstName: this.firstName,
           lastName: this.lastName,
           email: this.email,
           password: this.password,
         });
+
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("userId", userId);
+
+        this.$router.push(`/profile/${userId}`);
+        
       } catch (e) {
-        console.log("Signs up a user");
+        console.log(e);
+        
       }
     }
   }

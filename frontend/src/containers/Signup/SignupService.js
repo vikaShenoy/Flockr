@@ -1,4 +1,8 @@
+// import axios from "axios";
+
+import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
+
 
 /**
  * Signs up a user
@@ -11,17 +15,9 @@ import { endpoint } from "../../utils/endpoint";
  * @throws Error if status was not 201
  */
 export async function signup(user) {
-  const res = await fetch(endpoint("/users"), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(user)
-  });
-
-  if (res.status === 201) {
-    throw new Error(`Res status was ${res.status}`);
-  }
+  const response = await superagent.post(endpoint("/auth/travellers/signup"))
+  .send(user);
+  return response.body
 }
 
 /**
@@ -30,10 +26,11 @@ export async function signup(user) {
  * @returns {Promise<boolean>} True if the email is taken, false otherwise
  */
 export async function emailTaken(email) {
-  // const res = await fetch(endpoint(`/users/email/${email}`), {
-  //   method: "GET"
-  // });
+  try {
+    const res = await superagent.get(endpoint(`/auth/travellers/${email}/available`));
+  } catch (e) {
+    return true;
+  }
 
-  // return res.status === 409;
   return false;
 }
