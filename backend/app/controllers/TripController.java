@@ -129,8 +129,6 @@ public class TripController extends Controller {
         }
 
 
-
-        
     /**
      * Endpoint to get update a trips destinations
      * @param request Request body to get json body from
@@ -178,5 +176,25 @@ public class TripController extends Controller {
                     }
                 });
     }
+
+    /**
+     * Endpoint to get a users trips
+     * @param request - Request object to get the users ID
+     * @param userId - Irrelevant ID for consistency reasons
+     * @return Returns the http response which can be
+     *         - 200 - Returns the list of trips
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getTrips(Http.Request request, int userId) {
+        User user = request.attrs().get(ActionState.USER);
+
+        return tripRepository.getTripsByIds(user.getUserId())
+                .thenApplyAsync((trips) -> {
+                    JsonNode tripsJson = Json.toJson(trips);
+                    return ok(tripsJson);
+                }, httpExecutionContext.current());
+    }
+
+
 }
 

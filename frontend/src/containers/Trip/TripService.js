@@ -31,7 +31,6 @@ function formatDateTime(date, time) {
   if (date === 0 && time === -1) {
     return "";
   } else if (date && time) {
-    console.log(time);
     return `${moment(date).format("DD/YY/YYYY")} at ${formatTime(moment.duration(time, "minutes"))}`
   } else if (date) {
     return moment(date).format("DD/MM/YYYY")

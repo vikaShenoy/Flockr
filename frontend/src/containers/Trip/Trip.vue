@@ -8,7 +8,6 @@
 
 
     <Timeline :trip="trip" v-if="trip"/>
-    Testing
   </div>
 </template>
 
