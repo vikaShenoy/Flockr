@@ -3,6 +3,7 @@ package controllers;
 import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.typesafe.config.ConfigException;
 import models.Passport;
 import models.TravellerType;
@@ -145,9 +146,12 @@ public class TravellerController extends Controller {
             user.setGender(jsonBody.get("gender").asText());
         }
 
+        ObjectNode message = Json.newObject();
+        message.put("message", "Successfully updated the traveller's information");
+
         return supplyAsync(() -> {
             travellerRepository.updateUser(user);
-            return ok();
+            return ok(message);
         }, httpExecutionContext.current());
     }
 
