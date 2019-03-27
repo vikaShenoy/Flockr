@@ -33,6 +33,7 @@ POST        /api/destinations                           controllers.DestinationC
 PUT         /api/destinations/:destinationId            controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
 
 # Trip routes
+GET         /api/travellers/:travellerId/trips      controllers.TripController.getTrips(request: Request, travellerId: Int)
 POST        /api/travellers/:travellerId/trips              controllers.TripController.addTrip(travellerId: Int, request: Request)
 DELETE      /api/travellers/:travellerId/trips/:tripId      controllers.TripController.deleteTrip(travellerId : Int, tripId : Int, request : Request)
 GET         /api/travellers/:travellerId/trips/:tripId      controllers.TripController.getTrip(travellerId: Int, tripId: Int, request: Request)

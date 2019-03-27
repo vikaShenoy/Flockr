@@ -4,6 +4,7 @@ import models.Trip;
 
 import javax.annotation.processing.Completion;
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -67,6 +68,21 @@ public class TripRepository {
                     where().eq("trip_id", tripId)
                     .eq("user_user_id", userId)
                     .findOneOrEmpty();
+            return trip;
+        }, executionContext);
+    }
+
+    /**
+     * Get trips by the users userId
+     * @param travellerId The user id of the trips
+     * @return The users trips
+     */
+    public CompletionStage<List<Trip>> getTripsByIds(int travellerId) {
+        return supplyAsync(() -> {
+            List<Trip> trip = Trip.find.query()
+                    .where()
+                    .eq("user_user_id", travellerId)
+                    .findList();
             return trip;
         }, executionContext);
     }
