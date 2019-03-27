@@ -94,6 +94,7 @@ public class LoginTestSteps {
                 .uri(endpoint)
                 .bodyJson(reqJsonBody);
         this.loginResponse = route(application, request);
+        Assert.assertTrue(!(this.loginResponse == null));
     }
 
     @Then("the response should have an authentication token")
@@ -121,6 +122,7 @@ public class LoginTestSteps {
                 .uri(endpoint)
                 .bodyJson(reqJsonBody);
         this.loginResponse = route(application, request);
+        Assert.assertTrue(!(this.loginResponse == null));
     }
 
     @Then("the server should not log me in")
