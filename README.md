@@ -14,7 +14,8 @@ Project split into:
 * `backend/conf/` configuration files required to ensure the backend builds properly
 
 ## Project Structure for Front End
-`// TODO: Raf to complete this` 
+* `public` The directory that includes static assets to be served by the front end
+* `src` Contains source files
 
 ## How to run the back end in dev mode
 ```bash
