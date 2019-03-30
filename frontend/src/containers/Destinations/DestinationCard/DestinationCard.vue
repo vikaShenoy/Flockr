@@ -22,7 +22,9 @@
                 <div v-if="editMode" class="basic-info">
                     <v-select
                             label="Destination Type"
-                            :items="destinationTypes.names"
+                            :items="destinationTypes"
+                            item-value="destinationTypeId"
+                            item-text="destinationTypeName"
                             :value="destination.destinationType.destinationTypeName"
                             v-model="destination.destinationType.destinationTypeName"
                             @blur="validateType"
@@ -37,7 +39,9 @@
                 <div v-if="editMode" class="basic-info">
                     <v-select
                             label="District"
-                            :items="districts.names"
+                            :items="districts"
+                            item-value="districtId"
+                            item-text="districtName"
                             :disabled="districtDisabled"
                             :value="destination.destinationDistrict.districtName"
                             v-model="destination.destinationDistrict.districtName"
@@ -53,7 +57,9 @@
             <div v-if="editMode" class="name-header">
                 <v-select
                         label="Destination Country"
-                        :items="countries.names"
+                        :items="countries"
+                        item-value="countryId"
+                        item-text="countryName"
                         :value="destination.destinationCountry.countryName"
                         v-model="destination.destinationCountry.countryName"
                         @blur="validateCountry"
@@ -81,16 +87,20 @@
                         :error-messages="longitudeErrors"
                 ></v-text-field>
             </div>
-            <v-img v-else class="image" src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
+            <v-img v-else class="image"
+                   src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
         </div>
-        <v-btn v-if="editMode" fab dark id="save-destination-button" @click="saveDestination">
-            <v-icon dark>check_circle</v-icon>
+        <v-btn v-if="editMode" fab id="save-destination-button" @click="saveDestination">
+            <v-icon>check_circle</v-icon>
         </v-btn>
-        <v-btn v-else fab dark class="edit-button" id="edit-destination-button" @click="editDestination">
-            <v-icon dark>edit</v-icon>
+        <v-btn v-else fab class="edit-button" id="edit-destination-button" @click="editDestination">
+            <v-icon>edit</v-icon>
         </v-btn>
-        <v-btn fab dark class="delete-button" id="delete-destination-button" @click="deleteOnClick">
-            <v-icon dark>remove</v-icon>
+        <v-btn v-if="editMode" fab class="delete-button" id="cancel-destination-edit-button" @click="cancelOnClick">
+            <v-icon>remove_circle</v-icon>
+        </v-btn>
+        <v-btn v-else fab class="delete-button" id="delete-destination-button" @click="deleteOnClick">
+            <v-icon>remove</v-icon>
         </v-btn>
     </v-card>
 </template>
@@ -156,24 +166,12 @@
         required: true
       },
       countries: {
-        names: {
-          type: Array,
-          required: true
-        },
-        ids: {
-          type: Array,
-          required: true
-        }
+        type: Array,
+        required: true
       },
       destinationTypes: {
-        names: {
-          type: Array,
-          required: true
-        },
-        ids: {
-          type: Array,
-          required: true
-        }
+        type: Array,
+        required: true
       },
       deleteOnClick: {
         type: Function,
@@ -185,9 +183,6 @@
       countryName() {
         return this.destination.destinationCountry.countryName;
       },
-      typeName() {
-        return this.destination.destinationType.destinationTypeName;
-      },
       districtName() {
         return this.destination.destinationDistrict.districtName;
       },
@@ -197,10 +192,6 @@
     },
 
     watch: {
-
-      typeName() {
-        this.onTypeChanged();
-      },
 
       countryName() {
         this.onCountryChanged();
@@ -257,10 +248,7 @@
 
     data() {
       return {
-        districts: {
-          names: [],
-          ids: []
-        },
+        districts: [],
         districtDisabled: false,
         nameErrors: [],
         typeErrors: [],
@@ -275,7 +263,16 @@
         hasInvalidLatitude: false,
         hasInvalidLongitude: false,
         hasInvalidInput: false,
-        dataEditMode: true
+        dataEditMode: true,
+        oldDestinationData: {
+          id: null,
+          name: null,
+          countryId: null,
+          districtId: null,
+          latitude: null,
+          longitude: null,
+          type: null
+        }
       }
     },
 
@@ -295,7 +292,6 @@
           if (this.destination.destinationId === null) {
             try {
               let newDestination = await sendAddDestination(destinationInfo);
-              console.log(newDestination);
               this.destination.destinationId = newDestination.destinationId;
               this.dataEditMode = !this.dataEditMode;
             } catch (error) {
@@ -313,6 +309,13 @@
       },
 
       editDestination: async function () {
+        this.oldDestinationData.id = this.destination.destinationId;
+        this.oldDestinationData.name = this.destination.destinationName;
+        this.oldDestinationData.type = this.destination.destinationType.destinationTypeId;
+        this.oldDestinationData.district = this.destination.destinationDistrict.districtId;
+        this.oldDestinationData.country = this.destination.destinationCountry.countryId;
+        this.oldDestinationData.latitude = this.destination.destinationLat;
+        this.oldDestinationData.longitude = this.destination.destinationLon;
         this.dataEditMode = !this.dataEditMode;
       },
 
@@ -320,11 +323,11 @@
         let currentValue = event.target.value + event.key;
 
         // Allow the keystroke if the value is the negative sign
-        if (currentValue == '-') {
+        if (currentValue === '-') {
           return;
         }
         // Prevent the keystroke if the value would be out of a valid latitude range or not numeric or -0 or 0 followed by any other number
-        if (isNaN(currentValue) || parseFloat(currentValue) > 90 || parseFloat(currentValue) < -90 || currentValue == '-0' || (currentValue.charAt(0) == '0') && currentValue.length > 1) {
+        if (isNaN(currentValue) || parseFloat(currentValue) > 90 || parseFloat(currentValue) < -90 || currentValue === '-0' || (currentValue.charAt(0) === '0') && currentValue.length > 1) {
           event.preventDefault();
         }
       },
@@ -333,18 +336,18 @@
         let currentValue = event.target.value + event.key;
 
         // Allow the keystroke if the value is the negative sign
-        if (currentValue == '-') {
+        if (currentValue === '-') {
           return;
         }
         // Prevent the keystroke if the value would be out of a valid latitude range or not numeric or -0 or 0 followed by any other number
-        if (isNaN(currentValue) || parseFloat(currentValue) > 180 || parseFloat(currentValue) < -180 || currentValue == '-0' || (currentValue.charAt(0) == '0') && currentValue.length > 1) {
+        if (isNaN(currentValue) || parseFloat(currentValue) > 180 || parseFloat(currentValue) < -180 || currentValue === '-0' || (currentValue.charAt(0) === '0') && currentValue.length > 1) {
           event.preventDefault();
         }
       },
 
       validateName: function () {
         if (this.destination.destinationName === "") {
-          this.nameErrors = [ "Name is required" ];
+          this.nameErrors = ["Name is required"];
           this.hasInvalidName = true;
         } else {
           this.nameErrors = [];
@@ -354,10 +357,7 @@
 
       validateType: function () {
         if (this.destination.destinationType.destinationTypeName === null) {
-          this.typeErrors = [ "Type is required" ];
-          this.hasInvalidType = true;
-        } else if (/\d/.test(this.destination.destinationType.destinationTypeName)) {
-          this.typeErrors = [ "No numbers allowed" ];
+          this.typeErrors = ["Type is required"];
           this.hasInvalidType = true;
         } else {
           this.typeErrors = [];
@@ -367,7 +367,7 @@
 
       validateDistrict: function () {
         if (this.destination.destinationDistrict.districtName === null) {
-          this.districtErrors = [ "District is required" ];
+          this.districtErrors = ["District is required"];
           this.hasInvalidDistrict = true;
         } else {
           this.districtErrors = [];
@@ -378,9 +378,6 @@
       validateCountry: function () {
         if (this.destination.destinationCountry.countryName === null) {
           this.countryErrors = ["Country is required"];
-          this.hasInvalidCountry = true;
-        } else if (/\d/.test(this.destination.destinationCountry.countryName)) {
-          this.countryErrors = ["No numbers allowed"];
           this.hasInvalidCountry = true;
         } else {
           this.countryErrors = [];
@@ -416,37 +413,22 @@
         this.validateLongitude();
       },
 
-      onEditModeChanged (newValue) {
+      onEditModeChanged(newValue) {
         this.dataEditMode = newValue;
       },
 
-      onDataEditModeChanged (newValue) {
-        if (this.$el) {
+      onDataEditModeChanged(newValue) {
+        if (this.$el.index) {
           this.$emit('editModeChanged', newValue, this.$el)
         }
       },
 
-      onTypeChanged () {
-        let typeIndex = this.destinationTypes.names.indexOf(this.destination.destinationType.destinationTypeName);
-        this.destination.destinationType.destinationTypeId = this.destinationTypes.ids[typeIndex];
-      },
-
       async onCountryChanged() {
-        let countryIndex = this.countries.names.indexOf(this.destination.destinationCountry.countryName);
-        this.destination.destinationCountry.countryId = this.countries.ids[countryIndex];
         this.destination.destinationDistrict.districtName = null;
         this.destination.destinationDistrict.districtId = null;
         if (this.destination.destinationCountry.countryName !== null) {
           try {
-            let currentDistricts = await requestDistricts(this.destination.destinationCountry.countryId);
-            this.districts = {
-              names: [],
-              ids: []
-            };
-            for (let index in currentDistricts) {
-              this.districts.names.push(currentDistricts[index].districtName);
-              this.districts.ids.push(currentDistricts[index].districtId);
-            }
+            this.districts = await requestDistricts(this.destination.destinationCountry.countryId);
             this.districtDisabled = false;
           } catch (error) {
             console.log(error);
@@ -456,13 +438,13 @@
         }
       },
 
-      onDestinationIdChanged () {
+      onDestinationIdChanged() {
         if (this.$el) {
           this.$emit('idChanged', this.destination.destinationId, this.$el);
         }
       },
 
-      onDistrictChanged () {
+      onDistrictChanged() {
         let districtIndex = this.districts.names.indexOf(this.destination.destinationDistrict.districtName);
         this.destination.destinationDistrict.districtId = this.districts.ids[districtIndex];
       },
@@ -471,21 +453,30 @@
         // Invalid input is true if any of the individual inputs are true
         this.hasInvalidInput = this.hasInvalidName || this.hasInvalidType || this.hasInvalidDistrict ||
             this.hasInvalidCountry || this.hasInvalidLatitude || this.hasInvalidlongitude;
+      },
+      cancelOnClick: function () {
+        if (this.destination.destinationId === null) {
+          // delete it
+          this.$emit('deleteNewDestination', this.$el);
+        } else {
+          // restore old values
+          this.destination.destinationId = this.oldDestinationData.id;
+          this.destination.destinationName = this.oldDestinationData.name;
+          this.destination.destinationType.destinationTypeId = this.oldDestinationData.typeId;
+          this.destination.destinationDistrict.districtId = this.oldDestinationData.districtId;
+          this.destination.destinationCountry.countryId = this.oldDestinationData.countryId;
+          this.destination.destinationLat = this.oldDestinationData.latitude;
+          this.destination.destinationLon = this.oldDestinationData.longitude;
+          // disable edit mode
+          this.dataEditMode = !this.dataEditMode;
+        }
       }
     },
 
-    mounted: async function() {
+    mounted: async function () {
       if (this.destination.destinationCountry.countryName !== null) {
         try {
-          let currentDistricts = await requestDistricts(this.destination.destinationCountry.countryId);
-          this.districts = {
-            names: [],
-            ids: []
-          };
-          for (let index in currentDistricts) {
-            this.districts.names.push(currentDistricts[index].districtName);
-            this.districts.ids.push(currentDistricts[index].districtId);
-          }
+          this.districts = await requestDistricts(this.destination.destinationCountry.countryId);
           this.districtDisabled = false;
         } catch (error) {
           console.log(error);
