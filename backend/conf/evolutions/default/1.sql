@@ -1,7 +1,14 @@
-# --- Created by Ebean DDL
-# To stop Ebean DDL generation, remove this comment and start using Evolutions
+
 
 # --- !Ups
+
+-- init script create procs
+-- Inital script to create stored procedures etc for mysql platform
+DROP PROCEDURE IF EXISTS usp_ebean_drop_foreign_keys;
+
+
+DROP PROCEDURE IF EXISTS usp_ebean_drop_column;
+
 
 create table country (
   country_id                    integer auto_increment not null,
@@ -86,9 +93,9 @@ create table trip_destination (
   trip_destination_id           integer auto_increment not null,
   trip_trip_id                  integer,
   destination_destination_id    integer,
-  arrival_date                  timestamp,
+  arrival_date                  datetime(6),
   arrival_time                  integer not null,
-  departure_date                timestamp,
+  departure_date                datetime(6),
   departure_time                integer not null,
   constraint pk_trip_destination primary key (trip_destination_id)
 );
@@ -98,12 +105,12 @@ create table user (
   first_name                    varchar(255),
   middle_name                   varchar(255),
   last_name                     varchar(255),
-  date_of_birth                 timestamp,
+  date_of_birth                 datetime(6),
   gender                        varchar(255),
   email                         varchar(255),
   password_hash                 varchar(255),
   token                         varchar(255),
-  timestamp                     timestamp not null,
+  timestamp                     datetime(6) not null,
   constraint pk_user primary key (user_id)
 );
 
@@ -156,44 +163,44 @@ alter table trip_destination add constraint fk_trip_destination_destination_dest
 
 # --- !Downs
 
-alter table destination drop constraint if exists fk_destination_destination_type_destination_type_id;
-drop index if exists ix_destination_destination_type_destination_type_id;
+alter table destination drop foreign key fk_destination_destination_type_destination_type_id;
+drop index ix_destination_destination_type_destination_type_id on destination;
 
-alter table destination drop constraint if exists fk_destination_destination_district_district_id;
-drop index if exists ix_destination_destination_district_district_id;
+alter table destination drop foreign key fk_destination_destination_district_district_id;
+drop index ix_destination_destination_district_district_id on destination;
 
-alter table destination drop constraint if exists fk_destination_destination_country_country_id;
-drop index if exists ix_destination_destination_country_country_id;
+alter table destination drop foreign key fk_destination_destination_country_country_id;
+drop index ix_destination_destination_country_country_id on destination;
 
-alter table district drop constraint if exists fk_district_country_country_id;
-drop index if exists ix_district_country_country_id;
+alter table district drop foreign key fk_district_country_country_id;
+drop index ix_district_country_country_id on district;
 
-alter table nationality_user drop constraint if exists fk_nationality_user_nationality;
-drop index if exists ix_nationality_user_nationality;
+alter table nationality_user drop foreign key fk_nationality_user_nationality;
+drop index ix_nationality_user_nationality on nationality_user;
 
-alter table nationality_user drop constraint if exists fk_nationality_user_user;
-drop index if exists ix_nationality_user_user;
+alter table nationality_user drop foreign key fk_nationality_user_user;
+drop index ix_nationality_user_user on nationality_user;
 
-alter table passport_user drop constraint if exists fk_passport_user_passport;
-drop index if exists ix_passport_user_passport;
+alter table passport_user drop foreign key fk_passport_user_passport;
+drop index ix_passport_user_passport on passport_user;
 
-alter table passport_user drop constraint if exists fk_passport_user_user;
-drop index if exists ix_passport_user_user;
+alter table passport_user drop foreign key fk_passport_user_user;
+drop index ix_passport_user_user on passport_user;
 
-alter table traveller_type_user drop constraint if exists fk_traveller_type_user_traveller_type;
-drop index if exists ix_traveller_type_user_traveller_type;
+alter table traveller_type_user drop foreign key fk_traveller_type_user_traveller_type;
+drop index ix_traveller_type_user_traveller_type on traveller_type_user;
 
-alter table traveller_type_user drop constraint if exists fk_traveller_type_user_user;
-drop index if exists ix_traveller_type_user_user;
+alter table traveller_type_user drop foreign key fk_traveller_type_user_user;
+drop index ix_traveller_type_user_user on traveller_type_user;
 
-alter table trip drop constraint if exists fk_trip_user_user_id;
-drop index if exists ix_trip_user_user_id;
+alter table trip drop foreign key fk_trip_user_user_id;
+drop index ix_trip_user_user_id on trip;
 
-alter table trip_destination drop constraint if exists fk_trip_destination_trip_trip_id;
-drop index if exists ix_trip_destination_trip_trip_id;
+alter table trip_destination drop foreign key fk_trip_destination_trip_trip_id;
+drop index ix_trip_destination_trip_trip_id on trip_destination;
 
-alter table trip_destination drop constraint if exists fk_trip_destination_destination_destination_id;
-drop index if exists ix_trip_destination_destination_destination_id;
+alter table trip_destination drop foreign key fk_trip_destination_destination_destination_id;
+drop index ix_trip_destination_destination_destination_id on trip_destination;
 
 drop table if exists country;
 
