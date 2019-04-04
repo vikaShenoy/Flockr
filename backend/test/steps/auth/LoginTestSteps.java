@@ -72,7 +72,7 @@ public class LoginTestSteps {
         this.userData = Json.toJson(firstRow);
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("POST")
-                .uri("/api/auth/travellers/signup")
+                .uri("/api/auth/users/signup")
                 .bodyJson(this.userData);
         this.signUpResponse = route(application, request);
         Assert.assertEquals(200, this.signUpResponse.status());

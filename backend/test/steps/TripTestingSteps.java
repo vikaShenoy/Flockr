@@ -101,7 +101,7 @@ public class TripTestingSteps {
         jsonBody.set("tripDestinations", Json.toJson(this.tripDestinations));
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("POST")
-                .uri("/api/travellers/1/trips")
+                .uri("/api/users/1/trips")
                 .bodyJson(jsonBody)
                 .header("Authorization",  "some-token");
 
@@ -116,7 +116,7 @@ public class TripTestingSteps {
         jsonBody.set("tripDestinations", Json.toJson(this.tripDestinations));
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("PUT")
-                .uri("/api/travellers/1/trips/1")
+                .uri("/api/users/1/trips/1")
                 .bodyJson(jsonBody)
                 .header("Authorization",  "some-token");
 
@@ -127,7 +127,7 @@ public class TripTestingSteps {
     public void iSendARequestToGetATrip(int tripId) {
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("GET")
-                .uri("/api/travellers/1/trips/" + tripId)
+                .uri("/api/users/1/trips/" + tripId)
                 .header("Authorization",  "some-token");
 
         this.result = route(application, checkCreation);
@@ -137,7 +137,7 @@ public class TripTestingSteps {
     public void iSendARequestToGetTrips() {
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("GET")
-                .uri("/api/travellers/1/trips")
+                .uri("/api/users/1/trips")
                 .header("Authorization",  "some-token");
 
         this.result = route(application, checkCreation);
