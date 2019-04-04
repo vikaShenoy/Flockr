@@ -76,6 +76,16 @@ public class SignUpTestSteps {
         Assert.assertTrue(this.userData.size() < 5);
     }
 
+    @When("I click the Sign Up button")
+    public void iClickTheSignUpButton() {
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("POST")
+                .uri("/api/auth/users/signup")
+                .bodyJson(this.userData);
+        this.result = route(application, request);
+        Assert.assertTrue(!(this.result == null));
+    }
+
     @When("I make an {string} request to {string} with the data")
     public void iMakeARequestToWithTheData(String requestMethod, String endpoint) {
         Http.RequestBuilder request = Helpers.fakeRequest()
@@ -86,8 +96,13 @@ public class SignUpTestSteps {
         Assert.assertTrue(!(this.result == null));
     }
 
-    @Then("I should receive a {int} status code")
-    public void iShouldReceiveAStatusCode(Integer expectedStatusCode) {
+    @Then("I should receive a {int} status code indicating that the User is successfully created")
+    public void iShouldReceiveAStatusCodeIndicatingThatTheUserIsSuccessfullyCreated(Integer expectedStatusCode) {
+        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+    }
+
+    @Then("I should receive a {int} status code indicating that the User filled the form with invalid data")
+    public void iShouldReceiveAStatusCodeIndicatingThatTheUserFilledTheFormWithInvalidData(Integer expectedStatusCode) {
         Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
     }
 }
