@@ -84,7 +84,7 @@ public class DestinationTestingSteps {
                 .uri("/api/auth/users/signup")
                 .bodyJson(signUpReqBody);
         Result signUpRes = route(application, signUpReq);
-        Assert.assertEquals(200, signUpRes.status());
+        Assert.assertEquals(201, signUpRes.status());
 
         // log in to get the auth token
         ObjectNode logInReqBody = Json.newObject();
@@ -142,7 +142,7 @@ public class DestinationTestingSteps {
     }
 
     @Then("I should receive a {int} status code when getting the destination with id {int}")
-    public void iShouldReceiveAStatusCodeWhenCheckingForTheDestination(Integer expectedStatusCode, Integer destinationId) throws IOException {
+    public void iShouldReceiveAStatusCodeWhenCheckingForTheDestination(Integer expectedStatusCode, Integer destinationId) {
         Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/destinations/" + destinationId.toString());
@@ -162,8 +162,8 @@ public class DestinationTestingSteps {
         Assert.assertTrue(destinationName.length() > 0);
     }
 
-    @When("I make a {string} request to {string} to delete the destination")
-    public void iMakeARequestToToDeleteTheDestination(String requestMethod, String endpoint) throws IOException {
+    @When("I make a {String} request to {String} to delete the destination")
+    public void iMakeARequestToToDeleteTheDestination(String requestMethod, String endpoint) {
         Http.RequestBuilder deleteReq = Helpers.fakeRequest()
                 .method(requestMethod)
                 .uri(endpoint)
