@@ -56,7 +56,6 @@ public class LoginTestSteps {
         Helpers.start(application);
     }
 
-
     /**
      * Stop the backend server
      */
@@ -78,20 +77,21 @@ public class LoginTestSteps {
         Assert.assertEquals(201, this.signUpResponse.status());
     }
 
-    @When("I make a {string} request to {string} with my email and password")
-    public void iMakeARequestToWithMyEmailAndPassword(String requestMethod, String endpoint) {
-        // get the user credentials from the initial data
+
+    @When("I write correct login credentials in the Login form and I click the Login button")
+    public void iWriteCorrectLoginCredentialsinTheLoginFormAndIClickTheLoginButton() {
+        // Gets the user credentials from the initial data
         String email = this.userData.get("email").asText();
         String password = this.userData.get("password").asText();
 
-        // construct the request body
+        // Constructing the request body
         ObjectNode reqJsonBody = Json.newObject();
         reqJsonBody.put("email", email);
         reqJsonBody.put("password", password);
 
         Http.RequestBuilder request = Helpers.fakeRequest()
-                .method(requestMethod)
-                .uri(endpoint)
+                .method("POST")
+                .uri("/api/auth/users/login")
                 .bodyJson(reqJsonBody);
         this.loginResponse = route(application, request);
         Assert.assertTrue(!(this.loginResponse == null));
@@ -104,6 +104,25 @@ public class LoginTestSteps {
         String authToken = authenticationResponseAsJson.get("token").asText();
 
         Assert.assertTrue(authToken.length() > 0);
+    }
+
+    @When("I write incorrect login credentials in the Login form and I click the Login button")
+    public void iWriteIncorrectLoginCredentialsinTheLoginFormAndIClickTheLoginButton() {
+        // Gets the user credential from the initial data
+        String email = this.userData.get("email").asText();
+        String password = this.userData.get("password").asText();
+
+        // Constructing the request body
+        ObjectNode reqJsonBody = Json.newObject();
+        reqJsonBody.put("email", email);
+        reqJsonBody.put("password", password + "wrong-password");
+
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("POST")
+                .uri("/api/auth/users/login")
+                .bodyJson(reqJsonBody);
+        this.loginResponse = route(application, request);
+        Assert.assertTrue(!(this.loginResponse == null));
     }
 
     @When("I make a {string} request to {string} with my email and the wrong password")

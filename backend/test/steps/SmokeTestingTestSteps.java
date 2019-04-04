@@ -3,6 +3,7 @@ package steps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
+import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
@@ -31,6 +32,17 @@ public class SmokeTestingTestSteps {
 
     private Result result; // the result returned by the backend
 
+    /**
+     * Prints a message in the console to show that the scenario
+     * testing has started
+     * @param scenario The Scenario
+     */
+    @Before
+    public void before(Scenario scenario) {
+        System.out.println("------------------------------");
+        System.out.println("Starting - " + scenario.getName());
+        System.out.println("------------------------------");
+    }
 
     /**
      * Set up the backend server
@@ -49,13 +61,25 @@ public class SmokeTestingTestSteps {
         Helpers.start(application);
     }
 
-
     /**
      * Stop the backend server
      */
     @After
-    public void tearDown() {
+    public void tearDown()
+    {
         Helpers.stop(application);
+    }
+
+    /**
+     * Prints a message in the console to show that the scenario
+     * testing has finished and the status
+     * @param scenario The Scenario
+     */
+    @After
+    public void after(Scenario scenario) {
+        System.out.println("------------------------------");
+        System.out.println(scenario.getName() + " Status - " + scenario.getStatus());
+        System.out.println("------------------------------");
     }
 
 
