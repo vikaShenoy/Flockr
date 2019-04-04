@@ -28,21 +28,6 @@
         </v-list-tile-content>
       </v-list-tile>
 
-      <v-list-tile
-        :style="{
-          backgroundColor: '#c0392b',
-        }"
-        @click="resampleClick"
-        class="nav-item"
-      >
-        <v-list-tile-action>
-          <v-icon class="nav-icon">cog</v-icon>
-        </v-list-tile-action>
-
-        <v-list-tile-content>
-          <v-list-tile-title>Resample (DEV)</v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
 
     </v-list>
  </v-navigation-drawer>
@@ -52,7 +37,6 @@
 
 import UserStore from "../../../stores/UserStore";
 import { logout } from "./NavbarService";
-import { resample } from "../../Home/HomeService";
 
 export default {
   data() {
@@ -150,22 +134,7 @@ export default {
           this.$router.push(url);
           break;
       }
-    },
-    /**
-     * Resample the database with test data.
-     */
-    resampleClick() {
-      try {
-      
-        resample(); 
-        console.log(1);
-      } catch (e) {
-        console.log(e);
-      }
-  }  
-
-    
-
+    }
   },
   computed: {
     /**
