@@ -11,7 +11,7 @@ Feature: The user can manage destinations
       | destinationName | destinationTypeId | districtId | latitude | longitude | countryId |
       | Lower Hutt      | 1                 | 1          | -41.2    | 174.9     | 1         |
     When I click the Add Destination button
-    Then I should receive a 200 status code indicating that the Destination is successfully created
+    Then I should receive a 201 status code indicating that the Destination is successfully created
 
     # Test that a 400 status code is returned when a user creates a Destination with incomplete data
     Scenario: A user tries to create a destination with no country
