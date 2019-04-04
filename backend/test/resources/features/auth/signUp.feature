@@ -6,7 +6,7 @@ Feature: The user can sign up
       | firstName | middleName | lastName | email            | password      |
       | Matias    | Felipe     | Suarez   | matias@email.com | much-security |
     When I make an "POST" request to "/api/auth/users/signup" with the data
-    Then I should receive a 200 status code
+    Then I should receive a 201 status code
 
   # Test that a 400 code is returned on *some* incomplete data
   Scenario: A user tries to sign up without a lastname

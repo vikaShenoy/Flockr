@@ -11,7 +11,7 @@ Feature: The user can manage destinations
       | destinationName | destinationTypeId | districtId | latitude | longitude | countryId |
       | Lower Hutt      | 1                 | 1          | -41.2    | 174.9     | 1         |
     When I make a "POST" request to "/api/destinations" with the data
-    Then I should receive an 200 status code
+    Then I should receive an 201 status code
 
     Scenario: A user tries to create a destination with no country
       Given that I have destination data to create with:

@@ -75,7 +75,7 @@ public class LoginTestSteps {
                 .uri("/api/auth/users/signup")
                 .bodyJson(this.userData);
         this.signUpResponse = route(application, request);
-        Assert.assertEquals(200, this.signUpResponse.status());
+        Assert.assertEquals(201, this.signUpResponse.status());
     }
 
     @When("I make a {string} request to {string} with my email and password")
