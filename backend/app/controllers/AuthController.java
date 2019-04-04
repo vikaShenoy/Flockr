@@ -160,7 +160,7 @@ public class AuthController {
 
         User user = new User(firstName, middleName,lastName, email, hashedPassword, userToken);
         return authRepository.insert(user)
-                .thenApplyAsync((insertedUser) -> ok(Json.toJson(insertedUser)), httpExecutionContext.current());
+                .thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)), httpExecutionContext.current());
     }
 
     /**

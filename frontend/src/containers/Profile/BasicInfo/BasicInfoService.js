@@ -8,7 +8,7 @@ export const rules = {
 };
 
 export function updateBasicInfo(userId, basicInfo) {
-  return superagent.patch(endpoint(`/travellers/${userId}`))
+  return superagent.patch(endpoint(`/users/${userId}`))
   .set("Authorization", localStorage.getItem("authToken"))
   .send(basicInfo);
 }
