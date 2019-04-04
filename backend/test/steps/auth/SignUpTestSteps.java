@@ -22,6 +22,7 @@ import play.mvc.Result;
 import play.test.Helpers;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -97,12 +98,14 @@ public class SignUpTestSteps {
     }
 
     @Then("I should receive a {int} status code indicating that the User is successfully created")
-    public void iShouldReceiveAStatusCodeIndicatingThatTheUserIsSuccessfullyCreated(Integer expectedStatusCode) {
+    public void iShouldReceiveAStatusCodeIndicatingThatTheUserIsSuccessfullyCreated(Integer expectedStatusCode) throws IOException {
+        System.out.println(utils.PlayResultToJson.convertResultToJson(this.result));
         Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
     }
 
     @Then("I should receive a {int} status code indicating that the User filled the form with invalid data")
-    public void iShouldReceiveAStatusCodeIndicatingThatTheUserFilledTheFormWithInvalidData(Integer expectedStatusCode) {
+    public void iShouldReceiveAStatusCodeIndicatingThatTheUserFilledTheFormWithInvalidData(Integer expectedStatusCode) throws IOException {
+        System.out.println(utils.PlayResultToJson.convertResultToJson(this.result));
         Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
     }
 }
