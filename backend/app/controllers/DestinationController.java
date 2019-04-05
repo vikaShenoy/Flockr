@@ -56,9 +56,11 @@ public class DestinationController  extends Controller{
     public CompletionStage<Result> getDestination(int destinationId, Http.Request request) {
 
         return destinationRepository.getDestinationById(destinationId)
-                .thenApplyAsync(destination -> {
+                .thenApplyAsync((destination) -> {
                     if (!destination.isPresent()) {
-                        return notFound();
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "No destination exists with the specified ID");
+                        return notFound(message);
                     }
 
                     JsonNode destAsJson = Json.toJson(destination);
@@ -106,7 +108,9 @@ public class DestinationController  extends Controller{
             return destinationRepository.insert(destination)
                     .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)), httpExecutionContext.current());
         } catch (Exception e) {
-            return supplyAsync(Results::badRequest);
+            ObjectNode message = Json.newObject();
+            message.put("message", "Please provide a valid Destination with complete data");
+            return supplyAsync(() -> badRequest(message));
         }
 
     }

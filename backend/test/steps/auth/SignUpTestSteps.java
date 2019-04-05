@@ -25,6 +25,7 @@ import play.mvc.Result;
 import play.test.Helpers;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
