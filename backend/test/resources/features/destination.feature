@@ -7,6 +7,7 @@ Feature: The user can manage destinations
 
   # Test that a 201 code is returned when creating a Destinations with valid data
   Scenario: A user tries to create a destination with complete valid data
+    Given that I am logged in
     Given the database has been populated with countries, districts and destination types
     Given that I want to create a Destination with the following valid data:
       | destinationName | destinationTypeId | districtId | latitude | longitude | countryId |
@@ -16,6 +17,7 @@ Feature: The user can manage destinations
 
     # Test that a 400 status code is returned when a user creates a Destination with incomplete data
     Scenario: A user tries to create a destination with no country
+      Given that I am logged in
       Given the database has been populated with countries, districts and destination types
       Given that I want to create a Destination with the following incomplete data:
         | destinationName | destinationTypeId | districtId | latitude | longitude    |

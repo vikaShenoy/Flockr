@@ -79,14 +79,6 @@ public class DestinationTestingSteps {
         this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
     }
 
-    @Given("that I have destination data to create with:")
-    public void thatIHaveDestinationDataToCreateWith(DataTable dataTable) {
-        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
-        Map<String, String> firstRow = list.get(0);
-        this.destinationData = Json.toJson(firstRow);
-        Assert.assertNotNull(this.destinationData);
-    }
-
     @Given("that I am logged in")
     public void thatIAmLoggedIn() {
         Assert.assertTrue(this.authToken.length() > 0);
@@ -112,6 +104,24 @@ public class DestinationTestingSteps {
         JsonNode res = utils.PlayResultToJson.convertResultToJson(result);
         String destinationName = res.get("destinationName").asText();
         Assert.assertTrue(destinationName.length() > 0);
+    }
+
+    @Given("that I want to create a Destination with the following valid data:")
+    public void thatIWantToCreateADestinationWithTheFollowingValidData(DataTable dataTable) {
+        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
+        Map<String, String> firstRow = list.get(0);
+        this.userData = Json.toJson(firstRow);
+
+        this.destinationData = Json.toJson(firstRow);
+    }
+
+    @Given("that I want to create a Destination with the following incomplete data:")
+    public void thatIWantToCreateADestinationWithTheFollowingIncompleteData(DataTable dataTable) {
+        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
+        Map<String, String> firstRow = list.get(0);
+        System.out.println(list.get(0));
+
+        this.destinationData = Json.toJson(firstRow);
     }
 
     @Given("the database has been populated with countries, districts and destination types")
