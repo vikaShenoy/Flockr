@@ -2,12 +2,15 @@ package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
+import cucumber.api.PendingException;
 import cucumber.api.java.After;
+import cucumber.api.java.AfterStep;
 import cucumber.api.java.Before;
+import cucumber.api.java.BeforeStep;
+import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -18,20 +21,17 @@ import play.ApplicationLoader;
 import play.Environment;
 import play.inject.guice.GuiceApplicationBuilder;
 import play.inject.guice.GuiceApplicationLoader;
-import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import utils.PlayResultToJson;
+import utils.TestAuthenticationHelper;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
-import javax.validation.constraints.AssertTrue;
 
 import static play.test.Helpers.route;
 
@@ -44,7 +44,7 @@ public class searchTravellerFilterSteps {
     private ArrayNode array;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
             public void configure() {
@@ -54,10 +54,6 @@ public class searchTravellerFilterSteps {
                 .builder(new ApplicationLoader.Context(Environment.simple()))
                 .overrides(testModule);
         Guice.createInjector(builder.applicationModule()).injectMembers(this);
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/internal/resample");
-        route(application, request);
 
         Helpers.start(application);
     }
@@ -67,32 +63,33 @@ public class searchTravellerFilterSteps {
         Helpers.stop(application);
     }
 
-    @Given("I have logged in with email {string} and password {string}")
-    public void iHaveLoggedInWithEmailAndPassword(String email, String password) throws IOException {
-
-        ObjectNode reqJsonBody = Json.newObject();
-        reqJsonBody.put("email", email);
-        reqJsonBody.put("password", password);
-
-        Http.RequestBuilder loginRequest = Helpers.fakeRequest()
-                .method("POST")
-                .bodyJson(reqJsonBody)
-                .uri("/api/auth/users/login");
-        Result loginResult = route(application, loginRequest);
-        JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
-        this.authToken = authenticationResponseAsJson.get("token").asText();
-        Assert.assertEquals(200, loginResult.status());
-        Assert.assertNotNull(this.authToken);
+    @Given("the following user exists:")
+    public void theFollowingUserExists(DataTable dataTable) throws IOException {
+        this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
     }
 
-    @Given("the database has been populated with test data")
-    public void theDatabaseHasBeenPopulatedWithTestData() throws IOException {
+    @And("^I have logged in with email \"([^\"]*)\" and password \"([^\"]*)\"$")
+    public void iHaveLoggedInWithEmailAndPassword(String email, String password) throws IOException {
+        this.authToken = TestAuthenticationHelper.login(email, password, this.application);
+    }
+
+    @Given("I populate the database with test data")
+    public void iPopulateTheDatabaseWithTestData() throws IOException {
+        Http.RequestBuilder resampleRequest = Helpers.fakeRequest()
+                .method("POST")
+                .uri("/api/internal/resample");
+        Result resampleResult = route(application, resampleRequest);
+
+        Assert.assertEquals(200, resampleResult.status());
+
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users");
         Result result = route(application, request);
         ArrayNode array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
+
+        Assert.assertEquals(200, result.status());
         Assert.assertTrue(array.size() > 0);
     }
 
@@ -109,16 +106,6 @@ public class searchTravellerFilterSteps {
         Assert.assertEquals(200, result.status());
     }
 
-    @Then("I get a list of all nationalities as follows:")
-    public void iGetAListOfAllNationalitiesAsFollows(DataTable dataTable) {
-
-        List<Map<String,String>> expectedResults = dataTable.asMaps();
-        for (int i = 0; i < expectedResults.size(); i++) {
-            Assert.assertEquals(Integer.parseInt(expectedResults.get(i).get("nationalityId")), this.array.get(i).get("nationalityId").asInt());
-            Assert.assertEquals(expectedResults.get(i).get("nationalityName"), this.array.get(i).get("nationalityCountry").asText());
-        }
-    }
-
     @When("I request travellers from the {int} nationality id")
     public void iRequestTravellersFromTheNationalityId(Integer nationalityId) throws IOException {
 
@@ -131,11 +118,6 @@ public class searchTravellerFilterSteps {
 
         Assert.assertTrue(array.size() > 0);
         Assert.assertEquals(200, result.status());
-    }
-
-    @Then("I get the following [{string}] emails")
-    public void iGetTheFollowing(String email) {
-        Assert.assertEquals(email, this.array.get(0).get("email").asText());
     }
 
     @When("I request travellers from the Male gender")
@@ -192,5 +174,20 @@ public class searchTravellerFilterSteps {
 
         Assert.assertTrue(array.size() > 0);
         Assert.assertEquals(200, result.status());
+    }
+
+    @Then("I get a list of all nationalities as follows:")
+    public void iGetAListOfAllNationalitiesAsFollows(DataTable dataTable) {
+
+        List<Map<String,String>> expectedResults = dataTable.asMaps();
+        for (int i = 0; i < expectedResults.size(); i++) {
+            Assert.assertEquals(Integer.parseInt(expectedResults.get(i).get("nationalityId")), this.array.get(i).get("nationalityId").asInt());
+            Assert.assertEquals(expectedResults.get(i).get("nationalityName"), this.array.get(i).get("nationalityCountry").asText());
+        }
+    }
+
+    @Then("I get the following [{string}] emails")
+    public void iGetTheFollowing(String email) {
+        Assert.assertEquals(email, this.array.get(0).get("email").asText());
     }
 }

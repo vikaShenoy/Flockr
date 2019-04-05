@@ -3,9 +3,12 @@ package steps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
+import cucumber.api.PendingException;
 import cucumber.api.Scenario;
 import cucumber.api.java.After;
+import cucumber.api.java.AfterStep;
 import cucumber.api.java.Before;
+import cucumber.api.java.BeforeStep;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -58,6 +61,7 @@ public class SmokeTestingTestSteps {
             .builder(new ApplicationLoader.Context(Environment.simple()))
             .overrides(testModule);
         Guice.createInjector(builder.applicationModule()).injectMembers(this);
+
         Helpers.start(application);
     }
 
@@ -83,7 +87,7 @@ public class SmokeTestingTestSteps {
     }
 
 
-    @When("I do a {string} request on {string}")
+    @When("^I do a \"([^\"]*)\" request on \"([^\"]*)\"$")
     public void iDoAGETRequestOn(String requestMethod, String endpoint) {
         Http.RequestBuilder request = Helpers.fakeRequest()
             .method(requestMethod)
@@ -91,7 +95,7 @@ public class SmokeTestingTestSteps {
         this.result = route(application, request);
     }
 
-    @Then("the response should have a {int} status code")
+    @Then("^the response should have a (\\d+) status code$")
     public void theResponseShouldHaveAStatusCode(Integer expectedStatusCode) {
         Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
     }
