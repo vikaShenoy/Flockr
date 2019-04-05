@@ -38,7 +38,6 @@ import static play.test.Helpers.route;
 public class searchTravellerFilterSteps {
     @Inject
     private Application application;
-    private ArrayList<JsonNode> searchResults;
     private Result result;
     private String authToken;
     private ArrayNode array;
@@ -91,18 +90,18 @@ public class searchTravellerFilterSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users");
-        Result result = route(application, request);
+        this.result = route(application, request);
         ArrayNode array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
         Assert.assertTrue(array.size() > 0);
     }
 
-    @When("I request nationalities from the database")
+    @When("I want all types of nationalities from the database")
     public void iRequestNationalitiesFromTheDatabase() throws IOException {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/nationalities");
-        Result result = route(application, request);
+        this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
@@ -119,14 +118,14 @@ public class searchTravellerFilterSteps {
         }
     }
 
-    @When("I request travellers from the {int} nationality id")
-    public void iRequestTravellersFromTheNationalityId(Integer nationalityId) throws IOException {
+    @When("I search travellers with the {int} nationality id")
+    public void iSearchTravellersWithTheNationalityId(Integer nationalityId) throws IOException {
 
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&nationality=" + nationalityId);
-        Result result = route(application, request);
+        this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
@@ -138,56 +137,56 @@ public class searchTravellerFilterSteps {
         Assert.assertEquals(email, this.array.get(0).get("email").asText());
     }
 
-    @When("I request travellers from the Male gender")
+    @When("I search travellers with the gender Male")
     public void iRequestTravellersFromTheMaleGender() throws IOException {
 
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Male");
-        Result result = route(application, request);
+        this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
         Assert.assertEquals(200, result.status());
     }
 
-    @When("I request travellers from the Female gender")
+    @When("I search travellers with the gender Female")
     public void iRequestTravellersFromTheFemaleGender() throws IOException {
 
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Female");
-        Result result = route(application, request);
+        this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
         Assert.assertEquals(200, result.status());
     }
 
-    @When("I request travellers from the Other gender")
+    @When("I search travellers with the gender Other")
     public void iRequestTravellersFromTheOtherGender() throws IOException {
 
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Other");
-        Result result = route(application, request);
+        this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
         Assert.assertEquals(200, result.status());
     }
 
-    @When("I request travellers of the type {int}")
+    @When("I search travellers with the traveller type ID {int}")
     public void iRequestTravellersOfTheType(Integer travellerTypeId) throws IOException {
 
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&travellerType=" + travellerTypeId.toString());
-        Result result = route(application, request);
+        this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);

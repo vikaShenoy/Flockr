@@ -3,7 +3,7 @@ Feature: The user can search travellers
   Scenario: I can get a list of available nationalities from the database
     And I have logged in with email "luis@gmail.com" and password "so-secure"
     And the database has been populated with test data
-    When I request nationalities from the database
+    When I want all types of nationalities from the database
     Then I get a list of all nationalities as follows:
       | nationalityId | nationalityName |
       | 1             | New Zealand     |
@@ -15,7 +15,7 @@ Feature: The user can search travellers
   Scenario Outline: The user can search a traveller by nationality id
     And I have logged in with email "luis@gmail.com" and password "so-secure"
     And the database has been populated with test data
-    When I request travellers from the <nationalityId> nationality id
+    When I search travellers with the <nationalityId> nationality id
     Then I get the following <emails> emails
 
     Examples:
@@ -28,7 +28,7 @@ Feature: The user can search travellers
   Scenario Outline: The user can search a traveller by gender
     And I have logged in with email "luis@gmail.com" and password "so-secure"
     And the database has been populated with test data
-    When I request travellers from the <gender> gender
+    When I search travellers with the gender <gender>
     Then I get the following <emails> emails
 
     Examples:
@@ -39,12 +39,10 @@ Feature: The user can search travellers
 
 
 #  Scenario Outline: The user can search a traveller by age in a range
-#    Given the backend server is operating
-#    And I have logged in with email "luis@gmail.com" and password "so-secure"
+#    Given I have logged in with email "luis@gmail.com" and password "so-secure"
 #    And the database has been populated with test data
-#    When I request travellers in the range <minAge> to <maxAge>
+#    When I search travellers with the age range of <minAge> to <maxAge>
 #    Then I get the following <results>
-#
 #
 #    Examples:
 #      | minAge | maxAge | results                                   |
@@ -57,7 +55,7 @@ Feature: The user can search travellers
   Scenario Outline: The user can search a traveller by traveller type
     And I have logged in with email "luis@gmail.com" and password "so-secure"
     And the database has been populated with test data
-    When I request travellers of the type <travellerTypeId>
+    When I search travellers with the traveller type ID <travellerTypeId>
     Then I get the following <emails> emails
 
     Examples:
