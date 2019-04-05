@@ -100,7 +100,6 @@ public class LoginTestSteps {
     @Then("the response should have an authentication token")
     public void theResponseShouldHaveAnAuthenticationToken() throws IOException {
         JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(this.loginResponse);
-        System.out.println(authenticationResponseAsJson);
         String authToken = authenticationResponseAsJson.get("token").asText();
 
         Assert.assertTrue(authToken.length() > 0);
@@ -120,25 +119,6 @@ public class LoginTestSteps {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("POST")
                 .uri("/api/auth/users/login")
-                .bodyJson(reqJsonBody);
-        this.loginResponse = route(application, request);
-        Assert.assertTrue(!(this.loginResponse == null));
-    }
-
-    @When("I make a {string} request to {string} with my email and the wrong password")
-    public void iMakeARequestToWithMyEmailAndTheWrongPassword(String requestMethod, String endpoint) {
-        // get the user credentials from the initial data
-        String email = this.userData.get("email").asText();
-        String password = this.userData.get("password").asText();
-
-        // construct the request body
-        ObjectNode reqJsonBody = Json.newObject();
-        reqJsonBody.put("email", email);
-        reqJsonBody.put("password", password + "I will now be a wrong password");
-
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method(requestMethod)
-                .uri(endpoint)
                 .bodyJson(reqJsonBody);
         this.loginResponse = route(application, request);
         Assert.assertTrue(!(this.loginResponse == null));
