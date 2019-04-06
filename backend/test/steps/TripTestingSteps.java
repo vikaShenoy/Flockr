@@ -6,11 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
-import cucumber.api.PendingException;
 import cucumber.api.java.After;
-import cucumber.api.java.AfterStep;
 import cucumber.api.java.Before;
-import cucumber.api.java.BeforeStep;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -146,8 +143,8 @@ public class TripTestingSteps {
         System.out.println(tripDestinationsJson.asText());
     }
 
-    @When("I send a request to add a trip")
-    public void iSendARequestToAddATrip() {
+    @When("I click the Add Trip button")
+    public void iClickTheAddATripButton() {
         ObjectNode jsonBody = Json.newObject();
         jsonBody.set("tripName", Json.toJson(this.tripName));
         jsonBody.set("tripDestinations", Json.toJson(this.tripDestinations));
@@ -161,8 +158,8 @@ public class TripTestingSteps {
         Assert.assertNotNull(this.result);
     }
 
-    @When("I send a request to update a trip")
-    public void iSendARequestToUpdateATrip() {
+    @When("I update a trip and click the Save Trip button")
+    public void iUpdateATripAndClickTheSaveTripButton() {
         ObjectNode jsonBody = Json.newObject();
 
         jsonBody.set("tripName", Json.toJson(this.tripName));
@@ -196,8 +193,29 @@ public class TripTestingSteps {
         this.result = route(application, checkCreation);
     }
 
-    @Then("^The server should return a (\\d+) status$")
+    @Then("The server should return a {int} status indicating the Trip is successfully created")
     public void theServerShouldReturnAStatus(int status) {
         Assert.assertEquals(status, this.result.status());
     }
+
+    @Then("The server should return a {int} status indicating the Trip is not successfully created")
+    public void theServerIndicatesTripIsNotSuccessfullyCreated(int status) {
+        Assert.assertEquals(status, this.result.status());
+    }
+
+    @Then("The server should return a {int} status indicating the Trip is successfully updated")
+    public void theServerIndicatesTheTripIsSuccessfullyUpdated(int status) {
+        Assert.assertEquals(status, this.result.status());
+    }
+
+    @Then("The server should return a {int} status indicating the Trip exists")
+    public void theServerIndicatesTheTripExists(int status) {
+        Assert.assertEquals(status, this.result.status());
+    }
+
+    @Then("The server should return a {int} status indicating the Trip is not found")
+    public void theServerIndicatesTheTripIsNotFound(int status) {
+        Assert.assertEquals(status, this.result.status());
+    }
+
 }
