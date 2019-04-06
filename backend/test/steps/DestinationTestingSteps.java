@@ -1,22 +1,16 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
-import cucumber.api.PendingException;
 import cucumber.api.java.After;
-import cucumber.api.java.AfterStep;
 import cucumber.api.java.Before;
-import cucumber.api.java.BeforeStep;
-import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import models.*;
-import org.checkerframework.checker.nullness.qual.AssertNonNullIfNonNull;
 import org.junit.Assert;
 import play.Application;
 import play.ApplicationLoader;
@@ -33,25 +27,16 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import javax.inject.Inject;
 
 import static play.test.Helpers.route;
 
 public class DestinationTestingSteps {
     @Inject
     private Application application;
-    private JsonNode userData;
     private JsonNode destinationData;
     private Result result;
 
     // user data
-    private String firstName;
-    private String middleName;
-    private String lastName;
-    private String email;
-    private String plainTextPassword;
     private String authToken;
 
     @Before
@@ -110,8 +95,6 @@ public class DestinationTestingSteps {
     public void thatIWantToCreateADestinationWithTheFollowingValidData(DataTable dataTable) {
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
-        this.userData = Json.toJson(firstRow);
-
         this.destinationData = Json.toJson(firstRow);
     }
 
@@ -147,37 +130,50 @@ public class DestinationTestingSteps {
 
     }
 
-    @When("^I make a \"([^\"]*)\" request to \"([^\"]*)\" to delete the destination$")
-    public void iMakeARequestToToDeleteTheDestination(String requestMethod, String endpoint) {
-        Http.RequestBuilder deleteReq = Helpers.fakeRequest()
-                .method(requestMethod)
-                .uri(endpoint)
-                .header("Authorization", this.authToken);
-        Result deleteRes = route(application, deleteReq);
-        Assert.assertEquals(200, deleteRes.status());
-    }
-
-    @When("^I make a \"([^\"]*)\" request to \"([^\"]*)\" with the data$")
-    public void iMakeARequestToWithTheData(String requestMethod, String endpoint) {
+    @When("I click the Add Destination button")
+    public void iClicktheAddDestination() {
         Http.RequestBuilder request = Helpers.fakeRequest()
-                .method(requestMethod)
-                .uri(endpoint)
+                .method("POST")
+                .uri("/api/destinations")
                 .bodyJson(this.destinationData);
         this.result = route(application, request);
         Assert.assertNotNull(this.result);
     }
 
-    @Then("^I should receive an (\\d+) status code$")
-    public void iShouldReceiveAnStatusCode(Integer expectedStatusCode) {
+    @When("I click the Delete Destination button")
+    public void iClickTheDeleteDestinationButton() {
+        Http.RequestBuilder deleteReq = Helpers.fakeRequest()
+                .method("DELETE")
+                .uri("/api/destinations/1")
+                .header("Authorization", this.authToken);
+        this.result = route(application, deleteReq);
+        Assert.assertEquals(200, this.result.status());
+    }
+
+    @Then("I should receive a {int} status code indicating that the Destination is successfully created")
+    public void iShouldReceiveAnStatusCodeIndicatingThatDestinationIsSuccessfullyCreated(Integer expectedStatusCode) {
         Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
     }
 
-    @Then("^I should receive a (\\d+) status code when getting the destination with id (\\d+)$")
-    public void iShouldReceiveAStatusCodeWhenGettingTheDestinationWithId(Integer expectedStatusCode, Integer destinationId) {
+    @Then("I should receive a {int} status code indicating that the Destination is not successfully created")
+    public void iShouldReceiveAStatusCodeIndicatingThatTheDestinationIsNotSuccessfullyCreated(Integer expectedStatusCode) {
+        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+    }
+
+    @Then("I try to search the Destination with the id of {int}")
+    public void iTryToSearchTheDestinationWithTheIdOf(Integer destinationId) {
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("GET")
+                .uri("/api/destinations/" + destinationId.toString());
+        this.result = route(application, request);
+    }
+
+    @Then("I should receive a {int} status code when getting the destination with id {int} indicating that the Destination with the given ID is not found")
+    public void iShouldReceiveAStatusCodeWhenGettingTheDeletedDestinationWithId(Integer expectedStatusCode, Integer destinationId) {
         Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/destinations/" + destinationId.toString());
-        Result getDestRes = route(application, checkDeletion);
-        Assert.assertEquals(expectedStatusCode, (Integer) getDestRes.status());
+        this.result = route(application, checkDeletion);
+        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
     }
 }
