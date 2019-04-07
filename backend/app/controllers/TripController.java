@@ -57,7 +57,7 @@ public class TripController extends Controller {
      * @return A result object
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> addTrip(int travellerId, Http.Request request) {
+    public CompletionStage<Result> addTrip(int userId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         JsonNode jsonBody = request.body().asJson();
 
@@ -80,10 +80,8 @@ public class TripController extends Controller {
     }
 
     @With(LoggedIn.class)
-    public CompletionStage<Result> getTrip(int travellerId, int tripId, Http.Request request) {
+    public CompletionStage<Result> getTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
-        int userId = user.getUserId();
-
         return tripRepository.getTripByIds(tripId, userId)
                 .thenApplyAsync((optionalTrip) -> {
                     if (!optionalTrip.isPresent())  {
@@ -98,15 +96,14 @@ public class TripController extends Controller {
 
     /**
      * Endpoint to delete a user's trip.
-     * @param travellerId The user who's trip is deleted.
+     * @param userId The user who's trip is deleted.
      * @param tripId The trip to delete.
      * @param request HTTP req
      * @return A result object
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> deleteTrip(int travellerId, int tripId, Http.Request request) {
+    public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
-        int userId = user.getUserId();
         return tripRepository.getTripByIds(tripId, userId).
                 thenComposeAsync((optionalTrip) -> {
                     if (!optionalTrip.isPresent()) {

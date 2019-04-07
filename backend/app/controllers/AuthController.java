@@ -12,15 +12,12 @@ import play.mvc.Result;
 import models.User;
 import play.mvc.With;
 import repository.AuthRepository;
-import repository.TravellerRepository;
-import scala.reflect.internal.Trees;
+import repository.UserRepository;
 import util.Security;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import util.Responses;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -31,15 +28,15 @@ import static play.mvc.Results.*;
  */
 public class AuthController {
     private final AuthRepository authRepository;
-    private final TravellerRepository travellerRepository;
+    private final UserRepository userRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final Security security;
     private final Responses responses;
 
     @Inject
-    public AuthController(AuthRepository authRepository, TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses) {
+    public AuthController(AuthRepository authRepository, UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses) {
         this.authRepository = authRepository;
-        this.travellerRepository = travellerRepository;
+        this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
         this.responses = responses;
@@ -190,7 +187,7 @@ public class AuthController {
                     String token = this.security.generateToken();
                     user.setToken(token);
 
-                    return travellerRepository.updateUser(user);
+                    return userRepository.updateUser(user);
                 }, httpExecutionContext.current())
                 .thenApplyAsync((user) -> {
                             JsonNode userJson = Json.toJson(user);
@@ -213,7 +210,7 @@ public class AuthController {
         User user = request.attrs().get(ActionState.USER);
         user.setToken(null);
 
-        return travellerRepository.updateUser(user)
+        return userRepository.updateUser(user)
                 .thenApplyAsync((u) -> {
                     return ok();
                 }, httpExecutionContext.current());
