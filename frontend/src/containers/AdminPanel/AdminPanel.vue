@@ -1,7 +1,7 @@
 <template>
   <div class="admin-panel">
     <h2>Admin Panel</h2>
-    <ManageUsers />
+    <ManageUsers v-on:editUserById="handleEditUserById"/>
     
   </div>
 </template>
@@ -14,6 +14,17 @@ export default {
   components: {
     ManageUsers
   },
+  data() {
+    return {
+
+    }
+  },
+  methods: {
+    // event handler for when a child component wants to edit a user by id
+    handleEditUserById: function(userId) {
+      console.log(`Wanting to edit user ${userId} in admin panel`);
+    }
+  }
 };
 </script>
 

@@ -7,7 +7,7 @@
             <p>Manage users</p>
           </div>
 
-          <v-btn class="edit-user-button" :disabled="this.selectedUsers.length != 1" @click="editUserButtonClicked">
+          <v-btn class="edit-user-button" v-on:click.stop="editUserButtonClicked" :disabled="this.selectedUsers.length != 1">
             Edit user
           </v-btn>
 
@@ -89,10 +89,12 @@ export default {
   },
   methods: {
     // event handler for when the button to edit an user is clicked
+    // emit an event for the parent to handle editing users
     editUserButtonClicked: function() {
       const userId = this.selectedUsers[0];
-      console.log(`User wants to edit user: ${userId}`);
+      this.$emit('editUserById', userId);
     },
+    // call the admin panel service to delete the given user ids
     deleteUsersButtonClicked: async function() {
       const userIds = this.selectedUsers;
       console.log(`User wants to delete users: ${userIds}`)
