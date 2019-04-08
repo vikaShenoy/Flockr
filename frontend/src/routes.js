@@ -11,6 +11,7 @@ import Trips from "./containers/Trips/Trips.vue";
 import AddTrip from "./containers/AddTrip/AddTrip.vue";
 import Trip from "./containers/Trip/Trip.vue";
 import EditTrip from "./containers/EditTrip/EditTrip.vue";
+import AdminPanel from "./containers/AdminPanel/AdminPanel.vue";
 
 import { loggedIn, loggedInOrOut } from "./utils/auth";
 
@@ -70,6 +71,11 @@ const routes = [
     path: "/trips/:id/edit",
     component: EditTrip,
     beforeEnter: loggedIn
+  },
+  {
+    path: "/admin",
+    component: AdminPanel,
+    beforeEnter: loggedInOrOut
   }
 ];
 

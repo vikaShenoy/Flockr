@@ -125,6 +125,13 @@ export default {
           icon: "power_settings_new",
           loggedIn: true,
           loggedOut: false
+        },
+        {
+          title: "Admin Panel",
+          url: "/admin",
+          icon: "how_to_reg",
+          loggedIn: false,
+          loggedOut: true
         }
       ]
     };
@@ -156,11 +163,10 @@ export default {
      */
     resampleClick() {
       try {
-      
         resample(); 
-        console.log(1);
-      } catch (e) {
-        console.log(e);
+      } catch (err) {
+        // eslint-disable-next-line
+        console.error(`Could not resample the database: ${err}`);
       }
   }  
 
@@ -178,8 +184,6 @@ export default {
       return this.items.filter(item => {
         return (item.loggedIn && loggedIn && (item.profileCompleted && profileCompleted || !item.profileCompleted)) || item.loggedOut && !loggedIn;
       });
-
-      return this.items;
     },
     /**
      * Event handler called when nav item has been clicked
