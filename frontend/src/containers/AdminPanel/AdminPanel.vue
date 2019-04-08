@@ -8,7 +8,6 @@
 
 
 <script>
-import {deleteUsers} from "./AdminPanelService";
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 
 export default {

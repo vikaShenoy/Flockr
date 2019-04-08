@@ -39,6 +39,8 @@
 
 
 <script>
+import {deleteUsers} from "../AdminPanelService";
+
 export default {
   data() {
     return {
