@@ -63,6 +63,12 @@ create table role (
   constraint pk_role primary key (role_id)
 );
 
+create table role_user (
+  role_role_id                  integer not null,
+  user_user_id                  integer not null,
+  constraint pk_role_user primary key (role_role_id,user_user_id)
+);
+
 create table traveller_type (
   traveller_type_id             integer auto_increment not null,
   traveller_type_name           varchar(255),
@@ -138,6 +144,12 @@ alter table passport_user add constraint fk_passport_user_passport foreign key (
 create index ix_passport_user_user on passport_user (user_user_id);
 alter table passport_user add constraint fk_passport_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
+create index ix_role_user_role on role_user (role_role_id);
+alter table role_user add constraint fk_role_user_role foreign key (role_role_id) references role (role_id) on delete restrict on update restrict;
+
+create index ix_role_user_user on role_user (user_user_id);
+alter table role_user add constraint fk_role_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
 create index ix_traveller_type_user_traveller_type on traveller_type_user (traveller_type_traveller_type_id);
 alter table traveller_type_user add constraint fk_traveller_type_user_traveller_type foreign key (traveller_type_traveller_type_id) references traveller_type (traveller_type_id) on delete restrict on update restrict;
 
@@ -180,6 +192,12 @@ drop index if exists ix_passport_user_passport;
 alter table passport_user drop constraint if exists fk_passport_user_user;
 drop index if exists ix_passport_user_user;
 
+alter table role_user drop constraint if exists fk_role_user_role;
+drop index if exists ix_role_user_role;
+
+alter table role_user drop constraint if exists fk_role_user_user;
+drop index if exists ix_role_user_user;
+
 alter table traveller_type_user drop constraint if exists fk_traveller_type_user_traveller_type;
 drop index if exists ix_traveller_type_user_traveller_type;
 
@@ -212,6 +230,8 @@ drop table if exists passport;
 drop table if exists passport_user;
 
 drop table if exists role;
+
+drop table if exists role_user;
 
 drop table if exists traveller_type;
 
