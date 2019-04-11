@@ -45,8 +45,8 @@ public class InternalController {
             District district1 = new District("Black Rock City", country1);
             District district2 = new District("New Farm", country2);
 
-            Role admin = new Role("admin");
-            Role superAdmin = new Role("super-admin");
+            Role admin = new Role(Roles.ADMIN);
+            Role superAdmin = new Role(Roles.SUPER_ADMIN);
 
             admin.save();
             superAdmin.save();

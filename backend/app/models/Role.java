@@ -16,17 +16,18 @@ public class Role extends Model {
     @Id
     private int roleId;
 
-    private String roleType;
+    private Roles roleType;
 
     public int getRoleId() {
         return roleId;
     }
 
-    public String getRoleType() {
+    public Roles getRoleType() {
         return roleType;
     }
 
-    public Role(String roleType) {
+    public Role(Roles roleType) {
         this.roleType = roleType;
     }
 }
+

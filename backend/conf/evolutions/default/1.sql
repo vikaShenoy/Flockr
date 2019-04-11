@@ -59,7 +59,8 @@ create table passport_user (
 
 create table role (
   role_id                       integer auto_increment not null,
-  role_type                     varchar(255),
+  role_type                     integer,
+  constraint ck_role_role_type check ( role_type in (0,1)),
   constraint pk_role primary key (role_id)
 );
 
