@@ -59,4 +59,24 @@ public class Security {
         return false;
     }
 
+    public boolean userHasPermission(User user, User comparedUser) {
+        boolean isAdmin = checkRoleExists(user, Roles.ADMIN);
+        boolean isSuperAdmin = checkRoleExists(user, Roles.SUPER_ADMIN);
+
+        boolean comparedUserIsSuper = checkRoleExists(comparedUser, Roles.SUPER_ADMIN);
+
+        if (isSuperAdmin) {
+            return true;
+        } else if (isAdmin && comparedUserIsSuper) {
+            return false;
+        } else if (isAdmin) {
+            return true;
+        } else if (user.getUserId() == comparedUser.getUserId()) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
 }
