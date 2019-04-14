@@ -35,7 +35,7 @@ create table district (
 
 create table nationality (
   nationality_id                integer auto_increment not null,
-  nationality_country           varchar(255),
+  nationality_name              varchar(255),
   constraint pk_nationality primary key (nationality_id)
 );
 

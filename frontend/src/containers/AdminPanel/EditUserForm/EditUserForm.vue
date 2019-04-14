@@ -49,7 +49,36 @@
               <v-flex xs12 sm6>
                 <v-autocomplete
                   :items="['NOTE: not yet populated from user prop']"
-                  label="Roles"
+                  label="User roles"
+                  multiple
+                ></v-autocomplete>
+              </v-flex>
+              <v-flex xs12 sm6>
+                <v-autocomplete
+                  :items="['NOTE: not yet populated from user prop']"
+                  label="Passports"
+                  multiple
+                ></v-autocomplete>
+              </v-flex>
+              <v-flex xs12 sm6>
+                <v-autocomplete
+                  :items="allNationalityNames"
+                  :value="nationalityNames"
+                  label="Nationalities"
+                  multiple
+                ></v-autocomplete>
+              </v-flex>
+              <v-flex xs12 sm6>
+                <v-autocomplete
+                  :items="['Female', 'Male', 'Other']"
+                  label="Gender"
+                  :value="initialUserData.gender"
+                ></v-autocomplete>
+              </v-flex>
+              <v-flex xs12 sm6>
+                <v-autocomplete
+                  :items="['NOTE: not yet populated from user prop']"
+                  label="Date of birth"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -67,6 +96,9 @@
 </template>
 
 <script>
+import superagent from 'superagent';
+import {endpoint} from '../../../utils/endpoint';
+
 export default {
   props: {
     initialUserData: {
@@ -106,7 +138,8 @@ export default {
     return {
       changes: {
         // contains changes to be pushed to make a patch on the user
-      }
+      },
+      allNationalities: []
     }
   },
   methods: {
@@ -122,6 +155,14 @@ export default {
     addChange: function(fieldKey, fieldValue) {
       this.changes.userId = this.initialUserData.userId; // make sure there's always a user id
       this.changes[fieldKey] = fieldValue; // store the change
+    },
+    getAllNationalities: async function() {
+      try {
+        const res = await superagent.get(endpoint('/users/nationalities'));
+        this.allNationalities = res.body;
+      } catch(err) {
+        console.error(`Could not get all valid nationalities: ${err}`);
+      }
     }
   },
   computed: {
@@ -130,8 +171,19 @@ export default {
     },
     travellerTypeNames: function() {
       return this.initialUserData.travellerTypes.map((travellerType) => travellerType.travellerTypeName);
+    },
+    // 
+    nationalityNames: function() {
+      return this.initialUserData.nationalities.map((nationality) => nationality.nationalityName);
+    },
+    allNationalityNames: function() {
+      console.log('All nationalities: ', this.allNationalities);
+      return this.allNationalities.map((nationality) => nationality.nationalityName);
     }
   },
+  mounted() {
+    this.getAllNationalities();
+  }
 }
 </script>
 
