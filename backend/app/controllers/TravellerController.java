@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.ActionState;
+import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -21,6 +22,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -71,88 +73,180 @@ public class TravellerController extends Controller {
      * @param request Object to get the JSOn data
      * @return 200 status if update was successful, 500 otherwise
      */
-    @With(LoggedIn.class)
+    @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> updateTraveller(int travellerId, Http.Request request) {
         JsonNode jsonBody = request.body().asJson();
 
-
-        User user = request.attrs().get(ActionState.USER);
-
-        if (jsonBody.has("firstName")) {
-            user.setFirstName(jsonBody.get("firstName").asText());
+        CompletionStage<Optional<User>> userToUpdate;
+        // User user = request.attrs().get(ActionState.USER);
+        if (travellerId == -1) {
+            userToUpdate = travellerRepository.getUserById(request.attrs().get(ActionState.USER).getUserId());
+        } else {
+            userToUpdate = travellerRepository.getUserById(travellerId);
         }
 
-        if (jsonBody.has("middleName")) {
-            user.setMiddleName(jsonBody.get("middleName").asText());
-        }
+        return userToUpdate
+                .thenApplyAsync((user) -> {
+                    if (!user.isPresent()) {
+                        return notFound();
+                    }
 
-        if (jsonBody.has("lastName")) {
-            user.setLastName(jsonBody.get("lastName").asText());
-        }
+                    if (!request.attrs().get(ActionState.USER).equals(user.get()) && !request.attrs().get(ActionState.IS_ADMIN)) {
+                        return unauthorized();
+                    }
 
-        if (jsonBody.has("dateOfBirth")) {
-            try {
-                String incomingDate = jsonBody.get("dateOfBirth").asText();
-                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
-                System.out.println("Date stored in db for user is: " + date);
-                user.setDateOfBirth(date);
-            } catch (ParseException e) {
-                System.out.println(e);
-            }
-        }
+                    if (jsonBody.has("firstName")) {
+                        user.get().setFirstName(jsonBody.get("firstName").asText());
+                    }
 
-        if (jsonBody.has("gender")) {
-            user.setGender(jsonBody.get("gender").asText());
-        }
+                    if (jsonBody.has("middleName")) {
+                        user.get().setMiddleName(jsonBody.get("middleName").asText());
+                    }
 
-        if (jsonBody.has("nationalities")) {
-            JsonNode arrNode = jsonBody.get("nationalities");
-            ArrayList<Nationality> nationalities = new ArrayList<>();
-            for (JsonNode id : arrNode) {
+                    if (jsonBody.has("lastName")) {
+                        user.get().setLastName(jsonBody.get("lastName").asText());
+                    }
 
-                Nationality nationality = new Nationality(null);
-                nationality.setNationalityId(id.asInt());
-                nationalities.add(nationality);
+                    if (jsonBody.has("dateOfBirth")) {
+                        try {
+                            String incomingDate = jsonBody.get("dateOfBirth").asText();
+                            Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
+                            System.out.println("Date stored in db for user is: " + date);
+                            user.get().setDateOfBirth(date);
+                        } catch (ParseException e) {
+                            System.out.println(e);
+                        }
+                    }
 
-            }
-            user.setNationalities(nationalities);
-        }
+                    if (jsonBody.has("gender")) {
+                        user.get().setGender(jsonBody.get("gender").asText());
+                    }
 
-        if (jsonBody.has("passports")) {
-            JsonNode arrNode = jsonBody.get("passports");
-            ArrayList<Passport> passports = new ArrayList<>();
-            for (JsonNode id : arrNode) {
+                    if (jsonBody.has("nationalities")) {
+                        JsonNode arrNode = jsonBody.get("nationalities");
+                        ArrayList<Nationality> nationalities = new ArrayList<>();
+                        for (JsonNode id : arrNode) {
 
-                Passport passport = new Passport(null);
-                passport.setPassportId(id.asInt());
-                passports.add(passport);
+                            Nationality nationality = new Nationality(null);
+                            nationality.setNationalityId(id.asInt());
+                            nationalities.add(nationality);
 
-            }
-            user.setPassports(passports);
-        }
+                        }
+                        user.get().setNationalities(nationalities);
+                    }
 
-       if (jsonBody.has("travellerTypes")) {
-            JsonNode arrNode = jsonBody.get("travellerTypes");
-            ArrayList<TravellerType> travellerTypes = new ArrayList<>();
-            for (JsonNode id : arrNode) {
-                TravellerType travellerType = new TravellerType(null);
-                travellerType.setTravellerTypeId(id.asInt());
-                travellerTypes.add(travellerType);
-            }
-            user.setTravellerTypes(travellerTypes);
-        }
+                    if (jsonBody.has("passports")) {
+                        JsonNode arrNode = jsonBody.get("passports");
+                        ArrayList<Passport> passports = new ArrayList<>();
+                        for (JsonNode id : arrNode) {
 
-        if (jsonBody.has("gender")) {
-            user.setGender(jsonBody.get("gender").asText());
-        }
+                            Passport passport = new Passport(null);
+                            passport.setPassportId(id.asInt());
+                            passports.add(passport);
 
-        ObjectNode message = Json.newObject();
-        message.put("message", "Successfully updated the traveller's information");
+                        }
+                        user.get().setPassports(passports);
+                    }
 
-        return supplyAsync(() -> {
-            travellerRepository.updateUser(user);
-            return ok(message);
-        }, httpExecutionContext.current());
+                    if (jsonBody.has("travellerTypes")) {
+                        JsonNode arrNode = jsonBody.get("travellerTypes");
+                        ArrayList<TravellerType> travellerTypes = new ArrayList<>();
+                        for (JsonNode id : arrNode) {
+                            TravellerType travellerType = new TravellerType(null);
+                            travellerType.setTravellerTypeId(id.asInt());
+                            travellerTypes.add(travellerType);
+                        }
+                        user.get().setTravellerTypes(travellerTypes);
+                    }
+
+                    if (jsonBody.has("gender")) {
+                        user.get().setGender(jsonBody.get("gender").asText());
+                    }
+
+                    ObjectNode message = Json.newObject();
+                    message.put("message", "Successfully updated the traveller's information");
+
+                    travellerRepository.updateUser(user.get());
+                    return ok(message);
+
+                }, httpExecutionContext.current());
+
+
+//        if (jsonBody.has("firstName")) {
+//            user.setFirstName(jsonBody.get("firstName").asText());
+//        }
+//
+//        if (jsonBody.has("middleName")) {
+//            user.setMiddleName(jsonBody.get("middleName").asText());
+//        }
+//
+//        if (jsonBody.has("lastName")) {
+//            user.setLastName(jsonBody.get("lastName").asText());
+//        }
+//
+//        if (jsonBody.has("dateOfBirth")) {
+//            try {
+//                String incomingDate = jsonBody.get("dateOfBirth").asText();
+//                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
+//                System.out.println("Date stored in db for user is: " + date);
+//                user.setDateOfBirth(date);
+//            } catch (ParseException e) {
+//                System.out.println(e);
+//            }
+//        }
+//
+//        if (jsonBody.has("gender")) {
+//            user.setGender(jsonBody.get("gender").asText());
+//        }
+//
+//        if (jsonBody.has("nationalities")) {
+//            JsonNode arrNode = jsonBody.get("nationalities");
+//            ArrayList<Nationality> nationalities = new ArrayList<>();
+//            for (JsonNode id : arrNode) {
+//
+//                Nationality nationality = new Nationality(null);
+//                nationality.setNationalityId(id.asInt());
+//                nationalities.add(nationality);
+//
+//            }
+//            user.setNationalities(nationalities);
+//        }
+//
+//        if (jsonBody.has("passports")) {
+//            JsonNode arrNode = jsonBody.get("passports");
+//            ArrayList<Passport> passports = new ArrayList<>();
+//            for (JsonNode id : arrNode) {
+//
+//                Passport passport = new Passport(null);
+//                passport.setPassportId(id.asInt());
+//                passports.add(passport);
+//
+//            }
+//            user.setPassports(passports);
+//        }
+//
+//       if (jsonBody.has("travellerTypes")) {
+//            JsonNode arrNode = jsonBody.get("travellerTypes");
+//            ArrayList<TravellerType> travellerTypes = new ArrayList<>();
+//            for (JsonNode id : arrNode) {
+//                TravellerType travellerType = new TravellerType(null);
+//                travellerType.setTravellerTypeId(id.asInt());
+//                travellerTypes.add(travellerType);
+//            }
+//            user.setTravellerTypes(travellerTypes);
+//        }
+//
+//        if (jsonBody.has("gender")) {
+//            user.setGender(jsonBody.get("gender").asText());
+//        }
+//
+//        ObjectNode message = Json.newObject();
+//        message.put("message", "Successfully updated the traveller's information");
+//
+//        return supplyAsync(() -> {
+//            travellerRepository.updateUser(user);
+//            return ok(message);
+//        }, httpExecutionContext.current());
     }
 
     /**
