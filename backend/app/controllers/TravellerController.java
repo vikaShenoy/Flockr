@@ -21,6 +21,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -50,14 +51,23 @@ public class TravellerController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTraveller(int travellerId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
 
-        return travellerRepository.getUserById(travellerId)
-                .thenApplyAsync((user) -> {
-                    if (!user.isPresent()) {
+        CompletionStage<Optional<User>> getUser;
+
+        if (user.getUserId() == travellerId) {
+           getUser = travellerRepository.getUserById(travellerId, true);
+        } else {
+            getUser = travellerRepository.getUserById(travellerId, false);
+        }
+
+        return getUser
+                .thenApplyAsync((optUser) -> {
+                    if (!optUser.isPresent()) {
                         return notFound();
                     }
 
-                    JsonNode userAsJson = Json.toJson(user);
+                    JsonNode userAsJson = Json.toJson(optUser.get());
 
                     return ok(userAsJson);
 
@@ -74,7 +84,6 @@ public class TravellerController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> updateTraveller(int travellerId, Http.Request request) {
         JsonNode jsonBody = request.body().asJson();
-
 
         User user = request.attrs().get(ActionState.USER);
 
