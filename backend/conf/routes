@@ -19,6 +19,7 @@ GET          /api/travellers/nationalities             controllers.TravellerCont
 GET          /api/travellers/passports                 controllers.TravellerController.getAllPassports(request: Request)
 GET          /api/travellers/types                     controllers.TravellerController.getTravellerTypes(request: Request)
 GET          /api/travellers/:travellerId              controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
+PATCH        /api/travellers                           controllers.TravellerController.updateTraveller(travellerId: Int = -1, request: Request)
 PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
 
 # Destination Routes

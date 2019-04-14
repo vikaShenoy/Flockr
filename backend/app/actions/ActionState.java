@@ -8,4 +8,5 @@ import play.libs.typedmap.TypedKey;
  */
 public class ActionState {
     public static final TypedKey<User> USER = TypedKey.create("user");
+    public static final TypedKey<Boolean> IS_ADMIN = TypedKey.create("isAdmin");
 }
