@@ -7,8 +7,7 @@
     />
     <EditUserForm
       :showForm="this.showEditUserForm"
-      :user="this.userBeingEdited"
-      :userId="this.userBeingEdited.userId"
+      :initialUserData="this.userBeingEdited"
       v-on:dismissForm="handleEditUserFormDismissal"
       v-on:submitForm="handleEditUserFormSubmission"
     />
