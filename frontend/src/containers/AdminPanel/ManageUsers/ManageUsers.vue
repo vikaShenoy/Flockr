@@ -92,17 +92,12 @@ export default {
     // emit an event for the parent to handle editing users
     editUserButtonClicked: function() {
       const userId = this.selectedUsers[0];
-      this.$emit('editUserById', userId);
+      this.$emit('wantToEditUserById', userId);
     },
     // call the admin panel service to delete the given user ids
     deleteUsersButtonClicked: async function() {
       const userIds = this.selectedUsers;
-      console.log(`User wants to delete users: ${userIds}`)
-      try {
-        await deleteUsers(userIds);
-      } catch (err) {
-        console.error(`Could not delete users in admin panel: ${err}`);
-      }
+      this.$emit("deleteUsersByIds", userIds);
     }
   }
 }
