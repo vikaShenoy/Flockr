@@ -45,6 +45,12 @@ public class InternalController {
             District district1 = new District("Black Rock City", country1);
             District district2 = new District("New Farm", country2);
 
+            Role admin = new Role(Roles.ADMIN);
+            Role superAdmin = new Role(Roles.SUPER_ADMIN);
+
+            admin.save();
+            superAdmin.save();
+
             country1.save();
             country2.save();
 
@@ -91,6 +97,7 @@ public class InternalController {
             travellerType6.save();
             travellerType7.save();
 
+
             List<Nationality> nationalityList = new ArrayList<>();
             nationalityList.add(nationality4);
 
@@ -101,7 +108,13 @@ public class InternalController {
             passports.add(passport3);
             passports.add(passport4);
 
-            User user1 = generateMockUser("Luis", "Sebastian", "Ruiz", "so-secure", "luis@gmail.com", "Male", "some-token", nationalityList, travellerTypeList, passports);
+            List<Role> superAdminRoles = new ArrayList<>();
+            superAdminRoles.add(superAdmin);
+
+            List<Role> adminRoles = new ArrayList<>();
+            adminRoles.add(admin);
+
+            User user1 = generateMockUser("Luis", "Sebastian", "Ruiz", "so-secure", "luis@gmail.com", "Male", "some-token", nationalityList, travellerTypeList, passports, superAdminRoles);
             nationalityList.remove(0);
             nationalityList.add(nationality3);
             travellerTypeList.remove(0);
@@ -109,14 +122,14 @@ public class InternalController {
             passports.remove(1);
             passports.remove(0);
             passports.add(passport3);
-            generateMockUser("Peter", "", "Andre", "in-your-town", "p.andre@hotmail.com", "Other", "token-token", nationalityList, travellerTypeList, passports);
+            generateMockUser("Peter", "", "Andre", "in-your-town", "p.andre@hotmail.com", "Other", "token-token", nationalityList, travellerTypeList, passports, adminRoles);
             nationalityList.remove(0);
             nationalityList.add(nationality1);
             travellerTypeList.remove(0);
             travellerTypeList.add(travellerType1);
             passports.remove(0);
             passports.add(passport1);
-            generateMockUser("Steven", "middle", "Austin", "stone-cold", "stoney-steve@gmail.com", "Female", "big-token", nationalityList, travellerTypeList, passports);
+            generateMockUser("Steven", "middle", "Austin", "stone-cold", "stoney-steve@gmail.com", "Female", "big-token", nationalityList, travellerTypeList, passports, new ArrayList<>());
 
             Trip trip = new Trip(tripDestinations, user1, "My trip name");
 
@@ -133,13 +146,13 @@ public class InternalController {
      * Create a user and save to database.
      * NOTE: also creates a passport, nationality, traveller type and gender in the database
      */
-    public User generateMockUser(String firstName, String middleName, String lastName, String password, String email, String gender, String token, List<Nationality> nationalities, List<TravellerType> travellerTypes, List<Passport> passports) {
+    public User generateMockUser(String firstName, String middleName, String lastName, String password, String email, String gender, String token, List<Nationality> nationalities, List<TravellerType> travellerTypes, List<Passport> passports, List<Role> roles) {
         Security security = new Security();
 
         String passwordHash = security.hashPassword(password);
         Timestamp dateOfBirth = new Timestamp(637920534);
 
-        User user = new User(firstName, middleName, lastName, passwordHash, gender, email, nationalities, travellerTypes, dateOfBirth, passports, token);
+        User user = new User(firstName, middleName, lastName, passwordHash, gender, email, nationalities, travellerTypes, dateOfBirth, passports, roles, token);
         user.save();
 
         return user;

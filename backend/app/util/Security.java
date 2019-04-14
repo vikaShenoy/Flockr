@@ -1,6 +1,9 @@
 package util;
 
 
+import models.Role;
+import models.Roles;
+import models.User;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.security.SecureRandom;
@@ -41,6 +44,39 @@ public class Security {
         Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
         String token = encoder.encodeToString(bytes);
         return token;
+    }
+
+    /**
+     * Checks if a user has a given role type
+     * @return if the role exists or not
+     */
+    public boolean checkRoleExists(User user, Roles roleType) {
+        for (Role userRole : user.getRoles()) {
+            if (userRole.getRoleType().equals(roleType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean userHasPermission(User user, User comparedUser) {
+        boolean isAdmin = checkRoleExists(user, Roles.ADMIN);
+        boolean isSuperAdmin = checkRoleExists(user, Roles.SUPER_ADMIN);
+
+        boolean comparedUserIsSuper = checkRoleExists(comparedUser, Roles.SUPER_ADMIN);
+
+        if (isSuperAdmin) {
+            return true;
+        } else if (isAdmin && comparedUserIsSuper) {
+            return false;
+        } else if (isAdmin) {
+            return true;
+        } else if (user.getUserId() == comparedUser.getUserId()) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
 }
