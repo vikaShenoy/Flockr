@@ -57,7 +57,13 @@ export default {
             "travellerTypeName": "Gap Year"
           }
         ],
-        "timestamp": "string",
+        "roles": [
+          {
+            "roleId": 2,
+            "roleType": "Potato"
+          }
+        ],
+        "timestamp": 728364786872368,
       },
       users: [] // single source of truth for children components relying on users so that info stays up to date
     }
