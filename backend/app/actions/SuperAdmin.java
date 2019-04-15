@@ -26,6 +26,7 @@ public class SuperAdmin extends Action.Simple {
      * @param request Request object to get authorization token from
      * @return The next middleware/controller if successful, returns unauthorized if the token was invalid,
      */
+    @Override
     public CompletionStage<Result> call(Http.Request request) {
         // Get user from loggedIn middleware
         User user = request.attrs().get(ActionState.USER);
