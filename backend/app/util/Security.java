@@ -97,6 +97,4 @@ public class Security {
 
         return !isAdmin || !comparedUserIsSuperAdmin;
     }
-
-
 }
