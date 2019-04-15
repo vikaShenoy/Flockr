@@ -35,7 +35,23 @@ public class RoleController {
     @With(LoggedIn.class)
     public CompletionStage<Result> getAllRoles(Http.Request request) {
         return roleRepository.getAllRoles()
-                .thenApplyAsync((roles) -> {
+                .thenApplyAsync(roles -> {
+                    JsonNode rolesJson = Json.toJson(roles);
+                    return ok(rolesJson);
+                }, httpExecutionContext.current());
+    }
+
+    /**
+     * Function that requests a list of all of a users roles from the role repository and returns an async function.
+     * @param userId int the id of the user
+     * @param request the http Request
+     * @return CompletionStage<Result> the completion function to be
+     * called on completion.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getUsersRoles(int userId, Http.Request request) {
+        return roleRepository.getUsersRoles(userId)
+                .thenApplyAsync(roles -> {
                     JsonNode rolesJson = Json.toJson(roles);
                     return ok(rolesJson);
                 }, httpExecutionContext.current());
