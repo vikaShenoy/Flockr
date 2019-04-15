@@ -1,0 +1,40 @@
+
+package repository;
+
+import io.ebean.Ebean;
+import io.ebean.EbeanServer;
+import models.Role;
+import play.db.ebean.EbeanConfig;
+
+import javax.inject.Inject;
+import java.util.List;
+import java.util.concurrent.CompletionStage;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+
+public class RoleRepository {
+    private final EbeanServer ebeanServer;
+    private final DatabaseExecutionContext executionContext;
+
+    /**
+     * Dependency injection
+     * @param ebeanConfig the Ebean configuration to use
+     * @param executionContext The context to run completion stages on
+     */
+    @Inject
+    public RoleRepository(EbeanConfig ebeanConfig, DatabaseExecutionContext executionContext) {
+        this.ebeanServer = Ebean.getServer(ebeanConfig.defaultServer());
+        this.executionContext = executionContext;
+    }
+
+    /**
+     * A function that gets the list of all the valid roles.
+     * @return the list of all the Roles
+     */
+    public CompletionStage<List<Role>> getAllRoles() {
+        return supplyAsync(() -> {
+            List<Role> roles = Role.find.query().findList();
+            return roles;
+        }, executionContext);
+    }
+}
