@@ -13,14 +13,13 @@ POST         /api/auth/travellers/logout               controllers.AuthControlle
 GET          /api/auth/travellers/:email/available     controllers.AuthController.checkEmailAvailable(email: String)
 
 # Traveller routes
-GET          /api/travellers                           controllers.TravellerController.getTravellers()
-GET          /api/travellers/search                    controllers.TravellerController.searchTravellers(request: Request)
-GET          /api/travellers/nationalities             controllers.TravellerController.getNationalities(request: Request)
-GET          /api/travellers/passports                 controllers.TravellerController.getAllPassports(request: Request)
-GET          /api/travellers/types                     controllers.TravellerController.getTravellerTypes(request: Request)
-GET          /api/travellers/:travellerId              controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
-PATCH        /api/travellers                           controllers.TravellerController.updateTraveller(travellerId: Int = -1, request: Request)
-PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
+GET          /api/users                                controllers.TravellerController.getTravellers()
+GET          /api/users/search                         controllers.TravellerController.searchTravellers(request: Request)
+GET          /api/users/nationalities                  controllers.TravellerController.getNationalities(request: Request)
+GET          /api/users/passports                      controllers.TravellerController.getAllPassports(request: Request)
+GET          /api/users/types                          controllers.TravellerController.getTravellerTypes(request: Request)
+GET          /api/users/:travellerId                   controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
+PATCH        /api/users/:travellerId                   controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
 
 # Destination Routes
 GET         /api/destinations                           controllers.DestinationController.getDestinations(request: Request)

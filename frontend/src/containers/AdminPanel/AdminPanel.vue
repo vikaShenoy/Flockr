@@ -38,7 +38,11 @@ export default {
         "nationalities": [
           {
             "nationalityId": 0,
-            "nationalityName": "New Zealander"
+            "nationalityName": "New Zealand"
+          },
+          {
+            "nationalityId": 1,
+            "nationalityName": "South Korea"
           }
         ],
         "passports": [

@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
@@ -29,5 +30,10 @@ public class Role extends Model {
     public Role(Roles roleType) {
         this.roleType = roleType;
     }
+
+    /**
+     * This is required by Ebean to make queries on the databse
+     */
+    public static final Finder<Integer, Role> find = new Finder<>(Role.class);
 }
 
