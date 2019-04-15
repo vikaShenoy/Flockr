@@ -2,7 +2,6 @@ package controllers;
 
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
-import jdk.incubator.http.HttpRequest;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
@@ -50,7 +49,7 @@ public class RoleController {
      * called on completion.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> getUsersRoles(int userId, HttpRequest request) {
+    public CompletionStage<Result> getUsersRoles(int userId, Http.Request request) {
         return roleRepository.getUsersRoles(userId)
                 .thenApplyAsync(roles -> {
                     JsonNode rolesJson = Json.toJson(roles);
