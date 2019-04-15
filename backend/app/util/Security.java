@@ -61,7 +61,7 @@ public class Security {
 
 
     /**
-     * Checks if an admin has permission to run certain functionality
+     * Checks if an user has permission to run certain functionality
      * @param user The user object inferred by the middleware
      * @param comparedUser The user retrieved from the url parameter
      * @return True if the user
@@ -84,4 +84,29 @@ public class Security {
             return false;
         }
     }
+
+    /**
+     * Checks if an admin has permission to run certain functionality
+     * @param user The currently logged in user
+     * @param comparedUser The user
+     * @return
+     */
+    public boolean adminHasPermission(User user, User comparedUser) {
+        boolean isAdmin = checkRoleExists(user, Roles.ADMIN);
+        boolean isSuperAdmin = checkRoleExists(user, Roles.SUPER_ADMIN);
+
+        boolean comparedUserIsSuperAdmin = checkRoleExists(comparedUser, Roles.SUPER_ADMIN)
+
+        if (!isAdmin && !isSuperAdmin) {
+            return false;
+        }
+
+        if (isAdmin && comparedUserIsSuperAdmin) {
+            return false;
+        }
+
+        return true;
+    }
+
+
 }
