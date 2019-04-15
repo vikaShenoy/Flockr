@@ -188,7 +188,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> getTrips(Http.Request request, int userId) {
         User user = request.attrs().get(ActionState.USER);
 
-        return tripRepository.getTripsByIds(user.getUserId())
+        return tripRepository.getTripsByIds(userId)
                 .thenApplyAsync((trips) -> {
                     JsonNode tripsJson = Json.toJson(trips);
                     return ok(tripsJson);
