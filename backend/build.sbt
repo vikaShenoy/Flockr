@@ -27,6 +27,7 @@ libraryDependencies += "io.cucumber" % "cucumber-core" % "4.2.0" % Test
 libraryDependencies += "io.cucumber" % "cucumber-jvm" % "4.2.0" % Test
 libraryDependencies += "io.cucumber" % "cucumber-junit" % "4.2.0" % Test
 testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
+libraryDependencies += evolutions
 
 
 javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation", "-Werror")
@@ -63,6 +64,8 @@ val `build-frontend` = TaskKey[Unit]("run frontend build")
 
 // Specifies that frontend build task should run before dist
 dist := (dist dependsOn `build-frontend`).value
+
+javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
 
 
 
