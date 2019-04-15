@@ -68,12 +68,8 @@ public class Security {
         boolean isAdmin = checkRoleExists(user, RoleType.ADMIN);
         boolean isSuperAdmin = checkRoleExists(user, RoleType.SUPER_ADMIN);
 
-        boolean comparedUserIsSuper = checkRoleExists(comparedUser, RoleType.SUPER_ADMIN);
-
         if (isSuperAdmin) {
             return true;
-        } else if (isAdmin && comparedUserIsSuper) {
-            return false;
         } else if (isAdmin) {
             return true;
         } else return user.getUserId() == comparedUser.getUserId();
@@ -89,12 +85,10 @@ public class Security {
         boolean isAdmin = checkRoleExists(user, RoleType.ADMIN);
         boolean isSuperAdmin = checkRoleExists(user, RoleType.SUPER_ADMIN);
 
-        boolean comparedUserIsSuperAdmin = checkRoleExists(comparedUser, RoleType.SUPER_ADMIN);
-
         if (!isAdmin && !isSuperAdmin) {
             return false;
         }
 
-        return !isAdmin || !comparedUserIsSuperAdmin;
+        return true;
     }
 }
