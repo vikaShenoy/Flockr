@@ -973,6 +973,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/travellerType'
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              roleId:
+                type: number
     users:
       type: array
       items:
@@ -1011,7 +1018,7 @@ components:
         travellerTypes:
           type: array
           items:
-            type: numberroleId
+            type: number
     trip:
       type: object
       properties:
@@ -1104,7 +1111,7 @@ components:
       type: object
       properties:
         roleId:
-          type: string
+          type: number
         roleType:
           type: string
     updateRole:
@@ -1113,7 +1120,7 @@ components:
         type: object
         properties:
           roleId:
-            type: string
+            type: number
           roleEnabled:
             type: boolean
   securitySchemes:
