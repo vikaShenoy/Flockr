@@ -33,8 +33,19 @@ public class RoleRepository {
      */
     public CompletionStage<List<Role>> getAllRoles() {
         return supplyAsync(() -> {
-            List<Role> roles = Role.find.query().findList();
-            return roles;
+            return Role.find.query().findList();
+        }, executionContext);
+    }
+
+    /**
+     * Function that gets the roles of a specific user from the database and returns them as a list in an async
+     * function.
+     * @param userId int the id of the user
+     * @return CompletionStage&ltList&ltRole&gt&gt
+     */
+    public CompletionStage<List<Role>> getUsersRoles(int userId) {
+        return supplyAsync(() -> {
+            return Role.find.query().where().eq("userId", userId).findList();
         }, executionContext);
     }
 }
