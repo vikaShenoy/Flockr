@@ -90,7 +90,7 @@ public class searchTravellerFilterSteps {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
-                .uri("/api/travellers");
+                .uri("/api/users");
         Result result = route(application, request);
         ArrayNode array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
         Assert.assertTrue(array.size() > 0);
@@ -101,7 +101,7 @@ public class searchTravellerFilterSteps {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
-                .uri("/api/travellers/nationalities");
+                .uri("/api/users/nationalities");
         Result result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -115,7 +115,7 @@ public class searchTravellerFilterSteps {
         List<Map<String,String>> expectedResults = dataTable.asMaps();
         for (int i = 0; i < expectedResults.size(); i++) {
             Assert.assertEquals(Integer.parseInt(expectedResults.get(i).get("nationalityId")), this.array.get(i).get("nationalityId").asInt());
-            Assert.assertEquals(expectedResults.get(i).get("nationalityName"), this.array.get(i).get("nationalityCountry").asText());
+            Assert.assertEquals(expectedResults.get(i).get("nationalityName"), this.array.get(i).get("nationalityName").asText());
         }
     }
 
@@ -125,7 +125,7 @@ public class searchTravellerFilterSteps {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
-                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&nationality=" + nationalityId);
+                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&nationality=" + nationalityId);
         Result result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -144,7 +144,7 @@ public class searchTravellerFilterSteps {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
-                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Male");
+                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Male");
         Result result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -158,7 +158,7 @@ public class searchTravellerFilterSteps {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
-                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Female");
+                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Female");
         Result result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -172,7 +172,7 @@ public class searchTravellerFilterSteps {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
-                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Other");
+                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Other");
         Result result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -186,7 +186,7 @@ public class searchTravellerFilterSteps {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .header("authorization", this.authToken)
-                .uri("/api/travellers/search?ageMin=1143441273223&ageMax=-2075388926777&travellerType=" + travellerTypeId.toString());
+                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&travellerType=" + travellerTypeId.toString());
         Result result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 

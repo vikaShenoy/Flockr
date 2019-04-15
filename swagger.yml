@@ -1111,7 +1111,7 @@ components:
       type: object
       properties:
         roleId:
-          type: string
+          type: number
         roleType:
           type: string
     updateRole:
@@ -1120,7 +1120,7 @@ components:
         type: object
         properties:
           roleId:
-            type: string
+            type: number
           roleEnabled:
             type: boolean
   securitySchemes:
