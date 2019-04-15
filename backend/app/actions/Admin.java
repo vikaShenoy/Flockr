@@ -1,6 +1,6 @@
 package actions;
 
-import models.Roles;
+import models.RoleType;
 import models.User;
 import play.mvc.Action;
 import play.mvc.Http;
@@ -30,7 +30,7 @@ public class Admin extends Action.Simple {
         // Get user from loggedIn middleware
         User user = request.attrs().get(ActionState.USER);
 
-        if (this.security.checkRoleExists(user, Roles.ADMIN) || this.security.checkRoleExists(user, Roles.SUPER_ADMIN)) {
+        if (this.security.checkRoleExists(user, RoleType.ADMIN) || this.security.checkRoleExists(user, RoleType.SUPER_ADMIN)) {
             // return delegate.call(request);
             return delegate.call(request.addAttr(ActionState.IS_ADMIN, true));
         }

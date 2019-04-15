@@ -2,7 +2,7 @@ package util;
 
 
 import models.Role;
-import models.Roles;
+import models.RoleType;
 import models.User;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -19,8 +19,7 @@ public class Security {
      * @return The hashed password
      */
     public String hashPassword(String password) {
-        String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
-        return passwordHash;
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
     /**
@@ -35,22 +34,21 @@ public class Security {
 
     /**
      * Generates a token to be used for authentication
-     * @return
+     * @return String the token for authentication
      */
     public String generateToken() {
         SecureRandom random = new SecureRandom();
-        byte bytes[] = new byte[20];
+        byte[] bytes = new byte[20];
         random.nextBytes(bytes);
         Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-        String token = encoder.encodeToString(bytes);
-        return token;
+        return encoder.encodeToString(bytes);
     }
 
     /**
      * Checks if a user has a given role type
      * @return if the role exists or not
      */
-    public boolean checkRoleExists(User user, Roles roleType) {
+    public boolean checkRoleExists(User user, RoleType roleType) {
         for (Role userRole : user.getRoles()) {
             if (userRole.getRoleType().equals(roleType)) {
                 return true;
@@ -67,10 +65,10 @@ public class Security {
      * @return True if the user
      */
     public boolean userHasPermission(User user, User comparedUser) {
-        boolean isAdmin = checkRoleExists(user, Roles.ADMIN);
-        boolean isSuperAdmin = checkRoleExists(user, Roles.SUPER_ADMIN);
+        boolean isAdmin = checkRoleExists(user, RoleType.ADMIN);
+        boolean isSuperAdmin = checkRoleExists(user, RoleType.SUPER_ADMIN);
 
-        boolean comparedUserIsSuper = checkRoleExists(comparedUser, Roles.SUPER_ADMIN);
+        boolean comparedUserIsSuper = checkRoleExists(comparedUser, RoleType.SUPER_ADMIN);
 
         if (isSuperAdmin) {
             return true;
@@ -78,34 +76,26 @@ public class Security {
             return false;
         } else if (isAdmin) {
             return true;
-        } else if (user.getUserId() == comparedUser.getUserId()) {
-            return true;
-        } else {
-            return false;
-        }
+        } else return user.getUserId() == comparedUser.getUserId();
     }
 
     /**
      * Checks if an admin has permission to run certain functionality
      * @param user The currently logged in user
      * @param comparedUser The user
-     * @return
+     * @return boolean true if the user has permission
      */
     public boolean adminHasPermission(User user, User comparedUser) {
-        boolean isAdmin = checkRoleExists(user, Roles.ADMIN);
-        boolean isSuperAdmin = checkRoleExists(user, Roles.SUPER_ADMIN);
+        boolean isAdmin = checkRoleExists(user, RoleType.ADMIN);
+        boolean isSuperAdmin = checkRoleExists(user, RoleType.SUPER_ADMIN);
 
-        boolean comparedUserIsSuperAdmin = checkRoleExists(comparedUser, Roles.SUPER_ADMIN);
+        boolean comparedUserIsSuperAdmin = checkRoleExists(comparedUser, RoleType.SUPER_ADMIN);
 
         if (!isAdmin && !isSuperAdmin) {
             return false;
         }
 
-        if (isAdmin && comparedUserIsSuperAdmin) {
-            return false;
-        }
-
-        return true;
+        return !isAdmin || !comparedUserIsSuperAdmin;
     }
 
 

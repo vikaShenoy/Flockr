@@ -1,9 +1,8 @@
 
 package repository;
 
-import io.ebean.Ebean;
-import io.ebean.EbeanServer;
 import models.Role;
+import models.User;
 import play.db.ebean.EbeanConfig;
 
 import javax.inject.Inject;
@@ -13,7 +12,6 @@ import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class RoleRepository {
-    private final EbeanServer ebeanServer;
     private final DatabaseExecutionContext executionContext;
 
     /**
@@ -23,13 +21,12 @@ public class RoleRepository {
      */
     @Inject
     public RoleRepository(EbeanConfig ebeanConfig, DatabaseExecutionContext executionContext) {
-        this.ebeanServer = Ebean.getServer(ebeanConfig.defaultServer());
         this.executionContext = executionContext;
     }
 
     /**
      * A function that gets the list of all the valid roles.
-     * @return the list of all the Roles
+     * @return the list of all the RoleType
      */
     public CompletionStage<List<Role>> getAllRoles() {
         return supplyAsync(() -> Role.find.query().findList(), executionContext);
@@ -41,7 +38,7 @@ public class RoleRepository {
      * @param userId int the id of the user
      * @return CompletionStage&ltList&ltRole&gt&gt
      */
-    public CompletionStage<List<Role>> getUsersRoles(int userId) {
-        return supplyAsync(() -> Role.find.query().where().eq("userId", userId).findList(), executionContext);
+    public CompletionStage<User> getUser(int userId) {
+        return supplyAsync(() -> User.find.byId(userId), executionContext);
     }
 }
