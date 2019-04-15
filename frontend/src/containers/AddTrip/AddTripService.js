@@ -21,7 +21,7 @@ export async function addTrip(tripName, tripDestinations) {
   }); 
 
 
-  const res = await superagent.post(endpoint(`/travellers/${localStorage.getItem("userId")}/trips`))
+  const res = await superagent.post(endpoint(`/users/${localStorage.getItem("userId")}/trips`))
   .set("Authorization", localStorage.getItem("authToken"))
   .send({
     tripName,

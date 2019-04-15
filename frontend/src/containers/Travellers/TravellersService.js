@@ -6,7 +6,7 @@ import { endpoint } from "../../utils/endpoint";
  */
 export async function getTravellers() {
   const authToken = localStorage.getItem("authToken");
-  const res = await superagent.get(endpoint("/travellers"))
+  const res = await superagent.get(endpoint("/users"))
     .set("Authorization", authToken);
   return res.body;
 }

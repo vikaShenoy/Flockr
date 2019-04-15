@@ -8,7 +8,7 @@ import moment from "moment";
  * @param {number} tripId 
  */
 export async function getTrip(userId, tripId) {
-  const res = await superagent.get(endpoint(`/travellers/${userId}/trips/${tripId}`))
+  const res = await superagent.get(endpoint(`/users/${userId}/trips/${tripId}`))
     .set("Authorization", localStorage.getItem("authToken"));
   return res.body;
 }

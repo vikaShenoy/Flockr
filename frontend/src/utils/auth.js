@@ -26,7 +26,7 @@ export async function loggedIn(to, from, next) {
 
   let res;
   try {
-    res = await  superagent.get(endpoint(`/travellers/${userId}`))
+    res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
   } catch (e) {
     next("/login");    
@@ -61,7 +61,7 @@ export async function loggedInOrOut(to, from, next) {
 
   let res;
   try {
-    res = await  superagent.get(endpoint(`/travellers/${userId}`))
+    res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
   } catch (e) {
     next();

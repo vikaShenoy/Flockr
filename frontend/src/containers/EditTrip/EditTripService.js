@@ -40,7 +40,7 @@ export function transformTripResponse(trip) {
 export async function getTrip(tripId) {
   const userId = localStorage.getItem("userId");
   const authToken = localStorage.getItem("authToken");
-  const res = await superagent.get(endpoint(`/travellers/${userId}/trips/${tripId}`))
+  const res = await superagent.get(endpoint(`/users/${userId}/trips/${tripId}`))
     .set("Authorization", authToken);
   return res.body;
 }
@@ -69,7 +69,7 @@ export function editTrip(tripId, tripName, tripDestinations) {
   const userId = localStorage.getItem("userId");
   const authToken = localStorage.getItem("authToken");
 
-  return superagent.put(endpoint(`/travellers/${userId}/trips/${tripId}`))
+  return superagent.put(endpoint(`/users/${userId}/trips/${tripId}`))
     .set("Authorization", authToken)
     .send({
       tripName,

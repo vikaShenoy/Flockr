@@ -133,7 +133,7 @@
           {text: 'Last Name', align: 'left', sortable: true, value: 'lastName'},
           {text: 'Age', align: 'left', sortable: true, value: 'age'},
           {text: 'Gender', align: 'left', sortable: true, value: 'gender'},
-          {text: 'Nationality', align: 'left', sortable: false, value: 'nationalityCountry'},
+          {text: 'Nationality', align: 'left', sortable: false, value: 'nationalityName'},
           {text: 'Traveller Type(s)', align: 'left', sortable: false, value: 'travellerTypes'},
         ],
         travellers: []
@@ -149,7 +149,7 @@
         currentNationalities = await getNationalities();
 
         for (let index = 0; index < currentNationalities.length; index++) {
-          this.nationalities.names.push(currentNationalities[index].nationalityCountry);
+          this.nationalities.names.push(currentNationalities[index].nationalityName);
           this.nationalities.ids.push(currentNationalities[index].nationalityId);
         }
       } catch (error) {
@@ -200,7 +200,7 @@
 
             this.travellers[i].age = moment().diff(moment(this.travellers[i].dateOfBirth), "years");
 
-            const nationalityNames = this.travellers[i].nationalities.map(nationality => nationality.nationalityCountry);
+            const nationalityNames = this.travellers[i].nationalities.map(nationality => nationality.nationalityName);
             this.travellers[i].nationalities = nationalityNames;
 
             const travellerTypes = this.travellers[i].travellerTypes.map(travellerType => travellerType.travellerTypeName);

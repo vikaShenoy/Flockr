@@ -6,7 +6,7 @@ import { endpoint } from "../../../utils/endpoint";
  */
 export async function getAllTravellerTypes() {
   const authToken = localStorage.getItem("authToken");
-  const res = await superagent.get(endpoint("/travellers/types"))
+  const res = await superagent.get(endpoint("/users/types"))
     .set("Authorization", authToken);
   return res.body;
 }
@@ -18,7 +18,7 @@ export async function getAllTravellerTypes() {
  */
 export function updateTravellerTypes(userId, travellerTypeIds) {
   const authToken = localStorage.getItem("authToken");
-  return superagent.patch(endpoint(`/travellers/${userId}`))
+  return superagent.patch(endpoint(`/users/${userId}`))
       .set("Authorization", authToken)
       .send({travellerTypes: travellerTypeIds});
 }

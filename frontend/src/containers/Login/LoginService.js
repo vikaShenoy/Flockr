@@ -8,7 +8,7 @@ import { endpoint } from "../../utils/endpoint";
  * @throws Error if status code was not 200
  */ 
 export async function login(email, password) {
-  const res = await superagent.post(endpoint("/auth/travellers/login"))
+  const res = await superagent.post(endpoint("/auth/users/login"))
   .send({
     email: email,
     password: password
