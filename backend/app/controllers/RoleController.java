@@ -33,7 +33,7 @@ public class RoleController {
      * called on completion.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> getRoles(Http.Request request) {
+    public CompletionStage<Result> getAllRoles(Http.Request request) {
         return roleRepository.getAllRoles()
                 .thenApplyAsync(roles -> {
                     JsonNode rolesJson = Json.toJson(roles);
