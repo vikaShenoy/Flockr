@@ -95,7 +95,7 @@ public class Security {
         boolean isAdmin = checkRoleExists(user, Roles.ADMIN);
         boolean isSuperAdmin = checkRoleExists(user, Roles.SUPER_ADMIN);
 
-        boolean comparedUserIsSuperAdmin = checkRoleExists(comparedUser, Roles.SUPER_ADMIN)
+        boolean comparedUserIsSuperAdmin = checkRoleExists(comparedUser, Roles.SUPER_ADMIN);
 
         if (!isAdmin && !isSuperAdmin) {
             return false;
