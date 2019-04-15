@@ -32,9 +32,7 @@ public class RoleRepository {
      * @return the list of all the Roles
      */
     public CompletionStage<List<Role>> getAllRoles() {
-        return supplyAsync(() -> {
-            return Role.find.query().findList();
-        }, executionContext);
+        return supplyAsync(() -> Role.find.query().findList(), executionContext);
     }
 
     /**
@@ -44,8 +42,6 @@ public class RoleRepository {
      * @return CompletionStage&ltList&ltRole&gt&gt
      */
     public CompletionStage<List<Role>> getUsersRoles(int userId) {
-        return supplyAsync(() -> {
-            return Role.find.query().where().eq("userId", userId).findList();
-        }, executionContext);
+        return supplyAsync(() -> Role.find.query().where().eq("userId", userId).findList(), executionContext);
     }
 }
