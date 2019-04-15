@@ -194,6 +194,7 @@ public class User extends Model {
         this.timestamp = timestamp;
     }
 
+
     public String getPasswordHash() {
         return passwordHash;
     }

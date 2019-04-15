@@ -57,10 +57,24 @@ public class TravellerRepository {
      * @param userId The ID of the user to get
      * @return the user object
      */
-    public CompletionStage<Optional<User>> getUserById(int userId) {
+    public CompletionStage<Optional<User>> getUserById(int userId, boolean isSelf) {
         return supplyAsync(() -> {
-            Optional<User> user = User.find.query().
-                    where().eq("user_id", userId).findOneOrEmpty();
+
+
+
+            Query<User> userQuery = User.find
+                    .query().setDisableLazyLoading(true)
+                    .fetch("nationalities")
+                    .fetch("travellerTypes")
+                    .fetch("passports");
+
+            if (!isSelf) {
+                userQuery.select("userId,firstName,middleName,lastName,nationalities,dateOfBirth,gender,travellerTypes,passports");
+            }
+
+            Optional<User> user = userQuery.where()
+                    .eq("user_id", userId)
+                    .findOneOrEmpty();
             return user;
         }, executionContext);
     }

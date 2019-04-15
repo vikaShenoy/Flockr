@@ -129,6 +129,8 @@ public class TripController extends Controller {
         }
 
 
+
+
     /**
      * Endpoint to get update a trips destinations
      * @param request Request body to get json body from

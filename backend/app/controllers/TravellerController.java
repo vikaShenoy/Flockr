@@ -52,14 +52,23 @@ public class TravellerController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTraveller(int travellerId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
 
-        return travellerRepository.getUserById(travellerId)
-                .thenApplyAsync((user) -> {
-                    if (!user.isPresent()) {
+        CompletionStage<Optional<User>> getUser;
+
+        if (user.getUserId() == travellerId) {
+           getUser = travellerRepository.getUserById(travellerId, true);
+        } else {
+            getUser = travellerRepository.getUserById(travellerId, false);
+        }
+
+        return getUser
+                .thenApplyAsync((optUser) -> {
+                    if (!optUser.isPresent()) {
                         return notFound();
                     }
 
-                    JsonNode userAsJson = Json.toJson(user);
+                    JsonNode userAsJson = Json.toJson(optUser.get());
 
                     return ok(userAsJson);
 
@@ -80,9 +89,9 @@ public class TravellerController extends Controller {
         CompletionStage<Optional<User>> userToUpdate;
         // User user = request.attrs().get(ActionState.USER);
         if (travellerId == -1) {
-            userToUpdate = travellerRepository.getUserById(request.attrs().get(ActionState.USER).getUserId());
+            userToUpdate = travellerRepository.getUserById(request.attrs().get(ActionState.USER).getUserId(), true);
         } else {
-            userToUpdate = travellerRepository.getUserById(travellerId);
+            userToUpdate = travellerRepository.getUserById(travellerId, false);
         }
 
         return userToUpdate

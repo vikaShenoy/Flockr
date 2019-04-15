@@ -18,6 +18,7 @@ GET          /api/users/search                                  controllers.Trav
 GET          /api/users/nationalities                           controllers.TravellerController.getNationalities(request: Request)
 GET          /api/users/passports                               controllers.TravellerController.getAllPassports(request: Request)
 GET          /api/users/types                                   controllers.TravellerController.getTravellerTypes(request: Request)
+GET          /api/users/roles                                   controllers.RoleController.getAllRoles(request: Request)
 GET          /api/users/:travellerId                            controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
 PATCH        /api/users/:travellerId                            controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
 
@@ -39,8 +40,6 @@ DELETE      /api/travellers/:travellerId/trips/:tripId          controllers.Trip
 GET         /api/travellers/:travellerId/trips/:tripId          controllers.TripController.getTrip(travellerId: Int, tripId: Int, request: Request)
 PUT         /api/travellers/:travellerId/trips/:tripId          controllers.TripController.updateTrip(request: Request, travellerId : Int, tripId : Int)
 
-# Roles Routes
-GET         /api/users/roles                                    controllers.RoleController.getAllRoles(request : Request)
 
 # Map static resources from the /public folder to the /assets URL path
 GET          /assets/*file                                      controllers.Assets.at(path="/public", file)
