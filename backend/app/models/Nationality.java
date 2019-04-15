@@ -16,10 +16,10 @@ public class Nationality extends Model {
     @ManyToMany
     private List<User> users;
 
-    private String nationalityCountry;
+    private String nationalityName;
 
     public Nationality(String nationalityCountry) {
-        this.nationalityCountry = nationalityCountry;
+        this.nationalityName = nationalityCountry;
     }
 
 
@@ -31,18 +31,13 @@ public class Nationality extends Model {
         this.nationalityId = nationalityId;
     }
 
-    public String getNationalityCountry() {
-        return nationalityCountry;
+    public String getNationalityName() {
+        return nationalityName;
     }
 
     /**
      * This is required by EBean to make queries on the database
      */
     public static final Finder<Integer, Nationality> find = new Finder<>(Nationality.class);
-
-//    @Override
-//    public String toString() {
-//        return
-//    }
 }
 

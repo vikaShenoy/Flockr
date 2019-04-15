@@ -31,9 +31,11 @@ public class Admin extends Action.Simple {
         User user = request.attrs().get(ActionState.USER);
 
         if (this.security.checkRoleExists(user, Roles.ADMIN) || this.security.checkRoleExists(user, Roles.SUPER_ADMIN)) {
-            return delegate.call(request);
+            // return delegate.call(request);
+            return delegate.call(request.addAttr(ActionState.IS_ADMIN, true));
         }
 
-        return supplyAsync(() -> unauthorized("You are unauthorized"));
+        //return supplyAsync(() -> unauthorized("You are unauthorized"));
+        return delegate.call(request.addAttr(ActionState.IS_ADMIN, false));
     }
 }
