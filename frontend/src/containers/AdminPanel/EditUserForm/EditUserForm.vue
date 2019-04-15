@@ -41,21 +41,24 @@
               </v-flex>
               <v-flex xs12 sm6>
                 <v-autocomplete
-                  :items="this.travellerTypeNames"
+                  :items="allTravellerTypeNames"
+                  :value="this.initialUserTravellerTypeNames"
                   label="Traveller types"
                   multiple
                 ></v-autocomplete>
               </v-flex>
               <v-flex xs12 sm6>
                 <v-autocomplete
-                  :items="['NOTE: not yet populated from user prop']"
+                  :items="allUserRoleTypes"
+                  :value="initialUserRoleTypes"
                   label="User roles"
                   multiple
                 ></v-autocomplete>
               </v-flex>
               <v-flex xs12 sm6>
                 <v-autocomplete
-                  :items="['NOTE: not yet populated from user prop']"
+                  :items="allPassportCountries"
+                  :value="initialUserPassportCountries"
                   label="Passports"
                   multiple
                 ></v-autocomplete>
@@ -63,7 +66,7 @@
               <v-flex xs12 sm6>
                 <v-autocomplete
                   :items="allNationalityNames"
-                  :value="nationalityNames"
+                  :value="initialUserNationalityNames"
                   label="Nationalities"
                   multiple
                 ></v-autocomplete>
@@ -75,13 +78,23 @@
                   :value="initialUserData.gender"
                 ></v-autocomplete>
               </v-flex>
+
               <v-flex xs12 sm6>
-                <v-autocomplete
-                  :items="['NOTE: not yet populated from user prop']"
-                  label="Date of birth"
-                  multiple
-                ></v-autocomplete>
+                <v-menu ref="dateMenu" v-model="dateMenu" :close-on-content-click="false" :nudge-right="40"
+                  :return-value.sync="dateOfBirth" lazy transition="scale-transition" offset-y full-width>
+                  <template v-slot:activator="{ on }">
+                    <v-text-field class="edit-field" v-model="dateOfBirth" readonly v-on="on" :rules="dateRules">
+                    </v-text-field>
+                  </template>
+                  <v-date-picker color="secondary" ref="picker" :max="currentDate" v-model="dateOfBirth" no-title
+                    scrollable>
+                    <v-spacer></v-spacer>
+                    <v-btn flat color="primary" @click="dateMenu = false">Cancel</v-btn>
+                    <v-btn flat color="primary" @click="$refs.dateMenu.save(dateOfBirth)">OK</v-btn>
+                  </v-date-picker>
+                </v-menu>
               </v-flex>
+
             </v-layout>
           </v-container>
           <small>* indicates required field</small>
@@ -98,6 +111,7 @@
 <script>
 import superagent from 'superagent';
 import {endpoint} from '../../../utils/endpoint';
+import moment from 'moment';
 
 export default {
   props: {
@@ -127,7 +141,13 @@ export default {
           "travellerTypeName": String
         }
       ],
-      "timestamp": String,
+      "roles": [
+        {
+          "roleId": Number,
+          "roleType": String
+        }
+      ],
+      "timestamp": Number,
     },
     showForm: {
       type: Boolean,
@@ -139,7 +159,13 @@ export default {
       changes: {
         // contains changes to be pushed to make a patch on the user
       },
-      allNationalities: []
+      allNationalities: [],
+      allPassports: [],
+      allTravellerTypes: [],
+      allUserRoles: [],
+      dateMenu: false, // don't show the menu by default
+      dateOfBirth: null,
+      currentDate: moment().format("YYYY-MM-DD")
     }
   },
   methods: {
@@ -163,26 +189,67 @@ export default {
       } catch(err) {
         console.error(`Could not get all valid nationalities: ${err}`);
       }
+    },
+    getAllPassports: async function() {
+      try {
+        const res = await superagent.get(endpoint('/users/passports'));
+        this.allPassports = res.body;
+        console.log('All passports: ', this.allPassports);
+      } catch(err) {
+        console.error(`Could not get all valid passports: ${err}`);
+      }
+    },
+    getAllTravellerTypes: async function() {
+      try {
+        const res = await superagent.get(endpoint('/users/types')).set("Authorization", localStorage.getItem("authToken"));
+        this.allTravellerTypes = res.body;
+      } catch(err) {
+        console.error(`Could not get all valid traveller types: ${err}`);
+      }
+    },
+    getAllUserRoles: async function() {
+      try {
+        const res = await superagent.get(endpoint('/users/roles'));
+        this.allUserRoles = res.body;
+      } catch(err) {
+        console.error(`Could not get all user roles: ${err}`);
+      }
     }
   },
   computed: {
     fullUserName: function() {
       return `${this.initialUserData.firstName} ${this.initialUserData.middleName ? this.initialUserData.middleName : ''} ${this.initialUserData.lastName}`;
     },
-    travellerTypeNames: function() {
+    initialUserTravellerTypeNames: function() {
       return this.initialUserData.travellerTypes.map((travellerType) => travellerType.travellerTypeName);
     },
-    // 
-    nationalityNames: function() {
+    initialUserNationalityNames: function() {
       return this.initialUserData.nationalities.map((nationality) => nationality.nationalityName);
     },
+    initialUserPassportCountries: function() {
+      return this.initialUserData.passports.map((passport) => passport.passportCountry);
+    },
+    initialUserRoleTypes: function() {
+      return this.initialUserData.roles.map((role) => role.roleType);
+    },
     allNationalityNames: function() {
-      console.log('All nationalities: ', this.allNationalities);
       return this.allNationalities.map((nationality) => nationality.nationalityName);
+    },
+    allPassportCountries: function() {
+      return this.allPassports.map((passport) => passport.passportCountry);
+    },
+    allUserRoleTypes: function() {
+      return this.allUserRoles.map((role) => role.roleType);
+    },
+    allTravellerTypeNames: function() {
+      return this.allTravellerTypes.map((travellerType) => travellerType.travellerTypeName);
     }
   },
   mounted() {
+    this.getAllUserRoles();
     this.getAllNationalities();
+    this.getAllPassports();
+    this.getAllTravellerTypes();
   }
 }
 </script>
