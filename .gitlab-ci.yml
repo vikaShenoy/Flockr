@@ -50,7 +50,7 @@ recent-artifacts-backend:
 release-artifacts-backend:
  stage: deploy
  script:
-    - cd backend && sbt dist
+    - cd backend && sbt dist && ls
  artifacts:
     paths:
     - backend/target/universal/*.zip
