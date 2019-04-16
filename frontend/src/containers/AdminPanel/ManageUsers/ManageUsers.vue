@@ -115,7 +115,12 @@ export default {
       }));
     }
   },
-  props: ["users"]
+  props: ["users"],
+  watch: {
+    users(newUsers) {
+      this.items = this.mapUsers();
+    }
+  }
 }
 </script>
 
