@@ -78,7 +78,7 @@ public class DestinationTestingSteps {
         JsonNode signUpReqBody = Json.toJson(firstRow);
         Http.RequestBuilder signUpReq = Helpers.fakeRequest()
                 .method("POST")
-                .uri("/api/auth/travellers/signup")
+                .uri("/api/auth/users/signup")
                 .bodyJson(signUpReqBody);
         Result signUpRes = route(application, signUpReq);
         Assert.assertEquals(200, signUpRes.status());
@@ -89,7 +89,7 @@ public class DestinationTestingSteps {
         logInReqBody.put("password", this.plainTextPassword);
         Http.RequestBuilder logInReq = Helpers.fakeRequest()
                 .method("POST")
-                .uri("/api/auth/travellers/login")
+                .uri("/api/auth/users/login")
                 .bodyJson(signUpReqBody);
         Result logInRes = route(application, logInReq);
 

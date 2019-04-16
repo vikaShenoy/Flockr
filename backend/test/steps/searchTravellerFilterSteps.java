@@ -77,7 +77,7 @@ public class searchTravellerFilterSteps {
         Http.RequestBuilder loginRequest = Helpers.fakeRequest()
                 .method("POST")
                 .bodyJson(reqJsonBody)
-                .uri("/api/auth/travellers/login");
+                .uri("/api/auth/users/login");
         Result loginResult = route(application, loginRequest);
         JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
         this.authToken = authenticationResponseAsJson.get("token").asText();
