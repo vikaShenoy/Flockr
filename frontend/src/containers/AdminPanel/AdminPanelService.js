@@ -17,3 +17,10 @@ export async function getUsers() {
         .set("Authorization", authToken);
     return res.body;
 }
+
+export async function patchUser(userId, body) {
+    const authToken = localStorage.getItem("authToken");
+    const res = await superagent.patch(endpoint(`/users/${userId}`))
+        .set("Authorization", authToken)
+        .send(body);
+}

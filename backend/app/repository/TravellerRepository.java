@@ -75,10 +75,11 @@ public class TravellerRepository {
                     .query().setDisableLazyLoading(true)
                     .fetch("nationalities")
                     .fetch("travellerTypes")
-                    .fetch("passports");
+                    .fetch("passports")
+                    .fetch("roles");
 
             if (!isSelf) {
-                userQuery.select("userId,firstName,middleName,lastName,nationalities,dateOfBirth,gender,travellerTypes,passports");
+                userQuery.select("userId,firstName,middleName,lastName,nationalities,dateOfBirth,gender,travellerTypes,passports,roles");
             }
 
             Optional<User> user = userQuery.where()
