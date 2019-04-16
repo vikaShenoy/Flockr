@@ -12,6 +12,7 @@ import repository.RoleRepository;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
+import static play.mvc.Results.notFound;
 import static play.mvc.Results.ok;
 
 public class RoleController {
@@ -50,10 +51,14 @@ public class RoleController {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getUsersRoles(int userId, Http.Request request) {
-        return roleRepository.getUsersRoles(userId)
-                .thenApplyAsync(roles -> {
-                    JsonNode rolesJson = Json.toJson(roles);
-                    return ok(rolesJson);
+        return roleRepository.getUser(userId)
+                .thenApplyAsync(user -> {
+                    if (user != null) {
+                        JsonNode rolesJson = Json.toJson(user.getRoles());
+                        return ok(rolesJson);
+                    } else {
+                        return notFound();
+                    }
                 }, httpExecutionContext.current());
     }
 }

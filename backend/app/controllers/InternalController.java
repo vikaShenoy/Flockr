@@ -6,7 +6,6 @@ import models.Nationality;
 import models.Passport;
 import play.libs.Json;
 import play.mvc.Result;
-import play.mvc.With;
 import util.Security;
 
 import java.sql.Timestamp;
@@ -45,8 +44,8 @@ public class InternalController {
             District district1 = new District("Black Rock City", country1);
             District district2 = new District("New Farm", country2);
 
-            Role admin = new Role(Roles.ADMIN);
-            Role superAdmin = new Role(Roles.SUPER_ADMIN);
+            Role admin = new Role(RoleType.ADMIN);
+            Role superAdmin = new Role(RoleType.SUPER_ADMIN);
 
             admin.save();
             superAdmin.save();
@@ -146,7 +145,7 @@ public class InternalController {
      * Create a user and save to database.
      * NOTE: also creates a passport, nationality, traveller type and gender in the database
      */
-    public User generateMockUser(String firstName, String middleName, String lastName, String password, String email, String gender, String token, List<Nationality> nationalities, List<TravellerType> travellerTypes, List<Passport> passports, List<Role> roles) {
+    private User generateMockUser(String firstName, String middleName, String lastName, String password, String email, String gender, String token, List<Nationality> nationalities, List<TravellerType> travellerTypes, List<Passport> passports, List<Role> roles) {
         Security security = new Security();
 
         String passwordHash = security.hashPassword(password);

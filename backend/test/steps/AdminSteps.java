@@ -1,0 +1,246 @@
+package steps;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Module;
+import cucumber.api.java.After;
+import cucumber.api.java.Before;
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+import models.*;
+import org.junit.Assert;
+import play.Application;
+import play.ApplicationLoader;
+import play.Environment;
+import play.inject.guice.GuiceApplicationBuilder;
+import play.inject.guice.GuiceApplicationLoader;
+import play.libs.Json;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.test.Helpers;
+import util.Security;
+import utils.PlayResultToJson;
+
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+
+import static play.test.Helpers.route;
+
+public class AdminSteps {
+
+    @Inject
+    private Application application;
+
+    // data
+    private int userId;
+    private String authToken;
+    private ArrayNode roles;
+    private int roleId;
+    private int otherUserId;
+
+    @Before
+    public void setUp() {
+        Module testModule = new AbstractModule() {
+            @Override
+            public void configure() {
+            }
+        };
+        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
+                .builder(new ApplicationLoader.Context(Environment.simple()))
+                .overrides(testModule);
+        Guice.createInjector(builder.applicationModule()).injectMembers(this);
+
+        Helpers.start(application);
+
+        Role role = new Role(RoleType.TRAVELLER);
+        role.save();
+    }
+
+    @After
+    public void tearDown() {
+        Helpers.stop(application);
+    }
+
+    @Given("A traveller user exists")
+    public void a_traveller_user_exists() {
+
+        List<Role> roles = Role.find.query().where().eq("role_type", RoleType.TRAVELLER).findList();
+        this.roleId = roles.get(0).getRoleId();
+
+        Assert.assertNotEquals(0, this.roleId);
+
+        Assert.assertEquals("TRAVELLER", roles.get(0).getRoleType().toString());
+        Assert.assertEquals(1, roles.size());
+
+        createUser(roles, false);
+
+        Assert.assertNotEquals(0, this.userId);
+    }
+
+    @Given("An admin user exists")
+    public void an_admin_user_exists() {
+
+        Role role = Role.find.query().where().eq("role_type", RoleType.ADMIN).findOne();
+
+        Assert.assertNotNull(role);
+
+        this.roleId = role.getRoleId();
+
+        Assert.assertNotEquals(0, this.roleId);
+
+        List<Role> roles = Role.find.query().where().eq("role_type", RoleType.ADMIN).findList();
+
+        createUser(roles, false);
+
+        Assert.assertNotEquals(0, this.userId);
+    }
+
+    @Given("An admin user and another user exists")
+    public void an_admin_user_and_another_user_exists() {
+
+        List<Role> travellerList = Role.find.query().where().eq("role_type", RoleType.TRAVELLER).findList();
+        List<Role> adminList = Role.find.query().where().eq("role_type", RoleType.ADMIN).findList();
+        this.roleId = travellerList.get(0).getRoleId();
+
+        Assert.assertNotEquals(0, adminList.get(0).getRoleId());
+        Assert.assertNotEquals(0, this.roleId);
+
+        this.otherUserId = createUser(travellerList, true);
+        createUser(adminList, false);
+
+        Assert.assertNotEquals(0, this.otherUserId);
+        Assert.assertNotEquals(0, this.userId);
+    }
+
+    /**
+     * A helper function to create a user with the roles in the list given.
+     * @param roles List&ltRole&gt list of roles the user will have.
+     */
+    private int createUser(List<Role> roles, Boolean otherUser) {
+
+        Nationality nationality = new Nationality("New Zealand");
+        nationality.save();
+
+        List<Nationality> nationalities = Nationality.find.query().findList();
+
+        TravellerType travellerType = new TravellerType("adventurer");
+        travellerType.save();
+
+        List<TravellerType> travellerTypes = TravellerType.find.query().findList();
+
+        Passport passport = new Passport("New Zealand");
+        passport.save();
+
+        List<Passport> passports = Passport.find.query().findList();
+
+        Date date = new Date();
+
+        Security security = new Security();
+        String password = security.hashPassword("password");
+
+        User user;
+
+        if (otherUser) {
+            user = new User("traveller", "", "user", password, "male", "other-user@travelEA.com", nationalities, travellerTypes, date, passports, roles, "");
+        } else {
+            user = new User("traveller", "", "user", password, "male", "user@travelEA.com", nationalities, travellerTypes, date, passports, roles, "");
+        }
+
+        user.save();
+
+        this.userId = user.getUserId();
+
+        return user.getUserId();
+    }
+
+    @And("The user is logged in")
+    public void the_user_is_logged_in() throws IOException {
+        ObjectNode reqJsonBody = Json.newObject();
+        reqJsonBody.put("email", "user@travelEA.com");
+        reqJsonBody.put("password", "password");
+
+        Http.RequestBuilder loginRequest = Helpers.fakeRequest()
+                .method("POST")
+                .bodyJson(reqJsonBody)
+                .uri("/api/auth/travellers/login");
+        Result loginResult = route(application, loginRequest);
+        JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
+
+        Assert.assertEquals(200, loginResult.status());
+
+        this.authToken = authenticationResponseAsJson.get("token").asText();
+
+        Assert.assertNotNull(this.authToken);
+    }
+
+    @When("The user requests its roles")
+    public void the_user_requests_its_roles() throws IOException {
+
+        Http.RequestBuilder rolesRequest = Helpers.fakeRequest()
+                .method("GET")
+                .header("authorization", this.authToken)
+                .uri("/api/users/" + this.userId + "/roles");
+        Result rolesResult = route(application, rolesRequest);
+        this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
+
+        this.roles.get(0);
+
+        Assert.assertEquals(200, rolesResult.status());
+        Assert.assertEquals(1, this.roles.size());
+    }
+
+    @When("The user requests the roles of another user")
+    public void the_user_requests_the_roles_of_another_user() throws IOException {
+        Http.RequestBuilder rolesRequest = Helpers.fakeRequest()
+                .method("GET")
+                .header("authorization", this.authToken)
+                .uri("/api/users/" + this.otherUserId + "/roles");
+        Result rolesResult = route(application, rolesRequest);
+        this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
+
+        this.roles.get(0);
+
+        Assert.assertEquals(200, rolesResult.status());
+        Assert.assertEquals(1, this.roles.size());
+
+    }
+
+    @When("The user requests the roles available on the system")
+    public void the_user_requests_the_roles_available_on_the_system() throws IOException {
+        Http.RequestBuilder rolesRequest = Helpers.fakeRequest()
+                .method("GET")
+                .header("authorization", this.authToken)
+                .uri("/api/users/roles");
+        Result rolesResult = route(application, rolesRequest);
+        this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
+
+        this.roles.get(0);
+
+        Assert.assertEquals(200, rolesResult.status());
+        Assert.assertNotEquals(0, this.roles.size());
+    }
+
+    @Then("^A list of roles is returned containing the \"([^\"]*)\" role$")
+    public void a_list_of_roles_is_returned_containing_the_role(String role) {
+        Assert.assertEquals(this.roleId, this.roles.get(0).get("roleId").asInt());
+        Assert.assertEquals(role, this.roles.get(0).get("roleType").asText());
+    }
+
+    @Then("A list of roles is returned containing all the roles")
+    public void a_list_of_roles_is_returned_containing_all_the_roles() {
+        List<Role> roles = Role.find.all();
+
+        Assert.assertEquals(roles.size(), this.roles.size());
+
+        for (int i = 0; i < roles.size(); i++) {
+            Assert.assertEquals(roles.get(i).getRoleType().toString(), this.roles.get(i).get("roleType").asText());
+        }
+    }
+}

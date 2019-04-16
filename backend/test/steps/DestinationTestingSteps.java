@@ -11,7 +11,6 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
-import models.User;
 import org.junit.Assert;
 import play.Application;
 import play.ApplicationLoader;
@@ -27,8 +26,6 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import static play.test.Helpers.route;
 
@@ -142,7 +139,7 @@ public class DestinationTestingSteps {
     }
 
     @Then("I should receive a {int} status code when getting the destination with id {int}")
-    public void iShouldReceiveAStatusCodeWhenCheckingForTheDestination(Integer expectedStatusCode, Integer destinationId) throws IOException {
+    public void iShouldReceiveAStatusCodeWhenCheckingForTheDestination(Integer expectedStatusCode, Integer destinationId) {
         Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/destinations/" + destinationId.toString());
@@ -163,7 +160,7 @@ public class DestinationTestingSteps {
     }
 
     @When("I make a {string} request to {string} to delete the destination")
-    public void iMakeARequestToToDeleteTheDestination(String requestMethod, String endpoint) throws IOException {
+    public void iMakeARequestToToDeleteTheDestination(String requestMethod, String endpoint) {
         Http.RequestBuilder deleteReq = Helpers.fakeRequest()
                 .method(requestMethod)
                 .uri(endpoint)
