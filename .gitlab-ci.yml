@@ -1,88 +1,74 @@
-tag_checker:
-  stage: build
-  script:
-    - python tag_checker.py $CI_COMMIT_TAG
-  only:
-    - tags
-
-run-tests:
-  stage: test
-  script:
-    - cd backend && sbt test
-
-recent-artifacts-frontend:
-  stage: build 
-  script:
-    - echo $USER
-    - echo "Checking that npm version exists"
-    - npm -v
-    - cd frontend && npm install && npm run build
-  artifacts:
-    paths:
-      - frontend/dist
-    expire_in: 1 week
-  except:
-    - tags
-
-release-artifacts-frontend:
-  stage: build 
-  script:
-  - echo "Checking that npm version exists"
-  - npm -v | echo
-  - cd frontend && npm install && npm run build
-  artifacts:
-    paths:
-    - frontend/dist
-  only:
-  - tags
-
-recent-artifacts-backend:
-  stage: build 
-  script:
-    - cd backend && sbt dist
-  artifacts:
-    paths:
+recent-artifacts-backend: 
+  artifacts: 
+    expire_in: "1 week"
+    paths: 
       - backend/target/universal/*.zip
-    expire_in: 1 week
-  except:
+  except: 
     - tags
-
-release-artifacts-backend:
- stage: build 
- script:
-    - cd backend && sbt dist && 
- artifacts:
-    paths:
-    - backend/target/universal/*.zip
- only:
+  script: 
+    - "cd backend && sbt dist"
+  stage: build
+recent-artifacts-frontend: 
+  artifacts: 
+    expire_in: "1 week"
+    paths: 
+      - frontend/dist
+  except: 
     - tags
-
-staging-artifacts-backend:
-  stage: build 
- script:
-    - cd backend && NODE_ENV=staging sbt dist
- artifacts:
-    paths:
-    - backend/target/universal/*.zip
- only:
-  - ci-testing
-
-staging-run:
-  stage: deploy 
-  script:
-    - ls -A
-  dependencies:
+  script: 
+    - "echo $USER"
+    - "echo \"Checking that npm version exists\""
+    - "npm -v"
+    - "cd frontend && npm install && npm run build"
+  stage: build
+release-artifacts-backend: 
+  artifacts: 
+    paths: 
+      - backend/target/universal/*.zip
+  only: 
+    - tags
+  script: 
+    - "cd backend && sbt dist &&"
+  stage: build
+release-artifacts-frontend: 
+  artifacts: 
+    paths: 
+      - frontend/dist
+  only: 
+    - tags
+  script: 
+    - "echo \"Checking that npm version exists\""
+    - "npm -v | echo"
+    - "cd frontend && npm install && npm run build"
+  stage: build
+run-tests: 
+  script: 
+    - "cd backend && sbt test"
+  stage: test
+staging-artifacts-backend: 
+  artifacts: 
+    paths: 
+      - backend/target/universal/*.zip
+  only: 
+    - ci-testing
+  script: 
+    - "cd backend && NODE_ENV=staging sbt dist"
+  stage: build
+staging-run: 
+  dependencies: 
     - staging-artifacts-backend
-
-
-
-    
-
-
-
-update-sonar:
- stage: deploy
- script:
-    - sonar-scanner
- only:
+  script: 
+    - "ls -A"
+  stage: deploy
+tag_checker: 
+  only: 
+    - tags
+  script: 
+    - "python tag_checker.py $CI_COMMIT_TAG"
+  stage: build
+update-sonar: 
+  only: 
     - master@seng302-2019/team-500
+  script: 
+    - sonar-scanner
+  stage: deploy
