@@ -18,7 +18,7 @@
         </v-subheader>
 
         <!-- User tile -->
-        <v-list-tile v-for="(item) in items" :key="item.userId" avatar @click="item.selected = !item.selected">
+        <v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
           <v-list-tile-avatar>
             <img :src="item.avatar">
           </v-list-tile-avatar>
@@ -42,9 +42,13 @@
 import {deleteUsers} from "../AdminPanelService";
 
 export default {
+  mounted () {
+    this.items = this.mapUsers();
+    //console.log(mapUsers())
+  },
   data() {
     return {
-      items: [
+      /*items: [
         {
           avatar: "https://cdn.vuetifyjs.com/images/lists/1.jpg",
           userId: 1,
@@ -73,7 +77,8 @@ export default {
           subtitle: "Joined on 12/03/2017",
           selected: false
         }
-      ]
+      ]*/
+      items: []
     };
   },
   computed: {
@@ -97,9 +102,20 @@ export default {
     // call the admin panel service to delete the given user ids
     deleteUsersButtonClicked: async function() {
       const userIds = this.selectedUsers;
+      console.log(userIds);
       this.$emit("deleteUsersByIds", userIds);
+    },
+    mapUsers: function() {
+      return this.users.map((user) => ({
+          avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
+          userId: user.userId,
+          title: user.firstName,
+          subtitle: user.timestamp,
+          selected: false
+      }));
     }
-  }
+  },
+  props: ["users"]
 }
 </script>
 

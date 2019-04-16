@@ -2,6 +2,7 @@
   <div class="admin-panel">
     <h2>Admin Panel</h2>
     <ManageUsers
+      :users="this.users"
       v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
     />
@@ -18,12 +19,18 @@
 <script>
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 import EditUserForm from "./EditUserForm/EditUserForm.vue";
+import { getUsers } from "./AdminPanelService.js";
 
 export default {
   components: {
     ManageUsers,
     EditUserForm
   },
+
+  mounted() {
+    this.getAllUsers();
+  },
+
   data() {
     return {
       showEditUserForm: false,
@@ -69,6 +76,13 @@ export default {
     }
   },
   methods: {
+
+    async getAllUsers() {
+      const allUsers = await getUsers();
+      this.users = allUsers;
+      console.log(this.users);
+    },
+
     // event handler for when a child component wants to edit a user by id
     handleWantToEditUserById: function(userId) {
       console.log(`Wanting to edit user ${userId} in admin panel`);
