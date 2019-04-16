@@ -60,12 +60,22 @@ release-artifacts-backend:
 staging-artifacts-backend:
  stage: deploy
  script:
-    - cd backend && NODE_ENV=staging sbt dist && /opt/startserver -d stop && /opt/startserver -d start
+    - cd backend && NODE_ENV=staging sbt dist
  artifacts:
     paths:
     - backend/target/universal/*.zip
  only:
   - ci-testing
+
+staging-run:
+  stage: deploy
+  script:
+    - ls -A
+  dependencies:
+    - staging-artifacts-backend
+
+
+
     
 
 
