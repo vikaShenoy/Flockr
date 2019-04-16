@@ -11,7 +11,7 @@ run-tests:
     - cd backend && sbt test
 
 recent-artifacts-frontend:
-  stage: deploy
+  stage: build 
   script:
     - echo $USER
     - echo "Checking that npm version exists"
@@ -25,7 +25,7 @@ recent-artifacts-frontend:
     - tags
 
 release-artifacts-frontend:
-  stage: deploy
+  stage: build 
   script:
   - echo "Checking that npm version exists"
   - npm -v | echo
@@ -37,7 +37,7 @@ release-artifacts-frontend:
   - tags
 
 recent-artifacts-backend:
-  stage: deploy
+  stage: build 
   script:
     - cd backend && sbt dist
   artifacts:
@@ -48,7 +48,7 @@ recent-artifacts-backend:
     - tags
 
 release-artifacts-backend:
- stage: deploy
+ stage: build 
  script:
     - cd backend && sbt dist && 
  artifacts:
@@ -58,7 +58,7 @@ release-artifacts-backend:
     - tags
 
 staging-artifacts-backend:
- stage: deploy
+  stage: build 
  script:
     - cd backend && NODE_ENV=staging sbt dist
  artifacts:
@@ -68,7 +68,7 @@ staging-artifacts-backend:
   - ci-testing
 
 staging-run:
-  stage: deploy
+  stage: deploy 
   script:
     - ls -A
   dependencies:
