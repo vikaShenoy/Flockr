@@ -4,12 +4,10 @@ import actions.ActionState;
 import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.typesafe.config.ConfigException;
-import models.Passport;
-import models.TravellerType;
-import models.User;
-import models.Nationality;
+import models.*;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -20,11 +18,8 @@ import repository.TravellerRepository;
 import javax.inject.Inject;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
-import java.util.Date;
 import java.text.SimpleDateFormat;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -291,6 +286,43 @@ public class TravellerController extends Controller {
                     JsonNode travellersJson = Json.toJson(travellers);
                     return ok(travellersJson);
                 }, httpExecutionContext.current());
+    }
+
+
+    /**
+     * Retrieve user roles from reqquest body and update the specified user so they
+     * have these roles.
+     * @param travellerId user to have roles updated
+     * @param request HTTP request
+     * @return a status code of 200 is ok, 400 if user or role doesn't exist
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> updateTravellerRole(int travellerId, Http.Request request) {
+        // Role types are in the request body
+        JsonNode jsonBody = request.body().asJson();
+        JsonNode roleArray = jsonBody.withArray("roleTypes");
+        List<String> roleTypes = new ArrayList<>();
+
+        for (JsonNode roleJson : roleArray) {
+            String roleTypeString = roleJson.asText();
+
+            if (!RoleType.contains(roleTypeString)) {
+                return supplyAsync(() -> badRequest());
+            }
+            roleTypes.add(roleTypeString);
+        }
+
+        return travellerRepository.getUserById(travellerId, false)
+                .thenApplyAsync(optionalUser -> {
+                    if (!optionalUser.isPresent()) {
+                        return notFound();
+                    }
+                    List<Role> userRoles = travellerRepository.getRolesByRoleType(roleTypes);
+                    User user = optionalUser.get();
+                    user.setRoles(userRoles);
+                    user.update();
+                    return ok("Success");
+                });
     }
 
 

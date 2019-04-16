@@ -4,10 +4,7 @@ import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
 import io.ebean.Query;
-import models.Passport;
-import models.Nationality;
-import models.TravellerType;
-import models.User;
+import models.*;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
 import play.mvc.Http;
@@ -16,6 +13,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +48,17 @@ public class TravellerRepository {
             user.update();
             return user;
         }, executionContext);
+    }
+
+    public List<Role> getRolesByRoleType(List<String> roleTypes) {
+        List<Role> roles = new ArrayList<>();
+
+        for (String roleType : roleTypes) {
+            Role role = Role.find.query().where().eq("role_type", roleType).findOne();
+            roles.add(role);
+        }
+
+        return roles;
     }
 
     /**

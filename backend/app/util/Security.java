@@ -84,7 +84,6 @@ public class Security {
     public boolean adminHasPermission(User user, User comparedUser) {
         boolean isAdmin = checkRoleExists(user, RoleType.ADMIN);
         boolean isSuperAdmin = checkRoleExists(user, RoleType.SUPER_ADMIN);
-
         if (!isAdmin && !isSuperAdmin) {
             return false;
         }

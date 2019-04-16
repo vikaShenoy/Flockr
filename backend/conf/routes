@@ -23,6 +23,8 @@ GET          /api/users/:userId/roles                           controllers.Role
 GET          /api/users/:userId                            controllers.TravellerController.getTraveller(userId: Int, request: Request)
 PATCH        /api/users/:userId                            controllers.TravellerController.updateTraveller(userId: Int, request: Request)
 
+PATCH        /api/travellers/:travellerId/roles        controllers.TravellerController.updateTravellerRole(travellerId: Int, request: Request)
+
 # Destination Routes
 GET         /api/destinations                                   controllers.DestinationController.getDestinations(request: Request)
 GET         /api/destinations/countries                         controllers.DestinationController.getCountries()

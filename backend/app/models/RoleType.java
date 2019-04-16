@@ -1,15 +1,14 @@
 package models;
 
 public enum RoleType {
-    ADMIN("admin"), SUPER_ADMIN("super-admin"), TRAVELLER("traveller");
+    ADMIN, SUPER_ADMIN;
 
-    private String roleName;
-
-    RoleType(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getRoleName() {
-        return roleName;
+    public static boolean contains(String role) {
+        for (RoleType roles : RoleType.values()) {
+            if (roles.name().equals(role)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
