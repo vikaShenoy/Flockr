@@ -944,19 +944,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/users/{userId}/photos/{photoId}':
+  '/users/photos/{photoId}':
     get:
       tags:
         - users
-      summary: Get a specific photo for a user
+      summary: Get a specific photo
       parameters:
-        - in: path
-          name: userId
-          description: ID of the user
-          required: true
-          schema:
-            type: integer
-            minimum: 0
         - in: path
           name: photoId
           description: The ID of the photo that we wish to retrieve
