@@ -88,15 +88,12 @@ public class AdminSteps {
     public void an_admin_user_exists() {
 
         Role role = Role.find.query().where().eq("role_type", RoleType.ADMIN.toString()).findOne();
-
         Assert.assertNotNull(role);
 
         this.roleId = role.getRoleId();
-
         Assert.assertNotEquals(0, this.roleId);
 
         List<Role> roles = Role.find.query().where().eq("role_type", RoleType.ADMIN.toString()).findList();
-
         createUser(roles, false);
 
         Assert.assertNotEquals(0, this.userId);
@@ -117,6 +114,71 @@ public class AdminSteps {
 
         Assert.assertNotEquals(0, this.otherUserId);
         Assert.assertNotEquals(0, this.userId);
+    }
+
+    @When("The admin deletes the other user")
+    public void theAdminDeletesTheOtherUser() {
+        throw new cucumber.api.PendingException();
+    }
+
+    @Then("The user should no longer exist in the database")
+    public void theUserShouldNoLongerExistInTheDatabase() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Given("An admin user exists and another admin user exists")
+    public void anAdminUserExistsAndAnotherAdminUserExists() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @When("The first admin deletes the second admin")
+    public void theFirstAdminDeletesTheSecondAdmin() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Then("The second admin user should no longer exist in the database")
+    public void theSecondAdminUserShouldNoLongerExistInTheDatabase() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @When("The admin user deletes itself")
+    public void theAdminUserDeletesItself() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Then("The admin user should no longer exist in the database")
+    public void theAdminUserShouldNoLongerExistInTheDatabase() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Given("The default admin exists")
+    public void theDefaultAdminExists() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Given("Another admin exists")
+    public void anotherAdminExists() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @When("The other admin tries to delete the default admin")
+    public void theOtherAdminTriesToDeleteTheDefaultAdmin() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Then("The default admin should not be deleted")
+    public void theDefaultAdminShouldNotBeDeleted() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
     }
 
     /**
@@ -178,6 +240,7 @@ public class AdminSteps {
         this.authToken = authenticationResponseAsJson.get("token").asText();
 
         Assert.assertNotNull(this.authToken);
+        Assert.assertTrue(this.authToken.length() > 0);
     }
 
     @When("The user requests its roles")
