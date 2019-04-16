@@ -44,6 +44,7 @@
                   :items="allTravellerTypeNames"
                   :value="this.initialUserTravellerTypeNames"
                   label="Traveller types"
+                  v-on:input="addChange('travellerTypes', $event)"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -52,6 +53,7 @@
                   :items="allUserRoleTypes"
                   :value="initialUserRoleTypes"
                   label="User roles"
+                  v-on:input="addChange('roles', $event)"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -60,6 +62,7 @@
                   :items="allPassportCountries"
                   :value="initialUserPassportCountries"
                   label="Passports"
+                  v-on:input="addChange('passports', $event)"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -68,6 +71,7 @@
                   :items="allNationalityNames"
                   :value="initialUserNationalityNames"
                   label="Nationalities"
+                  v-on:input="addChange('nationalities', $event)"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -76,6 +80,7 @@
                   :items="['Female', 'Male', 'Other']"
                   label="Gender"
                   :value="initialUserData.gender"
+                  v-on:input="addChange('gender', $event)"
                 ></v-autocomplete>
               </v-flex>
 
@@ -173,6 +178,7 @@ export default {
       this.$emit('dismissForm');
     },
     submitForm: function() {
+      console.log(this.changes);
       this.$emit('submitForm', this.changes);
     },
     // store the patches we want to make to the user for when the form is submitted
