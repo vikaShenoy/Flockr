@@ -50,12 +50,24 @@ recent-artifacts-backend:
 release-artifacts-backend:
  stage: deploy
  script:
-    - cd backend && sbt dist && ls
+    - cd backend && sbt dist && 
  artifacts:
     paths:
     - backend/target/universal/*.zip
  only:
     - tags
+
+staging-artifacts-backend:
+ stage: deploy
+ script:
+    - cd backend && NODE_ENV=staging sbt dist && ls
+ artifacts:
+    paths:
+    - backend/target/universal/*.zip
+ only:
+  - ci-testing
+    
+
 
 
 update-sonar:
