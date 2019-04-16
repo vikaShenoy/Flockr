@@ -3,57 +3,57 @@ stages:
   - build
   - deploy
 
-run-tests: 
-  script: 
-    - "cd backend && sbt test"
-  stage: test
+# run-tests: 
+#   script: 
+#     - "cd backend && sbt test"
+#   stage: test
 
-recent-artifacts-backend: 
-  artifacts: 
-    expire_in: "1 week"
-    paths: 
-      - backend/target/universal/*.zip
-  except: 
-    - tags
-  script: 
-    - "cd backend && sbt dist"
-  stage: build
+# recent-artifacts-backend: 
+#   artifacts: 
+#     expire_in: "1 week"
+#     paths: 
+#       - backend/target/universal/*.zip
+#   except: 
+#     - tags
+#   script: 
+#     - "cd backend && sbt dist"
+#   stage: build
 
-recent-artifacts-frontend: 
-  artifacts: 
-    expire_in: "1 week"
-    paths: 
-      - frontend/dist
-  except: 
-    - tags
-  script: 
-    - "echo $USER"
-    - "echo \"Checking that npm version exists\""
-    - "npm -v"
-    - "cd frontend && npm install && npm run build"
-  stage: build
+# recent-artifacts-frontend: 
+#   artifacts: 
+#     expire_in: "1 week"
+#     paths: 
+#       - frontend/dist
+#   except: 
+#     - tags
+#   script: 
+#     - "echo $USER"
+#     - "echo \"Checking that npm version exists\""
+#     - "npm -v"
+#     - "cd frontend && npm install && npm run build"
+#   stage: build
 
-release-artifacts-backend: 
-  artifacts: 
-    paths: 
-      - backend/target/universal/*.zip
-  only: 
-    - tags
-  script: 
-    - "cd backend && sbt dist &&"
-  stage: build
+# release-artifacts-backend: 
+#   artifacts: 
+#     paths: 
+#       - backend/target/universal/*.zip
+#   only: 
+#     - tags
+#   script: 
+#     - "cd backend && sbt dist &&"
+#   stage: build
 
-release-artifacts-frontend: 
-  artifacts: 
-    paths: 
-      - frontend/dist
-  only: 
-    - tags
-  script: 
-    - "echo \"Checking that npm version exists\""
-    - "npm -v | echo"
-    - "cd frontend && npm install && npm run build"
-  stage: build
+# release-artifacts-frontend: 
+#   artifacts: 
+#     paths: 
+#       - frontend/dist
+#   only: 
+#     - tags
+#   script: 
+#     - "echo \"Checking that npm version exists\""
+#     - "npm -v | echo"
+#     - "cd frontend && npm install && npm run build"
+#   stage: build
 
 staging-artifacts-backend: 
   artifacts: 
@@ -78,7 +78,7 @@ staging-run:
   script: 
     - "ls -A"
     - "unzip backend/target/universal/seng302-team-500-0.0.1-SNAPSHOT.zip"
-    - "ls backend/target/universal/seng302-team-500-0.0.1-SNAPSHOT/"
+    - "cd backend/target/universal && ls"
     - "pm2 start backend/target/universal/seng302-team-500-0.0.1-SNAPSHOT/bin/seng302-team-500 --name=dev-server"
   stage: deploy
 
