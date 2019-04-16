@@ -40,6 +40,7 @@
 
 <script>
 import {deleteUsers} from "../AdminPanelService";
+import moment from "moment";
 
 export default {
   mounted () {
@@ -48,36 +49,6 @@ export default {
   },
   data() {
     return {
-      /*items: [
-        {
-          avatar: "https://cdn.vuetifyjs.com/images/lists/1.jpg",
-          userId: 1,
-          title: "Tom Belmonte",
-          subtitle: "Joined on 12/03/2007",
-          selected: false
-        },
-        {
-          avatar: 'https://cdn.vuetifyjs.com/images/lists/2.jpg',
-          userId: 2,
-          title: 'Roger Belmonte',
-          subtitle: "Joined on 12/03/2008",
-          selected: false
-        },
-        {
-          avatar: 'https://cdn.vuetifyjs.com/images/lists/3.jpg',
-          userId: 42,
-          title: 'Teresa Rojas',
-          subtitle: "Joined on 12/03/2004",
-          selected: true
-        },
-        {
-          avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
-          userId: 5,
-          title: 'Juan Galindo',
-          subtitle: "Joined on 12/03/2017",
-          selected: false
-        }
-      ]*/
       items: []
     };
   },
@@ -109,8 +80,8 @@ export default {
       return this.users.map((user) => ({
           avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
           userId: user.userId,
-          title: user.firstName,
-          subtitle: user.timestamp,
+          title: user.firstName + ' ' + user.lastName,
+          subtitle: 'Joined on ' + moment(user.timestamp).format("D/M/YYYY H:mm"),
           selected: false
       }));
     }

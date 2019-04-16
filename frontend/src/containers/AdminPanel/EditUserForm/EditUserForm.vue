@@ -209,7 +209,7 @@ export default {
     },
     getAllUserRoles: async function() {
       try {
-        const res = await superagent.get(endpoint('/users/roles'));
+        const res = await superagent.get(endpoint('/users/roles')).set("Authorization", localStorage.getItem("authToken"));
         this.allUserRoles = res.body;
       } catch(err) {
         console.error(`Could not get all user roles: ${err}`);
