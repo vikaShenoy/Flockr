@@ -43,13 +43,13 @@ npm run serve # starts the development server (with hot reload)
 And open <http://localhost:8080/>
 
 ## How to start the Servers on the VM: http port 8443 and 443
-1) Open terminal and tpye ssh sengstudent@csse-s302g6.canterbury.ac.nz
-2) Enter the password
-3) Start the server by typing `sudo startserver -d | -p <start>`
+1. Open terminal and tpye ssh sengstudent@csse-s302g6.canterbury.ac.nz
+2. Enter the password
+3. Start the server by typing `sudo startserver -d | -p <start>`
     **Note: -p means production server and -d means development server.**
     eg. sudo startserver -d start -p start // To start both servers
-4) Enter password if requested
-5) To stop the server, type `sudo startserver -d | -p <stop>`
+4. Enter password if requested
+5. To stop the server, type `sudo startserver -d | -p <stop>`
     eg. sudo startserver -d stop -p stop
 
 ### Reference
