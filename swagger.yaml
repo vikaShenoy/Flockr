@@ -299,6 +299,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+      
+  
   /destinations:
     get:
       tags:
@@ -572,7 +574,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/updateRole'
+              $ref: '#/components/schemas/updateUserRole'
       responses:
         '200':
           description: OK
@@ -911,6 +913,13 @@ paths:
                 $ref: '#/components/schemas/error'
 components:
   schemas:
+    updateUserRole:
+      type: object
+      properties:
+        roleTypes: 
+          type: array
+          items: 
+            type: string
     response:
       type: object
       properties:
@@ -1118,6 +1127,7 @@ components:
             type: number
           roleEnabled:
             type: boolean
+      
   securitySchemes:
     Authorization:
       type: http
