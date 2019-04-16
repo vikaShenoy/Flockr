@@ -81,7 +81,7 @@ export default {
           avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
           userId: user.userId,
           title: user.firstName + ' ' + user.lastName,
-          subtitle: 'Joined on ' + moment(user.timestamp).format("M/D/YYYY H:mm"),
+          subtitle: 'Joined on ' + moment(user.timestamp).format("D/M/YYYY H:mm"),
           selected: false
       }));
     }

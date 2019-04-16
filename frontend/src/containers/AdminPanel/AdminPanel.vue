@@ -20,6 +20,8 @@
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 import EditUserForm from "./EditUserForm/EditUserForm.vue";
 import { getUsers } from "./AdminPanelService.js";
+import superagent from "superagent";
+import { endpoint } from '../../utils/endpoint';
 
 export default {
   components: {
@@ -84,8 +86,10 @@ export default {
     },
 
     // event handler for when a child component wants to edit a user by id
-    handleWantToEditUserById: function(userId) {
+    handleWantToEditUserById: async function(userId) {
       console.log(`Wanting to edit user ${userId} in admin panel`);
+      const res = await superagent.get(endpoint(`/users/${userId}`)).set("Authorization", localStorage.getItem("authToken"));
+      this.userBeingEdited = res.body;
       this.showEditUserForm = true; // show the edit user dialog
     },
     handleEditUserFormDismissal: function() {
