@@ -1,7 +1,7 @@
 package models;
 
 public enum RoleType {
-    ADMIN, SUPER_ADMIN;
+    ADMIN, SUPER_ADMIN, TRAVELLER;
 
     public static boolean contains(String role) {
         for (RoleType roles : RoleType.values()) {
@@ -10,5 +10,9 @@ public enum RoleType {
             }
         }
         return false;
+    }
+
+    public String toString() {
+        return this.name();
     }
 }

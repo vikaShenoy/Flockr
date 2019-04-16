@@ -71,7 +71,7 @@ public class AdminSteps {
     @Given("A traveller user exists")
     public void a_traveller_user_exists() {
 
-        List<Role> roles = Role.find.query().where().eq("role_type", RoleType.TRAVELLER).findList();
+        List<Role> roles = Role.find.query().where().eq("role_type", RoleType.TRAVELLER.toString()).findList();
         this.roleId = roles.get(0).getRoleId();
 
         Assert.assertNotEquals(0, this.roleId);
@@ -87,7 +87,7 @@ public class AdminSteps {
     @Given("An admin user exists")
     public void an_admin_user_exists() {
 
-        Role role = Role.find.query().where().eq("role_type", RoleType.ADMIN).findOne();
+        Role role = Role.find.query().where().eq("role_type", RoleType.ADMIN.toString()).findOne();
 
         Assert.assertNotNull(role);
 
@@ -95,7 +95,7 @@ public class AdminSteps {
 
         Assert.assertNotEquals(0, this.roleId);
 
-        List<Role> roles = Role.find.query().where().eq("role_type", RoleType.ADMIN).findList();
+        List<Role> roles = Role.find.query().where().eq("role_type", RoleType.ADMIN.toString()).findList();
 
         createUser(roles, false);
 
@@ -105,8 +105,8 @@ public class AdminSteps {
     @Given("An admin user and another user exists")
     public void an_admin_user_and_another_user_exists() {
 
-        List<Role> travellerList = Role.find.query().where().eq("role_type", RoleType.TRAVELLER).findList();
-        List<Role> adminList = Role.find.query().where().eq("role_type", RoleType.ADMIN).findList();
+        List<Role> travellerList = Role.find.query().where().eq("role_type", RoleType.TRAVELLER.toString()).findList();
+        List<Role> adminList = Role.find.query().where().eq("role_type", RoleType.ADMIN.toString()).findList();
         this.roleId = travellerList.get(0).getRoleId();
 
         Assert.assertNotEquals(0, adminList.get(0).getRoleId());
