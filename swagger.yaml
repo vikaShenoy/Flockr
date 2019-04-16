@@ -343,6 +343,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+                
+                
+  '/users/{userId}/roles':
+    patch:
+      tags:
+        - users
+      summary: Updates a user's list of roles\
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateUserRole'
+      responses:
+        '200':
+          description: User has succesfully been updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   '/destinations/types':
     get:
       tags:
@@ -993,6 +1038,13 @@ paths:
       
 components:
   schemas:
+    updateUserRole:
+      type: object
+      properties:
+        roleTypes:
+          type: array
+          items:
+            type: string
     response:
       type: object
       properties:
