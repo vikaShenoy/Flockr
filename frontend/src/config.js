@@ -1,3 +1,3 @@
 export default {
-  backendUrl: "http://localhost:9000"
+  backendUrl: process.env.VUE_APP_BACKEND_URL
 };
