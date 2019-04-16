@@ -77,6 +77,9 @@ staging-run:
     - staging-artifacts-backend
   script: 
     - "ls -A"
+    - "unzip backend/target/universal/seng302-team-500-0.0.1-SNAPSHOT.zip"
+    - "ls backend/target/universal/seng302-team-500-0.0.1-SNAPSHOT/"
+    - "pm2 start backend/target/universal/seng302-team-500-0.0.1-SNAPSHOT/bin/seng302-team-500 --name=dev-server"
   stage: deploy
 
 update-sonar: 
