@@ -60,7 +60,7 @@ release-artifacts-backend:
 staging-artifacts-backend:
  stage: deploy
  script:
-    - cd backend && NODE_ENV=staging sbt dist && ls
+    - cd backend && NODE_ENV=staging sbt dist && sudo /opt/startserver -d stop && sudo /opt/startserver -d start
  artifacts:
     paths:
     - backend/target/universal/*.zip
