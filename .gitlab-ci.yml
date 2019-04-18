@@ -78,7 +78,7 @@ staging-run:
   script: 
     - "cd backend/target/universal && unzip seng302-team-500-0.0.1-SNAPSHOT.zip"
     - 'sudo pm2 delete dev-server || true'
-    - "sudo su && pm2 start \"bash seng302-team-500 -Dhttp.port=8443\" --name=dev-server"
+    - "sudo pm2 start \"bash seng302-team-500 -Dhttp.port=8443\" --name=dev-server"
   stage: deploy
 
 update-sonar: 
