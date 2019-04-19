@@ -79,7 +79,7 @@ staging-run:
     - "cd backend/target/universal && unzip seng302-team-500-0.0.1-SNAPSHOT.zip"
     - 'pm2 delete dev-server || true'
     - "ls -A"
-    - "pm2 start seng302-team-500-0.0.1-SNAPSHOT -Dhttp.port=8443\" --name=dev-server"
+    - "pm2 start seng302-team-500-0.0.1-SNAPSHOT -Dhttp.port=8443 --name=dev-server"
     - "pm2 logs"
   stage: deploy
 
