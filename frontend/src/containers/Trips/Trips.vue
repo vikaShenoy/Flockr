@@ -20,7 +20,7 @@
 
 
 <script>
-import { getTrips, transformTrips } from "./TripsService.js";
+import { getTrips, transformTrips, sortTrips } from "./TripsService.js";
 import TripItem from "./TripItem/TripItem";
 
 export default {
@@ -40,8 +40,10 @@ export default {
       try {
         const userId = localStorage.getItem("userId");
         const trips = await getTrips(userId);
-        
-        const tripsTransformed = transformTrips(trips);
+        const sortedTrips = sortTrips(trips);
+        const tripsTransformed = transformTrips(sortedTrips);
+
+        //const sortedTrips = sortTrips(tripsTransformed);
 
         this.trips = tripsTransformed;
       } catch (e) {
