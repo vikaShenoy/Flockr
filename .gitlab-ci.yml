@@ -1,5 +1,4 @@
 stages:
-  - clean
   - test
   - build
   - deploy
@@ -55,12 +54,6 @@ run-tests:
 #     - "npm -v | echo"
 #     - "cd frontend && npm install && npm run build"
 #   stage: build
-
-clean-logs:
-  script:
-    - ls
-  stage: clean
-
 
 staging-artifacts-backend: 
   artifacts: 
