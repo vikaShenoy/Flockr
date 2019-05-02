@@ -4,8 +4,10 @@ stages:
   - deploy
 
 run-tests:
+  before_script:
+    - "cd backend && sbt clean"
   script:
-    - "cd backend && sbt clean && sbt test"
+    - "cd backend && sbt test"
   stage: test
 
 # recent-artifacts-backend:
