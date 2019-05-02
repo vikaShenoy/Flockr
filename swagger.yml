@@ -299,6 +299,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+    delete:
+      tags:
+        - users
+      summary: Delete a user
+      description: This endpoint enables deletion of a user. Business rules are 1. The default admin can not be deleted (not even by the default admin). 2. An admin can delete a regular user. 3. A regular user can not delete anyone else. 4. A regular user can delete their own user. 5. Admin users can delete each other.
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: User has succesfully been deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '401':
+          description: The user is either not logged in or does not have permission to delete this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: The user was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   /destinations:
     get:
       tags:
