@@ -1076,7 +1076,61 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'              
+                $ref: '#/components/schemas/error'
+        
+  '/users/{userId}/photos/{photoId}':
+    patch:
+      tags:
+        - users
+      summary: Add or remove a permission group to the photo
+      parameters:
+        - in: path
+          name: userId
+          description: The ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+        - in: path    
+          name: photoId 
+          description: The ID of the photo
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateUserPhoto'      
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully updated permission groups
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
       
 components:
   schemas:
@@ -1174,15 +1228,24 @@ components:
     userPhotos:
       type: array
       items:
-        $ref: '#components/schemas/userPhoto'
+        $ref: '#/components/schemas/userPhoto'
      
     userPhoto:
       type: object
       properties:
         photoId:
-          type: number
+          type: integer
         isPrimary:
           type: boolean
+          
+    updateUserPhoto:
+      type: object
+      properties:
+        permissionGroups:
+          type: array
+          items:
+              type: string
+          
     error:
       type: object
       properties:
