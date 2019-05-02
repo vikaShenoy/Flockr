@@ -1,11 +1,17 @@
 stages:
+  - clean
   - test
   - build
   - deploy
 
+clean:
+  script:
+    - "cd backend && sbt clean
+  stage: clean
+
 run-tests:
   script:
-    - "cd backend && sbt clean"
+    - "cd backend && sbt test"
   stage: test
 
 # recent-artifacts-backend:
