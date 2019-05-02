@@ -176,7 +176,7 @@ public class TravellerController extends Controller {
 //            user.setFirstName(jsonBody.get("firstName").asText());
 //        }
 //
-//        if (jsonBody.has("middleName")) {
+//        if (jsonBody.has("middl all other admins should be able to delete each othereName")) {
 //            user.setMiddleName(jsonBody.get("middleName").asText());
 //        }
 //
@@ -194,7 +194,7 @@ public class TravellerController extends Controller {
 //                System.out.println(e);
 //            }
 //        }
-//
+// all other admins should be able to delete each other
 //        if (jsonBody.has("gender")) {
 //            user.setGender(jsonBody.get("gender").asText());
 //        }
@@ -294,11 +294,14 @@ public class TravellerController extends Controller {
      */
     @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> updateTravellerRole(int travellerId, Http.Request request) {
-        // Role types are in the request body
-        // TODO - Need to check if the user changing is an admin, use Raf middleware.
+
+        // Check travellerID isn't a super admin already
+        // Check the patch doesn't give someone a super admin role
+
         JsonNode jsonBody = request.body().asJson();
         JsonNode roleArray = jsonBody.withArray("roleTypes");
         List<String> roleTypes = new ArrayList<>();
+
 
         for (JsonNode roleJson : roleArray) {
             String roleTypeString = roleJson.asText();
@@ -306,6 +309,7 @@ public class TravellerController extends Controller {
             if (!RoleType.contains(roleTypeString)) {
                 return supplyAsync(() -> badRequest());
             }
+
             roleTypes.add(roleTypeString);
         }
 
@@ -316,6 +320,25 @@ public class TravellerController extends Controller {
                     }
                     List<Role> userRoles = travellerRepository.getRolesByRoleType(roleTypes);
                     User user = optionalUser.get();
+
+                    // Prevent a super admin from having their permission removed
+                    if (user.isSuperAdmin()) {
+                        boolean flag = false;
+                        for (String roleString : roleTypes) {
+                            if (roleString.equals(RoleType.SUPER_ADMIN.name())) {
+                                flag = true;
+                            }
+                        }
+                        if (!flag) { return forbidden(); }
+                    } else {
+                        // Prevents a non super admin from getting super-admin permission
+                        for (String roleString : roleTypes) {
+                            if (roleString.equals(RoleType.SUPER_ADMIN.name())) {
+                                return forbidden();
+                            }
+                        }
+                    }
+
                     user.setRoles(userRoles);
                     user.update();
                     return ok("Success");

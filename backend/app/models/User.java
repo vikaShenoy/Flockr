@@ -105,6 +105,24 @@ public class User extends Model {
         this.token = token;
     }
 
+    public boolean isSuperAdmin() {        // Check travellerID isn't a super admin already
+        for (Role role : roles) {
+            if (role.getRoleType() == RoleType.SUPER_ADMIN.name()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isAdmin() {
+        for (Role role : roles) {
+            if (role.getRoleType() == RoleType.SUPER_ADMIN.name() || role.getRoleType() == RoleType.ADMIN.name()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public int getUserId() {
         return userId;

@@ -96,7 +96,6 @@ public class InternalController {
             travellerType6.save();
             travellerType7.save();
 
-
             List<Nationality> nationalityList = new ArrayList<>();
             nationalityList.add(nationality4);
 
