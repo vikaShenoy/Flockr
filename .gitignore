@@ -198,5 +198,6 @@ local.properties
 # Frontend related .gitignore
 
 node_modules/
+.vscode/
 
 *.iml
