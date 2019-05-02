@@ -57,6 +57,18 @@ create table passport_user (
   constraint pk_passport_user primary key (passport_passport_id,user_user_id)
 );
 
+create table personal_photos (
+  photo_id                      integer auto_increment not null,
+  file_name_hash                varchar(255),
+  constraint pk_personal_photos primary key (photo_id)
+);
+
+create table personal_photos_user (
+  personal_photos_photo_id      integer not null,
+  user_user_id                  integer not null,
+  constraint pk_personal_photos_user primary key (personal_photos_photo_id,user_user_id)
+);
+
 create table role (
   role_id                       integer auto_increment not null,
   role_type                     varchar(255),
@@ -138,6 +150,12 @@ alter table passport_user add constraint fk_passport_user_passport foreign key (
 create index ix_passport_user_user on passport_user (user_user_id);
 alter table passport_user add constraint fk_passport_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
+create index ix_personal_photos_user_personal_photos on personal_photos_user (personal_photos_photo_id);
+alter table personal_photos_user add constraint fk_personal_photos_user_personal_photos foreign key (personal_photos_photo_id) references personal_photos (photo_id) on delete restrict on update restrict;
+
+create index ix_personal_photos_user_user on personal_photos_user (user_user_id);
+alter table personal_photos_user add constraint fk_personal_photos_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
 create index ix_traveller_type_user_traveller_type on traveller_type_user (traveller_type_traveller_type_id);
 alter table traveller_type_user add constraint fk_traveller_type_user_traveller_type foreign key (traveller_type_traveller_type_id) references traveller_type (traveller_type_id) on delete restrict on update restrict;
 
@@ -180,6 +198,12 @@ drop index if exists ix_passport_user_passport;
 alter table passport_user drop constraint if exists fk_passport_user_user;
 drop index if exists ix_passport_user_user;
 
+alter table personal_photos_user drop constraint if exists fk_personal_photos_user_personal_photos;
+drop index if exists ix_personal_photos_user_personal_photos;
+
+alter table personal_photos_user drop constraint if exists fk_personal_photos_user_user;
+drop index if exists ix_personal_photos_user_user;
+
 alter table traveller_type_user drop constraint if exists fk_traveller_type_user_traveller_type;
 drop index if exists ix_traveller_type_user_traveller_type;
 
@@ -210,6 +234,10 @@ drop table if exists nationality_user;
 drop table if exists passport;
 
 drop table if exists passport_user;
+
+drop table if exists personal_photos;
+
+drop table if exists personal_photos_user;
 
 drop table if exists role;
 
