@@ -7,7 +7,7 @@ run-tests:
   before_script:
     - "cd backend && sbt clean"
   script:
-    - "cd backend && sbt test"
+    - "sbt test"
   stage: test
 
 # recent-artifacts-backend:
