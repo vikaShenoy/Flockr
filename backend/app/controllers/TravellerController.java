@@ -15,6 +15,7 @@ import play.mvc.With;
 import repository.TravellerRepository;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -398,4 +399,24 @@ public class TravellerController extends Controller {
                     }
                 });
     }
+
+    /**
+     * Gets a specific photo
+     * @param photoId the ID of the photo to retrieve
+     * @param request HTTP request object
+     * @return ok with 200 if photo found, notFound with 404 if photo not found //TODO: fgr27: add more response types
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getPhoto(int photoId, Http.Request request) {
+        return travellerRepository.getPhotoById(photoId)
+                .thenApplyAsync((photo)-> {
+                    if (!photo.isPresent()) {
+                        return notFound();
+                    } else {
+                        String photoFileName = photo.get().getFileName();
+                        return ok(new File("./photos/" + photoFileName));
+                    }
+                }, httpExecutionContext.current());
+    }
+
 }
