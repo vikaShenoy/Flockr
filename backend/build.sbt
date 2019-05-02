@@ -22,6 +22,7 @@ libraryDependencies += "org.assertj" % "assertj-core" % "3.6.2" % Test
 libraryDependencies += "io.cucumber" % "cucumber-core" % "4.2.0" % Test
 libraryDependencies += "io.cucumber" % "cucumber-jvm" % "4.2.0" % Test
 libraryDependencies += "io.cucumber" % "cucumber-junit" % "4.2.0" % Test
+libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test->default"
 testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
 
 configs(IntegrationTest)
