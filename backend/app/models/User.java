@@ -59,6 +59,26 @@ public class User extends Model {
 
     private String token;
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", firstName='" + firstName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", nationalities=" + nationalities +
+                ", dateOfBirth=" + dateOfBirth +
+                ", gender='" + gender + '\'' +
+                ", email='" + email + '\'' +
+                ", travellerTypes=" + travellerTypes +
+                ", passports=" + passports +
+                ", roles=" + roles +
+                ", timestamp=" + timestamp +
+                ", passwordHash='" + passwordHash + '\'' +
+                ", token='" + token + '\'' +
+                '}';
+    }
+
 
     /**
      * Create a new traveller
