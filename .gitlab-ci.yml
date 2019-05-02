@@ -62,7 +62,7 @@ staging-artifacts-backend:
   only:
     - ci-testing
   script:
-    - "cd backend && NODE_ENV=staging sbt sbt dist"
+    - "cd backend && NODE_ENV=staging sbt dist"
   stage: build
 
 tag_checker:
