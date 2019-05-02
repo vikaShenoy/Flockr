@@ -3,79 +3,79 @@ stages:
   - build
   - deploy
 
-run-tests: 
-  script: 
-    - "cd backend && sbt ;clean ;test"
+run-tests:
+  script:
+    - "cd backend && sbt clean"
   stage: test
 
-# recent-artifacts-backend: 
-#   artifacts: 
+# recent-artifacts-backend:
+#   artifacts:
 #     expire_in: "1 week"
-#     paths: 
+#     paths:
 #       - backend/target/universal/*.zip
-#   except: 
+#   except:
 #     - tags
-#   script: 
+#   script:
 #     - "cd backend && sbt dist"
 #   stage: build
 
-# recent-artifacts-frontend: 
-#   artifacts: 
+# recent-artifacts-frontend:
+#   artifacts:
 #     expire_in: "1 week"
-#     paths: 
+#     paths:
 #       - frontend/dist
-#   except: 
+#   except:
 #     - tags
-#   script: 
+#   script:
 #     - "echo $USER"
 #     - "echo \"Checking that npm version exists\""
 #     - "npm -v"
 #     - "cd frontend && npm install && npm run build"
 #   stage: build
 
-# release-artifacts-backend: 
-#   artifacts: 
-#     paths: 
+# release-artifacts-backend:
+#   artifacts:
+#     paths:
 #       - backend/target/universal/*.zip
-#   only: 
+#   only:
 #     - tags
-#   script: 
+#   script:
 #     - "cd backend && sbt dist &&"
 #   stage: build
 
-# release-artifacts-frontend: 
-#   artifacts: 
-#     paths: 
+# release-artifacts-frontend:
+#   artifacts:
+#     paths:
 #       - frontend/dist
-#   only: 
+#   only:
 #     - tags
-#   script: 
+#   script:
 #     - "echo \"Checking that npm version exists\""
 #     - "npm -v | echo"
 #     - "cd frontend && npm install && npm run build"
 #   stage: build
 
-staging-artifacts-backend: 
-  artifacts: 
-    paths: 
+staging-artifacts-backend:
+  artifacts:
+    paths:
       - backend/target/universal/*.zip
-  only: 
+  only:
     - ci-testing
-  script: 
+  script:
     - "cd backend && NODE_ENV=staging sbt sbt dist"
   stage: build
 
-tag_checker: 
-  only: 
+tag_checker:
+  only:
     - tags
-  script: 
+  script:
     - "python tag_checker.py $CI_COMMIT_TAG"
   stage: build
 
-staging-run: 
-  dependencies: 
+staging-run:
+  dependencies:
     - staging-artifacts-backend
-  script: 
+  script:
     - "cd backend/target/universal && unzip seng302-team-500-0.0.1-SNAPSHOT.zip"
     - 'pm2 delete dev-server || true'
     - cd seng302-team-500-0.0.1-SNAPSHOT/bin && pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
@@ -84,9 +84,9 @@ staging-run:
     - ci-testing
   stage: deploy
 
-update-sonar: 
-  only: 
+update-sonar:
+  only:
     - master@seng302-2019/team-500
-  script: 
+  script:
     - sonar-scanner
   stage: deploy
