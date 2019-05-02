@@ -4,10 +4,7 @@ import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
 import io.ebean.Query;
-import models.Passport;
-import models.Nationality;
-import models.TravellerType;
-import models.User;
+import models.*;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
 import play.mvc.Http;
@@ -113,7 +110,6 @@ public class TravellerRepository {
         }, executionContext);
     }
 
-
     /**
      * Funtion that gets all of the valid traveller types in the database
      * @return the list of traveller types
@@ -194,6 +190,31 @@ public class TravellerRepository {
                }
            }
             return users;
+        }, executionContext);
+    }
+
+    /**
+     * Gets the photo with the given photo Id
+     * @param photoId the id of the photo to be retrieved
+     * @return the photo
+     */
+    public CompletionStage<Optional<PersonalPhotos>> getPhotoById(int photoId) {
+        return supplyAsync(() -> {
+            Optional<PersonalPhotos> photo = PersonalPhotos.find.query().
+                    where().eq("photo_id", photoId).findOneOrEmpty();
+            return photo;
+        }, executionContext);
+    }
+
+    /**
+     * Delete a photo with the given photo Id
+     * @param photoId the id of the photo to be deleted
+     * @return the id of the photo that was deleted
+     */
+    public CompletionStage<Integer> deletePhotoId(int photoId) {
+        return supplyAsync(() -> {
+            PersonalPhotos.find.deleteById(photoId);
+            return photoId;
         }, executionContext);
     }
 
