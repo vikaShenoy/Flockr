@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import play.libs.concurrent.HttpExecutionContext;
+import util.Security;
 
 /**
  * Contains all endpoints associated with travellers
@@ -32,11 +33,13 @@ import play.libs.concurrent.HttpExecutionContext;
 public class TravellerController extends Controller {
     private final TravellerRepository travellerRepository;
     private HttpExecutionContext httpExecutionContext;
+    private final Security security;
 
     @Inject
-    public TravellerController(TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext) {
+    public TravellerController(TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext, Security security) {
         this.travellerRepository = travellerRepository;
         this.httpExecutionContext = httpExecutionContext;
+        this.security = security;
     }
 
     /**
@@ -77,26 +80,19 @@ public class TravellerController extends Controller {
      * @param request Object to get the JSOn data
      * @return 200 status if update was successful, 500 otherwise
      */
-    @With({LoggedIn.class, Admin.class})
+    @With({LoggedIn.class})
     public CompletionStage<Result> updateTraveller(int travellerId, Http.Request request) {
         JsonNode jsonBody = request.body().asJson();
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        CompletionStage<Optional<User>> userToUpdate;
-        // User user = request.attrs().get(ActionState.USER);
-        if (travellerId == -1) {
-            userToUpdate = travellerRepository.getUserById(request.attrs().get(ActionState.USER).getUserId(), true);
-        } else {
-            userToUpdate = travellerRepository.getUserById(travellerId, false);
+        if (!security.userHasPermission(userFromMiddleware, travellerId)) {
+            return supplyAsync(() -> unauthorized());
         }
 
-        return userToUpdate
+        return travellerRepository.getUserById(travellerId, false)
                 .thenApplyAsync((user) -> {
                     if (!user.isPresent()) {
                         return notFound();
-                    }
-
-                    if (!request.attrs().get(ActionState.USER).equals(user.get()) && !request.attrs().get(ActionState.IS_ADMIN)) {
-                        return unauthorized();
                     }
 
                     if (jsonBody.has("firstName")) {
@@ -296,9 +292,10 @@ public class TravellerController extends Controller {
      * @param request HTTP request
      * @return a status code of 200 is ok, 400 if user or role doesn't exist
      */
-    @With(LoggedIn.class)
+    @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> updateTravellerRole(int travellerId, Http.Request request) {
         // Role types are in the request body
+        // TODO - Need to check if the user changing is an admin, use Raf middleware.
         JsonNode jsonBody = request.body().asJson();
         JsonNode roleArray = jsonBody.withArray("roleTypes");
         List<String> roleTypes = new ArrayList<>();

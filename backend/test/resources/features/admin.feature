@@ -30,6 +30,7 @@ Feature: The admin user can do any task that is available within the system
     When The user requests the roles available on the system
     Then A list of roles is returned containing all the roles
 
+#
   Scenario: An admin user wants to delete a non admin user
     Given An admin user and another user exists
     And The user is logged in

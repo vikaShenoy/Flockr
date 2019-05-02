@@ -50,7 +50,7 @@ public class Security {
      */
     public boolean checkRoleExists(User user, RoleType roleType) {
         for (Role userRole : user.getRoles()) {
-            if (userRole.getRoleType().equals(roleType)) {
+            if (userRole.getRoleType().equals(roleType.name())) {
                 return true;
             }
         }
@@ -64,30 +64,11 @@ public class Security {
      * @param comparedUser The user retrieved from the url parameter
      * @return True if the user
      */
-    public boolean userHasPermission(User user, User comparedUser) {
-        boolean isAdmin = checkRoleExists(user, RoleType.ADMIN);
-        boolean isSuperAdmin = checkRoleExists(user, RoleType.SUPER_ADMIN);
-
-        if (isSuperAdmin) {
+    public boolean userHasPermission(User userFromMiddleware, int userIdFromUrl) {
+        if (checkRoleExists(userFromMiddleware, RoleType.ADMIN) || checkRoleExists(userFromMiddleware, RoleType.SUPER_ADMIN)) {
             return true;
-        } else if (isAdmin) {
-            return true;
-        } else return user.getUserId() == comparedUser.getUserId();
-    }
-
-    /**
-     * Checks if an admin has permission to run certain functionality
-     * @param user The currently logged in user
-     * @param comparedUser The user
-     * @return boolean true if the user has permission
-     */
-    public boolean adminHasPermission(User user, User comparedUser) {
-        boolean isAdmin = checkRoleExists(user, RoleType.ADMIN);
-        boolean isSuperAdmin = checkRoleExists(user, RoleType.SUPER_ADMIN);
-        if (!isAdmin && !isSuperAdmin) {
-            return false;
         }
 
-        return true;
+        return userFromMiddleware.getUserId() == userIdFromUrl;
     }
 }
