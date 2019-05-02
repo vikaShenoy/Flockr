@@ -5,10 +5,8 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.typesafe.config.ConfigException;
-import models.Passport;
-import models.TravellerType;
-import models.User;
-import models.Nationality;
+import exceptions.NotFoundException;
+import models.*;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -21,6 +19,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -316,7 +315,7 @@ public class TravellerController extends Controller {
 
     /**
      * Allows the front-end to search for a traveller.
-     * @param request
+     * @param request the Http request sent
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
@@ -366,7 +365,37 @@ public class TravellerController extends Controller {
                     return ok(userAsJson);
 
                 }, httpExecutionContext.current());
-
     }
 
+    /**
+     * This function is responsible for deleting the photo with the given ID
+     * @param photoId the photo id to be deleted
+     * @param request the Http request sent
+     * @return a Play result
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
+        return travellerRepository.getPhotoById(photoId)
+                .thenComposeAsync((optionalPhoto) -> {
+                    if(!optionalPhoto.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
+                    PersonalPhotos photo = optionalPhoto.get();
+                    ObjectNode success = Json.newObject();
+                    success.put("message", "Successfuly deleted the given photo id");
+                    return this.travellerRepository.deletePhoto(photo.getPhotoId());
+                }, httpExecutionContext.current())
+                .thenApplyAsync(picId -> (Result) ok(), httpExecutionContext.current())
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (NotFoundException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "The given photo id is not found");
+                        return notFound(message);
+                    } catch (Throwable serverError) {
+                        return internalServerError();
+                    }
+                });
+    }
 }

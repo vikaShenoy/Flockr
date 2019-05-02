@@ -211,7 +211,7 @@ public class TravellerRepository {
      * @param photoId the id of the photo to be deleted
      * @return the id of the photo that was deleted
      */
-    public CompletionStage<Integer> deletePhotoId(int photoId) {
+    public CompletionStage<Integer> deletePhoto(int photoId) {
         return supplyAsync(() -> {
             PersonalPhotos.find.deleteById(photoId);
             return photoId;
