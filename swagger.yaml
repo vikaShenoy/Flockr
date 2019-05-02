@@ -1131,6 +1131,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+                
+  ' /users/photos/{photoFilename}':
+    delete:
+      tags:
+        - users
+      summary: Delete a specific photo
+      parameters:
+        - in: path
+          name: photoFilename
+          description: The filename of the photo
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully deleted photo
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'              
       
 components:
   schemas:
