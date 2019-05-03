@@ -86,7 +86,7 @@ staging-run:
   stage: deploy
 
 take-ownership:
-    after-script:
+    after_script:
       - "sudo chown -R gitlab-runner:gitlab-runner ."
 
 update-sonar:
