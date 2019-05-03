@@ -4,6 +4,7 @@ import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
 import io.ebean.Query;
+import io.ebeaninternal.server.expression.Op;
 import models.*;
 import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
@@ -206,8 +207,17 @@ public class TravellerRepository {
         }, executionContext);
     }
 
+    public CompletionStage<Optional<PersonalPhotos>> getPhotoByFilename(String filenameHash) {
+        return supplyAsync(() -> {
+            Optional<PersonalPhotos> photo = PersonalPhotos.find.query()
+                    .where().eq("filename_hash", filenameHash).findOneOrEmpty();
+            return photo;
+        }, executionContext);
+    }
+
     /**
-     * Delete a photo with the given photo Id
+     * Delete a photo with the given hashed filename by finding the photo's id and deleting
+     * it with the id found
      * @param photoId the id of the photo to be deleted
      * @return the id of the photo that was deleted
      */
@@ -217,5 +227,4 @@ public class TravellerRepository {
             return photoId;
         }, executionContext);
     }
-
 }

@@ -59,7 +59,7 @@ create table passport_user (
 
 create table personal_photos (
   photo_id                      integer auto_increment not null,
-  file_name_hash                varchar(255),
+  filename_hash                 varchar(255),
   constraint pk_personal_photos primary key (photo_id)
 );
 

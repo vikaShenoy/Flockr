@@ -368,29 +368,29 @@ public class TravellerController extends Controller {
 
     /**
      * This function is responsible for deleting the photo with the given ID
-     * @param photoId the photo id to be deleted
+     * @param photoFilename the hashed filename of the photo to be deleted
      * @param request the Http request sent
      * @return a Play result
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
-        return travellerRepository.getPhotoById(photoId)
+    public CompletionStage<Result> deletePhoto(String photoFilename, Http.Request request) {
+        return travellerRepository.getPhotoByFilename(photoFilename)
                 .thenComposeAsync((optionalPhoto) -> {
-                    if(!optionalPhoto.isPresent()) {
+                    if (!optionalPhoto.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     PersonalPhotos photo = optionalPhoto.get();
-                    ObjectNode success = Json.newObject();
-                    success.put("message", "Successfuly deleted the given photo id");
+                    ObjectNode message = Json.newObject();
+                    message.put("message", "Successfully deleted the given filename photo");
                     return this.travellerRepository.deletePhoto(photo.getPhotoId());
                 }, httpExecutionContext.current())
-                .thenApplyAsync(picId -> (Result) ok(), httpExecutionContext.current())
+                .thenApplyAsync(photoId -> (Result) ok(), httpExecutionContext.current())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
                     } catch (NotFoundException error) {
                         ObjectNode message = Json.newObject();
-                        message.put("message", "The given photo id is not found");
+                        message.put("message", "The photo with the given hashed filename is not found");
                         return notFound(message);
                     } catch (Throwable serverError) {
                         return internalServerError();
