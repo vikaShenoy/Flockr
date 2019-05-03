@@ -3,12 +3,12 @@ stages:
   - build
   - deploy
 
-run-tests:
-  before_script:
-    - "cd backend && sbt clean"
-  script:
-    - "sbt test"
-  stage: test
+# run-tests:
+#   before_script:
+#     - "cd backend && sbt clean"
+#   script:
+#     - "sbt test"
+#   stage: test
 
 # recent-artifacts-backend:
 #   artifacts:
