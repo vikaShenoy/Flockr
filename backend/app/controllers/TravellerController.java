@@ -305,11 +305,9 @@ public class TravellerController extends Controller {
 
         for (JsonNode roleJson : roleArray) {
             String roleTypeString = roleJson.asText();
-
             if (!RoleType.contains(roleTypeString)) {
                 return supplyAsync(() -> badRequest());
             }
-
             roleTypes.add(roleTypeString);
         }
 
@@ -338,7 +336,6 @@ public class TravellerController extends Controller {
                             }
                         }
                     }
-
                     user.setRoles(userRoles);
                     user.update();
                     return ok("Success");
