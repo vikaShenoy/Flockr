@@ -85,9 +85,8 @@ staging-run:
     - ci-testing
   stage: deploy
 
-take-ownership:
-    after_script:
-      - "sudo chown -R gitlab-runner:gitlab-runner ."
+after_script:
+  - "sudo chown -R gitlab-runner:gitlab-runner ."
 
 update-sonar:
   only:
