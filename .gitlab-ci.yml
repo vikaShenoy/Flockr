@@ -85,15 +85,13 @@ staging-run:
     - ci-testing
   stage: deploy
 
+take-ownership:
+  script:
+    - "sudo chown -R gitlab-runner:gitlab-runner ."
+  stage: deploy
+
 update-sonar:
   only:
     - master@seng302-2019/team-500
   script:
     - sonar-scanner
-
-take-ownership:
-  dependencies:
-    - staging-run
-  script:
-    - "sudo chown -R gitlab-runner:gitlab-runner ."
-  stage: deploy
