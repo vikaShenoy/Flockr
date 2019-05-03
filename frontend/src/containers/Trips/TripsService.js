@@ -47,7 +47,7 @@ export function findStart(tripDestinations) {
 export function findEnd(tripDestinations) {
     for (let i = tripDestinations.length - 1; i > -1; i--) {
         if (tripDestinations[i].departureDate) {
-            if (tripDestinations[i].departureTime) {
+            if (tripDestinations[i].departureTime !== -1) {
                 return moment(tripDestinations[i].departureDate).add(moment.duration(tripDestinations[i].departureTime, "minutes"));
             } else {
                 return moment(tripDestinations[i].departureDate);
@@ -55,7 +55,7 @@ export function findEnd(tripDestinations) {
         }
 
         if (tripDestinations[i].arrivalDate) {
-            if (tripDestinations[i].arrivalTime) {
+            if (tripDestinations[i].arrivalTime !== -1) {
                 return moment(tripDestinations[i].arrivalDate).add(moment.duration(tripDestinations[i].arrivalTime, "minutes"));
             } else {
                 return moment(tripDestinations[i].arrivalDate);
