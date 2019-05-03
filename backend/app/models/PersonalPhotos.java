@@ -27,7 +27,7 @@ public class PersonalPhotos extends Model {
 
     public int getPhotoId() { return photoId; }
 
-    public String getFileName() { return fileNameHash; }
+    public String getFileNameHash() { return fileNameHash; }
 
     public void setPhotoId(int photoId) {
         this.photoId = photoId;
