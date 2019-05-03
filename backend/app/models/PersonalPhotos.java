@@ -17,17 +17,17 @@ public class PersonalPhotos extends Model {
     @Id
     private int photoId;
 
-    private String fileName;
+    private String fileNameHash;
 
     /**
      * Create a new photo with the given hashed filename
      * @param fileNameHash the Hashed file name
      */
-    public PersonalPhotos(String fileNameHash) { this.fileName = fileNameHash; }
+    public PersonalPhotos(String fileNameHash) { this.fileNameHash = fileNameHash; }
 
     public int getPhotoId() { return photoId; }
 
-    public String getFileName() { return fileName; }
+    public String getFileNameHash() { return fileNameHash; }
 
     public void setPhotoId(int photoId) {
         this.photoId = photoId;

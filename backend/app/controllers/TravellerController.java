@@ -4,7 +4,6 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.typesafe.config.ConfigException;
 import exceptions.NotFoundException;
 import models.*;
 import play.libs.Json;
@@ -16,7 +15,6 @@ import repository.TravellerRepository;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -413,7 +411,7 @@ public class TravellerController extends Controller {
                     if (!photo.isPresent()) {
                         return notFound();
                     } else {
-                        String photoFileName = photo.get().getFileName();
+                        String photoFileName = photo.get().getFileNameHash();
                         return ok(new File("./photos/" + photoFileName));
                     }
                 }, httpExecutionContext.current());
