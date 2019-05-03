@@ -402,19 +402,18 @@ public class TravellerController extends Controller {
 
     /**
      * Gets a specific photo
-     * @param photoId the ID of the photo to retrieve
+     * @param photoFilename the filename of the photo to retrieve
      * @param request HTTP request object
      * @return ok with 200 if photo found, notFound with 404 if photo not found //TODO: fgr27: add more response types
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> getPhoto(int photoId, Http.Request request) {
-        return travellerRepository.getPhotoById(photoId)
-                .thenApplyAsync((photo)-> {
-                    if (!photo.isPresent()) {
+    public CompletionStage<Result> getPhoto(String photoFilename, Http.Request request) {
+        return supplyAsync(()-> {
+                    File photo = new File("./photos/" + photoFilename);
+                    if (!photo.exists()) {
                         return notFound();
                     } else {
-                        String photoFileName = photo.get().getFileName();
-                        return ok(new File("./photos/" + photoFileName));
+                        return ok(photo);
                     }
                 }, httpExecutionContext.current());
     }
