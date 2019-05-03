@@ -42,9 +42,6 @@ export default {
         const trips = await getTrips(userId);
         const sortedTrips = sortTrips(trips);
         const tripsTransformed = transformTrips(sortedTrips);
-
-        //const sortedTrips = sortTrips(tripsTransformed);
-
         this.trips = tripsTransformed;
       } catch (e) {
         console.log(e);

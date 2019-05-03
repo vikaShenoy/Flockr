@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { getTrips, transformTrips } from "../../Trips/TripsService";
+import { getTrips, transformTrips, sortTrips } from "../../Trips/TripsService";
 import TripItem from '../../Trips/TripItem/TripItem.vue'
 
 export default {
@@ -34,7 +34,8 @@ export default {
             try {
                 const userId = localStorage.getItem("userId");
                 const trips = await getTrips(userId);
-                this.trips = transformTrips(trips);
+                const sortedTrips = sortTrips(trips);
+                this.trips = transformTrips(sortedTrips);
             } catch (e) {
                 console.log(e);
             }
