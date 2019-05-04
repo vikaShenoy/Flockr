@@ -7,7 +7,7 @@ scalaVersion := "2.12.8"
 import sbt._
 import scala.sys.process._
 import java.io.File
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FileUtils
 import java.nio.file.Files
 
 lazy val myProject = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
