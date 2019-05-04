@@ -3,59 +3,59 @@ stages:
   - build
   - deploy
 
-run-tests:
-  before_script:
-    - "cd backend && sbt clean"
-  script:
-    - "sbt test"
-  stage: test
+# run-tests:
+#   before_script:
+#     - "cd backend && sbt clean"
+#   script:
+#     - "sbt test"
+#   stage: test
 
-recent-artifacts-backend:
-  artifacts:
-    expire_in: "1 week"
-    paths:
-      - backend/target/universal/*.zip
-  except:
-    - tags
-  script:
-    - "cd backend && sbt dist"
-  stage: build
+# recent-artifacts-backend:
+#   artifacts:
+#     expire_in: "1 week"
+#     paths:
+#       - backend/target/universal/*.zip
+#   except:
+#     - tags
+#   script:
+#     - "cd backend && sbt dist"
+#   stage: build
 
-recent-artifacts-frontend:
-  artifacts:
-    expire_in: "1 week"
-    paths:
-      - frontend/dist
-  except:
-    - tags
-  script:
-    - "echo $USER"
-    - "echo \"Checking that npm version exists\""
-    - "npm -v"
-    - "cd frontend && npm install && npm run build"
-  stage: build
+# recent-artifacts-frontend:
+#   artifacts:
+#     expire_in: "1 week"
+#     paths:
+#       - frontend/dist
+#   except:
+#     - tags
+#   script:
+#     - "echo $USER"
+#     - "echo \"Checking that npm version exists\""
+#     - "npm -v"
+#     - "cd frontend && npm install && npm run build"
+#   stage: build
 
-release-artifacts-backend:
-  artifacts:
-    paths:
-      - backend/target/universal/*.zip
-  only:
-    - tags
-  script:
-    - "cd backend && sbt dist &&"
-  stage: build
+# release-artifacts-backend:
+#   artifacts:
+#     paths:
+#       - backend/target/universal/*.zip
+#   only:
+#     - tags
+#   script:
+#     - "cd backend && sbt dist &&"
+#   stage: build
 
-release-artifacts-frontend:
-  artifacts:
-    paths:
-      - frontend/dist
-  only:
-    - tags
-  script:
-    - "echo \"Checking that npm version exists\""
-    - "npm -v | echo"
-    - "cd frontend && npm install && npm run build"
-  stage: build
+# release-artifacts-frontend:
+#   artifacts:
+#     paths:
+#       - frontend/dist
+#   only:
+#     - tags
+#   script:
+#     - "echo \"Checking that npm version exists\""
+#     - "npm -v | echo"
+#     - "cd frontend && npm install && npm run build"
+#   stage: build
 
 staging-artifacts-backend:
   artifacts:
@@ -86,6 +86,7 @@ staging-run:
     - sudo cp seng302-team-500 /var/www/dev
     - cd /var/www/dev
     - pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
+    - pm2 logs
   only:
     - ci-testing
   stage: deploy
