@@ -86,8 +86,25 @@ staging-run:
     - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
     - pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
   only:
-    - ci-testing
+    - dev
   stage: deploy
+
+production-run:
+  dependencies:
+    - staging-artifacts-backend
+  script: 
+    - "cd backend/target/universal"
+    - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+    - pm2 delete prod-server || true
+    - sudo rm /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT || true 
+    - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
+    - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/bin
+    - pm2 start "sudo bash seng302-team-500 -Dhttp.port=443" --name=prod-server
+  only:
+    - ci-testing 
+  stage: deploy
+
+
 
 after_script:
   - "sudo chown -R gitlab-runner:gitlab-runner ."
