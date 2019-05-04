@@ -80,11 +80,10 @@ staging-run:
   script: 
     - "cd backend/target/universal"
     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-    - cd seng302-team-500-0.0.1-SNAPSHOT/bin
     - pm2 delete dev-server || true
-    - sudo rm /var/www/dev/seng302-team-500 || true 
-    - sudo cp seng302-team-500 /var/www/dev
-    - cd /var/www/dev
+    - sudo rm /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true 
+    - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
+    - cd /var/www/dev/bin
     - pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
     - pm2 logs
   only:
