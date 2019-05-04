@@ -20,8 +20,11 @@ GET          /api/travellers/passports                 controllers.TravellerCont
 GET          /api/travellers/types                     controllers.TravellerController.getTravellerTypes(request: Request)
 GET          /api/travellers/:travellerId              controllers.TravellerController.getTraveller(travellerId: Int, request: Request)
 PATCH        /api/travellers/:travellerId              controllers.TravellerController.updateTraveller(travellerId: Int, request: Request)
+
+# Traveller photos routes
 GET          /api/travellers/photos/:photoFilename     controllers.TravellerController.getPhoto(photoFilename: String, request: Request)
 DELETE       /api/travellers/photos/:photoFilename     controllers.TravellerController.deletePhoto(photoFilename: String, request: Request)
+GET          /api/travellers/:userId/photos            controllers.TravellerController.getPhotos(userId: Int, request: Request)
 
 
 # Destination Routes

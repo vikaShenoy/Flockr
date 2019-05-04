@@ -42,8 +42,9 @@ public class TravellerController extends Controller {
 
     /**
      * Retrieves a travellers details
+     *
      * @param travellerId the traveller Id of the traveller to retrieve
-     * @param request request Object
+     * @param request     request Object
      * @return traveller details as a Json object
      */
     @With(LoggedIn.class)
@@ -65,8 +66,9 @@ public class TravellerController extends Controller {
 
     /**
      * Updates a travellers details
-      * @param travellerId Redundant ID
-     * @param request Object to get the JSOn data
+     *
+     * @param travellerId Redundant ID
+     * @param request     Object to get the JSOn data
      * @return 200 status if update was successful, 500 otherwise
      */
     @With(LoggedIn.class)
@@ -129,7 +131,7 @@ public class TravellerController extends Controller {
             user.setPassports(passports);
         }
 
-       if (jsonBody.has("travellerTypes")) {
+        if (jsonBody.has("travellerTypes")) {
             JsonNode arrNode = jsonBody.get("travellerTypes");
             ArrayList<TravellerType> travellerTypes = new ArrayList<>();
             for (JsonNode id : arrNode) {
@@ -155,6 +157,7 @@ public class TravellerController extends Controller {
 
     /**
      * A function that gets a list of all the passports and returns a 200 ok code to the HTTP client
+     *
      * @param request Http.Request the HTTP request
      * @return a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -168,6 +171,7 @@ public class TravellerController extends Controller {
 
     /**
      * Gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
+     *
      * @param request <b>Http.Request</b> the http request
      * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
      */
@@ -191,8 +195,9 @@ public class TravellerController extends Controller {
 
     /**
      * A function that adds a passport to a user based on the given user ID
+     *
      * @param travellerId the traveller ID
-     * @param request Object to get the passportId to add
+     * @param request     Object to get the passportId to add
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
@@ -218,8 +223,9 @@ public class TravellerController extends Controller {
 
     /**
      * A function that deletes a passport from a user based on the given user ID
+     *
      * @param travellerId the traveller ID
-     * @param passportId the passport ID
+     * @param passportId  the passport ID
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
@@ -243,8 +249,9 @@ public class TravellerController extends Controller {
 
     /**
      * A function that adds a nationality to the user based on the user ID given
+     *
      * @param travellerId the traveller ID
-     * @param request Object to get the nationality to add.
+     * @param request     Object to get the nationality to add.
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
@@ -268,8 +275,9 @@ public class TravellerController extends Controller {
 
     /**
      * Deletes a nationality for a logged in user given a nationality id in the request body
+     *
      * @param travellerId the traveller for which we want to delete the nationality
-     * @param request the request passed by the routes file
+     * @param request     the request passed by the routes file
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
@@ -299,6 +307,7 @@ public class TravellerController extends Controller {
 
     /**
      * Get a list of all valid traveller types
+     *
      * @param request unused request object
      * @return ok with status 200 if types obtained, 401 if no token is provided
      */
@@ -311,9 +320,9 @@ public class TravellerController extends Controller {
     }
 
 
-
     /**
      * Allows the front-end to search for a traveller.
+     *
      * @param request the Http request sent
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -332,31 +341,41 @@ public class TravellerController extends Controller {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())
                 nationality = Integer.parseInt(nationalityQuery);
-        } catch (Exception e){ System.out.println("No Parameter nationality");}
+        } catch (Exception e) {
+            System.out.println("No Parameter nationality");
+        }
         try {
             String ageMinQuery = request.getQueryString("ageMin");
             if (!ageMinQuery.isEmpty())
                 ageMin = Long.parseLong(ageMinQuery);
-        } catch (Exception e){ System.out.println("No Parameter ageMin");}
+        } catch (Exception e) {
+            System.out.println("No Parameter ageMin");
+        }
         try {
             String ageMaxQuery = request.getQueryString("ageMax");
-            if(!ageMaxQuery.isEmpty())
+            if (!ageMaxQuery.isEmpty())
                 ageMax = Long.parseLong(ageMaxQuery);
-        } catch (Exception e){ System.out.println("No Parameter ageMax");}
+        } catch (Exception e) {
+            System.out.println("No Parameter ageMax");
+        }
         try {
             String travellerTypeQuery = request.getQueryString("travellerType");
             if (!travellerTypeQuery.isEmpty())
                 travellerType = Integer.parseInt(travellerTypeQuery);
-        } catch (Exception e){ System.out.println("No Parameter travellerType");}
+        } catch (Exception e) {
+            System.out.println("No Parameter travellerType");
+        }
         try {
             gender = request.getQueryString("gender");
-        } catch (Exception e){ System.out.println("No Parameter gender");}
+        } catch (Exception e) {
+            System.out.println("No Parameter gender");
+        }
         Date dateMin = new Date(ageMin);
         Date dateMax = new Date(ageMax);
 
-        System.out.println("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
+        System.out.println("nationality=" + nationality + " agemin=" + ageMin + " agemax=" + ageMax + " gender=" + gender + " travellerType=" + travellerType);
 
-        return travellerRepository.searchUser(nationality,gender,dateMin,dateMax,travellerType)  //Just for testing purposes
+        return travellerRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType)  //Just for testing purposes
                 .thenApplyAsync((user) -> {
                     JsonNode userAsJson = Json.toJson(user);
                     System.out.println(userAsJson);
@@ -368,8 +387,9 @@ public class TravellerController extends Controller {
 
     /**
      * This function is responsible for deleting the photo with the given ID
+     *
      * @param photoFilename the hashed filename of the photo to be deleted
-     * @param request the Http request sent
+     * @param request       the Http request sent
      * @return a Play result
      */
     @With(LoggedIn.class)
@@ -379,7 +399,7 @@ public class TravellerController extends Controller {
                     if (!optionalPhoto.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
-                    PersonalPhotos photo = optionalPhoto.get();
+                    PersonalPhoto photo = optionalPhoto.get();
                     ObjectNode message = Json.newObject();
                     message.put("message", "Successfully deleted the given filename photo");
                     return this.travellerRepository.deletePhoto(photo.getPhotoId());
@@ -399,21 +419,40 @@ public class TravellerController extends Controller {
     }
 
     /**
+     * Gets all photos of a given user using the userId as a reference.
+     *
+     * @param userId  the id of the user
+     * @param request the http request
+     * @return a completion stage and a status code 200.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getPhotos(int userId, Http.Request request) {
+        return travellerRepository.getPhotosById(userId)
+                .thenApplyAsync((photos) -> {
+                    JsonNode photosAsJSON = Json.toJson(photos);
+                    System.out.println(photosAsJSON.asText());
+                    return ok(photosAsJSON);
+                });
+    }
+
+    /**
      * Gets a specific photo
+     *
      * @param photoFilename the filename of the photo to retrieve
-     * @param request HTTP request object
+     * @param request       HTTP request object
      * @return ok with 200 if photo found, notFound with 404 if photo not found //TODO: fgr27: add more response types
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhoto(String photoFilename, Http.Request request) {
-        return supplyAsync(()-> {
-                    File photo = new File("./photos/" + photoFilename);
-                    if (!photo.exists()) {
-                        return notFound();
-                    } else {
-                        return ok(photo);
-                    }
-                }, httpExecutionContext.current());
+        return supplyAsync(() -> {
+            // TODO: need to check the database to see if the photo exists there too.
+            File photo = new File("./photos/" + photoFilename);
+            if (!photo.exists()) {
+                return notFound();
+            } else {
+                return ok(photo);
+            }
+        }, httpExecutionContext.current());
     }
 
 }

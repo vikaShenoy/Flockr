@@ -1,15 +1,12 @@
 package models;
 
 import javax.persistence.*;
-import javax.validation.Constraint;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
 import io.ebean.*;
 import io.ebean.annotation.CreatedTimestamp;
-import org.springframework.format.annotation.DateTimeFormat;
-import play.data.format.Formats;
 import play.data.validation.Constraints;
 /**
  * A traveller, who may wish to create trips, go to destinations, book hotels, book flights, etc
@@ -45,6 +42,9 @@ public class User extends Model {
     @ManyToMany(mappedBy = "users")
     public List<Passport> passports;
 
+    @OneToMany
+    private List<PersonalPhoto> personalPhotos;
+
     @Constraints.Required
     @CreatedTimestamp
     @Column(updatable=false)
@@ -52,7 +52,6 @@ public class User extends Model {
 
     @Constraints.Required
     private String passwordHash;
-
 
     private String token;
 
@@ -106,100 +105,108 @@ public class User extends Model {
         return userId;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
     public String getFirstName() {
         return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
     }
 
     public String getMiddleName() {
         return middleName;
     }
 
-    public void setMiddleName(String middleName) {
-        this.middleName = middleName;
-    }
-
     public String getLastName() {
         return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public List<Nationality> getNationalities() {
         return nationalities;
     }
 
-    public void setNationalities(List<Nationality> nationalities) {
-        this.nationalities = nationalities;
-    }
-
     public Date getDateOfBirth() {
         return dateOfBirth;
-    }
-
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
     }
 
     public String getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public List<TravellerType> getTravellerTypes() {
         return travellerTypes;
     }
 
-    public void setTravellerTypes(List<TravellerType> travellerTypes) {
-        this.travellerTypes = travellerTypes;
-    }
-
     public List<Passport> getPassports() {
         return passports;
     }
 
-    public void setPassports(List<Passport> passports) {
-        this.passports = passports;
+    public List<PersonalPhoto> getPersonalPhotos() {
+        return  this.personalPhotos;
     }
 
     public Timestamp getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
-    }
-
     public String getPasswordHash() {
         return passwordHash;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
     public String getToken() {
         return token;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setNationalities(List<Nationality> nationalities) {
+        this.nationalities = nationalities;
+    }
+
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setTravellerTypes(List<TravellerType> travellerTypes) {
+        this.travellerTypes = travellerTypes;
+    }
+
+    public void setPassports(List<Passport> passports) {
+        this.passports = passports;
+    }
+
+    public void setPersonalPhotos(List<PersonalPhoto> personalPhotos) {
+        this.personalPhotos = personalPhotos;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public void setToken(String token) {
@@ -207,7 +214,7 @@ public class User extends Model {
     }
 
     public boolean profileCompleted() {
-        return firstName != null && middleName != null && lastName != null & nationalities.size() != 0 && dateOfBirth != null && gender != null && email != null && travellerTypes.size() != 0 && timestamp != null && passwordHash != null && token != null;
+        return firstName != null && middleName != null && lastName != null && nationalities.size() != 0 && dateOfBirth != null && gender != null && email != null && travellerTypes.size() != 0 && timestamp != null && passwordHash != null && token != null;
     }
 
     /**
