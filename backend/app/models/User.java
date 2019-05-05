@@ -135,7 +135,6 @@ public class User extends Model {
                 return true;
             }
         }
-        System.out.println(String.format("User %s with roles %s was not found to be defaultAdmin", this.firstName, this.roles));
         return false;
     }
 
