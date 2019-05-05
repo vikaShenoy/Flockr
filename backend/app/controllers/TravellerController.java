@@ -19,8 +19,10 @@ import javax.inject.Inject;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -60,10 +62,13 @@ public class TravellerController extends Controller {
         return getUser
                 .thenApplyAsync((optUser) -> {
                     if (!optUser.isPresent()) {
-                        return notFound();
+                        ObjectNode message = Json.newObject().put("message", "User with id " + travellerId + " was not found");
+                        return notFound(message);
                     }
 
                     JsonNode userAsJson = Json.toJson(optUser.get());
+
+                    System.out.println("Returning user: " + userAsJson);
 
                     return ok(userAsJson);
 
@@ -290,7 +295,7 @@ public class TravellerController extends Controller {
 
 
     /**
-     * Retrieve user roles from reqquest body and update the specified user so they
+     * Retrieve user roles from request body and update the specified user so they
      * have these roles.
      * @param travellerId user to have roles updated
      * @param request HTTP request
@@ -354,6 +359,82 @@ public class TravellerController extends Controller {
 
 
     /**
+     * Delete a user given its id
+     * @param userId the id of the user to be deleted
+     * @param request the request passed by the controller
+     * @return
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> deleteUser(int userId, Http.Request request) {
+        User userDoingDeletion = request.attrs().get(ActionState.USER);
+        final ObjectNode message = Json.newObject();; // used in the response
+
+        boolean includeAllUserFields = true; // the current implementation will hide "sensitive" fields depending on the boolean taken in by travellerResposity.getUserById
+
+        return travellerRepository.getUserById(userId, includeAllUserFields)
+            .thenApplyAsync((optionalUserBeingDeleted) -> {
+                if (!optionalUserBeingDeleted.isPresent()) {
+                    // check that the user being deleted actually exists
+                    message.put("message", "Did not find user with id " + userId);
+                    return notFound(message);
+                }
+
+                User userBeingDeleted = optionalUserBeingDeleted.get();
+                if (userBeingDeleted.isDefaultAdmin()) {
+                    // if user is the default admin, leave it alone
+                    message.put("message", "No one can delete the default admin");
+                    return unauthorized(message);
+                } else if (userBeingDeleted.isAdmin()) {
+                    if (userDoingDeletion.isAdmin() || userDoingDeletion.isDefaultAdmin()) {
+                        // only admins and the default admin can delete admins
+                        message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
+                        CompletionStage<Result> completionStage = travellerRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                        CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
+                        try {
+                            return completableFuture.get();
+                        } catch (InterruptedException | ExecutionException e) {
+                            System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
+                            message.put("message", "Something went wrong deleting that user, try again");
+                            return internalServerError(message);
+                        }
+                    } else {
+                        message.put("message", "Only admins or the default admin can delete other admins");
+                        return unauthorized(message);
+                    }
+                } else {
+                    if (userDoingDeletion.equals(userBeingDeleted) && !userBeingDeleted.isDefaultAdmin()) {
+                        // a user can delete itself
+                        message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
+                        CompletionStage<Result> completionStage = travellerRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                        CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
+                        try {
+                            return completableFuture.get();
+                        } catch (InterruptedException | ExecutionException e) {
+                            System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
+                            message.put("message", "Something went wrong deleting that user, try again");
+                            return internalServerError(message);
+                        }
+                    } else if ((userDoingDeletion.isAdmin() && !userBeingDeleted.isDefaultAdmin()) || userDoingDeletion.isDefaultAdmin()) {
+                        message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
+                        CompletionStage<Result> completionStage = travellerRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                        CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
+                        try {
+                            return completableFuture.get();
+                        } catch (InterruptedException | ExecutionException e) {
+                            System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
+                            message.put("message", "Something went wrong deleting that user, try again");
+                            return internalServerError(message);
+                        }
+                    } else {
+                        message.put("message", "Regular users can not delete other regular users");
+                        return unauthorized(message);
+                    }
+                }
+            }, httpExecutionContext.current());
+    }
+
+
+    /**
      * A function that deletes a passport from a user based on the given user ID
      * @param travellerId the traveller ID
      * @param passportId the passport ID
@@ -372,7 +453,6 @@ public class TravellerController extends Controller {
                     passports.remove(passport.get());
                     user.setPassports(passports);
                     user.save();
-                    System.out.println(user.getPassports());
                     return ok();
                 }, httpExecutionContext.current());
     }

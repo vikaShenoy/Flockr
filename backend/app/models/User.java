@@ -125,6 +125,34 @@ public class User extends Model {
         this.token = token;
     }
 
+    /**
+     * Return true if the user is the default admin
+     * @return true if the user is the default admin
+     */
+    public boolean isDefaultAdmin() {
+        for (Role r : roles) {
+            if (r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
+                return true;
+            }
+        }
+        System.out.println(String.format("User %s with roles %s was not found to be defaultAdmin", this.firstName, this.roles));
+        return false;
+    }
+
+
+    /**
+     * Return true if the user is an admin
+     * @return true if the user is an admin
+     */
+    public boolean isAdmin() {
+        for (Role r : roles) {
+            if (r.getRoleType().equals(RoleType.ADMIN.toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public int getUserId() {
         return userId;

@@ -73,6 +73,11 @@ public class FakePlayClient implements FakeClient {
         req.put("email", user.getEmail());
         req.put("password", password);
         Result res = this.makeRequestWithNoToken("POST", req, "/api/auth/users/login");
+        try {
+            JsonNode resAsJson = PlayResultToJson.convertResultToJson(res);
+        } catch(IOException e) {
+            throw new FailedToLoginException("Could not convert result to JSON: " + e);
+        }
 
         // check that we logged in successfully
         boolean wasLoggedInSuccessfully = res.status() == 200;

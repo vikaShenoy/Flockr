@@ -64,18 +64,17 @@ public class TravellerRepository {
     /**
      * Gets a user/traveller by their ID
      * @param userId The ID of the user to get
+     * @param isSelf if true you get fields like email, auth token, etc
      * @return the user object
      */
     public CompletionStage<Optional<User>> getUserById(int userId, boolean isSelf) {
         return supplyAsync(() -> {
-
-
-
             Query<User> userQuery = User.find
                     .query().setDisableLazyLoading(true)
                     .fetch("nationalities")
                     .fetch("travellerTypes")
-                    .fetch("passports");
+                    .fetch("passports")
+                    .fetch("roles");
 
             if (!isSelf) {
                 userQuery.select("userId,firstName,middleName,lastName,nationalities,dateOfBirth,gender,travellerTypes,passports");
@@ -166,6 +165,17 @@ public class TravellerRepository {
                     .isNotEmpty("travellerTypes")
                     .findList();
             return user;
+        }, executionContext);
+    }
+
+    /**
+     * Delete a user given its id
+     * @param userId the id of the user being deleted
+     * @return <code>CompletionStage<Void></code>
+     */
+    public CompletionStage<Void> deleteUserById(Integer userId) {
+        return runAsync(() -> {
+            User.find.deleteById(userId);
         }, executionContext);
     }
 

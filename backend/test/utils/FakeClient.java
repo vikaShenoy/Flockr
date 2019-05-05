@@ -15,14 +15,14 @@ public interface FakeClient {
      * Make a request (with a body) to the application, while not providing an authorisation token.
      * @param method the HTTP request method e.g. "POST", "GET", "DELETE", etc
      * @param reqBody the body of the request
-     * @param endpoint the backend endpoint that the request is going to, e.g. "/api/users/2", "api/internal/resample"
+     * @param endpoint the backend endpoint that the request is going to, e.g. "/api/users/2", "/api/internal/resample"
      */
     Result makeRequestWithNoToken(String method, ObjectNode reqBody, String endpoint);
 
     /**
      * Make a request (with no body) to the application, while not providing an authorisation token.
      * @param method the HTTP request method e.g. "POST", "GET", "DELETE", etc
-     * @param endpoint the backend endpoint that the request is going to, e.g. "/api/users/2", "api/internal/resample"
+     * @param endpoint the backend endpoint that the request is going to, e.g. "/api/users/2", "/api/internal/resample"
      */
     Result makeRequestWithNoToken(String method, String endpoint);
 
@@ -30,7 +30,7 @@ public interface FakeClient {
      * Make a request (with a body) to the application, providing an authorisation token.
      * @param method the HTTP request method e.g. "POST", "GET", "DELETE", etc
      * @param reqBody the body of the request
-     * @param endpoint the backend endpoint that the request is going to, e.g. "/api/users/2", "api/internal/resample"
+     * @param endpoint the backend endpoint that the request is going to, e.g. "/api/users/2", "/api/internal/resample"
      * @param authToken the token for the logged in user
      */
     Result makeRequestWithToken(String method, ObjectNode reqBody, String endpoint, String authToken);
@@ -38,7 +38,7 @@ public interface FakeClient {
     /**
      * Make a request (with no body) to the application, providing an authorisation token.
      * @param method the HTTP request method e.g. "POST", "GET", "DELETE", etc
-     * @param endpoint the backend endpoint that the request is going to, e.g. "/api/users/2", "api/internal/resample"
+     * @param endpoint the backend endpoint that the request is going to, e.g. "/api/users/2", /"api/internal/resample"
      * @param authToken the token for the logged in user
      */
     Result makeRequestWithToken(String method, String endpoint, String authToken);

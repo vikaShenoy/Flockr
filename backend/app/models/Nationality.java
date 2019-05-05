@@ -22,6 +22,13 @@ public class Nationality extends Model {
         this.nationalityName = nationalityCountry;
     }
 
+    @Override
+    public String toString() {
+        return "Nationality{" +
+                "nationalityId=" + nationalityId +
+                ", nationalityName='" + nationalityName + '\'' +
+                '}';
+    }
 
     public int getNationalityId() {
         return nationalityId;

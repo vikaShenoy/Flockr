@@ -19,6 +19,14 @@ public class Role extends Model {
 
     private String roleType;
 
+    @Override
+    public String toString() {
+        return "Role{" +
+                "roleId=" + roleId +
+                ", roleType='" + roleType + '\'' +
+                '}';
+    }
+
     public int getRoleId() {
         return roleId;
     }
