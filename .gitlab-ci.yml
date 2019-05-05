@@ -76,7 +76,7 @@ tag_checker:
 
 staging-run:
   dependencies:
-    - release-artifacts-backend
+    - staging-artifacts-backend
   script: 
     - "cd backend/target/universal"
     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
@@ -91,7 +91,7 @@ staging-run:
 
 production-run:
   dependencies:
-    - staging-artifacts-backend
+    - release-artifacts-backend
   script: 
     - "cd backend/target/universal"
     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
