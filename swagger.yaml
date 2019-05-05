@@ -1406,6 +1406,9 @@ components:
           type: integer
           nullable: true
           description: Specified as a unix timestamp
+        email:
+          type: string
+          nullable: true
         gender:
           type: string
           nullable: true
