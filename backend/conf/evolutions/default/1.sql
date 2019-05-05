@@ -60,8 +60,8 @@ create table passport_user (
 create table personal_photo (
   photo_id                      integer auto_increment not null,
   user_user_id                  integer,
+  is_public                     boolean default false not null,
   filename_hash                 varchar(255),
-  is_primary                    boolean default false not null,
   constraint pk_personal_photo primary key (photo_id)
 );
 
@@ -109,9 +109,11 @@ create table user (
   date_of_birth                 timestamp,
   gender                        varchar(255),
   email                         varchar(255),
+  profile_photo_photo_id        integer,
   password_hash                 varchar(255),
   token                         varchar(255),
   timestamp                     timestamp not null,
+  constraint uq_user_profile_photo_photo_id unique (profile_photo_photo_id),
   constraint pk_user primary key (user_id)
 );
 
@@ -164,6 +166,8 @@ alter table trip_destination add constraint fk_trip_destination_trip_trip_id for
 create index ix_trip_destination_destination_destination_id on trip_destination (destination_destination_id);
 alter table trip_destination add constraint fk_trip_destination_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
 
+alter table user add constraint fk_user_profile_photo_photo_id foreign key (profile_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
+
 
 # --- !Downs
 
@@ -208,6 +212,8 @@ drop index if exists ix_trip_destination_trip_trip_id;
 
 alter table trip_destination drop constraint if exists fk_trip_destination_destination_destination_id;
 drop index if exists ix_trip_destination_destination_destination_id;
+
+alter table user drop constraint if exists fk_user_profile_photo_photo_id;
 
 drop table if exists country;
 

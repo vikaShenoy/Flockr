@@ -45,6 +45,9 @@ public class User extends Model {
     @OneToMany
     private List<PersonalPhoto> personalPhotos;
 
+    @OneToOne
+    private PersonalPhoto profilePhoto;
+
     @Constraints.Required
     @CreatedTimestamp
     @Column(updatable=false)
@@ -211,6 +214,10 @@ public class User extends Model {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public void setProfilePhoto(PersonalPhoto profilePhoto) {
+        this.profilePhoto = profilePhoto;
     }
 
     public boolean profileCompleted() {
