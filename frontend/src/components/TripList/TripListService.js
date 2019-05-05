@@ -72,9 +72,6 @@ export function transformTrips(trips) {
   return trips.map(trip => {
     const tripStart = findStart(trip.tripDestinations);
     const tripEnd = findEnd(trip.tripDestinations);
-    
-    console.log("The tripStart is: ", tripStart.format("DD/MM/YYYY HH:mm"));
-    console.log("The tripEnd is: ", tripEnd.format("DD/MM/YYYY HH:mm"));
 
     const currentTime = moment();
 
@@ -101,72 +98,20 @@ export function transformTrips(trips) {
 }
 
 /**
- * Sorts the trips by the trip start date
+ * Sorts the trips by the trip start date. If the trip doesn't have a start date, the trip
+ * gets put at the top
  * @param {Object[]} trips
  */
 export function sortTrips(trips) {
   return trips.sort((tripA, tripB) => {
     const startA = findStart(tripA.tripDestinations);
     const startB = findStart(tripB.tripDestinations);
-    return startA - startB;
+
+    return startA ? startA.isBefore(startB) : true;
   });
-
-  /*        tripA.departureDateMenu
-        const tripAStart = findStart(tripA.tripDestinations);
-        const tripBStart = findStart(tripB.tripDestinations);
-        const tripAEnd = findStart(tripA.tripDestinations);
-        const tripBEnd = findStart(tripB.tripDestinations);
-
-        if (tripAStart.) {
-            return 1;
-        } else {
-            return -1;
-        }*/
-
-  /*        return trips.map(trip => {
-                const start = findStart(trip.tripDestinations);
-                const end = findEnd(trip.tripDestinations);
-                if (!start && !end) {
-                    let index = trips.indexOf(trip);
-                    trips.splice(index, 1);
-                    trips.splice(0, 0, trip);
-                }
-
-                return trip;
-            });*/
-  /*
-        let tripsWithUnknownStartDates = [];
-        trips.map(trip => {
-            const start = findStart(trip.tripDestinations);
-            const end = findEnd(trip.tripDestinations);
-            if (!start && !end) {
-                let index = trips.indexOf(trip);
-                tripsWithUnknownStartDates.push(index);
-            }
-        });
-
-        return trips.map(trip => {
-            let count = 0;
-            for (let i = 0; i < tripsWithUnknownStartDates.length; i++) {
-                trips.splice(tripsWithUnknownStartDates.get(i), 1);
-                trips.splice(count, 0, trip);
-            }
-        });*/
-
-  /*
-            // If the trip doesn't have a start and an end, it's placed at the top.
-            if (!tripStartA && !tripEndA) {
-                tripsWithNoDates.push(tripA);
-            }
-            if (!tripStartB && !tripEndB) {
-                tripsWithNoDates.push(tripB);
-            }
-
-            if (tripStartA < tripStartB) {
-                sortedTrips.push(tripA);
-                sortedTrips.push(tripB);
-            } else {
-                sortedTrips.push(tripB);
-                sortedTrips.push(tripA);
-            }*/
 }
+
+
+
+
+

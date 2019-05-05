@@ -1,8 +1,7 @@
 <template>
   <div class="trips-container">
-    <div v-if="trips" class="col-md-8 offset-md-2">
-      <TripItem v-for="trip in trips" v-bind:key="trip.tripId" :trip="trip"/>
-    </div>
+    
+    <TripList :userId="userId" />
 
     <v-btn
       id="add-trip"
@@ -20,37 +19,17 @@
 
 
 <script>
-import { getTrips, transformTrips, sortTrips } from "./TripsService.js";
-import TripItem from "./TripItem/TripItem";
+import TripList from "../../components/TripList/TripList";
 
 export default {
   components: {
-    TripItem
+    TripList
   },
   data() {
     return {
-      trips: null
+      // Used to know what user to get trips from 
+      userId: localStorage.getItem("userId")
     };
-  },
-  mounted() {
-    this.getTrips();
-  },
-  methods: {
-    async getTrips() {
-      try {
-        const userId = localStorage.getItem("userId");
-        const trips = await getTrips(userId);
-        const sortedTrips = sortTrips(trips);
-        const tripsTransformed = transformTrips(sortedTrips);
-
-        //const sortedTrips = sortTrips(tripsTransformed);
-
-        this.trips = tripsTransformed;
-      } catch (e) {
-        console.log(e);
-        // Add error handling later 
-      }
-    }
   }
 };
 </script>

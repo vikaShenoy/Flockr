@@ -110,7 +110,7 @@ export default {
       arrivalTimeMenu: false,
       departureDateMenu: false,
       departureTimeMenu: false,
-      currentDate: moment().format("YYY-MM-DD")
+      currentDate: moment().format("YYYY-MM-DD")
     };
   },
   methods: {
