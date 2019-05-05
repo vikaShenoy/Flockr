@@ -103,11 +103,21 @@ export function transformTrips(trips) {
  * @param {Object[]} trips
  */
 export function sortTrips(trips) {
+  console.log(trips);
   return trips.sort((tripA, tripB) => {
     const startA = findStart(tripA.tripDestinations);
     const startB = findStart(tripB.tripDestinations);
 
-    return startA ? startA.isBefore(startB) : true;
+    // Will put trips that don't have any dates at the top
+    if (!startA) {
+      return -1;
+    }
+
+    if (startA.isSame(startB)) {
+      return tripA.tripId - tripB.tripId;
+    } else {
+      return startA.unix() - startB.unix();
+    }
   });
 }
 
