@@ -107,6 +107,10 @@ public class TravellerController extends Controller {
                         user.get().setLastName(jsonBody.get("lastName").asText());
                     }
 
+                    if (jsonBody.has("email")) {
+                        user.get().setEmail(jsonBody.get("email").asText());
+                    }
+
                     if (jsonBody.has("dateOfBirth")) {
                         try {
                             String incomingDate = jsonBody.get("dateOfBirth").asText();
