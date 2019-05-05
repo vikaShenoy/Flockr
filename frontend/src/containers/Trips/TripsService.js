@@ -1,5 +1,5 @@
 import superagent from "superagent";
-import {endpoint} from "../../utils/endpoint";
+import { endpoint } from "../../utils/endpoint";
 import moment from "moment";
 
 /**
@@ -8,11 +8,10 @@ import moment from "moment";
  * @return {Object} The users trips
  */
 export async function getTrips(userId) {
-    const authToken = localStorage.getItem("authToken");
+  const authToken = localStorage.getItem("authToken");
 
-    const res = await superagent.get(endpoint(`/travellers/${userId}/trips`))
-        .set("Authorization", authToken);
-    return res.body;
+  const res = await superagent.get(endpoint(`/travellers/${userId}/trips`)).set("Authorization", authToken);
+  return res.body;
 }
 
 /**
@@ -20,24 +19,24 @@ export async function getTrips(userId) {
  * @param {Object[]} tripDestinations
  */
 export function findStart(tripDestinations) {
-    for (const tripDestination of tripDestinations) {
-        if (tripDestination.arrivalDate) {
-            if (tripDestination.arrivalTime) {
-                return moment(tripDestinations.arrivalDate).add(moment.duration(tripDestination.arrivalTime, "minutes"));
-            } else {
-                return moment(tripDestination.arrivalDate);
-            }
-        }
-
-        if (tripDestination.departureDate) {
-            if (tripDestination.departureTime) {
-                return moment(tripDestinations.departureDate).add(moment.duration(tripDestination.departureTime, "minutes"));
-            } else {
-                return moment(tripDestination.departureDate);
-            }
-        }
+  for (const tripDestination of tripDestinations) {
+    if (tripDestination.arrivalDate) {
+      if (tripDestination.arrivalTime) {
+        return moment(tripDestination.arrivalDate).add(moment.duration(tripDestination.arrivalTime, "minutes"));
+      } else {
+        return moment(tripDestination.arrivalDate);
+      }
     }
-    return false;
+
+    if (tripDestination.departureDate) {
+      if (tripDestination.departureTime) {
+        return moment(tripDestination.departureDate).add(moment.duration(tripDestination.departureTime, "minutes"));
+      } else {
+        return moment(tripDestination.departureDate);
+      }
+    }
+  }
+  return false;
 }
 
 /**
@@ -45,24 +44,24 @@ export function findStart(tripDestinations) {
  * @param {Object[]} tripDestinations
  */
 export function findEnd(tripDestinations) {
-    for (let i = tripDestinations.length - 1; i > -1; i--) {
-        if (tripDestinations[i].departureDate) {
-            if (tripDestinations[i].departureTime) {
-                return moment(tripDestinations[i].departureDate).add(moment.duration(tripDestinations[i].departureTime, "minutes"));
-            } else {
-                return moment(tripDestinations[i].departureDate);
-            }
-        }
-
-        if (tripDestinations[i].arrivalDate) {
-            if (tripDestinations[i].arrivalTime) {
-                return moment(tripDestinations[i].arrivalDate).add(moment.duration(tripDestinations[i].arrivalTime, "minutes"));
-            } else {
-                return moment(tripDestinations[i].arrivalDate);
-            }
-        }
+  for (let i = tripDestinations.length - 1; i > -1; i--) {
+    if (tripDestinations[i].departureDate) {
+      if (tripDestinations[i].departureTime) {
+        return moment(tripDestinations[i].departureDate).add(moment.duration(tripDestinations[i].departureTime, "minutes"));
+      } else {
+        return moment(tripDestinations[i].departureDate);
+      }
     }
-    return false;
+
+    if (tripDestinations[i].arrivalDate) {
+      if (tripDestinations[i].arrivalTime) {
+        return moment(tripDestinations[i].arrivalDate).add(moment.duration(tripDestinations[i].arrivalTime, "minutes"));
+      } else {
+        return moment(tripDestinations[i].arrivalDate);
+      }
+    }
+  }
+  return false;
 }
 
 /**
@@ -70,32 +69,35 @@ export function findEnd(tripDestinations) {
  * @param {Object[]} trips
  */
 export function transformTrips(trips) {
+  return trips.map(trip => {
+    const tripStart = findStart(trip.tripDestinations);
+    const tripEnd = findEnd(trip.tripDestinations);
+    
+    console.log("The tripStart is: ", tripStart.format("DD/MM/YYYY HH:mm"));
+    console.log("The tripEnd is: ", tripEnd.format("DD/MM/YYYY HH:mm"));
 
-    return trips.map(trip => {
-        const tripStart = findStart(trip.tripDestinations);
-        const tripEnd = findEnd(trip.tripDestinations);
-        const currentTime = moment();
+    const currentTime = moment();
 
-        let tripStatus;
+    let tripStatus;
 
-        if (!tripStart || !tripEnd) {
-            tripStatus = "Unknown";
-        } else if (currentTime.isAfter(tripStart) && currentTime.isBefore(tripEnd)) {
-            tripStatus = "Ongoing";
-        } else if (currentTime.isBefore(tripStart)) {
-            tripStatus = "Upcoming";
-        } else if (currentTime.isAfter(tripEnd)) {
-            tripStatus = "Passed";
-        } else {
-            tripStatus = "Unknown";
-        }
+    if (!tripStart || !tripEnd) {
+      tripStatus = "Unknown";
+    } else if (currentTime.isAfter(tripStart) && currentTime.isBefore(tripEnd)) {
+      tripStatus = "Ongoing";
+    } else if (currentTime.isBefore(tripStart)) {
+      tripStatus = "Upcoming";
+    } else if (currentTime.isAfter(tripEnd)) {
+      tripStatus = "Passed";
+    } else {
+      tripStatus = "Unknown";
+    }
 
-        return {
-            tripId: trip.tripId,
-            tripName: trip.tripName,
-            status: tripStatus
-        };
-    });
+    return {
+      tripId: trip.tripId,
+      tripName: trip.tripName,
+      status: tripStatus,
+    };
+  });
 }
 
 /**
@@ -103,15 +105,13 @@ export function transformTrips(trips) {
  * @param {Object[]} trips
  */
 export function sortTrips(trips) {
-    return trips.sort((tripA, tripB) => {
-        const startA = findStart(tripA.tripDestinations);
-        const startB = findStart(tripB.tripDestinations);
-        console.log(startA);
-        console.log(startB);
-        return startA - startB;
-    });
+  return trips.sort((tripA, tripB) => {
+    const startA = findStart(tripA.tripDestinations);
+    const startB = findStart(tripB.tripDestinations);
+    return startA - startB;
+  });
 
-    /*        tripA.departureDateMenu
+  /*        tripA.departureDateMenu
         const tripAStart = findStart(tripA.tripDestinations);
         const tripBStart = findStart(tripB.tripDestinations);
         const tripAEnd = findStart(tripA.tripDestinations);
@@ -123,7 +123,7 @@ export function sortTrips(trips) {
             return -1;
         }*/
 
-    /*        return trips.map(trip => {
+  /*        return trips.map(trip => {
                 const start = findStart(trip.tripDestinations);
                 const end = findEnd(trip.tripDestinations);
                 if (!start && !end) {
@@ -134,7 +134,7 @@ export function sortTrips(trips) {
 
                 return trip;
             });*/
-    /*
+  /*
         let tripsWithUnknownStartDates = [];
         trips.map(trip => {
             const start = findStart(trip.tripDestinations);
@@ -153,7 +153,7 @@ export function sortTrips(trips) {
             }
         });*/
 
-    /*
+  /*
             // If the trip doesn't have a start and an end, it's placed at the top.
             if (!tripStartA && !tripEndA) {
                 tripsWithNoDates.push(tripA);
@@ -169,8 +169,4 @@ export function sortTrips(trips) {
                 sortedTrips.push(tripB);
                 sortedTrips.push(tripA);
             }*/
-
 }
-
-
-
