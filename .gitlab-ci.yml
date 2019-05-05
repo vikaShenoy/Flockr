@@ -62,7 +62,7 @@ staging-artifacts-backend:
     paths:
       - backend/target/universal/*.zip
   only:
-    - ci-testing
+    - dev
   script:
     - "cd backend && NODE_ENV=staging sbt dist"
   stage: build
@@ -76,7 +76,7 @@ tag_checker:
 
 staging-run:
   dependencies:
-    - staging-artifacts-backend
+    - release-artifacts-backend
   script: 
     - "cd backend/target/universal"
     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
