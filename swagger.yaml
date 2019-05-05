@@ -343,6 +343,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+                
+                
+  '/users/{userId}/roles':
+    patch:
+      tags:
+        - users
+      summary: Updates a user's list of roles\
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateUserRole'
+      responses:
+        '200':
+          description: User has succesfully been updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   '/destinations/types':
     get:
       tags:
@@ -944,8 +989,242 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  '/users/photos/{photoId}':
+    get:
+      tags:
+        - users
+      summary: Get a specific photo
+      parameters:
+        - in: path
+          name: photoId
+          description: The ID of the photo that we wish to retrieve
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved photo
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  '/users/photos':
+    post:
+      tags:
+        - users
+      summary: Upload a new photo
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+      responses:
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Forbidden to post photo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'              
+                
+  '/users/{userId}/photos':
+    get:
+      tags:
+        - users
+      summary: Get details for all of a users photos
+      parameters:
+        - in: path
+          name: userId
+          description: The ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved photos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userPhotos'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        
+  '/users/{userId}/photos/{photoId}':
+    patch:
+      tags:
+        - users
+      summary: Add or remove a permission group to the photo
+      parameters:
+        - in: path
+          name: userId
+          description: The ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+        - in: path    
+          name: photoId 
+          description: The ID of the photo
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateUserPhoto'      
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully updated permission groups
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  '/users/photos/{photoFilename}':
+    delete:
+      tags:
+        - users
+      summary: Delete a specific photo
+      parameters:
+        - in: path
+          name: photoFilename
+          description: The filename of the photo
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully deleted photo
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'              
+      
 components:
   schemas:
+    updateUserRole:
+      type: object
+      properties:
+        roleTypes:
+          type: array
+          items:
+            type: string
     response:
       type: object
       properties:
@@ -1028,6 +1307,30 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/user'
+        
+    
+    userPhotos:
+      type: array
+      items:
+        $ref: '#/components/schemas/userPhoto'
+     
+    userPhoto:
+      type: object
+      properties:
+        photoId:
+          type: integer
+        isPrimary:
+          type: boolean
+          
+    updateUserPhoto:
+      type: object
+      properties:
+        permissionGroups:
+          type: array
+          items:
+              type: string
+              
+          
     error:
       type: object
       properties:
