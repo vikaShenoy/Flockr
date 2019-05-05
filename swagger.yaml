@@ -1039,109 +1039,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
                 
-  '/users/photos':
-    post:
-      tags:
-        - photos
-      summary: Upload a new photo
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: header
-          name: Content-Type
-          schema:
-            type: string
-            format: uuid
-          required: true
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                image:
-                  type: string
-                  format: binary
-                isPublic:
-                  type: boolean
-      responses:
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '403':
-          description: >-
-            Forbidden to post photo
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'              
-                
-  '/users/{userId}/photos':
-    get:
-      tags:
-        - photos
-      summary: Get details for all of a users photos
-      parameters:
-        - in: path
-          name: userId
-          description: The ID of the user
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-      security:
-        - cookieAuth: []
-      responses:
-        '200':
-          description: Successfully retrieved photos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/userPhotos'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '403':
-          description: >-
-            Profile has not been completed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        
-  '/users/{userId}/photos/{photoId}/permissions':
     put:
       tags:
         - photos
       summary: Make a photo public or private
       parameters:
-        - in: path
-          name: userId
-          description: The ID of the user
-          required: true
-          schema:
-            type: integer
-            minimum: 0
         - in: path    
           name: photoId 
           description: The ID of the photo
@@ -1181,7 +1083,102 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/error'              
+                
+  '/users/{userId}/photos':
+    post:
+      tags:
+        - photos
+      summary: Upload a new photo
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: header
+          name: Content-Type
+          schema:
+            type: string
+            format: uuid
+          required: true
+        - in: path
+          name: userId
+          description: The id of the user to post a photo for
+          schema:
+            type: integer
+            minimum: 0
+          required: true  
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                isPublic:
+                  type: boolean
+      responses:
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Forbidden to post photo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error' 
+    get:
+      tags:
+        - photos
+      summary: Get details for all of a users photos
+      parameters:
+        - in: path
+          name: userId
+          description: The ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved photos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userPhotos'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'              
                 
   '/users/photos/{photoFilename}':
     delete:
