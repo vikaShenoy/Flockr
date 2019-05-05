@@ -1,73 +1,83 @@
-<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<template>
+  <div>
     <v-dialog
-            id="AddPhotoDialog"
-            v-model="dataDialog"
-            width="80%">
+      v-model="imageDialog"
+      max-width="800px"
+    >
+    <UploadPhoto />
+   </v-dialog>
 
-        <template v-slot:activator="{ on }">
-            <v-btn
-                    color="secondary"
-                    v-on="on"
-                    outline
-                    ><v-icon>add</v-icon></v-btn>
-        </template>
+    <v-btn
+      color="secondary"
+      @click="showImageDialog"
+      outline
+    >
+      <v-icon>add</v-icon>
+    </v-btn>
 
-        <v-card>
-            Add the add new photo stuff here.
-        </v-card>
 
-    </v-dialog>
+    <input
+      type="file"
+      style="display: none"
+      ref="image"
+      accept="image/*"
+      @change="onFilePicked"
+    />
+
+  </div>
 </template>
 
 <script>
-  export default {
+import UploadPhoto from "./UploadPhoto/UploadPhoto";
 
-    name: "add-photo-dialog",
+export default {
+  components: {
+    UploadPhoto
+  },
+  name: "add-photo-dialog",
+  data() {
+    return {
+      imageDialog: false,
+    };
+  },
 
-    data() {
-      return {
-        dataDialog: false
-      }
+  props: {
+    dialog: {
+      type: Boolean,
+      required: true
+    }
+  },
+  watch: {
+    dialog: {
+      handler: "onDialogChanged",
+      immediate: true
+    }
+  },
+
+  methods: {
+    /**
+     * Called when the dataDialog variable is modified.
+     * Emits an event called dialogChangedEvent with a parameter of the dataDialog variable
+     */
+    closeDialog: function() {
+      this.$emit("closeDialog");
     },
-
-    props: {
-      dialog: {
-        type: Boolean,
-        required: true
-      },
+    onFilePicked() {
+        console.log("I have picked the photo"); 
     },
-
-    watch: {
-
-      "dialog": {
-        handler: "onDialogChanged",
-        immediate: true
-      }
-
+    showImageDialog() {
+      this.imageDialog = true;
     },
-
-    methods: {
-
-      /**
-       * Called when the dataDialog variable is modified.
-       * Emits an event called dialogChangedEvent with a parameter of the dataDialog variable
-       */
-      closeDialog: function () {
-        this.$emit("closeDialog");
-      },
-
-      /**
-       * Called when the dialog prop is changed.
-       * Updates the dataDialog variable to match the dialog prop.
-       */
-      onDialogChanged: function () {
-        this.dataDialog = this.dialog;
-      }
-
+    /**
+     * Called when the dialog prop is changed.
+     * Updates the dataDialog variable to match the dialog prop.
+     */
+    onDialogChanged: function() {
+      this.dataDialog = this.dialog;
     }
   }
+};
 </script>
 
 <style scoped>
-
 </style>

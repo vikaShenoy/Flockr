@@ -16,6 +16,7 @@
     "superagent": "^4.1.0",
     "vue": "^2.6.6",
     "vue-router": "^3.0.2",
+    "vue2-dropzone": "^3.5.9",
     "vuejs-datepicker": "^1.5.4",
     "vuetify": "^1.5.5"
   },
