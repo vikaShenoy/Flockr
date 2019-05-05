@@ -77,7 +77,7 @@ public class TravellerRepository {
                     .fetch("roles");
 
             if (!isSelf) {
-                userQuery.select("userId,firstName,middleName,lastName,nationalities,dateOfBirth,gender,travellerTypes,passports");
+                userQuery.select("userId,firstName,middleName,lastName,nationalities,dateOfBirth,gender,travellerTypes,passports,roles");
             }
 
             Optional<User> user = userQuery.where()

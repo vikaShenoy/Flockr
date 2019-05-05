@@ -58,9 +58,6 @@ public class AdminSteps {
         Guice.createInjector(builder.applicationModule()).injectMembers(this);
 
         Helpers.start(application);
-
-        Role role = new Role(RoleType.TRAVELLER);
-        role.save();
     }
 
     @After

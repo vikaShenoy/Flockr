@@ -146,13 +146,12 @@ public class User extends Model {
      */
     public boolean isAdmin() {
         for (Role r : roles) {
-            if (r.getRoleType().equals(RoleType.ADMIN.toString())) {
+            if (r.getRoleType().equals(RoleType.ADMIN.toString()) || r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
                 return true;
             }
         }
         return false;
     }
-
 
     public int getUserId() {
         return userId;

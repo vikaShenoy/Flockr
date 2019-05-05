@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import play.libs.concurrent.HttpExecutionContext;
+import util.Security;
 
 /**
  * Contains all endpoints associated with travellers
@@ -34,11 +35,13 @@ import play.libs.concurrent.HttpExecutionContext;
 public class TravellerController extends Controller {
     private final TravellerRepository travellerRepository;
     private HttpExecutionContext httpExecutionContext;
+    private final Security security;
 
     @Inject
-    public TravellerController(TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext) {
+    public TravellerController(TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext, Security security) {
         this.travellerRepository = travellerRepository;
         this.httpExecutionContext = httpExecutionContext;
+        this.security = security;
     }
 
     /**
@@ -82,26 +85,19 @@ public class TravellerController extends Controller {
      * @param request Object to get the JSOn data
      * @return 200 status if update was successful, 500 otherwise
      */
-    @With({LoggedIn.class, Admin.class})
+    @With({LoggedIn.class})
     public CompletionStage<Result> updateTraveller(int travellerId, Http.Request request) {
         JsonNode jsonBody = request.body().asJson();
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        CompletionStage<Optional<User>> userToUpdate;
-        // User user = request.attrs().get(ActionState.USER);
-        if (travellerId == -1) {
-            userToUpdate = travellerRepository.getUserById(request.attrs().get(ActionState.USER).getUserId(), true);
-        } else {
-            userToUpdate = travellerRepository.getUserById(travellerId, false);
+        if (!security.userHasPermission(userFromMiddleware, travellerId)) {
+            return supplyAsync(() -> unauthorized());
         }
 
-        return userToUpdate
+        return travellerRepository.getUserById(travellerId, false)
                 .thenApplyAsync((user) -> {
                     if (!user.isPresent()) {
                         return notFound();
-                    }
-
-                    if (!request.attrs().get(ActionState.USER).equals(user.get()) && !request.attrs().get(ActionState.IS_ADMIN)) {
-                        return unauthorized();
                     }
 
                     if (jsonBody.has("firstName")) {
@@ -114,6 +110,10 @@ public class TravellerController extends Controller {
 
                     if (jsonBody.has("lastName")) {
                         user.get().setLastName(jsonBody.get("lastName").asText());
+                    }
+
+                    if (jsonBody.has("email")) {
+                        user.get().setEmail(jsonBody.get("email").asText());
                     }
 
                     if (jsonBody.has("dateOfBirth")) {
@@ -185,7 +185,7 @@ public class TravellerController extends Controller {
 //            user.setFirstName(jsonBody.get("firstName").asText());
 //        }
 //
-//        if (jsonBody.has("middleName")) {
+//        if (jsonBody.has("middl all other admins should be able to delete each othereName")) {
 //            user.setMiddleName(jsonBody.get("middleName").asText());
 //        }
 //
@@ -203,7 +203,7 @@ public class TravellerController extends Controller {
 //                System.out.println(e);
 //            }
 //        }
-//
+// all other admins should be able to delete each other
 //        if (jsonBody.has("gender")) {
 //            user.setGender(jsonBody.get("gender").asText());
 //        }
@@ -301,16 +301,19 @@ public class TravellerController extends Controller {
      * @param request HTTP request
      * @return a status code of 200 is ok, 400 if user or role doesn't exist
      */
-    @With(LoggedIn.class)
+    @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> updateTravellerRole(int travellerId, Http.Request request) {
-        // Role types are in the request body
+
+        // Check travellerID isn't a super admin already
+        // Check the patch doesn't give someone a super admin role
+
         JsonNode jsonBody = request.body().asJson();
         JsonNode roleArray = jsonBody.withArray("roleTypes");
         List<String> roleTypes = new ArrayList<>();
 
+
         for (JsonNode roleJson : roleArray) {
             String roleTypeString = roleJson.asText();
-
             if (!RoleType.contains(roleTypeString)) {
                 return supplyAsync(() -> badRequest());
             }
@@ -324,6 +327,24 @@ public class TravellerController extends Controller {
                     }
                     List<Role> userRoles = travellerRepository.getRolesByRoleType(roleTypes);
                     User user = optionalUser.get();
+
+                    // Prevent the default admin from having their permission removed
+                    if (user.isDefaultAdmin()) {
+                        boolean flag = false;
+                        for (String roleString : roleTypes) {
+                            if (roleString.equals(RoleType.SUPER_ADMIN.name())) {
+                                flag = true;
+                            }
+                        }
+                        if (!flag) { return forbidden(); }
+                    } else {
+                        // Prevents a non default admin from getting super-admin permission
+                        for (String roleString : roleTypes) {
+                            if (roleString.equals(RoleType.SUPER_ADMIN.name())) {
+                                return forbidden();
+                            }
+                        }
+                    }
                     user.setRoles(userRoles);
                     user.update();
                     return ok("Success");

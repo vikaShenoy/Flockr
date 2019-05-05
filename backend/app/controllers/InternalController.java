@@ -46,9 +46,11 @@ public class InternalController {
 
             Role admin = new Role(RoleType.ADMIN);
             Role superAdmin = new Role(RoleType.SUPER_ADMIN);
+            Role traveller = new Role(RoleType.TRAVELLER);
 
             admin.save();
             superAdmin.save();
+            traveller.save();
 
             country1.save();
             country2.save();
@@ -95,7 +97,6 @@ public class InternalController {
             travellerType5.save();
             travellerType6.save();
             travellerType7.save();
-
 
             List<Nationality> nationalityList = new ArrayList<>();
             nationalityList.add(nationality4);

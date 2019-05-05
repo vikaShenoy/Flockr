@@ -20,6 +20,7 @@
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 import EditUserForm from "./EditUserForm/EditUserForm.vue";
 import { getUsers } from "./AdminPanelService.js";
+import { patchUser } from "./AdminPanelService.js";
 import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
 
@@ -90,14 +91,25 @@ export default {
       console.log(`Wanting to edit user ${userId} in admin panel`);
       const res = await superagent.get(endpoint(`/users/${userId}`)).set("Authorization", localStorage.getItem("authToken"));
       this.userBeingEdited = res.body;
+      console.log(this.userBeingEdited);
       this.showEditUserForm = true; // show the edit user dialog
     },
     handleEditUserFormDismissal: function() {
       this.showEditUserForm = false; // close the edit user dialog
     },
-    handleEditUserFormSubmission: function(patchedUser) {
+    handleEditUserFormSubmission: async function(patchedUser) {
       // TODO: call the AdminPanelService and ask it to patch the user
-      throw new Error('Need to implement calling API to patch user by id');
+      //throw new Error('Need to implement calling API to patch user by id');
+
+      let userId = patchedUser.userId;
+      try {
+        await patchUser(userId, patchedUser);
+      } catch (e) {
+        Console.log(e);
+      }
+      this.showEditUserForm = false;
+      this.getAllUsers();
+
     },
     handleDeleteUsersByIds: function(userIds) {
       // TODO: call the AdminPanelService and ask it to delete the users
