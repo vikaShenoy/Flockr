@@ -14,6 +14,8 @@ tags:
     description: All destination related endpoints
   - name: trips
     description: All trip related endpoints
+  - name: photos
+    description: All photo related endpoints
 paths:
   '/auth/users/signup':
     post:
@@ -989,10 +991,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+                
   '/users/photos/{photoId}':
     get:
       tags:
-        - users
+        - photos
       summary: Get a specific photo
       parameters:
         - in: path
@@ -1039,20 +1042,28 @@ paths:
   '/users/photos':
     post:
       tags:
-        - users
+        - photos
       summary: Upload a new photo
       security:
         - cookieAuth: []
+      parameters:
+        - in: header
+          name: Content-Type
+          schema:
+            type: string
+            format: uuid
+          required: true
       requestBody:
         content:
-            image/jpeg:
-              schema:
-                type: string
-                format: binary
-            image/png:
-              schema:
-                type: string
-                format: binary
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                isPublic:
+                  type: boolean
       responses:
         '201':
           description: Created
@@ -1079,7 +1090,7 @@ paths:
   '/users/{userId}/photos':
     get:
       tags:
-        - users
+        - photos
       summary: Get details for all of a users photos
       parameters:
         - in: path
@@ -1118,11 +1129,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
         
-  '/users/{userId}/photos/{photoId}':
-    patch:
+  '/users/{userId}/photos/{photoId}/permissions':
+    put:
       tags:
-        - users
-      summary: Add or remove a permission group to the photo
+        - photos
+      summary: Make a photo public or private
       parameters:
         - in: path
           name: userId
@@ -1175,7 +1186,7 @@ paths:
   '/users/photos/{photoFilename}':
     delete:
       tags:
-        - users
+        - photos
       summary: Delete a specific photo
       parameters:
         - in: path
@@ -1209,6 +1220,53 @@ paths:
             application/json:
               schema:
                   $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  '/users/photos/{photoFilename}/thumbnail':
+    get:
+      tags:
+        - photos
+      summary: Get the thumbnail for a specific photo
+      parameters:
+        - in: path
+          name: photoFilename
+          description: The filename of the photo that we wish to retrieve the thumbnail of
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved photo
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         '500':
           description: Internal server error
           content:
@@ -1325,10 +1383,8 @@ components:
     updateUserPhoto:
       type: object
       properties:
-        permissionGroups:
-          type: array
-          items:
-              type: string
+        isPublic:
+          type: boolean
               
           
     error:
