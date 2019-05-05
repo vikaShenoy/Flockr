@@ -13,6 +13,7 @@ import Trip from "./containers/Trip/Trip.vue";
 import EditTrip from "./containers/EditTrip/EditTrip.vue";
 
 import { loggedIn, loggedInOrOut } from "./utils/auth";
+import UserGallery from "./containers/UserGallery/UserGallery";
 
 // All routes need to be annotated with loggedIn or loggedInOrOut
 const routes = [
@@ -69,6 +70,11 @@ const routes = [
   {
     path: "/trips/:id/edit",
     component: EditTrip,
+    beforeEnter: loggedIn
+  },
+  {
+    path: "/profile/:id/photos",
+    component: UserGallery,
     beforeEnter: loggedIn
   }
 ];

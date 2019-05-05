@@ -38,10 +38,6 @@ public class DestinationTestingSteps {
     private JsonNode userData;
     private Result result;
 
-    // user data
-    private String firstName;
-    private String middleName;
-    private String lastName;
     private String email;
     private String plainTextPassword;
     private String authToken;
@@ -70,9 +66,7 @@ public class DestinationTestingSteps {
     public void aUserWithTheFollowingInformationExists(DataTable dataTable) throws IOException {
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
-        this.firstName = firstRow.get("firstName");
-        this.middleName = firstRow.get("middleName");
-        this.lastName = firstRow.get("lastName");
+        // user data
         this.email = firstRow.get("email");
         this.plainTextPassword = firstRow.get("password");
 
