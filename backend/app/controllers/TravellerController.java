@@ -4,7 +4,6 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import exceptions.NotFoundException;
 import models.*;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -12,20 +11,16 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
 import repository.TravellerRepository;
-
 import javax.inject.Inject;
-import java.io.File;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.Date;
 import java.text.SimpleDateFormat;
-
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-
 import play.libs.concurrent.HttpExecutionContext;
+
 
 /**
  * Contains all endpoints associated with travellers
@@ -384,7 +379,6 @@ public class TravellerController extends Controller {
 
                 }, httpExecutionContext.current());
     }
-
-
-
 }
+
+

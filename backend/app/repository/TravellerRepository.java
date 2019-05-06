@@ -5,8 +5,6 @@ import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
 import models.*;
 import play.db.ebean.EbeanConfig;
-
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;

@@ -25,6 +25,7 @@ PATCH        /api/travellers/:travellerId              controllers.TravellerCont
 GET          /api/travellers/photos/:photoFilename              controllers.PhotoController.getPhoto(photoFilename: String, request: Request)
 DELETE       /api/travellers/photos/:photoFilename              controllers.PhotoController.deletePhoto(photoFilename: String, request: Request)
 GET          /api/travellers/:userId/photos                     controllers.PhotoController.getPhotos(userId: Int, request: Request)
+POST         /api/travellers/:userId/photos                     controllers.PhotoController.addPhoto(userId: Int, request: Request)
 PUT  /api/travellers/:travellerId/photos/:photoId/permissions   controllers.PhotoController.changePhotoPermissions(travellerId: Int, photoId: Int, request: Request)
 
 

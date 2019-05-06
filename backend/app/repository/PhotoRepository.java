@@ -1,12 +1,8 @@
 package repository;
 
 import models.PersonalPhoto;
-
 import javax.inject.Inject;
-
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -35,6 +31,19 @@ public class PhotoRepository {
         return supplyAsync(() -> {
             personalPhoto.update();
             return personalPhoto;
+        }, executionContext);
+    }
+
+    /**
+     * Insert a photo into the database
+     *
+     * @param photo the personal photo to be inserted in the database
+     * @return the photo object
+     */
+    public CompletionStage<PersonalPhoto> insert(PersonalPhoto photo) {
+        return supplyAsync(() -> {
+            photo.save();
+            return photo;
         }, executionContext);
     }
 
