@@ -114,7 +114,6 @@ update-sonar:
  stage: test
  script:
     - cd backend && sbt jacoco
-    - sbt checkstyle
     - cd .. && export PATH=$PATH:/opt/sonarqubeScanner/bin
     - sonar-scanner
  only:
