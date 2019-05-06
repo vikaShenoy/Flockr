@@ -44,6 +44,7 @@ initialize := {
 
 // Checkstyle Settings
 checkstyleConfigLocation := CheckstyleConfigLocation.File("./conf/checkstyle-config.xml")
+(checkstyle in Test) := (checkstyle in Test).triggeredBy(compile in Test).value
 
 PlayKeys.playRunHooks += VuePlayHook(baseDirectory.value)
 
