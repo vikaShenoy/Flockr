@@ -110,10 +110,12 @@ after_script:
   - "sudo chown -R gitlab-runner:gitlab-runner ."
 
 update-sonar:
+ dependencies:
+    - run-tests
  stage: deploy
  script:
     - export PATH=$PATH:/opt/sonarqubeScanner/bin
     - sonar-scanner
- only:
-    - master@seng302-2019/team-500
-    - dev@seng302-2019/team-500
+# only:
+#    - master@seng302-2019/team-500
+#    - dev@seng302-2019/team-500
