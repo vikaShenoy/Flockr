@@ -31,17 +31,19 @@ libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test->defau
 testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
 libraryDependencies += evolutions
 
+// Jacoco Settings
 configs(IntegrationTest)
 Defaults.itSettings
-
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 scalacOptions := Seq("-target:jvm-1.8")
-
 initialize := {
   val _ = initialize.value
   if (sys.props("java.specification.version") != "1.8")
     sys.error("Java 8 is required for this project.")
 }
+
+// Checkstyle Settings
+checkstyleConfigLocation := CheckstyleConfigLocation.File("./conf/checkstyle-config.xml")
 
 PlayKeys.playRunHooks += VuePlayHook(baseDirectory.value)
 
