@@ -24,8 +24,11 @@
         :userTravellerTypes.sync="userProfile.travellerTypes"
         :userId="userProfile.userId"
       />
-      <Trips />
+      <div class="">
+        <Trips :trips.sync="userProfile.trips" :userId="userProfile.userId"/>
       </div>
+
+    </div>
     </div>
   </div>
 </template>

@@ -46,7 +46,7 @@
             </div>
 
             <!-- Nationality, Gender and Traveller Typ Select Input -->
-            <v-card elevation="10" class="col-md-12 filters-card">
+            <v-card elevation="10" class="filters-card">
                 <div class="row">
                     <v-select
                             class="selector-input col-md-3"
@@ -71,14 +71,14 @@
                             :value="travellerType"
                             v-model="travellerType"
                     ></v-select>
-                    <div class="col-md-3 row">
-                        <v-btn id="searchButton" color="secondary" depressed v-on:click="search" class="button col-md-5">Search</v-btn>
-                        <v-btn id="clearButton" color="secondary" depressed v-on:click="clearFilters" class="button col-md-5">Clear</v-btn>
+                    <div class="">
+                        <v-btn id="searchButton" color="secondary" depressed v-on:click="search" class="button button-card">Search</v-btn>
+                        <v-btn id="clearButton" color="secondary" depressed v-on:click="clearFilters" class="button button-card">Clear</v-btn>
                     </div>
                 </div>
             </v-card>
 
-            <v-card elevation="10">
+            <v-card elevation="10" class="table-card">
                 <!-- Table Result -->
                 <v-data-table
                         :headers="headers"
@@ -265,12 +265,12 @@
     }
 
     .filters-card {
-        margin: 0 0 10px 0;
+        margin: 10px;
         padding: 20px 20px 10px 20px;
     }
 
     .age-filter-card {
-        margin: 0 0 10px 0;
+        margin: 10px;
     }
 
     .age-text-field {
@@ -284,6 +284,14 @@
     .table-chip {
         background-color: $primary;
         color: $darker-white;
+    }
+    .button-card {
+        padding: 10px;
+        margin: 5px;
+    }
+
+    .table-card {
+        margin: 10px;
     }
 
 </style>
