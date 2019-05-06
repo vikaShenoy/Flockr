@@ -13,7 +13,7 @@ import java.nio.file.Files
 lazy val myProject = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
 
-libraryDependencies += "com.google.inject" % "guice" % "4.2.2"
+libraryDependencies += guice
 libraryDependencies += jdbc
 libraryDependencies += "com.h2database" % "h2" % "1.4.197"
 libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.24"
