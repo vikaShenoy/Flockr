@@ -42,9 +42,9 @@ initialize := {
     sys.error("Java 8 is required for this project.")
 }
 
-// Checkstyle Settings
-checkstyleConfigLocation := CheckstyleConfigLocation.File("./conf/checkstyle-config.xml")
-(checkstyle in Test) := (checkstyle in Test).triggeredBy(compile in Test).value
+//// Checkstyle Settings
+//checkstyleConfigLocation := CheckstyleConfigLocation.File("./conf/checkstyle-config.xml")
+//(checkstyle in Test) := (checkstyle in Test).triggeredBy(compile in Test).value
 
 PlayKeys.playRunHooks += VuePlayHook(baseDirectory.value)
 
