@@ -4,6 +4,7 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.BadRequestException;
 import exceptions.NotFoundException;
 import models.PersonalPhoto;
 import models.User;
@@ -16,6 +17,7 @@ import repository.PhotoRepository;
 import play.libs.Files.TemporaryFile;
 
 import repository.TravellerRepository;
+import util.PhotoUtil;
 import util.Security;
 
 import javax.inject.Inject;
@@ -23,7 +25,11 @@ import javax.inject.Inject;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import java.io.*;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
@@ -32,12 +38,14 @@ public class PhotoController extends Controller {
     private final Security security;
     private final PhotoRepository photoRepository;
     private final TravellerRepository travellerRepository;
+    private final PhotoUtil photoUtil;
 
     @Inject
-    public PhotoController(Security security, PhotoRepository photoRepository, TravellerRepository travellerRepository) {
+    public PhotoController(Security security, PhotoRepository photoRepository, TravellerRepository travellerRepository, PhotoUtil photoUtil) {
         this.security = security;
         this.photoRepository = photoRepository;
         this.travellerRepository = travellerRepository;
+        this.photoUtil = photoUtil;
     }
 
     @With(LoggedIn.class)
@@ -150,35 +158,73 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addPhoto(int userId, Http.Request request) {
-        //CompletionStage<Optional<User>> user =travellerRepository.getUserById(userId);
-        boolean isPublic = false;
-        Http.MultipartFormData<TemporaryFile> body = request.body().asMultipartFormData();
-        Http.MultipartFormData.FilePart<TemporaryFile> picture = body.getFile("file");
-        Optional<String> pub = request.header("isPublic");
-        if (pub.toString().equals("Optional[true]")) {
-            isPublic = true;
+        boolean isPublic;
+        boolean isPrimary;
+        Map<String, String[]> formFields = request.body().asMultipartFormData().asFormUrlEncoded();
+
+        try {
+            // For some reason, form fields are sent as an array
+            isPublic = Boolean.parseBoolean(formFields.get("isPublic")[0]);
+            isPrimary = Boolean.parseBoolean(formFields.get("isPrimary")[0]);
+        } catch (Exception e) {
+            return supplyAsync(() -> badRequest());
         }
 
+        // A photo cannot be a profile picture and private
+        if (isPrimary && !isPublic) {
+            return supplyAsync(() -> forbidden());
+        }
+
+        Http.MultipartFormData<TemporaryFile> body = request.body().asMultipartFormData();
+        Http.MultipartFormData.FilePart<TemporaryFile> picture = body.getFile("file");
+
+        // Picture is null if it doesn't exist in the body
+        if (picture == null) {
+            return supplyAsync(() -> badRequest());
+        }
+
+        // Generates random file name for photo
+        String filenameHash = this.photoUtil.generatePhotoName();
+
         TemporaryFile file = picture.getRef();
-        File newFile = new File("./app/photos/"+picture.getFilename());
+
+
+        File newFile = new File("./app/photos/"+ filenameHash);
         file.copyTo(newFile);
 
-        System.out.println(picture.getRef());
-        System.out.println(picture.getFileSize());
-        System.out.println(picture.getDispositionType());
-        System.out.println(picture.getFilename());
-        System.out.println(picture.getContentType());
-        System.out.println(picture.getKey());
+        return travellerRepository.getUserById(userId)
+                .thenComposeAsync(optionalUser -> {
+                    if (!optionalUser.isPresent()) {
+                        throw new CompletionException(new BadRequestException("User doesn't exist"));
+                    }
 
-        String filenameHash = this.security.hashPassword(body.getFile("file").getFilename());
-        PersonalPhoto photo = new PersonalPhoto(filenameHash, isPublic);
-        //photo.setUser(user);
+                    User user = optionalUser.get();
 
-        return photoRepository.insert(photo)
-                .thenApplyAsync((pic) -> {
-                    JsonNode photosAsJSON = Json.toJson(pic);
-                    System.out.println(photosAsJSON);
-                    return ok(photosAsJSON);
+                    PersonalPhoto photo = new PersonalPhoto(filenameHash, isPublic, user);
+
+                    return photoRepository.insert(photo);
+                })
+                .thenComposeAsync((photo) -> {
+                    User user = photo.getUser();
+
+                    if (isPrimary) {
+                        user.setProfilePhoto(photo);
+                    }
+
+                    // Could not figure out how to break out of
+                    return travellerRepository.updateUser(user);
+                })
+                .thenApplyAsync(user -> (Result) ok())
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (BadRequestException badRequest) {
+                        return badRequest(badRequest.getMessage());
+                    }
+                    catch (Throwable genericError) {
+                        System.out.println(genericError);
+                        return internalServerError("Error with server");
+                    }
                 });
     }
 }

@@ -32,6 +32,12 @@ public class PersonalPhoto extends Model {
         this.isPublic = isPublic;
     }
 
+    public PersonalPhoto(String filenameHash, boolean isPublic, User user) {
+        this.filenameHash = filenameHash;
+        this.isPublic = isPublic;
+        this.user = user;
+    }
+
     public int getPhotoId() {
         return photoId;
     }
