@@ -1,14 +1,7 @@
 stages:
-  - test
   - build
+  - test
   - deploy
-
-run-tests:
-  before_script:
-    - "cd backend && sbt clean"
-  script:
-    - "sbt test"
-  stage: test
 
 recent-artifacts-backend:
   artifacts:
@@ -73,6 +66,13 @@ tag_checker:
   script:
     - "python tag_checker.py $CI_COMMIT_TAG"
   stage: build
+
+run-tests:
+  dependencies:
+    - staging-artifacts-backend
+  script:
+    - "sbt jacoco"
+  stage: test
 
 staging-run:
   dependencies:
