@@ -2,6 +2,8 @@ name := "SENG302 TEAM 500"
 
 version := "0.0.1-SNAPSHOT"
 
+maintainer := "s302team500@cosc.canterbury.ac.nz"
+
 scalaVersion := "2.12.8"
 
 import sbt._
