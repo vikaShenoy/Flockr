@@ -71,7 +71,7 @@ run-tests:
   dependencies:
     - staging-artifacts-backend
   script:
-    - "sbt jacoco"
+    - "cd backend && sbt jacoco"
   stage: test
 
 staging-run:
