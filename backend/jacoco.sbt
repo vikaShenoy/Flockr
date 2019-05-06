@@ -1,8 +1,8 @@
 import _root_.com.github.sbt.jacoco.JacocoPlugin.autoImport._
 
-jacocoMergedDataFile := file("target/test-reports")
+jacocoDataFile := file("target/jacoco/jacoco.exec")
 
-jacocoReportDirectory := file("target/test-reports")
+jacocoReportDirectory := file("target/jacoco")
 
 jacocoReportSettings := JacocoReportSettings("SENG302 TEAM 500", None, JacocoThresholds(), Seq(JacocoReportFormats.XML, JacocoReportFormats.HTML), "utf-8")
 
