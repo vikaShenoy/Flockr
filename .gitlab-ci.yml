@@ -1,6 +1,6 @@
 stages:
-  - build
   - test
+  - build
   - deploy
 
 recent-artifacts-backend:
@@ -68,10 +68,8 @@ tag_checker:
   stage: build
 
 run-tests:
-  dependencies:
-    - staging-artifacts-backend
   script:
-    - "cd backend && sbt jacoco"
+    - "cd backend && sbt test"
   stage: test
 
 staging-run:
@@ -85,8 +83,8 @@ staging-run:
     - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
     - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
     - pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
-#  only:
-#    - dev
+  only:
+    - dev
   stage: deploy
 
 production-run:
@@ -110,11 +108,11 @@ after_script:
   - "sudo chown -R gitlab-runner:gitlab-runner ."
 
 update-sonar:
- dependencies:
-    - run-tests
- stage: deploy
+ stage: test
  script:
-    - export PATH=$PATH:/opt/sonarqubeScanner/bin
+    - cd backend && sbt dist
+    - sbt jacoco
+    - cd .. && export PATH=$PATH:/opt/sonarqubeScanner/bin
     - sonar-scanner
 # only:
 #    - master@seng302-2019/team-500
