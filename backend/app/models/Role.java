@@ -5,6 +5,10 @@ import io.ebean.Model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+/**
+ * Roles that users inside the system can take to alter
+ * their permissions. E.g. an admin can edit user trips.
+ */
 @Entity
 public class Role extends Model {
 
@@ -21,6 +25,10 @@ public class Role extends Model {
         return roleType;
     }
 
+    /**
+     * Constructor.
+     * @param roleType type of role.
+     */
     public Role(String roleType) {
         this.roleType = roleType;
     }
