@@ -17,6 +17,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
+import repository.TravellerRepository;
 import repository.TripRepository;
 import util.Security;
 import util.TripUtil;
@@ -40,17 +41,18 @@ import static play.libs.Json.newObject;
  * Contains all trip related endpoints
  */
 public class TripController extends Controller {
-
+    private final TravellerRepository travellerRepository;
     private final TripRepository tripRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final TripUtil tripUtil;
     private final Security security;
 
     @Inject
-    public TripController(TripRepository tripRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil, Security security) {
+    public TripController(TripRepository tripRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil, Security security, TravellerRepository travellerRepository) {
         this.tripRepository = tripRepository; this.httpExecutionContext = httpExecutionContext;
         this.tripUtil = tripUtil;
         this.security = security;
+        this.travellerRepository = travellerRepository;
     }
 
     /**
@@ -60,9 +62,9 @@ public class TripController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(user, userId)) {
+        if (!security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -77,13 +79,23 @@ public class TripController extends Controller {
            return supplyAsync(() -> badRequest());
         }
 
-        Trip trip = new Trip(tripDestinations, user, tripName);
+        return travellerRepository.getUserById(userId, false)
+                .thenComposeAsync(optionalUser -> {
+                    if (!optionalUser.isPresent()) {
+                        throw new CompletionException(new BadRequestException("User does not exist"));
+                    }
 
-        return tripRepository.saveTrip(trip)
-                .thenApplyAsync((updatedTrip) -> {
-                    JsonNode tripIdJson = Json.toJson(trip.getTripId());
-                    return created(tripIdJson);
-                }, httpExecutionContext.current());
+                    User user = optionalUser.get();
+
+
+                    Trip trip = new Trip(tripDestinations, user, tripName);
+
+                    return tripRepository.saveTrip(trip);
+                    }, httpExecutionContext.current())
+               .thenApplyAsync((updatedTrip) -> {
+                JsonNode tripIdJson = Json.toJson(updatedTrip.getTripId());
+                return created(tripIdJson);
+               });
     }
 
     @With(LoggedIn.class)
@@ -93,7 +105,6 @@ public class TripController extends Controller {
         if (!security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
-
 
         return tripRepository.getTripByIds(tripId, userId)
                 .thenApplyAsync((optionalTrip) -> {
@@ -109,7 +120,7 @@ public class TripController extends Controller {
 
     /**
      * Endpoint to delete a user's trip.
-     * @param travellerId The user who's trip is deleted.
+     * @param userId The user who's trip is deleted.
      * @param tripId The trip to delete.
      * @param request HTTP req
      * @return A result object

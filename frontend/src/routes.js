@@ -69,14 +69,30 @@ const routes = [
     beforeEnter: loggedIn
   },
   {
+    // Allows an admin to create trips for other users
+    path: "/travellers/:travellerId/trips/add",
+    component: AddTrip,
+    beforeEnter: isAdmin
+  },
+  {
     path: "/trips/:id",
     component: Trip,
     beforeEnter: loggedIn
   },
   {
+    path: "/travellers/:travellerId/trips/:id",
+    component: Trip,
+    beforeEnter: isAdmin 
+  },
+  {
     path: "/trips/:id/edit",
     component: EditTrip,
     beforeEnter: loggedIn
+  },
+  {
+    path: "/travellers/:travellerId/trips/:id/edit",
+    component: EditTrip,
+    beforeEnter: isAdmin 
   },
   {
     path: "/admin",

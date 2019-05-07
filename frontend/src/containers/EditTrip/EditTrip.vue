@@ -76,7 +76,10 @@ export default {
     async getTrip() {
       try {
         const tripId = this.$route.params.id;
-        const trip = await getTrip(tripId);
+
+        const travellerId = this.$route.params.travellerId;
+        const userId = travellerId ? travellerId : localStorage.getItem("userId");
+        const trip = await getTrip(tripId, userId);
 
         const { tripName, tripDestinations } = transformTripResponse(trip);
 
@@ -123,8 +126,16 @@ export default {
 
       try {
         const tripId = this.$route.params.id;
-        await editTrip(tripId, this.tripName, this.tripDestinations);
-        this.$router.push(`/trips/${tripId}`)
+        const travellerId = this.$route.params.travellerId;
+        const userId = travellerId ? travellerId : localStorage.getItem("userId")
+        await editTrip(tripId, userId, this.tripName, this.tripDestinations);
+
+        if (travellerId) {
+          this.$router.push(`/travellers/${travellerId}/trips/${tripId}`);
+        } else {
+          this.$router.push(`/trips/${tripId}`)
+        }
+
       } catch (e) {
         console.log(e);
         // Add error handling here later
