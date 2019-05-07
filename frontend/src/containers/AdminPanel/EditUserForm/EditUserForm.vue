@@ -186,6 +186,12 @@ export default {
     // at the object where changes are stored as you make changes to the fields
     addChange: function(fieldKey, fieldValue) {
       this.changes.userId = this.initialUserData.userId; // make sure there's always a user id
+      if (fieldKey === 'nationalities') {
+        // if trying to make a user have no nationalities, do not add the change
+        if (fieldValue.length < 1) {
+          return;
+        }
+      }
       this.changes[fieldKey] = fieldValue; // store the change
     },
     getAllNationalities: async function() {
