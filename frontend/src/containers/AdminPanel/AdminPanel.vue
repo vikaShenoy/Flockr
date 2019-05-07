@@ -80,7 +80,7 @@ export default {
       },
       users: [], // single source of truth for children components relying on users so that info stays up to date
       snackbarModel: {
-        show: true, // whether the snackbar is currently shown or not
+        show: false, // whether the snackbar is currently shown or not
         timeout: 5000, // how long the snackbar will be shown for, it will not update the show property automatically though
         text: '', // the text to show in the snackbar
         color: '', // green, red, yellow, red, etc
