@@ -53,7 +53,7 @@
                   :items="allUserRoleTypes"
                   :value="initialUserRoleTypes"
                   label="User roles"
-                  v-on:input="addChange('roles', parseEditNationalityChangeEvent($event))"
+                  v-on:input="addChange('roles', $event)"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -71,7 +71,7 @@
                   :items="allNationalityNames"
                   :value="initialUserNationalityNames"
                   label="Nationalities"
-                  v-on:input="addChange('nationalities', $event)"
+                  v-on:input="addChange('nationalities', parseEditNationalityChangeEvent($event))"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -237,8 +237,7 @@ export default {
     },
 
     parseEditNationalityChangeEvent: function(nationaltyNames) {
-      // filter all the traveller types to be only the ones with the name included in the event, then map them to their ids
-      return this.allNationalityNames.filter((nationality) => nationaltyNames.includes(nationality.nationalityName))
+      return this.allNationalities.filter((nationality) => nationaltyNames.includes(nationality.nationalityName))
         .map((nationality) => nationality.nationalityId);
     }
   },
