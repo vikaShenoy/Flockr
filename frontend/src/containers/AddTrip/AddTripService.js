@@ -6,8 +6,9 @@ import moment from "moment";
  * Sends a request to add a trip
  * @param {string} tripName 
  * @param {object[]} tripDestinations 
+ * @param {number} userId The userID to create the trip for
  */
-export async function addTrip(tripName, tripDestinations) {
+export async function addTrip(tripName, tripDestinations, userId) {
   const transformedTripDestinations = tripDestinations.map(tripDestination => {
     const transformedTripDestination = {};
 
@@ -20,8 +21,9 @@ export async function addTrip(tripName, tripDestinations) {
     return transformedTripDestination;
   }); 
 
+  
 
-  const res = await superagent.post(endpoint(`/users/${localStorage.getItem("userId")}/trips`))
+  const res = await superagent.post(endpoint(`/users/${userId}/trips`))
   .set("Authorization", localStorage.getItem("authToken"))
   .send({
     tripName,
