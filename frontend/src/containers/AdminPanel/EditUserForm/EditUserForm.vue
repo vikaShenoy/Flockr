@@ -53,7 +53,7 @@
                   :items="allUserRoleTypes"
                   :value="initialUserRoleTypes"
                   label="User roles"
-                  v-on:input="addChange('roles', $event)"
+                  v-on:input="addChange('roles', parseEditNationalityChangeEvent($event))"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -62,7 +62,7 @@
                   :items="allPassportCountries"
                   :value="initialUserPassportCountries"
                   label="Passports"
-                  v-on:input="addChange('passports', $event)"
+                  v-on:input="addChange('passports', parseEditPassportsChangeEvent($event))"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -228,6 +228,18 @@ export default {
       // filter all the traveller types to be only the ones with the name included in the event, then map them to their ids
       return this.allTravellerTypes.filter((travellerType) => travellerTypeNames.includes(travellerType.travellerTypeName))
         .map((travellerType) => travellerType.travellerTypeId);
+    },
+
+    parseEditPassportsChangeEvent: function(passportNames) {
+      // filter all the traveller types to be only the ones with the name included in the event, then map them to their ids
+      return this.allPassports.filter((passport) => passportNames.includes(passport.passportCountry))
+        .map((passport) => passport.passportId);
+    },
+
+    parseEditNationalityChangeEvent: function(nationaltyNames) {
+      // filter all the traveller types to be only the ones with the name included in the event, then map them to their ids
+      return this.allNationalityNames.filter((nationality) => nationaltyNames.includes(nationality.nationalityName))
+        .map((nationality) => nationality.nationalityId);
     }
   },
   computed: {
