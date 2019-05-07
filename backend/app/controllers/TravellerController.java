@@ -91,7 +91,7 @@ public class TravellerController extends Controller {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
         if (!security.userHasPermission(userFromMiddleware, travellerId)) {
-            return supplyAsync(() -> unauthorized());
+            return supplyAsync(Controller::forbidden);
         }
 
         return travellerRepository.getUserById(travellerId, false)
