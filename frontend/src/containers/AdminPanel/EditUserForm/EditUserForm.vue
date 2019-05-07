@@ -44,7 +44,7 @@
                   :items="allTravellerTypeNames"
                   :value="this.initialUserTravellerTypeNames"
                   label="Traveller types"
-                  v-on:input="addChange('travellerTypes', $event)"
+                  v-on:input="addChange('travellerTypes', parseEditTravellerTypeChangeEvent($event))"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -220,6 +220,14 @@ export default {
       } catch(err) {
         console.error(`Could not get all user roles: ${err}`);
       }
+    },
+    /**
+     * Given an array of traveller type names, return their corresponding ids
+     */
+    parseEditTravellerTypeChangeEvent: function(travellerTypeNames) {
+      // filter all the traveller types to be only the ones with the name included in the event, then map them to their ids
+      return this.allTravellerTypes.filter((travellerType) => travellerTypeNames.includes(travellerType.travellerTypeName))
+        .map((travellerType) => travellerType.travellerTypeId);
     }
   },
   computed: {
