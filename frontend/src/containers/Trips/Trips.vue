@@ -33,14 +33,19 @@ export default {
     };
   },
   mounted() {
-    this.getTrips();
+    const travellerId = this.$route.params.travellerId;
+    
+    if (travellerId) {
+      this.getTrips(travellerId);
+    } else {
+      this.getTrips();
+    }
   },
   methods: {
-    async getTrips() {
+    async getTrips(travellerId) {
       try {
-        const userId = localStorage.getItem("userId");
+        const userId = travellerId ? travellerId : localStorage.getItem("userId");
         const trips = await getTrips(userId);
-        
         const tripsTransformed = transformTrips(trips);
 
         this.trips = tripsTransformed;
