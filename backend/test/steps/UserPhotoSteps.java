@@ -1,11 +1,16 @@
 package steps;
 
+import akka.http.impl.util.JavaMapping;
+import akka.stream.javadsl.FileIO;
+import akka.stream.javadsl.Source;
+import akka.util.ByteString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Module;
+import controllers.routes;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
@@ -25,8 +30,11 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +48,11 @@ public class UserPhotoSteps {
     private int userId;
     private String email;
     private String plainTextPassword;
+    private Result result;
     private JsonNode photos;
+    private String photoName = "";
+    private boolean isPublic = false;
+    private boolean isPrimary = false;
 
     @Before("@UserPhoto")
     public void setUpUserPhoto() {
@@ -143,4 +155,53 @@ public class UserPhotoSteps {
             Assert.assertEquals(row.get("isPrimary"), this.photos.asText());
         }
     }
+
+    @Given("a user has a photo called {string}")
+    public void aUserHasAPhotoCalled(String photoName) throws IOException {
+        this.photoName = photoName;
+    }
+
+
+
+    @Given("they want the photo to be public")
+    public void theyWantThePhotoToBePublic() {
+        isPublic = true;
+    }
+
+    @Given("they want the photo to be private")
+    public void theyWantThePhotoToBePrivate() {
+        isPublic = false;
+    }
+
+    @Given("they want the photo to be their profile photo")
+    public void theyWantThePhotoToBeTheirProfilePhoto() {
+        isPrimary = true;
+    }
+
+    @When("they add the photo")
+    public void theyAddThePhoto() throws IOException {
+        File file = new File("app/photos/" + photoName);
+
+        Http.MultipartFormData.Part<Source<ByteString, ?>> part = new Http.MultipartFormData.FilePart<>("picture", "file.pdf", "application/pdf", FileIO.fromPath(file.toPath()), Files.size(file.toPath()));
+
+        Http.MultipartFormData.DataPart isPrimaryForm = new Http.MultipartFormData.DataPart("isPrimary", Boolean.toString(isPrimary));
+        Http.MultipartFormData.DataPart isPublicForm = new Http.MultipartFormData.DataPart("isPublic", Boolean.toString(isPublic));
+
+        Http.RequestBuilder request = Helpers.fakeRequest().uri(routes.PhotoController.addPhoto(userId).url())
+                .method("POST")
+                .header("Authorization", authToken)
+                .bodyRaw(
+                        Collections.singletonList(part),
+                        play.libs.Files.singletonTemporaryFileCreator(),
+                        application.asScala().materializer()
+                );
+
+        result = Helpers.route(application, request);
+    }
+
+    @Then("the photo is added")
+    public void isItAdded() {
+        Assert.assertEquals(200, result.status());
+    }
+
 }

@@ -13,7 +13,7 @@
       id="uploader"
       @drop="onDrop"
       @dragover.prevent
-      @click="uploadClicked"
+      @click="uploadZoneClicked"
     >
       <v-icon id="upload-icon">cloud_upload</v-icon>
 
@@ -28,33 +28,43 @@
       <h3>Choose a file or drag it here</h3>
     </div>
 
-    <div id="permission-switch">
-      <v-switch switch v-model="isPublic" :label="`Set to public`" color="secondary"></v-switch>
+    <div id="switch">
+      <v-switch switch v-model="isPublic" label="Set to public" color="secondary"></v-switch>
     </div>
 
-    <v-btn id="upload-btn" color="secondary" @click="upload">Upload</v-btn>
+    <div id="switch">
+      <v-switch switch v-model="isPrimary" label="Set to primary" color="secondary"></v-switch>
+    </div>
+
+    <v-btn id="upload-btn" :disabled="!uploadReady" color="secondary" @click="upload">Upload</v-btn>
 
 
   </v-card>
 </template>
 
 <script>
+import { uploadImage } from "./UploadPhotoService.js";
+
 export default {
   data() {
     return {
       imageFile: null,
       imageUrl: null,
       imageName: null,
-      isPublic: false
+      isPublic: false,
+      isPrimary: false
     };
   },
   methods: {
-    onInputChange(event) {
-      const files = event.target.files;
-    },
-    uploadClicked() {
+    /**
+     * Gets called when user clicks in upload zone
+     */
+    uploadZoneClicked() {
       this.$refs.image.click();
     },
+    /**
+     * Gets triggered when user has selected a photo to upload
+     */
     onImageChange() {
       const files = event.target.files;
       this.processFiles(files);
@@ -67,6 +77,9 @@ export default {
       event.preventDefault();
       this.processFiles(files);
     },
+    /**
+     * Processes files to show preview and prepare for upload
+     */
     processFiles(files) {
       this.imageName = files[0].name;
       const fileReader = new FileReader();
@@ -75,12 +88,47 @@ export default {
       fileReader.addEventListener("load", () => {
         this.imageUrl = fileReader.result;
         this.imageFile = files[0];
-        console.log(this.imageUrl);
-        console.log(this.imageFile);
       });
     },
-    upload() {
-      
+    /**
+     * Uploads photo to backend
+     */
+    async upload() {
+      console.log("I made it here");
+      const {
+        imageFile,
+        isPublic,
+        isPrimary
+      } = this;
+
+      const userId = this.$route.params.id;
+
+      try{
+        await uploadImage(imageFile, isPublic, isPrimary, userId);
+      } catch (e) {
+        console.log(e);
+        // Handle errors later
+      }
+    }
+  },
+  watch: {
+    /**
+     * A photo can't be primary and public so verifying this here
+     * @param {boolean} isPrimary The new isPrimary value retrieved from the switch input
+     */
+    isPrimary(isPrimary) {
+      if (isPrimary) {
+        this.isPublic = false;
+      }
+    }
+  },
+  computed: {
+    /**
+     * Checks if upload is ready
+     * @return {boolean} If the upload is ready or not
+     */
+    uploadReady() {
+      return this.imageFile;
     }
   }
 };
@@ -102,11 +150,17 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s linear;
   border: 3px dashed $primary;
   min-height: 200px;
+  cursor: pointer;
 
   h3 {
     color: #636e72;
+  }
+
+  &:hover {
+    background-color: #dfe6e9;
   }
 }
 
@@ -121,10 +175,11 @@ export default {
   display: block;
 }
 
-#permission-switch {
-  width: 140px;
+#switch {
+  width: 150px;
   margin: 0 auto;
 }
+
 
 #upload-btn {
   margin: 0 auto;

@@ -167,20 +167,20 @@ public class PhotoController extends Controller {
             isPublic = Boolean.parseBoolean(formFields.get("isPublic")[0]);
             isPrimary = Boolean.parseBoolean(formFields.get("isPrimary")[0]);
         } catch (Exception e) {
-            return supplyAsync(() -> badRequest());
+            return supplyAsync(Controller::badRequest);
         }
 
         // A photo cannot be a profile picture and private
         if (isPrimary && !isPublic) {
-            return supplyAsync(() -> forbidden());
+            return supplyAsync(Controller::badRequest);
         }
 
         Http.MultipartFormData<TemporaryFile> body = request.body().asMultipartFormData();
-        Http.MultipartFormData.FilePart<TemporaryFile> picture = body.getFile("file");
+        Http.MultipartFormData.FilePart<TemporaryFile> picture = body.getFile("image");
 
         // Picture is null if it doesn't exist in the body
         if (picture == null) {
-            return supplyAsync(() -> badRequest());
+            return supplyAsync(Controller::badRequest);
         }
 
         // Generates random file name for photo
@@ -222,7 +222,6 @@ public class PhotoController extends Controller {
                         return badRequest(badRequest.getMessage());
                     }
                     catch (Throwable genericError) {
-                        System.out.println(genericError);
                         return internalServerError("Error with server");
                     }
                 });
