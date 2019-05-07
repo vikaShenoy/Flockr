@@ -130,8 +130,8 @@ export default {
           title: "Admin Panel",
           url: "/admin",
           icon: "how_to_reg",
-          loggedIn: false,
-          loggedOut: true
+          loggedIn: true,
+          loggedOut: false
         }
       ]
     };

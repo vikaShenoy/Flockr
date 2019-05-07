@@ -99,21 +99,31 @@ export default {
     },
     handleEditUserFormSubmission: async function(patchedUser) {
       // TODO: call the AdminPanelService and ask it to patch the user
-      //throw new Error('Need to implement calling API to patch user by id');
 
       let userId = patchedUser.userId;
       try {
         await patchUser(userId, patchedUser);
       } catch (e) {
-        Console.log(e);
+        console.log(e);
       }
       this.showEditUserForm = false;
       this.getAllUsers();
 
     },
-    handleDeleteUsersByIds: function(userIds) {
-      // TODO: call the AdminPanelService and ask it to delete the users
-      throw new Error('Need to implement calling API to delete users by id');
+    handleDeleteUsersByIds: async function(userIds) {
+      const promises = [];
+      console.log('userIds being deleted: ' + userIds)
+      userIds.forEach(userId => {
+        const promise = superagent
+          .delete(endpoint(`/users/${userId}`)).set('Authorization', localStorage.getItem('authToken'));
+        promises.push(promise);
+      });
+      try {
+        await Promise.all(promises);
+        this.getAllUsers();
+      } catch(err) {
+        console.error(`Could not delete those users: ${err}`);
+      }
     }
   }
 };

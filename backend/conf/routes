@@ -23,8 +23,7 @@ GET          /api/users/:userId/roles                           controllers.Role
 GET          /api/users/:userId                            controllers.TravellerController.getTraveller(userId: Int, request: Request)
 PATCH        /api/users/:userId                            controllers.TravellerController.updateTraveller(userId: Int, request: Request)
 DELETE       /api/users/:userId                             controllers.TravellerController.deleteUser(userId: Int, request: Request)
-
-PATCH        /api/travellers/:travellerId/roles        controllers.TravellerController.updateTravellerRole(travellerId: Int, request: Request)
+PATCH        /api/users/:userId/roles        controllers.TravellerController.updateTravellerRole(userId: Int, request: Request)
 
 # Destination Routes
 GET         /api/destinations                                   controllers.DestinationController.getDestinations(request: Request)
