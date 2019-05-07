@@ -72,6 +72,7 @@
                   :value="initialUserNationalityNames"
                   label="Nationalities"
                   v-on:input="addChange('nationalities', parseEditNationalityChangeEvent($event))"
+                  :rules="[(value) => value.length > 0 || 'The user must have at least one nationality']"
                   multiple
                 ></v-autocomplete>
               </v-flex>
