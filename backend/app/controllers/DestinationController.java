@@ -158,7 +158,7 @@ public class DestinationController  extends Controller{
 
         return destinationRepository.update(destination);
         }, httpExecutionContext.current())
-       .thenApplyAsync((Destination) -> (Result) ok(), httpExecutionContext.current())
+       .thenApplyAsync(destination -> (Result) ok(), httpExecutionContext.current())
        .exceptionally(e -> {
             try {
                 throw e.getCause();

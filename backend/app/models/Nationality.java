@@ -39,10 +39,5 @@ public class Nationality extends Model {
      * This is required by EBean to make queries on the database
      */
     public static final Finder<Integer, Nationality> find = new Finder<>(Nationality.class);
-
-//    @Override
-//    public String toString() {
-//        return
-//    }
 }
 
