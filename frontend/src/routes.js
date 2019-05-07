@@ -81,7 +81,7 @@ const routes = [
   {
     path: "/admin",
     component: AdminPanel,
-    beforeEnter: loggedInOrOut
+    beforeEnter: isAdmin
   }
 ];
 
