@@ -11,13 +11,15 @@ import play.mvc.With;
 import actions.LoggedIn;
 
 /**
- * Manage a database of computers
+ * Handle default path requests.
  */
 public class HomeController extends Controller {
-    /**
-     * Handle default path requests
-     */
 
+    /**
+     * Default path endpoint.
+     * @param request incoming http request.
+     * @return 200 with a sample message in the body.
+     */
     public Result index(Http.Request request) {
         return ok("Congrats! You are in the backend index, you probably shouldn't be querying this though!");
     }

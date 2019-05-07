@@ -17,11 +17,15 @@ import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static play.mvc.Results.ok;
 
+/**
+ * Controller used for testing with H2 internal database.
+ * Enables database resampling.
+ */
 public class InternalController {
 
     /**
-     * Populate the database with data
-     * @return a JSON response if the popoulation was successful
+     * Populate the database with data.
+     * @return a JSON response with status code 200 if the population was successful.
      */
     public CompletionStage<Result> resample() {
         return supplyAsync(() -> {
@@ -74,7 +78,6 @@ public class InternalController {
             List<TripDestination> tripDestinations = new ArrayList<>();
             tripDestinations.add(new TripDestination(destination1, new Date(), 450, new Date(), 550));
             tripDestinations.add(new TripDestination(destination2, new Date(), 34, new Date(), 23));
-
 
             TravellerType travellerType1 = new TravellerType("Groupies");
             TravellerType travellerType2 = new TravellerType("Thrillseeker");
@@ -157,9 +160,8 @@ public class InternalController {
         });
     }
 
-
     /**
-     * Create a user and save to database.
+     * Helper function. Create a user and save to database.
      * NOTE: also creates a passport, nationality, traveller type and gender in the database
      */
     private User generateMockUser(ArrayList<String> userStrings, List<Nationality> nationalities, List<TravellerType> travellerTypes, List<Passport> passports) {

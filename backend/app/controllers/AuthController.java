@@ -26,7 +26,7 @@ import static util.AuthUtil.isAlpha;
 import static util.AuthUtil.isValidEmailAddress;
 
 /**
- * Controller handling authentication endpoints
+ * Controller handling authentication endpoints.
  */
 public class AuthController {
     private final AuthRepository authRepository;
@@ -47,7 +47,8 @@ public class AuthController {
     /**
      * Signs a user up with minimal details and sends auth session to client
      * @param request Incoming http request
-     * @return The inserted user as JSON
+     * @return The inserted user as JSON, with status code 201.
+     * Return status code 400 if signup request invalid.
      */
     public CompletionStage<Result> signup(Request request) {
         JsonNode jsonRequest = request.body().asJson();
@@ -142,7 +143,8 @@ public class AuthController {
     /**
      * Logs a user in
      * @param request - Request to get JSon fields from
-     * @return Either users data if valid credentials, otherwise sends unauthorized
+     * @return 200 status code with users data if valid credentials,
+     * otherwise sends 401 if unauthorized.
      */
     public CompletionStage<Result> login(Request request) {
         JsonNode jsonBody = request.body().asJson();
@@ -184,6 +186,11 @@ public class AuthController {
                 });
     }
 
+    /**
+     * Logs a user out by setting their auth token to null.
+     * @param request incoming HTTP request.
+     * @return 200 status code.
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> logout(Request request) {
         User user = request.attrs().get(ActionState.USER);
@@ -196,6 +203,11 @@ public class AuthController {
 
     }
 
+    /**
+     * Checks the database for the given email, to see whether it's available.
+     * @param email email to check the db for.
+     * @return 400 if the email is empty. 409 if the email is taken. 200 if the email is available.
+     */
     public CompletionStage<Result> checkEmailAvailable(String email) {
         if (email.isEmpty()) {
             return supplyAsync(() -> badRequest());

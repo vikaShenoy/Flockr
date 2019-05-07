@@ -28,7 +28,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import play.libs.concurrent.HttpExecutionContext;
 
 /**
- * Contains all endpoints associated with travellers
+ * Contains all endpoints associated with users.
  */
 public class UserController extends Controller {
     private final UserRepository userRepository;
@@ -41,10 +41,11 @@ public class UserController extends Controller {
     }
 
     /**
-     * Retrieves a travellers details
+     * Retrieves a user's details
      * @param userId the traveller Id of the traveller to retrieve
      * @param request request Object
-     * @return traveller details as a Json object
+     * @return HTTP response which can be
+     *  - 200 - with user's details, if successful.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTraveller(int userId, Http.Request request) {
@@ -64,7 +65,7 @@ public class UserController extends Controller {
     }
 
     /**
-     * Updates a travellers details
+     * Updates a user's details
       * @param userId Redundant ID
      * @param request Object to get the JSOn data
      * @return 200 status if update was successful, 500 otherwise
@@ -179,6 +180,10 @@ public class UserController extends Controller {
     }
 
 
+    /**
+     * Get all users.
+     * @return status code of 200 with all traveller details in json body.
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTravellers() {
         return userRepository.getTravellers()

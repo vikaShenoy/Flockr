@@ -36,7 +36,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static play.libs.Json.newObject;
 
 /**
- * Contains all trip related endpoints
+ * Controller for trip related endpoints.
  */
 public class TripController extends Controller {
 
@@ -52,9 +52,10 @@ public class TripController extends Controller {
     }
 
     /**
-     * Endpoint to add a trip
-     * @param request Used to retrieve trip JSON
-     * @return A result object
+     * Endpoint to add a trip.
+     * @param userId id of the user to add a trip for.
+     * @param request Used to retrieve trip JSON.
+     * @return 200 status code if successful. 400 if bad request error.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
@@ -79,6 +80,13 @@ public class TripController extends Controller {
                 }, httpExecutionContext.current());
     }
 
+    /**
+     * Endpoint to get a trip's information.
+     * @param userId user who the trip belongs to.
+     * @param tripId id of the trip to retrieve.
+     * @param request incoming http request.
+     * @return 200 status code with the trip json if successful, 404 if the trip cannot be found.
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
@@ -99,7 +107,8 @@ public class TripController extends Controller {
      * @param userId The user who's trip is deleted.
      * @param tripId The trip to delete.
      * @param request HTTP req
-     * @return A result object
+     * @return A result object, with status code 200 if successful. 400 if the trip isn't found.
+     * 500 for other errors.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
@@ -127,12 +136,14 @@ public class TripController extends Controller {
 
 
     /**
-     * Endpoint to get update a trips destinations
+     * Endpoint to update a trips destinations.
      * @param request Request body to get json body from
      * @param tripId The trip ID to update
      * @param userId The id of the user that the trip belongs to
      * @return Returns the http response which can be
      *         - Ok - Trip was updated successfully
+     *         - 400 - there was an error with the request.
+     *         - 500 - there was an internal server error.
      *
      */
     @With(LoggedIn.class)
