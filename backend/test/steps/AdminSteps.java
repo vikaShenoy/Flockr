@@ -45,7 +45,7 @@ public class AdminSteps {
     private int roleId;
     private int otherUserId;
 
-    @Before
+    @Before("@AdminSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -60,7 +60,7 @@ public class AdminSteps {
         Helpers.start(application);
     }
 
-    @After
+    @After("@AdminSteps")
     public void tearDown() {
         Helpers.stop(application);
     }
@@ -111,6 +111,17 @@ public class AdminSteps {
 
         Assert.assertNotEquals(0, this.otherUserId);
         Assert.assertNotEquals(0, this.userId);
+    }
+
+    @Given("roles are created")
+    public void rolesAreCreated() {
+        Role admin = new Role(RoleType.ADMIN);
+        Role superAdmin = new Role(RoleType.SUPER_ADMIN);
+        Role traveller = new Role(RoleType.TRAVELLER);
+
+        admin.save();
+        superAdmin.save();
+        traveller.save();
     }
 
     /**

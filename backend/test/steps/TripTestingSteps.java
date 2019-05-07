@@ -42,7 +42,7 @@ public class TripTestingSteps {
     private ArrayNode tripDestinations;
     private Result result;
 
-    @Before
+    @Before("@TripSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -55,12 +55,14 @@ public class TripTestingSteps {
         Guice.createInjector(builder.applicationModule()).injectMembers(this);
 
         Helpers.start(application);
+
+
     }
 
-    @After
+    @After("@TripSteps")
     public void tearDown() { Helpers.stop(application); }
 
-    @Given("I have resampled")
+    @Given("i have resampled")
     public void iHaveResampled() {
         Http.RequestBuilder resample = Helpers.fakeRequest()
                 .method("POST")

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
+import controllers.InternalController;
 import cucumber.api.java.Before;
 import cucumber.api.java.After;
 import cucumber.api.java.en.Given;
@@ -12,6 +13,7 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import models.Role;
+import models.RoleType;
 import models.User;
 
 import org.junit.Assert;
@@ -41,7 +43,6 @@ public class UserRoleSteps {
     private Application application;
 
 
-    //
     private JsonNode userData;
     private Result result;
 
@@ -66,7 +67,7 @@ public class UserRoleSteps {
 
     private int statusResult;
 
-    @Before
+    @Before("@UserRoleSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -141,8 +142,12 @@ public class UserRoleSteps {
         // Give the admin an admin role
         User admin = User.find.byId(this.adminUserId);
         List<Role> adminRoles = Role.find.all();
+        System.out.println("Admin roles are: "  + adminRoles);
+
         admin.setRoles(adminRoles);
         admin.save();
+
+
     }
 
     @Given("ROLES - the user is logged in...")
@@ -172,13 +177,15 @@ public class UserRoleSteps {
         JsonNode typesJson = Json.toJson(types);
         ObjectNode data = Json.newObject();
         data.set("roleTypes", typesJson);
+
+
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method(PATCH)
                 .uri("/api/travellers/" + this.userId + "/roles")
                 .header("Authorization", this.currentAuthToken)
                 .bodyJson(data);
         Result roleResult = route(application, request);
-        Assert.assertEquals(200, (long) roleResult.status());
+        Assert.assertEquals(200, roleResult.status());
     }
 
     @When("ROLES - A user adds an admin role to themselves")
@@ -228,10 +235,20 @@ public class UserRoleSteps {
     public void roles_I_receive_a_status_code(Integer int1) {
         System.out.println(this.userRoles);
         Assert.assertEquals(401, statusResult);
-
     }
 
-    @After
+    @Given("all roles are created")
+    public void allRolesAreCreated() {
+        Role admin = new Role(RoleType.ADMIN);
+        Role superAdmin = new Role(RoleType.SUPER_ADMIN);
+        Role traveller = new Role(RoleType.TRAVELLER);
+
+        admin.save();
+        superAdmin.save();
+        traveller.save();
+    }
+
+    @After("@UserRoleSteps")
     public void tearDown() {
         Helpers.stop(application);
     }

@@ -43,7 +43,7 @@ public class DestinationTestingSteps {
     private String plainTextPassword;
     private String authToken;
 
-    @Before
+    @Before("@DestinationSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -58,7 +58,7 @@ public class DestinationTestingSteps {
         Helpers.start(application);
     }
 
-    @After
+    @After("@DestinationSteps")
     public void tearDown() {
         Helpers.stop(application);
     }
@@ -149,10 +149,12 @@ public class DestinationTestingSteps {
 
     @Given("that I have a destination created with id {int}")
     public void thatIHaveADestinationCreatedWithId(int destinationId) throws IOException {
+        System.out.println("The destination id is: " + destinationId);
         Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/destinations/" + destinationId);
         Result result = route(application, checkDeletion);
+
         // check that the destination's name has some text in it
         JsonNode res = utils.PlayResultToJson.convertResultToJson(result);
         String destinationName = res.get("destinationName").asText();

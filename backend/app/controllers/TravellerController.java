@@ -229,7 +229,6 @@ public class TravellerController extends Controller {
 
         // Check travellerID isn't a super admin already
         // Check the patch doesn't give someone a super admin role
-
         JsonNode jsonBody = request.body().asJson();
         JsonNode roleArray = jsonBody.withArray("roleTypes");
         List<String> roleTypes = new ArrayList<>();
