@@ -181,7 +181,7 @@ public class UserRoleSteps {
 
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method(PATCH)
-                .uri("/api/travellers/" + this.userId + "/roles")
+                .uri("/api/users/" + this.userId + "/roles")
                 .header("Authorization", this.currentAuthToken)
                 .bodyJson(data);
         Result roleResult = route(application, request);
@@ -197,7 +197,7 @@ public class UserRoleSteps {
         data.set("roleTypes", typesJson);
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method(PATCH)
-                .uri("/api/travellers/" + this.userId + "/roles")
+                .uri("/api/users/" + this.userId + "/roles")
                 .header("Authorization", this.currentAuthToken)
                 .bodyJson(data);
 
