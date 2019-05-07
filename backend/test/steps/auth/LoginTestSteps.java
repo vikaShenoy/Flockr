@@ -42,7 +42,7 @@ public class LoginTestSteps {
     /**
      * Set up the backend server
      */
-    @Before
+    @Before("@LoginSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -60,7 +60,7 @@ public class LoginTestSteps {
     /**
      * Stop the backend server
      */
-    @After
+    @After("@LoginSteps")
     public void tearDown() {
         Helpers.stop(application);
     }

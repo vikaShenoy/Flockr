@@ -43,7 +43,7 @@ public class searchTravellerFilterSteps {
     private String authToken;
     private ArrayNode array;
 
-    @Before
+    @Before("@SearchTravellerSteps")
     public void setUp() throws IOException {
         Module testModule = new AbstractModule() {
             @Override
@@ -62,7 +62,7 @@ public class searchTravellerFilterSteps {
         Helpers.start(application);
     }
 
-    @After
+    @After("@SearchTravellerSteps")
     public void tearDown() {
         Helpers.stop(application);
     }

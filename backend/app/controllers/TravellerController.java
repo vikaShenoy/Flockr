@@ -91,7 +91,7 @@ public class TravellerController extends Controller {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
         if (!security.userHasPermission(userFromMiddleware, travellerId)) {
-            return supplyAsync(() -> unauthorized());
+            return supplyAsync(Controller::forbidden);
         }
 
         return travellerRepository.getUserById(travellerId, false)
@@ -229,7 +229,6 @@ public class TravellerController extends Controller {
 
         // Check travellerID isn't a super admin already
         // Check the patch doesn't give someone a super admin role
-
         JsonNode jsonBody = request.body().asJson();
         JsonNode roleArray = jsonBody.withArray("roleTypes");
         List<String> roleTypes = new ArrayList<>();

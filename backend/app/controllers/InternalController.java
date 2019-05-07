@@ -44,13 +44,6 @@ public class InternalController {
             District district1 = new District("Black Rock City", country1);
             District district2 = new District("New Farm", country2);
 
-            Role admin = new Role(RoleType.ADMIN);
-            Role superAdmin = new Role(RoleType.SUPER_ADMIN);
-            Role traveller = new Role(RoleType.TRAVELLER);
-
-            admin.save();
-            superAdmin.save();
-            traveller.save();
 
             country1.save();
             country2.save();
@@ -107,6 +100,14 @@ public class InternalController {
             List<Passport> passports = new ArrayList<>();
             passports.add(passport3);
             passports.add(passport4);
+
+            Role admin = new Role(RoleType.ADMIN);
+            Role superAdmin = new Role(RoleType.SUPER_ADMIN);
+            Role traveller = new Role(RoleType.TRAVELLER);
+
+            admin.save();
+            superAdmin.save();
+            traveller.save();
 
             List<Role> superAdminRoles = new ArrayList<>();
             superAdminRoles.add(superAdmin);

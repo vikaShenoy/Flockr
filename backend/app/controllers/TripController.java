@@ -18,6 +18,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
 import repository.TripRepository;
+import util.Security;
 import util.TripUtil;
 
 import javax.inject.Inject;
@@ -43,12 +44,13 @@ public class TripController extends Controller {
     private final TripRepository tripRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final TripUtil tripUtil;
+    private final Security security;
 
     @Inject
-    public TripController(TripRepository tripRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil) {
-        this.tripRepository = tripRepository;
-        this.httpExecutionContext = httpExecutionContext;
+    public TripController(TripRepository tripRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil, Security security) {
+        this.tripRepository = tripRepository; this.httpExecutionContext = httpExecutionContext;
         this.tripUtil = tripUtil;
+        this.security = security;
     }
 
     /**
@@ -57,8 +59,13 @@ public class TripController extends Controller {
      * @return A result object
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> addTrip(int travellerId, Http.Request request) {
+    public CompletionStage<Result> addTrip(int userId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
+
+        if (!security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
         JsonNode jsonBody = request.body().asJson();
 
         String tripName = jsonBody.get("tripName").asText();
@@ -80,9 +87,13 @@ public class TripController extends Controller {
     }
 
     @With(LoggedIn.class)
-    public CompletionStage<Result> getTrip(int travellerId, int tripId, Http.Request request) {
+    public CompletionStage<Result> getTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
-        int userId = user.getUserId();
+
+        if (!security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
 
         return tripRepository.getTripByIds(tripId, userId)
                 .thenApplyAsync((optionalTrip) -> {
@@ -104,9 +115,13 @@ public class TripController extends Controller {
      * @return A result object
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> deleteTrip(int travellerId, int tripId, Http.Request request) {
+    public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
-        int userId = user.getUserId();
+
+        if (security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
         return tripRepository.getTripByIds(tripId, userId).
                 thenComposeAsync((optionalTrip) -> {
                     if (!optionalTrip.isPresent()) {
@@ -142,6 +157,12 @@ public class TripController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> updateTrip(Http.Request request, int userId, int tripId) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+        if (!security.userHasPermission(userFromMiddleware, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
         return tripRepository.getTripByIds(tripId, userId)
                 .thenComposeAsync((optionalTrip) -> {
                     if (!optionalTrip.isPresent()) {
@@ -188,9 +209,13 @@ public class TripController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTrips(Http.Request request, int userId) {
-        User user = request.attrs().get(ActionState.USER);
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        return tripRepository.getTripsByIds(user.getUserId())
+        if (!security.userHasPermission(userFromMiddleware, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
+        return tripRepository.getTripsByIds(userId)
                 .thenApplyAsync((trips) -> {
                     JsonNode tripsJson = Json.toJson(trips);
                     return ok(tripsJson);
