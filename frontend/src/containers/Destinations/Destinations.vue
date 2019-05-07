@@ -11,9 +11,11 @@
               :destinationTypes="destinationTypes"
               :countries="countries"
               @editModeChanged="changeEditMode"
+              @idChanged="changeIdOfDestination"
+              @deleteNewDestination="deleteNewDestination"
       ></DestinationCard>
-      <v-btn fab dark id="addDestinationButton" v-on:click="addNewDestinationCard">
-        <v-icon dark>add</v-icon>
+      <v-btn fab id="addDestinationButton" v-on:click="addNewDestinationCard">
+        <v-icon>add</v-icon>
       </v-btn>
     </div>
   </div>
@@ -30,14 +32,8 @@
     data() {
       return {
         destinations: [],
-        countries: {
-          names: [],
-          ids: []
-        },
-        destinationTypes: {
-          names: [],
-          ids: []
-        }
+        countries: [],
+        destinationTypes: []
       }
     },
     mounted: async function () {
@@ -54,27 +50,14 @@
       } catch(error) {
         console.log(error);
       }
-      let currentCountries;
-
       try {
-        currentCountries = await requestCountries();
-
-        for (let index in currentCountries) {
-          this.countries.names.push(currentCountries[index].countryName);
-          this.countries.ids.push(currentCountries[index].countryId);
-        }
+        this.countries = await requestCountries();
       } catch (error) {
         console.log(error);
       }
 
-      let currentDestinationTypes;
       try {
-        currentDestinationTypes = await requestDestinationTypes();
-
-        for (let index in currentDestinationTypes) {
-          this.destinationTypes.names.push(currentDestinationTypes[index].destinationTypeName);
-          this.destinationTypes.ids.push(currentDestinationTypes[index].destinationTypeId);
-        }
+        this.destinationTypes = await requestDestinationTypes();
       } catch (error) {
         console.log(error);
       }
@@ -105,20 +88,27 @@
 
       deleteDestination: async function (event) {
         let targetIndex = await this.getIndexOfDestinationFromTarget(event.target.parentNode);
-        // Check if the destination is a new one (not in the database)
-        if (!(this.destinations[targetIndex].destinationObject.destinationId === "")) {
-          try {
-            sendDeleteDestination(this.destinations[targetIndex].destinationObject.destinationId);
-          } catch(error) {
-            console.log(error);
-          }
+        try {
+          sendDeleteDestination(this.destinations[targetIndex].destinationObject.destinationId);
+          this.destinations.splice(targetIndex, 1);
+        } catch(error) {
+          console.log(error);
         }
+      },
+
+      deleteNewDestination: async function (target) {
+        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
         this.destinations.splice(targetIndex, 1);
       },
 
       changeEditMode: async function (value, target) {
         let targetIndex = await this.getIndexOfDestinationFromTarget(target);
         this.destinations[targetIndex].editMode = value;
+      },
+
+      changeIdOfDestination: async function (value, target) {
+        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
+        this.destinations[targetIndex].destinationObject.destinationId = value;
       },
 
       getIndexOfDestinationFromTarget: function (target) {
@@ -185,7 +175,3 @@
 }
 
 </style>
-
-
-
-

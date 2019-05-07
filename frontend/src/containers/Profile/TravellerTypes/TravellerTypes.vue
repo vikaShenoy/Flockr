@@ -1,5 +1,5 @@
 <template>
-  <div class="traveller-types">
+  <div>
 
     <div class="header">
       <h3>Traveller Types</h3>
@@ -144,11 +144,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.traveller-types {
-  height: 50%;
-}
-
-.header {
+  .header {
   width: 100%;
   display: flex;
   flex-flow: row nowrap;

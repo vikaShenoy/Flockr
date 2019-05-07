@@ -4,7 +4,6 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.typesafe.config.ConfigException;
 import models.Passport;
 import models.TravellerType;
 import models.User;
@@ -14,10 +13,9 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
-import repository.TravellerRepository;
+import repository.UserRepository;
 
 import javax.inject.Inject;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,26 +30,26 @@ import play.libs.concurrent.HttpExecutionContext;
 /**
  * Contains all endpoints associated with travellers
  */
-public class TravellerController extends Controller {
-    private final TravellerRepository travellerRepository;
+public class UserController extends Controller {
+    private final UserRepository userRepository;
     private HttpExecutionContext httpExecutionContext;
 
     @Inject
-    public TravellerController(TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext) {
-        this.travellerRepository = travellerRepository;
+    public UserController(UserRepository userRepository, HttpExecutionContext httpExecutionContext) {
+        this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
     }
 
     /**
      * Retrieves a travellers details
-     * @param travellerId the traveller Id of the traveller to retrieve
+     * @param userId the traveller Id of the traveller to retrieve
      * @param request request Object
      * @return traveller details as a Json object
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> getTraveller(int travellerId, Http.Request request) {
+    public CompletionStage<Result> getTraveller(int userId, Http.Request request) {
 
-        return travellerRepository.getUserById(travellerId)
+        return userRepository.getUserById(userId)
                 .thenApplyAsync((user) -> {
                     if (!user.isPresent()) {
                         return notFound();
@@ -67,12 +65,12 @@ public class TravellerController extends Controller {
 
     /**
      * Updates a travellers details
-      * @param travellerId Redundant ID
+      * @param userId Redundant ID
      * @param request Object to get the JSOn data
      * @return 200 status if update was successful, 500 otherwise
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> updateTraveller(int travellerId, Http.Request request) {
+    public CompletionStage<Result> updateTraveller(int userId, Http.Request request) {
         JsonNode jsonBody = request.body().asJson();
 
 
@@ -150,7 +148,7 @@ public class TravellerController extends Controller {
         message.put("message", "Successfully updated the traveller's information");
 
         return supplyAsync(() -> {
-            travellerRepository.updateUser(user);
+            userRepository.updateUser(user);
             return ok(message);
         }, httpExecutionContext.current());
     }
@@ -161,7 +159,7 @@ public class TravellerController extends Controller {
      * @return a status code 200 if the request is successful, otherwise returns 500.
      */
     public CompletionStage<Result> getAllPassports(Http.Request request) {
-        return travellerRepository.getAllPassports()
+        return userRepository.getAllPassports()
                 .thenApplyAsync((passports) -> {
                     return ok(Json.toJson(passports));
                 }, httpExecutionContext.current());
@@ -174,7 +172,7 @@ public class TravellerController extends Controller {
      * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
      */
     public CompletionStage<Result> getNationalities(Http.Request request) {
-        return travellerRepository.getAllNationalities()
+        return userRepository.getAllNationalities()
                 .thenApplyAsync((nationalities) -> {
                     return ok(Json.toJson(nationalities));
                 }, httpExecutionContext.current());
@@ -183,7 +181,7 @@ public class TravellerController extends Controller {
 
     @With(LoggedIn.class)
     public CompletionStage<Result> getTravellers() {
-        return travellerRepository.getTravellers()
+        return userRepository.getTravellers()
                 .thenApplyAsync(travellers -> {
                     JsonNode travellersJson = Json.toJson(travellers);
                     return ok(travellersJson);
@@ -193,18 +191,18 @@ public class TravellerController extends Controller {
 
     /**
      * A function that adds a passport to a user based on the given user ID
-     * @param travellerId the traveller ID
+     * @param userId the traveller ID
      * @param request Object to get the passportId to add
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> addPassport(int travellerId, Http.Request request) {
+    public CompletionStage<Result> addPassport(int userId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
 
         int passportId = request.body().asJson().get("passportId").asInt();
 
-        return travellerRepository.getPassportById(passportId)
+        return userRepository.getPassportById(passportId)
                 .thenApplyAsync((passport) -> {
                     if (!passport.isPresent()) {
                         return notFound();
@@ -220,15 +218,15 @@ public class TravellerController extends Controller {
 
     /**
      * A function that deletes a passport from a user based on the given user ID
-     * @param travellerId the traveller ID
+     * @param userId the traveller ID
      * @param passportId the passport ID
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> removePassport(int travellerId, int passportId, Http.Request request) {
+    public CompletionStage<Result> removePassport(int userId, int passportId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        return travellerRepository.getPassportById(passportId)
+        return userRepository.getPassportById(passportId)
                 .thenApplyAsync((passport) -> {
                     if (!passport.isPresent()) {
                         return notFound();
@@ -245,16 +243,16 @@ public class TravellerController extends Controller {
 
     /**
      * A function that adds a nationality to the user based on the user ID given
-     * @param travellerId the traveller ID
+     * @param userId the traveller ID
      * @param request Object to get the nationality to add.
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> addNationality(int travellerId, Http.Request request) {
+    public CompletionStage<Result> addNationality(int userId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         int nationalityId = request.body().asJson().get("nationalityId").asInt();
 
-        return travellerRepository.getNationalityById(nationalityId)
+        return userRepository.getNationalityById(nationalityId)
                 .thenApplyAsync((nationality) -> {
                     if (!nationality.isPresent()) {
                         return notFound();
@@ -270,14 +268,14 @@ public class TravellerController extends Controller {
 
     /**
      * Deletes a nationality for a logged in user given a nationality id in the request body
-     * @param travellerId the traveller for which we want to delete the nationality
+     * @param userId the traveller for which we want to delete the nationality
      * @param request the request passed by the routes file
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> deleteNationalityForUser(int travellerId, int nationalityId, Http.Request request) {
+    public CompletionStage<Result> deleteNationalityForUser(int userId, int nationalityId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
-        return travellerRepository.getNationalityById(nationalityId)
+        return userRepository.getNationalityById(nationalityId)
                 .thenApplyAsync((optionalNationality) -> {
                     if (!optionalNationality.isPresent()) {
                         return notFound("Could not find nationality " + nationalityId);
@@ -306,7 +304,7 @@ public class TravellerController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTravellerTypes(Http.Request request) {
-        return travellerRepository.getAllTravellerTypes()
+        return userRepository.getAllTravellerTypes()
                 .thenApplyAsync((types) -> {
                     return ok(Json.toJson(types));
                 }, httpExecutionContext.current());
@@ -358,7 +356,7 @@ public class TravellerController extends Controller {
 
         System.out.println("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
 
-        return travellerRepository.searchUser(nationality,gender,dateMin,dateMax,travellerType)  //Just for testing purposes
+        return userRepository.searchUser(nationality,gender,dateMin,dateMax,travellerType)  //Just for testing purposes
                 .thenApplyAsync((user) -> {
                     JsonNode userAsJson = Json.toJson(user);
                     System.out.println(userAsJson);

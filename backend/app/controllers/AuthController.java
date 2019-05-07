@@ -12,60 +12,36 @@ import play.mvc.Result;
 import models.User;
 import play.mvc.With;
 import repository.AuthRepository;
-import repository.TravellerRepository;
-import scala.reflect.internal.Trees;
+import repository.UserRepository;
 import util.Security;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import util.Responses;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static play.mvc.Results.*;
+import static util.AuthUtil.isAlpha;
+import static util.AuthUtil.isValidEmailAddress;
 
 /**
  * Controller handling authentication endpoints
  */
 public class AuthController {
     private final AuthRepository authRepository;
-    private final TravellerRepository travellerRepository;
+    private final UserRepository userRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final Security security;
     private final Responses responses;
 
     @Inject
-    public AuthController(AuthRepository authRepository, TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses) {
+    public AuthController(AuthRepository authRepository, UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses) {
         this.authRepository = authRepository;
-        this.travellerRepository = travellerRepository;
+        this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
         this.responses = responses;
-    }
-
-    /**
-     * A function that checks if the given string contains all alphabet letters. If yes, it returns true.
-     * Otherwise, return false.
-     * @param name The name of the User
-     * @return true or false depending on the content of the string
-     */
-    public boolean isAlpha(String name) {
-        return name.matches("[a-zA-Z]+");
-    }
-
-    /**
-     * A function that checks if the given email is a valid email format. If yes, it returns true.
-     * Otherwise, returns false.
-     * @param email
-     * @return
-     */
-    public boolean isValidEmailAddress(String email) {
-        String ePattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile(ePattern);
-        java.util.regex.Matcher m = p.matcher(email);
-        return m.matches();
     }
 
     /**
@@ -160,7 +136,7 @@ public class AuthController {
 
         User user = new User(firstName, middleName,lastName, email, hashedPassword, userToken);
         return authRepository.insert(user)
-                .thenApplyAsync((insertedUser) -> ok(Json.toJson(insertedUser)), httpExecutionContext.current());
+                .thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)), httpExecutionContext.current());
     }
 
     /**
@@ -190,7 +166,7 @@ public class AuthController {
                     String token = this.security.generateToken();
                     user.setToken(token);
 
-                    return travellerRepository.updateUser(user);
+                    return userRepository.updateUser(user);
                 }, httpExecutionContext.current())
                 .thenApplyAsync((user) -> {
                             JsonNode userJson = Json.toJson(user);
@@ -213,7 +189,7 @@ public class AuthController {
         User user = request.attrs().get(ActionState.USER);
         user.setToken(null);
 
-        return travellerRepository.updateUser(user)
+        return userRepository.updateUser(user)
                 .thenApplyAsync((u) -> {
                     return ok();
                 }, httpExecutionContext.current());

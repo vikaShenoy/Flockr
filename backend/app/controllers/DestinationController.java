@@ -43,9 +43,7 @@ public class DestinationController  extends Controller{
      */
     public CompletionStage<Result> getDestinations(Http.Request request) {
         return destinationRepository.getDestinations()
-                .thenApplyAsync((destinations) -> {
-                    return ok(Json.toJson(destinations));
-                }, httpExecutionContext.current());
+                .thenApplyAsync(destinations -> ok(Json.toJson(destinations)), httpExecutionContext.current());
     }
 
     /**
@@ -60,7 +58,9 @@ public class DestinationController  extends Controller{
         return destinationRepository.getDestinationById(destinationId)
                 .thenApplyAsync((destination) -> {
                     if (!destination.isPresent()) {
-                        return notFound();
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "No destination exists with the specified ID");
+                        return notFound(message);
                     }
 
                     JsonNode destAsJson = Json.toJson(destination);
@@ -106,9 +106,11 @@ public class DestinationController  extends Controller{
                     latitude,longitude,countryAdd);
 
             return destinationRepository.insert(destination)
-                    .thenApplyAsync((insertedDestination) -> ok(Json.toJson(insertedDestination)), httpExecutionContext.current());
+                    .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)), httpExecutionContext.current());
         } catch (Exception e) {
-            return supplyAsync(() -> badRequest());
+            ObjectNode message = Json.newObject();
+            message.put("message", "Please provide a valid Destination with complete data");
+            return supplyAsync(() -> badRequest(message));
         }
 
     }
@@ -124,7 +126,7 @@ public class DestinationController  extends Controller{
     @With(LoggedIn.class)
     public CompletionStage<Result> updateDestination(Http.Request request, int destinationId) {
        return destinationRepository.getDestinationById(destinationId)
-       .thenComposeAsync((optionalDest) -> {
+       .thenComposeAsync(optionalDest -> {
         if (!optionalDest.isPresent()) {
             throw new CompletionException(new NotFoundException());
         }
@@ -159,9 +161,9 @@ public class DestinationController  extends Controller{
         return destinationRepository.update(destination);
         }, httpExecutionContext.current())
        .thenApplyAsync(destination -> (Result) ok(), httpExecutionContext.current())
-       .exceptionally(e -> {
+       .exceptionally(error -> {
             try {
-                throw e.getCause();
+                throw error.getCause();
             } catch (NotFoundException notFoundE) {
                 return notFound();
             } catch (Throwable ee) {
@@ -179,7 +181,7 @@ public class DestinationController  extends Controller{
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteDestination(int destinationId, Http.Request request) {
         return destinationRepository.getDestinationById(destinationId)
-                .thenComposeAsync((optionalDestination) -> {
+                .thenComposeAsync(optionalDestination -> {
                     if(!optionalDestination.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }

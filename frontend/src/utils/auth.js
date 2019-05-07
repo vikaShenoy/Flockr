@@ -7,7 +7,7 @@ import UserStore from "../stores/UserStore";
  * is not logged in, redirect, otherwise go to page
  * @param {function} to The route to go to
  * @param {function} from The route the user is currently in
- * @param {function} next Functiont to change where the user is going
+ * @param {function} next Function to change where the user is going
  */
 export async function loggedIn(to, from, next) {
   const userId = localStorage.getItem("userId");
@@ -26,7 +26,7 @@ export async function loggedIn(to, from, next) {
 
   let res;
   try {
-    res = await  superagent.get(endpoint(`/travellers/${userId}`))
+    res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
   } catch (e) {
     next("/login");    
@@ -61,7 +61,7 @@ export async function loggedInOrOut(to, from, next) {
 
   let res;
   try {
-    res = await  superagent.get(endpoint(`/travellers/${userId}`))
+    res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
   } catch (e) {
     next();

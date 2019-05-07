@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Contains database calls for all things traveller related
  */
-public class TravellerRepository {
+public class UserRepository {
     private final EbeanServer ebeanServer;
     private final DatabaseExecutionContext executionContext;
 
@@ -35,7 +35,7 @@ public class TravellerRepository {
      * @param executionContext Context to run completion stages on
      */
     @Inject
-    public TravellerRepository(EbeanConfig ebeanConfig, DatabaseExecutionContext executionContext) {
+    public UserRepository(EbeanConfig ebeanConfig, DatabaseExecutionContext executionContext) {
         this.ebeanServer = Ebean.getServer(ebeanConfig.defaultServer());
         this.executionContext = executionContext;
     }

@@ -15,7 +15,7 @@ import { endpoint } from "../../utils/endpoint";
  * @throws Error if status was not 201
  */
 export async function signup(user) {
-  const response = await superagent.post(endpoint("/auth/travellers/signup"))
+  const response = await superagent.post(endpoint("/auth/users/signup"))
   .send(user);
   return response.body
 }
@@ -27,7 +27,7 @@ export async function signup(user) {
  */
 export async function emailTaken(email) {
   try {
-    const res = await superagent.get(endpoint(`/auth/travellers/${email}/available`));
+    const res = await superagent.get(endpoint(`/auth/users/${email}/available`));
   } catch (e) {
     return true;
   }
