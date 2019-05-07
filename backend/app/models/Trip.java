@@ -6,6 +6,9 @@ import io.ebean.Model;
 import javax.persistence.*;
 import java.util.List;
 
+/**
+ * Model for trip. A trip is a planned journey between destinations.
+ */
 @Entity
 public class Trip extends Model {
 
@@ -20,7 +23,12 @@ public class Trip extends Model {
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     private List<TripDestination> tripDestinations;
 
-
+    /**
+     * Constructor to create a new trip.
+     * @param tripDestinations list of TripDestinations which make up the trip.
+     * @param user user who is going on the trip.
+     * @param tripName name of the trip.
+     */
     public Trip(List<TripDestination> tripDestinations, User user, String tripName) {
         this.tripDestinations = tripDestinations;
         this.user = user;
@@ -59,5 +67,8 @@ public class Trip extends Model {
         this.tripName = tripName;
     }
 
+    /**
+     * This is required by EBean to make queries on the database.
+     */
     public static final Finder<Integer, Trip> find = new Finder<>(Trip.class);
 }

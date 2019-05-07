@@ -9,6 +9,10 @@ import javax.persistence.ManyToMany;
 import java.rmi.MarshalledObject;
 import java.util.List;
 
+/**
+ * Types travellers can give themselves on profile, to show which kind
+ * of travel they like.
+ */
 @Entity
 public class TravellerType extends Model {
 

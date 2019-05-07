@@ -6,7 +6,7 @@ import io.ebean.Model;
 import javax.persistence.*;
 
 /**
- * A district within a country that is linked destination.
+ * A district within a country that is linked to destinations.
  */
 @Entity
 public class District extends Model {
@@ -20,6 +20,11 @@ public class District extends Model {
     @ManyToOne
     private Country country;
 
+    /**
+     * Constructor.
+     * @param districtName name of the district.
+     * @param country country the district is in.
+     */
     public District (String districtName, Country country) {
         this.districtName = districtName;
         this.country = country;
