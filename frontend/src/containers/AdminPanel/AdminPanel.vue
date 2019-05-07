@@ -12,6 +12,7 @@
       v-on:dismissForm="handleEditUserFormDismissal"
       v-on:submitForm="handleEditUserFormSubmission"
     />
+    <Snackbar :snackbarModel="this.snackbarModel" />
   </div>
 </template>
 
@@ -23,11 +24,13 @@ import { getUsers } from "./AdminPanelService.js";
 import { patchUser } from "./AdminPanelService.js";
 import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
+import Snackbar from '../../components/Snackbars/Snackbar.vue';
 
 export default {
   components: {
     ManageUsers,
-    EditUserForm
+    EditUserForm,
+    Snackbar
   },
 
   mounted() {
@@ -75,7 +78,14 @@ export default {
         ],
         "timestamp": 728364786872368,
       },
-      users: [] // single source of truth for children components relying on users so that info stays up to date
+      users: [], // single source of truth for children components relying on users so that info stays up to date
+      snackbarModel: {
+        show: false, // whether the snackbar is currently shown or not
+        timeout: 5000, // how long the snackbar will be shown for, it will not update the show property automatically though
+        text: '', // the text to show in the snackbar
+        color: '', // green, red, yellow, red, etc
+        snackbarId: 0
+		  }
     }
   },
   methods: {
@@ -108,7 +118,9 @@ export default {
       }
       this.showEditUserForm = false;
       this.getAllUsers();
-
+      this.snackbarModel.text = 'Successfully edited user';
+      this.snackbarModel.color = 'green';
+      this.snackbarModel.show = true;
     },
     handleDeleteUsersByIds: async function(userIds) {
       const promises = [];
@@ -121,6 +133,9 @@ export default {
       try {
         await Promise.all(promises);
         this.getAllUsers();
+        this.snackbarModel.text = 'Successfully deleted user(s)';
+        this.snackbarModel.color = 'green';
+        this.snackbarModel.show = true;
       } catch(err) {
         console.error(`Could not delete those users: ${err}`);
       }
