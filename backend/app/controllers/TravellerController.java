@@ -56,7 +56,7 @@ public class TravellerController extends Controller {
 
         CompletionStage<Optional<User>> getUser;
 
-        if (user.getUserId() == travellerId) {
+        if (user.getUserId() == travellerId || user.isAdmin()) {
            getUser = travellerRepository.getUserById(travellerId, true);
         } else {
             getUser = travellerRepository.getUserById(travellerId, false);
