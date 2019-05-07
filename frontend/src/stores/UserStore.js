@@ -34,6 +34,10 @@ const UserStore = {
      * Check if a user is an admin
      */
     isAdmin() {
+      if (!this.loggedIn()) {
+        return false;
+      }
+
       for (const role of UserStore.roles)  {
         if (role.roleType === roleType.ADMIN || role.roleType === roleType.DEFAULT_ADMIN) {
           return true;
@@ -45,6 +49,10 @@ const UserStore = {
      * Check if a user is a default admin
      */
     isDefaultAdmin() {
+      if (!this.loggedIn()) {
+        return false;
+      }
+      
       for (const role of UserStore.roles)  {
         if (role.roleType === roleType.DEFAULT_ADMIN) {
           return true;

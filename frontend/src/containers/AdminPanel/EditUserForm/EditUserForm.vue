@@ -44,7 +44,7 @@
                   :items="allTravellerTypeNames"
                   :value="this.initialUserTravellerTypeNames"
                   label="Traveller types"
-                  v-on:input="addChange('travellerTypes', $event)"
+                  v-on:input="addChange('travellerTypes', parseEditTravellerTypeChangeEvent($event))"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -62,7 +62,7 @@
                   :items="allPassportCountries"
                   :value="initialUserPassportCountries"
                   label="Passports"
-                  v-on:input="addChange('passports', $event)"
+                  v-on:input="addChange('passports', parseEditPassportsChangeEvent($event))"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -71,7 +71,8 @@
                   :items="allNationalityNames"
                   :value="initialUserNationalityNames"
                   label="Nationalities"
-                  v-on:input="addChange('nationalities', $event)"
+                  v-on:input="addChange('nationalities', parseEditNationalityChangeEvent($event))"
+                  :rules="[(value) => value.length > 0 || 'The user must have at least one nationality']"
                   multiple
                 ></v-autocomplete>
               </v-flex>
@@ -186,6 +187,12 @@ export default {
     // at the object where changes are stored as you make changes to the fields
     addChange: function(fieldKey, fieldValue) {
       this.changes.userId = this.initialUserData.userId; // make sure there's always a user id
+      if (fieldKey === 'nationalities') {
+        // if trying to make a user have no nationalities, do not add the change
+        if (fieldValue.length < 1) {
+          return;
+        }
+      }
       this.changes[fieldKey] = fieldValue; // store the change
     },
     getAllNationalities: async function() {
@@ -220,6 +227,25 @@ export default {
       } catch(err) {
         console.error(`Could not get all user roles: ${err}`);
       }
+    },
+    /**
+     * Given an array of traveller type names, return their corresponding ids
+     */
+    parseEditTravellerTypeChangeEvent: function(travellerTypeNames) {
+      // filter all the traveller types to be only the ones with the name included in the event, then map them to their ids
+      return this.allTravellerTypes.filter((travellerType) => travellerTypeNames.includes(travellerType.travellerTypeName))
+        .map((travellerType) => travellerType.travellerTypeId);
+    },
+
+    parseEditPassportsChangeEvent: function(passportNames) {
+      // filter all the traveller types to be only the ones with the name included in the event, then map them to their ids
+      return this.allPassports.filter((passport) => passportNames.includes(passport.passportCountry))
+        .map((passport) => passport.passportId);
+    },
+
+    parseEditNationalityChangeEvent: function(nationaltyNames) {
+      return this.allNationalities.filter((nationality) => nationaltyNames.includes(nationality.nationalityName))
+        .map((nationality) => nationality.nationalityId);
     }
   },
   computed: {
