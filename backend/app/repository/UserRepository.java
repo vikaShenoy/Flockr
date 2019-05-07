@@ -16,6 +16,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -94,10 +95,7 @@ public class UserRepository {
      * @return List of nationalities
      */
     public CompletionStage<List<Nationality>> getAllNationalities() {
-        return supplyAsync(() -> {
-            List<Nationality> nationalities = Nationality.find.query().findList();
-            return nationalities;
-        }, executionContext);
+        return supplyAsync(() -> Nationality.find.query().findList(), executionContext);
     }
 
     /**
@@ -153,10 +151,10 @@ public class UserRepository {
      * @param gender gender string
      * @param dateMin min age Date
      * @param dateMax max age Date
-     * @param traveller_type traveller type Id
+     * @param travellerTypeId traveller type Id
      * @return List of users or empty list
      */
-    public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax, int traveller_type) {
+    public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax, int travellerTypeId) {
         AtomicBoolean found = new AtomicBoolean(false);
 
         return supplyAsync(() -> {
@@ -165,8 +163,8 @@ public class UserRepository {
            if (gender != null) {
                query = query.eq("gender", gender);
            }
-           if (traveller_type != -1)     {
-               query = query.where().eq("traveller_type_id", traveller_type);
+           if (travellerTypeId != -1)     {
+               query = query.where().eq("traveller_type_id", travellerTypeId);
            }
            query = query.where().between("dateOfBirth", dateMax, dateMin)
                    .isNotNull("dateOfBirth")
@@ -174,9 +172,7 @@ public class UserRepository {
                    .isNotEmpty("travellerTypes");
 
            List<User> users = query.findList();
-
            if (nationality != -1) {
-
                for (int i = 0; i < users.size(); i++) {
                    found.set(false);
                    List<Nationality> natsToCheck = users.get(i).getNationalities();
@@ -184,12 +180,10 @@ public class UserRepository {
                        if (natsToCheck.get(j).getNationalityId() == nationality) {
                            found.set(true);
                        }
-
                    }
                    if (!found.get()) {
                        users.remove(i);
                        i--;
-
                    }
                }
            }
