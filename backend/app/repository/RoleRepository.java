@@ -17,7 +17,8 @@ public class RoleRepository {
 
     /**
      * Dependency injection
-     * @param ebeanConfig the Ebean configuration to use
+     *
+     * @param ebeanConfig      the Ebean configuration to use
      * @param executionContext The context to run completion stages on
      */
     @Inject
@@ -27,6 +28,7 @@ public class RoleRepository {
 
     /**
      * A function that gets the list of all the valid roles.
+     *
      * @return the list of all the RoleType
      */
     public CompletionStage<List<Role>> getAllRoles() {
@@ -36,6 +38,7 @@ public class RoleRepository {
     /**
      * Function that gets the roles of a specific user from the database and returns them as a list in an async
      * function.
+     *
      * @param userId int the id of the user
      * @return CompletionStage&ltList&ltRole&gt&gt
      */
@@ -44,6 +47,6 @@ public class RoleRepository {
     }
 
     public CompletionStage<Role> getRole(RoleType roleType) {
-        return  supplyAsync(() -> Role.find.query().where().eq("role_type", roleType.name()).findOne(), executionContext);
+        return supplyAsync(() -> Role.find.query().where().eq("role_type", roleType.name()).findOne(), executionContext);
     }
 }

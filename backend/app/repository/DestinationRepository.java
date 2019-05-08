@@ -4,9 +4,7 @@ import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import models.*;
 import play.db.ebean.EbeanConfig;
-import play.db.ebean.EbeanDynamicEvolutions;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
@@ -20,7 +18,8 @@ public class DestinationRepository {
 
     /**
      * Dependency injection
-     * @param ebeanConfig ebean config to use
+     *
+     * @param ebeanConfig      ebean config to use
      * @param executionContext Context to run completion stages on
      */
     @Inject
@@ -30,9 +29,9 @@ public class DestinationRepository {
     }
 
 
-
     /**
      * Gets a list of all destinations
+     *
      * @return <b>List</b> of destinations
      */
     public CompletionStage<List<Destination>> getDestinations() {
@@ -45,6 +44,7 @@ public class DestinationRepository {
 
     /**
      * Gets a destination by it's ID
+     *
      * @param destinationId The ID of the destination to get
      * @return the destination object
      */
@@ -59,6 +59,7 @@ public class DestinationRepository {
 
     /**
      * Inserts a destination into the database
+     *
      * @param destination the destination to be inserted
      * @return the destination object
      */
@@ -71,8 +72,9 @@ public class DestinationRepository {
 
     /**
      * Updates a destination
+     *
      * @param destination The destination to update
-     * @return  The destination that was updated
+     * @return The destination that was updated
      */
     public CompletionStage<Destination> update(Destination destination) {
         return supplyAsync(() -> {
@@ -83,6 +85,7 @@ public class DestinationRepository {
 
     /**
      * Gets a list of countries
+     *
      * @return The list of countries
      */
     public CompletionStage<List<Country>> getCountries() {
@@ -94,6 +97,7 @@ public class DestinationRepository {
 
     /**
      * Gets a list of countries
+     *
      * @return The list of countries Json
      */
     public CompletionStage<List<DestinationType>> getDestinationTypes() {
@@ -105,6 +109,7 @@ public class DestinationRepository {
 
     /**
      * Gets a list of districts
+     *
      * @param countryId The country id to get the districts from
      * @return The list of districts as Json
      */
@@ -118,6 +123,7 @@ public class DestinationRepository {
 
     /**
      * Delete a destination given a destination by id
+     *
      * @param destinationId the id of the destination we are trying to delete
      * @return the id of the destination that was deleted
      */

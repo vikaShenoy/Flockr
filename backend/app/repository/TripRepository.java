@@ -23,6 +23,7 @@ public class TripRepository {
 
     /**
      * Saves a trip
+     *
      * @param trip The trip to save
      * @return The saved trip
      */
@@ -35,6 +36,7 @@ public class TripRepository {
 
     /**
      * Updates a trip in the database.
+     *
      * @param trip The trip to update changes.
      * @return The trip that was updated.
      */
@@ -47,6 +49,7 @@ public class TripRepository {
 
     /**
      * Delete a trip.
+     *
      * @param trip The trip to delete.
      */
     public CompletionStage<Trip> deleteTrip(Trip trip) {
@@ -58,6 +61,7 @@ public class TripRepository {
 
     /**
      * Get a trip by its tripId and userId.
+     *
      * @param tripId The id of the trip to find.
      * @param userId The user id of the trip to find.
      * @return the trip that matches given ids.
@@ -74,6 +78,7 @@ public class TripRepository {
 
     /**
      * Get trips by the users userId
+     *
      * @param travellerId The user id of the trips
      * @return The users trips
      */
