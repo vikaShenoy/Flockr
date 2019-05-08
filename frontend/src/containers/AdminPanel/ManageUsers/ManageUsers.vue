@@ -9,7 +9,7 @@
 
           <v-btn class="edit-trips-button" :disabled="this.selectedUsers.length === 0"
             @click="editTripsButtonClicked">
-            Edit trips
+            View Trips
           </v-btn>
 
           <v-btn class="edit-user-button" v-on:click.stop="editUserButtonClicked" :disabled="this.selectedUsers.length != 1">
@@ -83,7 +83,7 @@ export default {
     },
     editTripsButtonClicked: function() {
       const userId = this.selectedUsers[0];
-      this.$emit('wantToEditUserTrips', userId);
+      this.$router.push(`/travellers/${userId}/trips`);
     },
     mapUsers: function() {
       return this.users.map((user) => ({
