@@ -53,7 +53,7 @@
                   :items="allUserRoleTypes"
                   :value="initialUserRoleTypes"
                   label="User roles"
-                  v-on:input="addChange('roles', $event)"
+                  v-on:input="addChange('roleTypes', $event)"
                   multiple
                 ></v-autocomplete>
               </v-flex>
