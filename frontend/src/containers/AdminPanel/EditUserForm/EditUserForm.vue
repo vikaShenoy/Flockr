@@ -5,92 +5,100 @@
           <span class="headline">Editing user: {{this.fullUserName}}</span>
         </v-card-title>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12 sm6 md4>
-                <v-text-field
-                  label="First name *"
-                  required
-                  :value="this.initialUserData.firstName"
-                  v-on:input="addChange('firstName', $event)"
-                />
-              </v-flex>
-              <v-flex xs12 sm6 md4>
-                <v-text-field
-                  label="Middle name"
-                  :value="this.initialUserData.middleName"
-                  v-on:input="addChange('middleName', $event)"
-                  hint="you may leave this empty"
-                />
-              </v-flex>
-              <v-flex xs12 sm6 md4>
-                <v-text-field
-                  label="Last name *"
-                  :value="this.initialUserData.lastName"
-                  v-on:input="addChange('lastName', $event)"
-                  required
-                />
-              </v-flex>
-              <v-flex xs12>
-                <v-text-field
-                  label="Email *"
-                  :value="this.initialUserData.email"
-                  v-on:input="addChange('email', $event)"
-                  required
-                />
-              </v-flex>
-              <v-flex xs12 sm6>
-                <v-autocomplete
-                  :items="allTravellerTypeNames"
-                  :value="this.initialUserTravellerTypeNames"
-                  label="Traveller types"
-                  v-on:input="addChange('travellerTypes', parseEditTravellerTypeChangeEvent($event))"
-                  multiple
-                ></v-autocomplete>
-              </v-flex>
-              <v-flex xs12 sm6>
-                <v-autocomplete
-                  :items="allUserRoleTypes"
-                  :value="initialUserRoleTypes"
-                  label="User roles"
-                  v-on:input="addChange('roleTypes', $event)"
-                  multiple
-                ></v-autocomplete>
-              </v-flex>
-              <v-flex xs12 sm6>
-                <v-autocomplete
-                  :items="allPassportCountries"
-                  :value="initialUserPassportCountries"
-                  label="Passports"
-                  v-on:input="addChange('passports', parseEditPassportsChangeEvent($event))"
-                  multiple
-                ></v-autocomplete>
-              </v-flex>
-              <v-flex xs12 sm6>
-                <v-autocomplete
-                  :items="allNationalityNames"
-                  :value="initialUserNationalityNames"
-                  label="Nationalities"
-                  v-on:input="addChange('nationalities', parseEditNationalityChangeEvent($event))"
-                  :rules="[(value) => value.length > 0 || 'The user must have at least one nationality']"
-                  multiple
-                ></v-autocomplete>
-              </v-flex>
-              <v-flex xs12 sm6>
-                <v-autocomplete
-                  :items="['Female', 'Male', 'Other']"
-                  label="Gender"
-                  :value="initialUserData.gender"
-                  v-on:input="addChange('gender', $event)"
-                ></v-autocomplete>
-              </v-flex>
+          <v-form ref="form">
+            <v-container grid-list-md>
+              <v-layout wrap>
+
+                <v-flex xs12 sm6 md4>
+                  <v-text-field
+                    label="First name *"
+                    required
+                    :value="this.initialUserData.firstName"
+                    v-on:input="addChange('firstName', $event)"
+                    :rules="[requiredRule, lengthRule]"
+                  />
+                </v-flex>
+                <v-flex xs12 sm6 md4>
+                  <v-text-field
+                    label="Middle name"
+                    :value="this.initialUserData.middleName"
+                    v-on:input="addChange('middleName', $event)"
+                    hint="you may leave this empty"
+                    :rules="[middleNameRule]"
+                  />
+                </v-flex>
+                <v-flex xs12 sm6 md4>
+                  <v-text-field
+                    label="Last name *"
+                    :value="this.initialUserData.lastName"
+                    v-on:input="addChange('lastName', $event)"
+                    required
+                    :rules="[requiredRule, lengthRule]"
+                  />
+                </v-flex>
+                <v-flex xs12>
+                  <v-text-field
+                    label="Email *"
+                    :value="this.initialUserData.email"
+                    v-on:input="addChange('email', $event)"
+                    required
+                    :rules="[requiredRule, emailRule]"
+                  />
+                </v-flex>
+                <v-flex xs12 sm6>
+                  <v-autocomplete
+                    :items="allTravellerTypeNames"
+                    :value="this.initialUserTravellerTypeNames"
+                    label="Traveller types"
+                    v-on:input="addChange('travellerTypes', parseEditTravellerTypeChangeEvent($event))"
+                    multiple
+                  ></v-autocomplete>
+                </v-flex>
+                <v-flex xs12 sm6>
+                  <v-autocomplete
+                    :items="allUserRoleTypes"
+                    :value="initialUserRoleTypes"
+                    label="User roles *"
+                    v-on:input="addChange('roles', $event)"
+                    multiple
+                    :rules="[requiredRule]"
+                  ></v-autocomplete>
+                </v-flex>
+                <v-flex xs12 sm6>
+                  <v-autocomplete
+                    :items="allPassportCountries"
+                    :value="initialUserPassportCountries"
+                    label="Passports"
+                    v-on:input="addChange('passports', parseEditPassportsChangeEvent($event))"
+                    multiple
+                  ></v-autocomplete>
+                </v-flex>
+                <v-flex xs12 sm6>
+                  <v-autocomplete
+                    :items="allNationalityNames"
+                    :value="initialUserNationalityNames"
+                    label="Nationalities *"
+                    v-on:input="addChange('nationalities', parseEditNationalityChangeEvent($event))"
+                    :rules="[arrayRequiredRule]"
+                    multiple
+                  ></v-autocomplete>
+                </v-flex>
+                <v-flex xs12 sm6>
+                  <v-autocomplete
+                    :items="['Female', 'Male', 'Other']"
+                    label="Gender *"
+                    :value="initialUserData.gender"
+                    v-on:input="addChange('gender', $event)"
+                    :rules="[requiredRule]"
+                  ></v-autocomplete>
+                </v-flex>
 
               <v-flex xs12 sm6>
                 <v-menu ref="dateMenu" v-model="dateMenu" :close-on-content-click="false" :nudge-right="40"
                   :return-value.sync="dateOfBirth" lazy transition="scale-transition" offset-y full-width>
                   <template v-slot:activator="{ on }">
                     <v-text-field class="edit-field" label="Date of Birth" v-model="dateOfBirth" readonly v-on="on" >
->
+
                     </v-text-field>
                   </template>
                   <v-date-picker color="secondary" ref="picker" :max="currentDate" v-model="dateOfBirth" no-title
@@ -101,9 +109,9 @@
                   </v-date-picker>
                 </v-menu>
               </v-flex>
-
-            </v-layout>
-          </v-container>
+              </v-layout>
+            </v-container>
+          </v-form>
           <small>* indicates required field</small>
         </v-card-text>
         <v-card-actions>
@@ -173,7 +181,11 @@ export default {
       dateMenu: false, // don't show the menu by default
       dateOfBirth: null,
       currentDate: moment().format("YYYY-MM-DD"),
-      moment,
+      arrayRequiredRule: field => field.length > 0 || "At least one is required",
+      middleNameRule: field => !(field.length === 1) || "Middle  name must be greater than 2 characters long",
+      requiredRule: field => !!field || "This field is required",
+      lengthRule: field => field.length >= 2 || "This field must be 2 or more characters long",
+      emailRule: field => /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(field) || "This is not a valid email"
     }
   },
   methods: {
@@ -181,8 +193,11 @@ export default {
       this.$emit('dismissForm');
     },
     submitForm: function() {
-      console.log(this.changes);
-      this.$emit('submitForm', this.changes);
+      if (this.$refs.form.validate()) {
+        this.$emit('submitForm', this.changes);
+      } else {
+        this.$emit('incorrectData');
+      }
     },
     // store the patches we want to make to the user for when the form is submitted
     // NOTE: if you are unsure about how this works, open up the component in Vue Dev Tools and look
@@ -209,7 +224,6 @@ export default {
       try {
         const res = await superagent.get(endpoint('/users/passports'));
         this.allPassports = res.body;
-        console.log('All passports: ', this.allPassports);
       } catch(err) {
         console.error(`Could not get all valid passports: ${err}`);
       }
@@ -225,7 +239,7 @@ export default {
     getAllUserRoles: async function() {
       try {
         const res = await superagent.get(endpoint('/users/roles')).set("Authorization", localStorage.getItem("authToken"));
-        this.allUserRoles = res.body;
+        this.allUserRoles = res.body.filter(role => role.roleType !== "SUPER_ADMIN");
       } catch(err) {
         console.error(`Could not get all user roles: ${err}`);
       }
