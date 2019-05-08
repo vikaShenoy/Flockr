@@ -4,14 +4,12 @@ import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
+
 
 /**
  * A country that is linked to a destination.
  */
-
 @Entity
 public class Country extends Model {
 
@@ -41,5 +39,8 @@ public class Country extends Model {
         this.countryName = countryName;
     }
 
+    /**
+     * This is required by EBean to make queries on the database.
+     */
     public static final Finder<Integer, Country> find = new Finder<>(Country.class);
 }

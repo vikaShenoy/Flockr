@@ -1,7 +1,6 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
@@ -11,6 +10,7 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
+import models.*;
 import org.junit.Assert;
 import play.Application;
 import play.ApplicationLoader;
@@ -21,6 +21,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import utils.TestAuthenticationHelper;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -32,18 +33,13 @@ import static play.test.Helpers.route;
 public class DestinationTestingSteps {
     @Inject
     private Application application;
-    private JsonNode userData;
+    private JsonNode destinationData;
     private Result result;
 
     // user data
-    private String firstName;
-    private String middleName;
-    private String lastName;
-    private String email;
-    private String plainTextPassword;
     private String authToken;
 
-    @Before("@DestinationSteps")
+    @Before
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -58,102 +54,36 @@ public class DestinationTestingSteps {
         Helpers.start(application);
     }
 
-    @After("@DestinationSteps")
+    @After
     public void tearDown() {
         Helpers.stop(application);
     }
 
     @Given("a user with the following information exists:")
     public void aUserWithTheFollowingInformationExists(DataTable dataTable) throws IOException {
-        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
-        Map<String, String> firstRow = list.get(0);
-        this.firstName = firstRow.get("firstName");
-        this.middleName = firstRow.get("middleName");
-        this.lastName = firstRow.get("lastName");
-        this.email = firstRow.get("email");
-        this.plainTextPassword = firstRow.get("password");
-
-
-        // sign up a user
-        JsonNode signUpReqBody = Json.toJson(firstRow);
-        Http.RequestBuilder signUpReq = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/auth/users/signup")
-                .bodyJson(signUpReqBody);
-        Result signUpRes = route(application, signUpReq);
-        Assert.assertEquals(200, signUpRes.status());
-
-        // log in to get the auth token
-        ObjectNode logInReqBody = Json.newObject();
-        logInReqBody.put("email", this.email);
-        logInReqBody.put("password", this.plainTextPassword);
-        Http.RequestBuilder logInReq = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/auth/users/login")
-                .bodyJson(signUpReqBody);
-        Result logInRes = route(application, logInReq);
-
-        System.out.println(utils.PlayResultToJson.convertResultToJson(logInRes));
-
-        Assert.assertEquals(200, logInRes.status());
-
-        JsonNode logInResBody = utils.PlayResultToJson.convertResultToJson(logInRes);
-
-        // make the token available for the rest of the class
-        this.authToken = logInResBody.get("token").asText();
-        Assert.assertNotNull(this.authToken);
+        this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
     }
 
-    @Given("that I have destination data to create with:")
-    public void thatIHaveDestinationDataToCreateWith(DataTable dataTable) {
-        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
-        Map<String, String> firstRow = list.get(0);
-        this.userData = Json.toJson(firstRow);
-
-        Http.RequestBuilder resample = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/internal/resample");
-        Result result = route(application, resample);
+    @Given("that I am logged in")
+    public void thatIAmLoggedIn() {
+        Assert.assertTrue(this.authToken.length() > 0);
     }
 
-    @Given("that I have a destination created")
-    public void thatIHaveADestinationCreated() {
-        Http.RequestBuilder resample = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/internal/resample");
-        Result result = route(application, resample);
-    }
-
-    @When("I make a {string} request to {string} with the data")
-    public void iMakeARequestToWithTheData(String requestMethod, String endpoint) {
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method(requestMethod)
-                .uri(endpoint)
-                .bodyJson(this.userData);
-        this.result = route(application, request);
-    }
-
-    @Then("I should receive an {int} status code")
-    public void iShouldReceiveAnStatusCode(Integer expectedStatusCode) {
-        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
-    }
-
-    @Then("I should receive a {int} status code when getting the destination with id {int}")
-    public void iShouldReceiveAStatusCodeWhenCheckingForTheDestination(Integer expectedStatusCode, Integer destinationId) {
-        Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/api/destinations/" + destinationId.toString());
-        Result getDestRes = route(application, checkDeletion);
-        Assert.assertEquals(expectedStatusCode, (Integer) getDestRes.status());
-    }
-
-    @Given("that I have a destination created with id {int}")
+    @Given("^that I have a destination created with id (\\d+)$")
     public void thatIHaveADestinationCreatedWithId(int destinationId) throws IOException {
-        System.out.println("The destination id is: " + destinationId);
-        Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
+
+        DestinationType destinationType1 = DestinationType.find.query().
+                where().eq("destination_type_id", 1).findOne();
+        Country country1 = Country.find.query().
+                where().eq("country_id", 1).findOne();
+        District district1 = District.find.query().where().eq("district_id", 1).findOne();
+        Destination destination1 = new Destination("Burning Man",destinationType1, district1, 12.1234,12.1234, country1 );
+        destination1.save();
+
+        Http.RequestBuilder deleteRequest = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/destinations/" + destinationId);
-        Result result = route(application, checkDeletion);
+        Result result = route(application, deleteRequest);
 
         // check that the destination's name has some text in it
         JsonNode res = utils.PlayResultToJson.convertResultToJson(result);
@@ -161,18 +91,89 @@ public class DestinationTestingSteps {
         Assert.assertTrue(destinationName.length() > 0);
     }
 
-    @When("I make a {string} request to {string} to delete the destination")
-    public void iMakeARequestToToDeleteTheDestination(String requestMethod, String endpoint) {
-        Http.RequestBuilder deleteReq = Helpers.fakeRequest()
-                .method(requestMethod)
-                .uri(endpoint)
-                .header("Authorization", this.authToken);
-        Result deleteRes = route(application, deleteReq);
-        Assert.assertEquals(200, deleteRes.status());
+    @Given("that I want to create a Destination with the following valid data:")
+    public void thatIWantToCreateADestinationWithTheFollowingValidData(DataTable dataTable) {
+        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
+        Map<String, String> firstRow = list.get(0);
+        this.destinationData = Json.toJson(firstRow);
     }
 
-    @Given("that I am logged in")
-    public void thatIAmLoggedIn() {
-        Assert.assertTrue(this.authToken.length() > 0);
+    @Given("that I want to create a Destination with the following incomplete data:")
+    public void thatIWantToCreateADestinationWithTheFollowingIncompleteData(DataTable dataTable) {
+        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
+        Map<String, String> firstRow = list.get(0);
+        System.out.println(list.get(0));
+
+        this.destinationData = Json.toJson(firstRow);
+    }
+
+    @Given("the database has been populated with countries, districts and destination types")
+    public void theDatabaseHasBeenPopulatedWithCountriesDistrictsAndDestinationTypes() {
+
+        DestinationType destinationType1 = new DestinationType("Event");
+        DestinationType destinationType2 = new DestinationType("City");
+
+        Country country1 = new Country("United States of America");
+        Country country2 = new Country("Australia");
+
+        District district1 = new District("Black Rock City", country1);
+        District district2 = new District("New Farm", country2);
+
+        destinationType1.save();
+        destinationType2.save();
+
+        country1.save();
+        country2.save();
+
+        district1.save();
+        district2.save();
+
+    }
+
+    @When("I click the Add Destination button")
+    public void iClicktheAddDestination() {
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("POST")
+                .uri("/api/destinations")
+                .bodyJson(this.destinationData);
+        this.result = route(application, request);
+        Assert.assertNotNull(this.result);
+    }
+
+    @When("I click the Delete Destination button")
+    public void iClickTheDeleteDestinationButton() {
+        Http.RequestBuilder deleteReq = Helpers.fakeRequest()
+                .method("DELETE")
+                .uri("/api/destinations/1")
+                .header("Authorization", this.authToken);
+        this.result = route(application, deleteReq);
+        Assert.assertEquals(200, this.result.status());
+    }
+
+    @Then("I should receive a {int} status code indicating that the Destination is successfully created")
+    public void iShouldReceiveAnStatusCodeIndicatingThatDestinationIsSuccessfullyCreated(Integer expectedStatusCode) {
+        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+    }
+
+    @Then("I should receive a {int} status code indicating that the Destination is not successfully created")
+    public void iShouldReceiveAStatusCodeIndicatingThatTheDestinationIsNotSuccessfullyCreated(Integer expectedStatusCode) {
+        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+    }
+
+    @Then("I try to search the Destination with the id of {int}")
+    public void iTryToSearchTheDestinationWithTheIdOf(Integer destinationId) {
+        Http.RequestBuilder request = Helpers.fakeRequest()
+                .method("GET")
+                .uri("/api/destinations/" + destinationId.toString());
+        this.result = route(application, request);
+    }
+
+    @Then("I should receive a {int} status code when getting the destination with id {int} indicating that the Destination with the given ID is not found")
+    public void iShouldReceiveAStatusCodeWhenGettingTheDeletedDestinationWithId(Integer expectedStatusCode, Integer destinationId) {
+        Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
+                .method("GET")
+                .uri("/api/destinations/" + destinationId.toString());
+        this.result = route(application, checkDeletion);
+        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
     }
 }

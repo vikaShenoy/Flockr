@@ -10,7 +10,7 @@ Feature: A user can have their roles updated
       | Andy    | Admin    | Holden | passwordTest | test@gmail.com |
 
     Given all roles are created
-  @UserRoleSteps
+
 #   Test the patch endpoint works to change user role
   Scenario: A user has their role changed from TRAVELLER to ADMIN by an admin
     Given ROLES - The admin is logged in...
@@ -18,7 +18,6 @@ Feature: A user can have their roles updated
     And ROLES - I request roles from the database
     Then ROLES - The user has an admin role
 
-  @UserRoleSteps
   Scenario: A non-admin user tries to give themselves admin role
     Given ROLES - the user is logged in...
     When ROLES - A user adds an admin role to themselves

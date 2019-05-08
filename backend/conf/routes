@@ -4,26 +4,26 @@
 GET          /                                                  controllers.Assets.at(path="/public/vue-front-end-goes-here", file="index.html")
 
 #Interval routes
-POST         /api/internal/resample                             controllers.InternalController.resample
+POST         /api/internal/resample                    controllers.InternalController.resample
 
 # Auth routes
-POST         /api/auth/users/signup                        controllers.AuthController.signup(request: Request)
-POST         /api/auth/users/login                         controllers.AuthController.login(request: Request)
-POST         /api/auth/users/logout                        controllers.AuthController.logout(request: Request)
-GET          /api/auth/users/:email/available              controllers.AuthController.checkEmailAvailable(email: String)
+POST         /api/auth/users/signup               controllers.AuthController.signup(request: Request)
+POST         /api/auth/users/login                controllers.AuthController.login(request: Request)
+POST         /api/auth/users/logout               controllers.AuthController.logout(request: Request)
+GET          /api/auth/users/:email/available     controllers.AuthController.checkEmailAvailable(email: String)
 
 # Traveller routes
-GET          /api/users                                         controllers.TravellerController.getTravellers()
-GET          /api/users/search                                  controllers.TravellerController.searchTravellers(request: Request)
-GET          /api/users/nationalities                           controllers.TravellerController.getNationalities(request: Request)
-GET          /api/users/passports                               controllers.TravellerController.getAllPassports(request: Request)
-GET          /api/users/types                                   controllers.TravellerController.getTravellerTypes(request: Request)
+GET          /api/users                                         controllers.UserController.getTravellers()
+GET          /api/users/search                                  controllers.UserController.searchTravellers(request: Request)
+GET          /api/users/nationalities                           controllers.UserController.getNationalities(request: Request)
+GET          /api/users/passports                               controllers.UserController.getAllPassports(request: Request)
+GET          /api/users/types                                   controllers.UserController.getTravellerTypes(request: Request)
 GET          /api/users/roles                                   controllers.RoleController.getAllRoles(request: Request)
 GET          /api/users/:userId/roles                           controllers.RoleController.getUsersRoles(userId: Int, request: Request)
-GET          /api/users/:userId                            controllers.TravellerController.getTraveller(userId: Int, request: Request)
-PATCH        /api/users/:userId                            controllers.TravellerController.updateTraveller(userId: Int, request: Request)
-DELETE       /api/users/:userId                             controllers.TravellerController.deleteUser(userId: Int, request: Request)
-PATCH        /api/users/:userId/roles        controllers.TravellerController.updateTravellerRole(userId: Int, request: Request)
+GET          /api/users/:userId                            controllers.UserController.getTraveller(userId: Int, request: Request)
+PATCH        /api/users/:userId                            controllers.UserController.updateTraveller(userId: Int, request: Request)
+DELETE       /api/users/:userId                             controllers.UserController.deleteUser(userId: Int, request: Request)
+PATCH        /api/users/:userId/roles        controllers.UserController.updateTravellerRole(userId: Int, request: Request)
 
 # Destination Routes
 GET         /api/destinations                                   controllers.DestinationController.getDestinations(request: Request)
