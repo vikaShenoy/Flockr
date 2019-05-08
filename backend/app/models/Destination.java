@@ -3,7 +3,6 @@ package models;
 import javax.persistence.*;
 
 import io.ebean.*;
-import org.checkerframework.common.aliasing.qual.Unique;
 
 import java.util.List;
 

@@ -1,15 +1,13 @@
 package models;
 
 import javax.persistence.*;
-import javax.validation.Constraint;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
 import io.ebean.*;
 import io.ebean.annotation.CreatedTimestamp;
-import org.springframework.format.annotation.DateTimeFormat;
-import play.data.format.Formats;
 import play.data.validation.Constraints;
 /**
  * A traveller, who may wish to create trips, go to destinations, book hotels, book flights, etc
