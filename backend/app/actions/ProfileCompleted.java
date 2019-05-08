@@ -14,6 +14,8 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
  * NOTE: needs to be called AFTER LoggedIn middleware
  */
 public class ProfileCompleted extends Action.Simple {
+
+    @Override
     public CompletionStage<Result> call(Http.Request request) {
         if (!request.attrs().containsKey(ActionState.USER)) {
             return supplyAsync(() -> forbidden());
@@ -27,4 +29,5 @@ public class ProfileCompleted extends Action.Simple {
             return supplyAsync(() -> forbidden());
         }
     }
+
 }

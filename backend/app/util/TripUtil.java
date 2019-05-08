@@ -21,7 +21,6 @@ public class TripUtil {
         }
 
         int index = 0;
-        //System.out.println(tripDestinationsJson);
         for (JsonNode tripDestinationJson : tripDestinationsJson) {
             int destinationId = tripDestinationJson.get("destinationId").asInt();
 
