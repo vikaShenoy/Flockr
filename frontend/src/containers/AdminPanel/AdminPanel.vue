@@ -5,6 +5,7 @@
       :users="this.users"
       v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
+      v-on:wantToEditUserTrips="handleWantToEditUserTrips"
     />
     <EditUserForm
       :showForm="this.showEditUserForm"
@@ -145,6 +146,10 @@ export default {
         this.snackbarModel.show = true;
         console.error(`Could not delete those users: ${err}`);
       }
+    },
+    handleWantToEditUserTrips: async function(userId) {
+      // redirect the admin to the other user's trips page
+      this.$router.push(`/travellers/${userId}/trips`);
     }
   }
 };
