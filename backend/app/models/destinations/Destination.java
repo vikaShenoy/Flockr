@@ -1,11 +1,6 @@
 package models.destinations;
 
-import play.data.format.Formats;
-import play.data.validation.Constraints;
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.validation.Constraint;
 import io.ebean.*;
 
 /**

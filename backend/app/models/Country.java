@@ -4,9 +4,8 @@ import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
+
 
 /**
  * A country that is linked to a destination.

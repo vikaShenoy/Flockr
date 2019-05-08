@@ -8,6 +8,10 @@ import play.libs.typedmap.TypedKey;
  */
 public class ActionState {
 
+    private ActionState() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static final TypedKey<User> USER = TypedKey.create("user");
 
 }

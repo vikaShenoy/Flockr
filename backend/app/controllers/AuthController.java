@@ -26,7 +26,7 @@ import static util.AuthUtil.isAlpha;
 import static util.AuthUtil.isValidEmailAddress;
 
 /**
- * Controller handling authentication endpoints
+ * Controller handling authentication endpoints.
  */
 public class AuthController {
     private final AuthRepository authRepository;
@@ -47,16 +47,19 @@ public class AuthController {
     /**
      * Signs a user up with minimal details and sends auth session to client
      * @param request Incoming http request
-     * @return The inserted user as JSON
+     * @return The inserted user as JSON, with status code 201.
+     * Return status code 400 if signup request invalid.
      */
     public CompletionStage<Result> signup(Request request) {
         JsonNode jsonRequest = request.body().asJson();
+
+        String messageKey = "message";
 
         // check that there is a request body, if not return badRequest
         if (jsonRequest == null) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid request body according to the API spec");
+                message.put(messageKey, "Please provide a valid request body according to the API spec");
                 return badRequest(message);
             });
         }
@@ -64,25 +67,25 @@ public class AuthController {
         if (!(jsonRequest.has("firstName"))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a first name with the JSON key as firstName");
+                message.put(messageKey, "Please provide a first name with the JSON key as firstName");
                 return badRequest(message);
             });
         } else if (!(jsonRequest.has("lastName"))) {  // Checks if the JSON contains a last name
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a last name with the JSON key as lastName");
+                message.put(messageKey, "Please provide a last name with the JSON key as lastName");
                 return badRequest(message);
             });
         } else if (!(jsonRequest.has("email"))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid email address with the JSON key as email");
+                message.put(messageKey, "Please provide a valid email address with the JSON key as email");
                 return badRequest(message);
             });
         } else if (!(jsonRequest.has("password"))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a password with at least 6 characters with the JSON key as password");
+                message.put(messageKey, "Please provide a password with at least 6 characters with the JSON key as password");
                 return badRequest(message);
             });
         }
@@ -101,7 +104,7 @@ public class AuthController {
             if (!(isAlpha(middleName)) || (middleName.length() < 2)) {
                 return supplyAsync(() -> {
                     ObjectNode message = Json.newObject();
-                    message.put("message", "Please provide a valid middle name that contains only letters and has at least 2 characters");
+                    message.put(messageKey, "Please provide a valid middle name that contains only letters and has at least 2 characters");
                     return badRequest(message);
                 });
             }
@@ -111,25 +114,25 @@ public class AuthController {
         if ((firstName.isEmpty()) || !(isAlpha(firstName)) || (firstName.length() < 2)) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid first name that contains only letters and has at least 2 characters");
+                message.put(messageKey, "Please provide a valid first name that contains only letters and has at least 2 characters");
                 return badRequest(message);
             });
         } else if ((lastName.isEmpty()) || !(isAlpha(lastName)) || (lastName.length() < 2)) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid last name that contains only letters and has at least 2 characters");
+                message.put(messageKey, "Please provide a valid last name that contains only letters and has at least 2 characters");
                 return badRequest(message);
             });
         } else if ((email.isEmpty()) || !(isValidEmailAddress(email))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid email address");
+                message.put(messageKey, "Please provide a valid email address");
                 return badRequest(message);
             });
         } else if (password.isEmpty() || (password.length() < 6) ) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid password with at least 6 characters");
+                message.put(messageKey, "Please provide a valid password with at least 6 characters");
                 return badRequest(message);
             });
         }
@@ -142,7 +145,8 @@ public class AuthController {
     /**
      * Logs a user in
      * @param request - Request to get JSon fields from
-     * @return Either users data if valid credentials, otherwise sends unauthorized
+     * @return 200 status code with users data if valid credentials,
+     * otherwise sends 401 if unauthorized.
      */
     public CompletionStage<Result> login(Request request) {
         JsonNode jsonBody = request.body().asJson();
@@ -184,6 +188,11 @@ public class AuthController {
                 });
     }
 
+    /**
+     * Logs a user out by setting their auth token to null.
+     * @param request incoming HTTP request.
+     * @return 200 status code.
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> logout(Request request) {
         User user = request.attrs().get(ActionState.USER);
@@ -196,6 +205,11 @@ public class AuthController {
 
     }
 
+    /**
+     * Checks the database for the given email, to see whether it's available.
+     * @param email email to check the db for.
+     * @return 400 if the email is empty. 409 if the email is taken. 200 if the email is available.
+     */
     public CompletionStage<Result> checkEmailAvailable(String email) {
         if (email.isEmpty()) {
             return supplyAsync(() -> badRequest());

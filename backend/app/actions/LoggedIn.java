@@ -31,6 +31,7 @@ public class LoggedIn extends Action.Simple {
      * @param request Request object to get authorization token from
      * @return The next middleware/controller if successful, returns unauthorized if the token was invalid,
      */
+    @Override
     public CompletionStage<Result> call(Http.Request request) {
             Optional<String> token = request.getHeaders().get("Authorization");
 

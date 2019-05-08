@@ -6,7 +6,6 @@ import io.ebean.Model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-import java.rmi.MarshalledObject;
 import java.util.List;
 
 /**

@@ -1,15 +1,13 @@
 package models;
 
 import javax.persistence.*;
-import javax.validation.Constraint;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
 import io.ebean.*;
 import io.ebean.annotation.CreatedTimestamp;
-import org.springframework.format.annotation.DateTimeFormat;
-import play.data.format.Formats;
 import play.data.validation.Constraints;
 /**
  * A traveller, who may wish to create trips, go to destinations, book hotels, book flights, etc
@@ -207,7 +205,7 @@ public class User extends Model {
     }
 
     public boolean profileCompleted() {
-        return firstName != null && middleName != null && lastName != null & nationalities.size() != 0 && dateOfBirth != null && gender != null && email != null && travellerTypes.size() != 0 && timestamp != null && passwordHash != null && token != null;
+        return firstName != null && middleName != null && lastName != null && !nationalities.isEmpty() && dateOfBirth != null && gender != null && email != null && !travellerTypes.isEmpty() && timestamp != null && passwordHash != null && token != null;
     }
 
     /**
