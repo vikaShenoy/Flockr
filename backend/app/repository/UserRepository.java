@@ -3,16 +3,12 @@ package repository;
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
-import io.ebean.Query;
 import models.Passport;
 import models.Nationality;
 import models.TravellerType;
 import models.User;
 import play.db.ebean.EbeanConfig;
-import play.db.ebean.EbeanDynamicEvolutions;
-import play.mvc.Http;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
@@ -21,18 +17,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Contains database calls for all things traveller related
  */
 public class UserRepository {
+
     private final EbeanServer ebeanServer;
     private final DatabaseExecutionContext executionContext;
 
     /**
      * Dependency injection
-     * @param ebeanConfig ebean config to use
+     *
+     * @param ebeanConfig      ebean config to use
      * @param executionContext Context to run completion stages on
      */
     @Inject
@@ -43,6 +40,7 @@ public class UserRepository {
 
     /**
      * Updates a users details
+     *
      * @param user The user to update
      * @return Nothing
      */
@@ -55,6 +53,7 @@ public class UserRepository {
 
     /**
      * Gets a user/traveller by their ID
+     *
      * @param userId The ID of the user to get
      * @return the user object
      */
@@ -68,6 +67,7 @@ public class UserRepository {
 
     /**
      * A function that gets the list of all the valid passports.
+     *
      * @return the list of all the Passports
      */
     public CompletionStage<List<Passport>> getAllPassports() {
@@ -79,6 +79,7 @@ public class UserRepository {
 
     /**
      * Gets a passport by it's ID
+     *
      * @param passportId The passport to get
      * @return The list of passports
      */
@@ -92,6 +93,7 @@ public class UserRepository {
 
     /**
      * Gets a list of all nationalities
+     *
      * @return List of nationalities
      */
     public CompletionStage<List<Nationality>> getAllNationalities() {
@@ -100,6 +102,7 @@ public class UserRepository {
 
     /**
      * Gets a nationality by it's ID
+     *
      * @param nationalityId The nationality to get
      * @return The list of nationalities
      */
@@ -114,6 +117,7 @@ public class UserRepository {
 
     /**
      * Funtion that gets all of the valid traveller types in the database
+     *
      * @return the list of traveller types
      */
     public CompletionStage<List<TravellerType>> getAllTravellerTypes() {
@@ -147,10 +151,11 @@ public class UserRepository {
 
     /**
      * Function to search through the user database
-     * @param nationality nationality id
-     * @param gender gender string
-     * @param dateMin min age Date
-     * @param dateMax max age Date
+     *
+     * @param nationality     nationality id
+     * @param gender          gender string
+     * @param dateMin         min age Date
+     * @param dateMax         max age Date
      * @param travellerTypeId traveller type Id
      * @return List of users or empty list
      */
@@ -164,7 +169,7 @@ public class UserRepository {
             if (gender != null) {
                 query = query.eq("gender", gender);
             }
-            if (travellerTypeId != -1)     {
+            if (travellerTypeId != -1) {
                 query = query.where().eq("traveller_type_id", travellerTypeId);
             }
             query = query.where().between("dateOfBirth", dateMax, dateMin)
@@ -177,7 +182,7 @@ public class UserRepository {
             if (nationality != -1) {
                 List<User> filteredUsers = new ArrayList<User>();
                 for (int i = 0; i < users.size(); i++) {
-                    found= false;
+                    found = false;
                     List<Nationality> natsToCheck = users.get(i).getNationalities();
                     for (int j = 0; j < natsToCheck.size(); j++) {
                         if (natsToCheck.get(j).getNationalityId() == nationality) {
@@ -187,7 +192,8 @@ public class UserRepository {
                     if (found) {
                         filteredUsers.add(users.get(i));
                     }
-                } return filteredUsers;
+                }
+                return filteredUsers;
             } else return users;
         }, executionContext);
     }
