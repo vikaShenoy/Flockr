@@ -3,9 +3,10 @@ import { endpoint } from "../../utils/endpoint";
 import moment from "moment";
 
 /**
- * Sends a request to add a trip
- * @param {string} tripName 
- * @param {object[]} tripDestinations 
+ * Sends a request to add a trip.
+ * @param {string} tripName name of the trip to add.
+ * @param {object[]} tripDestinations list of trip destinations to add as part of the trip.
+ * @return response from backend.
  */
 export async function addTrip(tripName, tripDestinations) {
   const transformedTripDestinations = tripDestinations.map(tripDestination => {

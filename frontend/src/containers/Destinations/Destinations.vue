@@ -36,6 +36,9 @@
         destinationTypes: []
       }
     },
+    /**
+     * Load data.
+     */
     mounted: async function () {
       let currentDestinations;
       try {
@@ -63,6 +66,9 @@
       }
     },
     methods: {
+      /**
+       * Add a new empty destination card.
+       */
       addNewDestinationCard: function () {
         this.destinations.unshift({
           destinationObject: {
@@ -86,6 +92,9 @@
         });
       },
 
+      /**
+       * Delete a destination from frontend and send request to delete from backend.
+       */
       deleteDestination: async function (event) {
         let targetIndex = await this.getIndexOfDestinationFromTarget(event.target.parentNode);
         try {
@@ -96,6 +105,9 @@
         }
       },
 
+      /**
+       * Delete a new destination.
+       */
       deleteNewDestination: async function (target) {
         let targetIndex = await this.getIndexOfDestinationFromTarget(target);
         this.destinations.splice(targetIndex, 1);
