@@ -84,7 +84,7 @@ export default {
         timeout: 5000, // how long the snackbar will be shown for, it will not update the show property automatically though
         text: '', // the text to show in the snackbar
         color: '', // green, red, yellow, red, etc
-        snackbarId: 0
+        snackbarId: 0 // used to know which snackbar was manually dismissed
 		  }
     }
   },
@@ -115,6 +115,9 @@ export default {
         await patchUser(userId, patchedUser);
       } catch (e) {
         console.log(e);
+        this.snackbarModel.text = 'Could not edit the user';
+        this.snackbarModel.color = 'red';
+        this.snackbarModel.show = true;
       }
       this.showEditUserForm = false;
       this.getAllUsers();
@@ -137,6 +140,9 @@ export default {
         this.snackbarModel.color = 'green';
         this.snackbarModel.show = true;
       } catch(err) {
+        this.snackbarModel.text = 'Could not delete user(s)';
+        this.snackbarModel.color = 'red';
+        this.snackbarModel.show = true;
         console.error(`Could not delete those users: ${err}`);
       }
     }
