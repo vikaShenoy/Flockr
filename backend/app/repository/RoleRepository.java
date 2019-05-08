@@ -2,6 +2,7 @@
 package repository;
 
 import models.Role;
+import models.RoleType;
 import models.User;
 import play.db.ebean.EbeanConfig;
 
@@ -40,5 +41,9 @@ public class RoleRepository {
      */
     public CompletionStage<User> getUser(int userId) {
         return supplyAsync(() -> User.find.byId(userId), executionContext);
+    }
+
+    public CompletionStage<Role> getRole(RoleType roleType) {
+        return  supplyAsync(() -> Role.find.query().where().eq("role_type", roleType.name()).findOne(), executionContext);
     }
 }

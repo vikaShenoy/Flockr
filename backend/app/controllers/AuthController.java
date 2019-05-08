@@ -5,18 +5,25 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.UnauthorizedException;
+import models.Role;
+import models.RoleType;
 import play.libs.Json;
+import play.mvc.Controller;
 import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
 import models.User;
 import play.mvc.With;
 import repository.AuthRepository;
+import repository.RoleRepository;
 import repository.TravellerRepository;
 import scala.reflect.internal.Trees;
 import util.Security;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.regex.Matcher;
@@ -32,17 +39,19 @@ import static play.mvc.Results.*;
 public class AuthController {
     private final AuthRepository authRepository;
     private final TravellerRepository travellerRepository;
+    private final RoleRepository roleRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final Security security;
     private final Responses responses;
 
     @Inject
-    public AuthController(AuthRepository authRepository, TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses) {
+    public AuthController(AuthRepository authRepository, TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses, RoleRepository roleRepository) {
         this.authRepository = authRepository;
         this.travellerRepository = travellerRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
         this.responses = responses;
+        this.roleRepository = roleRepository;
     }
 
     /**
@@ -159,8 +168,21 @@ public class AuthController {
         }
 
         User user = new User(firstName, middleName,lastName, email, hashedPassword, userToken);
+        ArrayList<Role> roles = new ArrayList<>();
+        try {
+            Role role = roleRepository.getRole(RoleType.TRAVELLER).toCompletableFuture().get();
+            roles.add(role);
+        } catch (Exception e) {
+            return supplyAsync(Controller::internalServerError);
+        }
+
         return authRepository.insert(user)
+                .thenComposeAsync(insertedUser -> {
+                    insertedUser.setRoles(roles);
+                    return travellerRepository.updateUser(user);
+                })
                 .thenApplyAsync((insertedUser) -> ok(Json.toJson(insertedUser)), httpExecutionContext.current());
+
     }
 
     /**
