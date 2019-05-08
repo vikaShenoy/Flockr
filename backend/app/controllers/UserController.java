@@ -8,6 +8,9 @@ import models.Passport;
 import models.TravellerType;
 import models.User;
 import models.Nationality;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -31,6 +34,8 @@ import play.libs.concurrent.HttpExecutionContext;
  * Contains all endpoints associated with users.
  */
 public class UserController extends Controller {
+    final Logger log = LoggerFactory.getLogger(this.getClass());
+
     private final UserRepository userRepository;
     private HttpExecutionContext httpExecutionContext;
 
@@ -93,10 +98,10 @@ public class UserController extends Controller {
             try {
                 String incomingDate = jsonBody.get("dateOfBirth").asText();
                 Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
-                System.out.println("Date stored in db for user is: " + date);
+                log.debug("Date stored in db for user is: " + date);
                 user.setDateOfBirth(date);
             } catch (ParseException e) {
-                System.out.println(e);
+                log.error(e.getMessage());
             }
         }
 
@@ -240,7 +245,7 @@ public class UserController extends Controller {
                     passports.remove(passport.get());
                     user.setPassports(passports);
                     user.save();
-                    System.out.println(user.getPassports());
+                    log.debug(user.getPassports().toString());
                     return ok();
                 }, httpExecutionContext.current());
     }
@@ -337,34 +342,34 @@ public class UserController extends Controller {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())
                 nationality = Integer.parseInt(nationalityQuery);
-        } catch (Exception e){ System.out.println("No Parameter nationality");}
+        } catch (Exception e){ log.error("No Parameter nationality");}
         try {
             String ageMinQuery = request.getQueryString("ageMin");
             if (!ageMinQuery.isEmpty())
                 ageMin = Long.parseLong(ageMinQuery);
-        } catch (Exception e){ System.out.println("No Parameter ageMin");}
+        } catch (Exception e){ log.error("No Parameter ageMin");}
         try {
             String ageMaxQuery = request.getQueryString("ageMax");
             if(!ageMaxQuery.isEmpty())
                 ageMax = Long.parseLong(ageMaxQuery);
-        } catch (Exception e){ System.out.println("No Parameter ageMax");}
+        } catch (Exception e){ log.error("No Parameter ageMax");}
         try {
             String travellerTypeQuery = request.getQueryString("travellerType");
             if (!travellerTypeQuery.isEmpty())
                 travellerType = Integer.parseInt(travellerTypeQuery);
-        } catch (Exception e){ System.out.println("No Parameter travellerType");}
+        } catch (Exception e){ log.error("No Parameter travellerType");}
         try {
             gender = request.getQueryString("gender");
-        } catch (Exception e){ System.out.println("No Parameter gender");}
+        } catch (Exception e){ log.error("No Parameter gender");}
         Date dateMin = new Date(ageMin);
         Date dateMax = new Date(ageMax);
 
-        System.out.println("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
+        log.debug("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
 
         return userRepository.searchUser(nationality,gender,dateMin,dateMax,travellerType)  //Just for testing purposes
                 .thenApplyAsync((user) -> {
                     JsonNode userAsJson = Json.toJson(user);
-                    System.out.println(userAsJson);
+                    log.debug(userAsJson.asText());
 
                     return ok(userAsJson);
 
