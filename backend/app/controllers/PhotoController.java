@@ -141,7 +141,7 @@ public class PhotoController extends Controller {
     public CompletionStage<Result> getPhoto(String photoFilename, Http.Request request) {
         return supplyAsync(() -> {
             // TODO: need to check the database to see if the photo exists there too.
-            File photo = new File("photos/" + photoFilename);
+            File photo = new File("./app/photos/" + photoFilename);
             if (!photo.exists()) {
                 return notFound();
             } else {
