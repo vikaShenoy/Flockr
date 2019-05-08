@@ -89,7 +89,6 @@ public class TripController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTrip(int userId, int tripId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
         return tripRepository.getTripByIds(tripId, userId)
                 .thenApplyAsync((optionalTrip) -> {
                     if (!optionalTrip.isPresent())  {
@@ -112,7 +111,6 @@ public class TripController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
         return tripRepository.getTripByIds(tripId, userId).
                 thenComposeAsync((optionalTrip) -> {
                     if (!optionalTrip.isPresent()) {
@@ -194,7 +192,6 @@ public class TripController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTrips(Http.Request request, int userId) {
-        User user = request.attrs().get(ActionState.USER);
 
         return tripRepository.getTripsByIds(userId)
                 .thenApplyAsync((trips) -> {

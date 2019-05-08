@@ -5,6 +5,10 @@ package util;
  */
 public class AuthUtil {
 
+    private AuthUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * A function that checks if the given string contains all alphabet letters. If yes, it returns true.
      * Otherwise, return false.
