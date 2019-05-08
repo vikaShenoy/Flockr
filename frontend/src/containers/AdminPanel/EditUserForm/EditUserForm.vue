@@ -8,7 +8,6 @@
           <v-form ref="form">
             <v-container grid-list-md>
               <v-layout wrap>
-
                 <v-flex xs12 sm6 md4>
                   <v-text-field
                     label="First name *"
@@ -92,7 +91,6 @@
                     :rules="[requiredRule]"
                   ></v-autocomplete>
                 </v-flex>
-
               <v-flex xs12 sm6>
                 <v-menu ref="dateMenu" v-model="dateMenu" :close-on-content-click="false" :nudge-right="40"
                   :return-value.sync="dateOfBirth" lazy transition="scale-transition" offset-y full-width>
