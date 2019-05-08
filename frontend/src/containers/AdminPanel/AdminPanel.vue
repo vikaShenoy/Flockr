@@ -5,7 +5,6 @@
       :users="this.users"
       v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
-      v-on:wantToEditUserTrips="handleWantToEditUserTrips"
     />
     <EditUserForm
       v-if="userBeingEdited"
@@ -13,6 +12,7 @@
       :initialUserData="this.userBeingEdited"
       v-on:dismissForm="handleEditUserFormDismissal"
       v-on:submitForm="handleEditUserFormSubmission"
+      v-on:incorrectData="handleEditUserFormError"
     />
     <Snackbar :snackbarModel="this.snackbarModel" />
   </div>
@@ -50,7 +50,7 @@ export default {
         text: '', // the text to show in the snackbar
         color: '', // green, red, yellow, red, etc
         snackbarId: 0 // used to know which snackbar was manually dismissed
-		  }
+      }
     }
   },
   methods: {
@@ -71,6 +71,11 @@ export default {
     },
     handleEditUserFormDismissal: function() {
       this.showEditUserForm = false; // close the edit user dialog
+    },
+    handleEditUserFormError: function() {
+      this.snackbarModel.text = "Data Incorrect, Try Again";
+      this.snackbarModel.color = 'red';
+      this.snackbarModel.show = true;
     },
     handleEditUserFormSubmission: async function(patchedUser) {
       // TODO: call the AdminPanelService and ask it to patch the user
@@ -110,10 +115,6 @@ export default {
         this.snackbarModel.show = true;
         console.error(`Could not delete those users: ${err}`);
       }
-    },
-    handleWantToEditUserTrips: async function(userId) {
-      // redirect the admin to the other user's trips page
-      this.$router.push(`/travellers/${userId}/trips`);
     }
   }
 };
