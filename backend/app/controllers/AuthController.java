@@ -168,20 +168,9 @@ public class AuthController {
         }
 
         User user = new User(firstName, middleName,lastName, email, hashedPassword, userToken);
-        ArrayList<Role> roles = new ArrayList<>();
-        try {
-            Role role = roleRepository.getRole(RoleType.TRAVELLER).toCompletableFuture().get();
-            roles.add(role);
-        } catch (Exception e) {
-            return supplyAsync(Controller::internalServerError);
-        }
-
         return authRepository.insert(user)
-                .thenComposeAsync(insertedUser -> {
-                    insertedUser.setRoles(roles);
-                    return travellerRepository.updateUser(user);
-                })
                 .thenApplyAsync((insertedUser) -> ok(Json.toJson(insertedUser)), httpExecutionContext.current());
+
 
     }
 

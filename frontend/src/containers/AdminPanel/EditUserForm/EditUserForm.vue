@@ -1,4 +1,4 @@
-<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<template>
   <v-dialog v-model="this.showForm" persistent max-width="600px">
       <v-card>
         <v-card-title>
@@ -207,7 +207,6 @@ export default {
         // if trying to make a user have no nationalities, do not add the change
         if (fieldValue.length < 1) {
           return;
-        console.log('All passports: ', this.allPassports);
         }
       }
       this.changes[fieldKey] = fieldValue; // store the change

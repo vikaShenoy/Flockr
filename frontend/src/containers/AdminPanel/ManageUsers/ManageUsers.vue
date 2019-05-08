@@ -7,6 +7,11 @@
             <p>Manage users</p>
           </div>
 
+          <v-btn class="edit-trips-button" :disabled="this.selectedUsers.length === 0"
+            @click="editTripsButtonClicked">
+            Edit trips
+          </v-btn>
+
           <v-btn class="edit-user-button" v-on:click.stop="editUserButtonClicked" :disabled="this.selectedUsers.length != 1">
             Edit user
           </v-btn>
@@ -76,6 +81,10 @@ export default {
       console.log(userIds);
       this.$emit("deleteUsersByIds", userIds);
     },
+    editTripsButtonClicked: function() {
+      const userId = this.selectedUsers[0];
+      this.$emit('wantToEditUserTrips', userId);
+    },
     mapUsers: function() {
       return this.users.map((user) => ({
           avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
@@ -120,6 +129,11 @@ export default {
       }
       flex-grow: 1;
       justify-self: start;
+    }
+
+    .edit-trips-button {
+      justify-self: end;
+      width: fit-content;
     }
 
     .edit-user-button {

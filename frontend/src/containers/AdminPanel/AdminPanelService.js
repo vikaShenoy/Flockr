@@ -23,4 +23,9 @@ export async function patchUser(userId, body) {
     const res = await superagent.patch(endpoint(`/users/${userId}`))
         .set("Authorization", authToken)
         .send(body);
+    if (body.roleTypes) {
+        const res2 = await superagent.patch(endpoint(`/users/${userId}/roles`))
+            .set("Authorization", authToken)
+            .send(body);
+    }
 }
