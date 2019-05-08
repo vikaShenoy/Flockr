@@ -1,14 +1,10 @@
 package controllers;
 
 
-import actions.ActionState;
-import actions.ProfileCompleted;
-import models.User;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Http;
-import play.mvc.With;
-import actions.LoggedIn;
+
 
 /**
  * Handle default path requests.

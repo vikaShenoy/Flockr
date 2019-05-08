@@ -155,40 +155,42 @@ public class UserRepository {
      * @return List of users or empty list
      */
     public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax, int travellerTypeId) {
-        AtomicBoolean found = new AtomicBoolean(false);
+
 
         return supplyAsync(() -> {
-           ExpressionList<User> query = User.find.query()
+            boolean found;
+            ExpressionList<User> query = User.find.query()
                     .fetch("travellerTypes").where();
-           if (gender != null) {
-               query = query.eq("gender", gender);
-           }
-           if (travellerTypeId != -1)     {
-               query = query.where().eq("traveller_type_id", travellerTypeId);
-           }
-           query = query.where().between("dateOfBirth", dateMax, dateMin)
-                   .isNotNull("dateOfBirth")
-                   .isNotNull("gender")
-                   .isNotEmpty("travellerTypes");
+            if (gender != null) {
+                query = query.eq("gender", gender);
+            }
+            if (travellerTypeId != -1)     {
+                query = query.where().eq("traveller_type_id", travellerTypeId);
+            }
+            query = query.where().between("dateOfBirth", dateMax, dateMin)
+                    .isNotNull("dateOfBirth")
+                    .isNotNull("gender")
+                    .isNotEmpty("travellerTypes");
 
-           List<User> users = query.findList();
-           if (nationality != -1) {
-               for (int i = 0; i < users.size(); i++) {
-                   found.set(false);
-                   List<Nationality> natsToCheck = users.get(i).getNationalities();
-                   for (int j = 0; j < natsToCheck.size(); j++) {
-                       if (natsToCheck.get(j).getNationalityId() == nationality) {
-                           found.set(true);
-                       }
-                   }
-                   if (!found.get()) {
-                       users.remove(i);
-                       i--;
-                   }
-               }
-           }
-            return users;
+            List<User> users = query.findList();
+
+            if (nationality != -1) {
+                List<User> filteredUsers = new ArrayList<User>();
+                for (int i = 0; i < users.size(); i++) {
+                    found= false;
+                    List<Nationality> natsToCheck = users.get(i).getNationalities();
+                    for (int j = 0; j < natsToCheck.size(); j++) {
+                        if (natsToCheck.get(j).getNationalityId() == nationality) {
+                            found = true;
+                        }
+                    }
+                    if (found) {
+                        filteredUsers.add(users.get(i));
+                    }
+                } return filteredUsers;
+            } else return users;
         }, executionContext);
     }
+
 
 }

@@ -3,11 +3,8 @@ package controllers;
 import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.NotFoundException;
-import exceptions.ServerErrorException;
-import models.Destination;
 import models.Trip;
 import models.TripDestination;
 import models.User;
@@ -19,21 +16,12 @@ import play.mvc.Result;
 import play.mvc.With;
 import repository.TripRepository;
 import util.TripUtil;
-
 import javax.inject.Inject;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
-
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static play.libs.Json.newObject;
+
 
 /**
  * Controller for trip related endpoints.
@@ -43,6 +31,7 @@ public class TripController extends Controller {
     private final TripRepository tripRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final TripUtil tripUtil;
+
 
     @Inject
     public TripController(TripRepository tripRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil) {
