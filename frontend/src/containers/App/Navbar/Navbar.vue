@@ -114,6 +114,7 @@ export default {
     };
   },
   methods: {
+
     /**
      * Run when the nav was clicked on
      * @param {string} url - The url of nav item that was clicked on

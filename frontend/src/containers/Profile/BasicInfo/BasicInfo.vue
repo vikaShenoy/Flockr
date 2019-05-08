@@ -52,7 +52,7 @@
             v-else
             v-model="middleName"
             color="secondary"
-            :rules="fieldRules"
+            :rules="optionalFieldRules"
             :maxlength="50"
           >
           </v-text-field>
@@ -185,6 +185,7 @@ export default {
       hasInvalidCredentials: false,
       genderOptions: ["Male", "Female", "Other"],
       fieldRules: [rules.required, rules.noNumbers],
+      optionalFieldRules: [rules.noNumbers],
       dateRules: [rules.required],
       currentDate: moment().format("YYYY-MM-DD")
     };

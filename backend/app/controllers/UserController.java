@@ -42,7 +42,8 @@ public class UserController extends Controller {
 
     /**
      * Retrieves a travellers details
-     * @param userId the traveller Id of the traveller to retrieve
+     *
+     * @param userId  the traveller Id of the traveller to retrieve
      * @param request request Object
      * @return traveller details as a Json object
      */
@@ -65,7 +66,8 @@ public class UserController extends Controller {
 
     /**
      * Updates a travellers details
-      * @param userId Redundant ID
+     *
+     * @param userId  Redundant ID
      * @param request Object to get the JSOn data
      * @return 200 status if update was successful, 500 otherwise
      */
@@ -129,7 +131,7 @@ public class UserController extends Controller {
             user.setPassports(passports);
         }
 
-       if (jsonBody.has("travellerTypes")) {
+        if (jsonBody.has("travellerTypes")) {
             JsonNode arrNode = jsonBody.get("travellerTypes");
             ArrayList<TravellerType> travellerTypes = new ArrayList<>();
             for (JsonNode id : arrNode) {
@@ -155,6 +157,7 @@ public class UserController extends Controller {
 
     /**
      * A function that gets a list of all the passports and returns a 200 ok code to the HTTP client
+     *
      * @param request Http.Request the HTTP request
      * @return a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -168,8 +171,9 @@ public class UserController extends Controller {
 
     /**
      * Gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
-     * @param request <b>Http.Request</b> the http request
-     * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
+     *
+     * @param request <b>Http.Request</b> the http request.
+     * @return The completion function to be called on completion.
      */
     public CompletionStage<Result> getNationalities(Http.Request request) {
         return userRepository.getAllNationalities()
@@ -178,7 +182,12 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
-
+    /**
+     * Gets a list of all travellers in the database and sends them via an http response.
+     * On success has a code of 200 - ok
+     *
+     * @return The completion stage function containing the travellers as a JSON.
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTravellers() {
         return userRepository.getTravellers()
@@ -191,7 +200,8 @@ public class UserController extends Controller {
 
     /**
      * A function that adds a passport to a user based on the given user ID
-     * @param userId the traveller ID
+     *
+     * @param userId  the traveller ID
      * @param request Object to get the passportId to add
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -218,7 +228,8 @@ public class UserController extends Controller {
 
     /**
      * A function that deletes a passport from a user based on the given user ID
-     * @param userId the traveller ID
+     *
+     * @param userId     the traveller ID
      * @param passportId the passport ID
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -243,7 +254,8 @@ public class UserController extends Controller {
 
     /**
      * A function that adds a nationality to the user based on the user ID given
-     * @param userId the traveller ID
+     *
+     * @param userId  the traveller ID
      * @param request Object to get the nationality to add.
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -268,7 +280,8 @@ public class UserController extends Controller {
 
     /**
      * Deletes a nationality for a logged in user given a nationality id in the request body
-     * @param userId the traveller for which we want to delete the nationality
+     *
+     * @param userId  the traveller for which we want to delete the nationality
      * @param request the request passed by the routes file
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -299,6 +312,7 @@ public class UserController extends Controller {
 
     /**
      * Get a list of all valid traveller types
+     *
      * @param request unused request object
      * @return ok with status 200 if types obtained, 401 if no token is provided
      */
@@ -311,9 +325,9 @@ public class UserController extends Controller {
     }
 
 
-
     /**
      * Allows the front-end to search for a traveller.
+     *
      * @param request
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -332,31 +346,41 @@ public class UserController extends Controller {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())
                 nationality = Integer.parseInt(nationalityQuery);
-        } catch (Exception e){ System.out.println("No Parameter nationality");}
+        } catch (Exception e) {
+            System.out.println("No Parameter nationality");
+        }
         try {
             String ageMinQuery = request.getQueryString("ageMin");
             if (!ageMinQuery.isEmpty())
                 ageMin = Long.parseLong(ageMinQuery);
-        } catch (Exception e){ System.out.println("No Parameter ageMin");}
+        } catch (Exception e) {
+            System.out.println("No Parameter ageMin");
+        }
         try {
             String ageMaxQuery = request.getQueryString("ageMax");
-            if(!ageMaxQuery.isEmpty())
+            if (!ageMaxQuery.isEmpty())
                 ageMax = Long.parseLong(ageMaxQuery);
-        } catch (Exception e){ System.out.println("No Parameter ageMax");}
+        } catch (Exception e) {
+            System.out.println("No Parameter ageMax");
+        }
         try {
             String travellerTypeQuery = request.getQueryString("travellerType");
             if (!travellerTypeQuery.isEmpty())
                 travellerType = Integer.parseInt(travellerTypeQuery);
-        } catch (Exception e){ System.out.println("No Parameter travellerType");}
+        } catch (Exception e) {
+            System.out.println("No Parameter travellerType");
+        }
         try {
             gender = request.getQueryString("gender");
-        } catch (Exception e){ System.out.println("No Parameter gender");}
+        } catch (Exception e) {
+            System.out.println("No Parameter gender");
+        }
         Date dateMin = new Date(ageMin);
         Date dateMax = new Date(ageMax);
 
-        System.out.println("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
+        System.out.println("nationality=" + nationality + " agemin=" + ageMin + " agemax=" + ageMax + " gender=" + gender + " travellerType=" + travellerType);
 
-        return userRepository.searchUser(nationality,gender,dateMin,dateMax,travellerType)  //Just for testing purposes
+        return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType)  //Just for testing purposes
                 .thenApplyAsync((user) -> {
                     JsonNode userAsJson = Json.toJson(user);
                     System.out.println(userAsJson);

@@ -55,6 +55,7 @@
       @blur="validateConfirmPassword()"
       :error-messages="confirmPasswordErrors"
       :maxlength="50"
+      v-on:keyup.enter="signup"
     ></v-text-field>
 
     <v-btn
