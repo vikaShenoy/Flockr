@@ -8,6 +8,7 @@
       v-on:wantToEditUserTrips="handleWantToEditUserTrips"
     />
     <EditUserForm
+      v-if="userBeingEdited"
       :showForm="this.showEditUserForm"
       :initialUserData="this.userBeingEdited"
       v-on:dismissForm="handleEditUserFormDismissal"
@@ -41,44 +42,7 @@ export default {
   data() {
     return {
       showEditUserForm: false,
-      userBeingEdited: {
-        "userId": 0,
-        "firstName": "Mariana",
-        "middleName": "Rogelia",
-        "lastName": "Cabrera",
-        "dateOfBirth": "string",
-        "email": "mariana@email.com",
-        "gender": "Female",
-        "nationalities": [
-          {
-            "nationalityId": 0,
-            "nationalityName": "New Zealand"
-          },
-          {
-            "nationalityId": 1,
-            "nationalityName": "South Korea"
-          }
-        ],
-        "passports": [
-          {
-            "passportId": 0,
-            "passportCountry": "Argentina"
-          }
-        ],
-        "travellerTypes": [
-          {
-            "travellerTypeId": 0,
-            "travellerTypeName": "Gap Year"
-          }
-        ],
-        "roles": [
-          {
-            "roleId": 2,
-            "roleType": "Potato"
-          }
-        ],
-        "timestamp": 728364786872368,
-      },
+      userBeingEdited: null,
       users: [], // single source of truth for children components relying on users so that info stays up to date
       snackbarModel: {
         show: false, // whether the snackbar is currently shown or not

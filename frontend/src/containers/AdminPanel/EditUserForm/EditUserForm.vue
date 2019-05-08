@@ -89,11 +89,12 @@
                 <v-menu ref="dateMenu" v-model="dateMenu" :close-on-content-click="false" :nudge-right="40"
                   :return-value.sync="dateOfBirth" lazy transition="scale-transition" offset-y full-width>
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="edit-field" v-model="dateOfBirth" readonly v-on="on" :rules="dateRules">
+                    <v-text-field class="edit-field" label="Date of Birth" v-model="dateOfBirth" readonly v-on="on" >
+>
                     </v-text-field>
                   </template>
                   <v-date-picker color="secondary" ref="picker" :max="currentDate" v-model="dateOfBirth" no-title
-                    scrollable>
+                    scrollable @change="saveDate">
                     <v-spacer></v-spacer>
                     <v-btn flat color="primary" @click="dateMenu = false">Cancel</v-btn>
                     <v-btn flat color="primary" @click="$refs.dateMenu.save(dateOfBirth)">OK</v-btn>
@@ -171,7 +172,8 @@ export default {
       allUserRoles: [],
       dateMenu: false, // don't show the menu by default
       dateOfBirth: null,
-      currentDate: moment().format("YYYY-MM-DD")
+      currentDate: moment().format("YYYY-MM-DD"),
+      moment,
     }
   },
   methods: {
@@ -246,6 +248,9 @@ export default {
     parseEditNationalityChangeEvent: function(nationaltyNames) {
       return this.allNationalities.filter((nationality) => nationaltyNames.includes(nationality.nationalityName))
         .map((nationality) => nationality.nationalityId);
+    },
+    saveDate(date) {
+      this.$refs.dateMenu.save(date);
     }
   },
   computed: {
@@ -278,10 +283,19 @@ export default {
     }
   },
   mounted() {
+    this.dateOfBirth = moment(this.initialUserData.dateOfBirth).format("YYYY-MM-DD");
     this.getAllUserRoles();
     this.getAllNationalities();
     this.getAllPassports();
     this.getAllTravellerTypes();
+  },
+  watch: {
+    dateMenu(date) {
+      date && setTimeout(() => (this.$refs.picker.activePicker = "YEAR"));
+    },
+    dateOfBirth(val) {
+      this.addChange('dateOfBirth', val);
+    }
   }
 }
 </script>
