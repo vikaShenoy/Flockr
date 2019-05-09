@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 public class DestinationRepository {
+
     private final EbeanServer ebeanServer;
     private final DatabaseExecutionContext executionContext;
 

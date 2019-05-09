@@ -8,6 +8,10 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import java.util.List;
 
+/**
+ * Roles that users inside the system can take to alter
+ * their permissions. E.g. an admin can edit user trips.
+ */
 @Entity
 public class Role extends Model {
 
@@ -31,6 +35,11 @@ public class Role extends Model {
         return roleId;
     }
 
+
+    /**
+     * Constructor.
+     * @param roleType type of role.
+     */
     public Role(RoleType roleType) {
         this.roleType = roleType.name();
     }

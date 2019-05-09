@@ -55,6 +55,7 @@
       @blur="validateConfirmPassword()"
       :error-messages="confirmPasswordErrors"
       :maxlength="50"
+      v-on:keyup.enter="signup"
     ></v-text-field>
 
     <v-btn
@@ -195,6 +196,9 @@ export default {
 
       return fieldResults.every(fieldResult => fieldResult);
     },
+    /**
+     * Check if fields are valid. Send a request to sign the user up if so.
+     */
     async signup() {
       const validFields = await this.validate();
 

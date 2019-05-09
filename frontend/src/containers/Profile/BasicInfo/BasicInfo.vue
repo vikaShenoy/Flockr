@@ -45,19 +45,19 @@
             <b>Middle Name</b>
           </div>
 
-          <div class="item-value">
-            <span v-if="!this.isEditing"> {{ userProfile.middleName }} </span>
-            <v-text-field
-              class="edit-field"
-              v-else
-              v-model="middleName"
-              color="secondary"
-              :rules="fieldRules"
-              :maxlength="50"
-            >
-            </v-text-field>
-          </div>
+        <div class="item-value">
+          <span v-if="!this.isEditing"> {{ userProfile.middleName }} </span>
+          <v-text-field
+            class="edit-field"
+            v-else
+            v-model="middleName"
+            color="secondary"
+            :rules="optionalFieldRules"
+            :maxlength="50"
+          >
+          </v-text-field>
         </div>
+      </div>
 
         <v-divider />
 
@@ -185,6 +185,7 @@ export default {
       hasInvalidCredentials: false,
       genderOptions: ["Male", "Female", "Other"],
       fieldRules: [rules.required, rules.noNumbers],
+      optionalFieldRules: [rules.noNumbers],
       dateRules: [rules.required],
       currentDate: moment().format("YYYY-MM-DD")
     };

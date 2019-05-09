@@ -28,21 +28,6 @@
         </v-list-tile-content>
       </v-list-tile>
 
-      <v-list-tile
-        :style="{
-          backgroundColor: '#c0392b',
-        }"
-        @click="resampleClick"
-        class="nav-item"
-      >
-        <v-list-tile-action>
-          <v-icon class="nav-icon">cog</v-icon>
-        </v-list-tile-action>
-
-        <v-list-tile-content>
-          <v-list-tile-title>Resample (DEV)</v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
 
     </v-list>
  </v-navigation-drawer>
@@ -52,7 +37,6 @@
 
 import UserStore from "../../../stores/UserStore";
 import { logout } from "./NavbarService";
-import { resample } from "../../Home/HomeService";
 
 export default {
   data() {
@@ -65,7 +49,7 @@ export default {
           icon: "dashboard",
           loggedIn: true,
           loggedOut: true,
-          requiresAdminRole: false 
+          requiresAdminRole: false
         },
         {
           title: "Search Travellers",
@@ -147,6 +131,7 @@ export default {
     };
   },
   methods: {
+
     /**
      * Run when the nav was clicked on
      * @param {string} url - The url of nav item that was clicked on
@@ -167,21 +152,7 @@ export default {
           this.$router.push(url);
           break;
       }
-    },
-    /**
-     * Resample the database with test data.
-     */
-    resampleClick() {
-      try {
-        resample(); 
-      } catch (err) {
-        // eslint-disable-next-line
-        console.error(`Could not resample the database: ${err}`);
-      }
-  }  
-
-    
-
+    }
   },
   computed: {
     /**
@@ -205,7 +176,7 @@ export default {
           }
         } else if (item.loggedOut && !loggedIn) {
           return true;
-        } 
+        }
         else {
           return false;
         }

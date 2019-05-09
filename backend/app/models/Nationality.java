@@ -8,6 +8,9 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import java.util.List;
 
+/**
+ * Nationality a user can have.
+ */
 @Entity
 public class Nationality extends Model {
     @Id
@@ -15,11 +18,14 @@ public class Nationality extends Model {
 
     @ManyToMany
     private List<User> users;
-
     private String nationalityName;
 
-    public Nationality(String nationalityCountry) {
-        this.nationalityName = nationalityCountry;
+    /**
+     * Constructor.
+     * @param nationalityName country the nationaltiy is from.
+     */
+    public Nationality(String nationalityName) {
+        this.nationalityName = nationalityName;
     }
 
     @Override

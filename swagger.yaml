@@ -1,0 +1,1579 @@
+openapi: 3.0.0
+servers:
+  - url: /api/v1
+info:
+  description: 'This will be a living spec, if you find errors or inconsistencies please raise these concerns. But **please do not change the spec without consulting with the team**'
+  version: 0.0.8
+  title: SENG302 Team 500 Travel EA API Spec
+tags:
+  - name: auth
+    description: All authentication endpoints
+  - name: users
+    description: All user related endpoints
+  - name: destinations
+    description: All destination related endpoints
+  - name: trips
+    description: All trip related endpoints
+  - name: photos
+    description: All photo related endpoints
+paths:
+  '/auth/users/signup':
+    post:
+      tags:
+        - auth
+      summary: Sign's up a user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/signupUser'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/auth/users/{email}/available':
+    get:
+      tags:
+        - auth
+      summary: Checks if an email is available
+      parameters:
+        - in: path
+          name: email
+          description: The email of the user
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email is available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Malformed request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+       
+  '/auth/users/login':
+    post:
+      tags:
+        - auth
+      summary: Logs in a user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/login'
+      responses:
+        '200':
+          description: User has logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '400':
+          description: Malformed request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/auth/users/logout':
+    post:
+      tags:
+        - auth
+      summary: Logs out a user
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '401':
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/users':
+    get:
+      tags:
+        - users
+      summary: Gets a list of all users
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/users'
+        '400':
+          description: Query strings were malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: User is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: User has not filled out their profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+
+  '/users/search':
+    get:
+      tags:
+        - users
+      summary: Searches for all users
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: nationality
+          description: Filter by specific nationality
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: gender
+          description: Filter by specific gender
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: ageMin
+          description: Filter by min age
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: ageMax
+          description: Filter by max age
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: travellerType
+          description: Filter by traveller type
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/users'
+        '400':
+          description: Query strings were malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: User is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: User has not filled out their profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  '/users/{userId}':
+    get:
+      tags:
+        - users
+      summary: Gets a users details
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    patch:
+      tags:
+        - users
+      summary: Updates parts of a user
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateUser'
+      responses:
+        '201':
+          description: User has succesfully been updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+                
+  '/users/{userId}/roles':
+    patch:
+      tags:
+        - users
+      summary: Updates a user's list of roles\
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the traveller
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateUserRole'
+      responses:
+        '200':
+          description: User has succesfully been updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/destinations/types':
+    get:
+      tags:
+        - destinations
+      summary: Gets a list of the types of destinations
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved types of destinations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destinationTypes'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/destinations':
+    get:
+      tags:
+        - destinations
+      summary: Get a list of all destinations
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved destinations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destinations'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - destinations
+      summary: Create a new destination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createDestination'
+      security:
+        - cookieAuth: []
+      responses:
+        '201':
+          description: Successfully created new destination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destination'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  '/destinations/countries':
+    get:
+      tags:
+        - destinations
+      summary: Get a list of all destination countries
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved destination countries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destinations'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  
+  '/destinations/countries/{countryId}/districts':
+    get:
+      tags:
+        - destinations
+      summary: Gets a list of destination districts from a country
+      parameters:
+        - in: path
+          name: countryId
+          description: ID of the country
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved destinations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destinations'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/destinations/{destinationId}':
+    parameters:
+        - in: path
+          name: destinationId
+          description: ID of the destination
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+    get:
+      tags:
+        - destinations
+      summary: Get an existing destination
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved destination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destination'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      tags:
+        - destinations
+      summary: Edit an existing destination
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createDestination'
+      responses:
+        '200':
+          description: Successfully updated destination
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    delete:
+      tags:
+        - destinations
+      summary: Delete an existing destination
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully deleted destination
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/users/types':
+    get:
+      tags:
+        - users
+      summary: Gets a list of valid traveller types
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved traveller types
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/travellerTypes'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed (Only if viewing other users
+            traveller types)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/users/passports':
+    get:
+      tags:
+        - users
+      summary: Gets a list of all valid passports
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved passports
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/passports'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed (Only if viewing other users
+            passports)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/users/nationalities':
+    get:
+      tags:
+        - users
+      summary: Gets a list of all valid nationalities
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved nationalities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/nationalities'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed (Only if viewing other users
+            nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/users/{userId}/trips':
+    get:
+      tags:
+        - trips
+      summary: Shows a list of a users trips
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved trips
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trips'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed (Only if viewing other users'
+            nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      tags:
+        - trips
+      summary: Creates a new trip
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createEditTrip'
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully created trip
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed (Only if viewing other users'
+            nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/users/{userId}/trips/{tripId}':
+    get:
+      tags:
+        - trips
+      summary: Get a specific trip
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+        - in: path
+          name: tripId
+          description: The trip ID to access
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved trip
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trip'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed (Only if viewing other users'
+            nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      tags:
+        - trips
+      summary: Update a specific trip
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+        - in: path
+          name: tripId
+          description: The trip ID to access
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createEditTrip'
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully updated trip
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed (Only if viewing other users'
+            nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    delete:
+      tags:
+        - trips
+      summary: Deletes a specific trip
+      parameters:
+        - in: path
+          name: userId
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+        - in: path
+          name: tripId
+          description: The trip ID to delete
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully deleted trip
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed (Only if viewing other users'
+            nationalities)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  '/users/photos/{photoId}':
+    get:
+      tags:
+        - photos
+      summary: Get a specific photo
+      parameters:
+        - in: path
+          name: photoId
+          description: The ID of the photo that we wish to retrieve
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved photo
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+    put:
+      tags:
+        - photos
+      summary: Make a photo public or private
+      parameters:
+        - in: path    
+          name: photoId 
+          description: The ID of the photo
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateUserPhoto'      
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully updated permission groups
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'              
+                
+  '/users/{userId}/photos':
+    post:
+      tags:
+        - photos
+      summary: Upload a new photo
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: header
+          name: Content-Type
+          schema:
+            type: string
+            format: uuid
+          required: true
+        - in: path
+          name: userId
+          description: The id of the user to post a photo for
+          schema:
+            type: integer
+            minimum: 0
+          required: true  
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                isPublic:
+                  type: boolean
+      responses:
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Forbidden to post photo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error' 
+    get:
+      tags:
+        - photos
+      summary: Get details for all of a users photos
+      parameters:
+        - in: path
+          name: userId
+          description: The ID of the user
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved photos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userPhotos'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'              
+                
+  '/users/photos/{photoFilename}':
+    delete:
+      tags:
+        - photos
+      summary: Delete a specific photo
+      parameters:
+        - in: path
+          name: photoFilename
+          description: The filename of the photo
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully deleted photo
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  '/users/photos/{photoFilename}/thumbnail':
+    get:
+      tags:
+        - photos
+      summary: Get the thumbnail for a specific photo
+      parameters:
+        - in: path
+          name: photoFilename
+          description: The filename of the photo that we wish to retrieve the thumbnail of
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved photo
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'              
+      
+components:
+  schemas:
+    updateUserRole:
+      type: object
+      properties:
+        roleTypes:
+          type: array
+          items:
+            type: string
+    response:
+      type: object
+      properties:
+        response:
+          type: string
+    destinations:
+      type: array
+      items:
+        $ref: '#/components/schemas/destination'
+    destination:
+      type: object
+      properties:
+        destinationId:
+          type: integer
+        destinationName:
+          type: string
+        destinationType:
+          $ref: '#/components/schemas/destinationType'
+        destinationDistrict:
+          $ref: '#/components/schemas/districts'
+        destinationLat:
+          type: number
+        destinationLon:
+          type: number
+        destinationCountry:
+          $ref: '#/components/schemas/country'
+    createDestination:
+      type: object
+      properties:
+        destinationName:
+          type: string
+        destinationTypeId:
+          type: integer
+        districtId:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+        countryId:
+          type: number
+    user:
+      type: object
+      properties:
+        userId:
+          type: integer
+        firstName:
+          type: string
+        middleName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+        dateOfBirth:
+          type: string
+          nullable: true
+          description: Specified as a specific format
+        email:
+          type: string
+        gender:
+          type: string
+          nullable: true
+        nationalities:
+          type: array
+          items:
+            $ref: '#/components/schemas/nationality'
+        passports:
+          type: array
+          items:
+            $ref: '#/components/schemas/passport'
+        travellerTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/travellerType'
+        timestamp:
+          type: string
+        token:
+          type: string
+    users:
+      type: array
+      items:
+        $ref: '#/components/schemas/user'
+        
+    
+    userPhotos:
+      type: array
+      items:
+        $ref: '#/components/schemas/userPhoto'
+     
+    userPhoto:
+      type: object
+      properties:
+        photoId:
+          type: integer
+        isPrimary:
+          type: boolean
+          
+    updateUserPhoto:
+      type: object
+      properties:
+        isPublic:
+          type: boolean
+              
+          
+    error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: An informative error message (to help with debugging)
+    updateUser:
+      type: object
+      properties:
+        firstName:
+          type: string
+          nullable: true
+        middleName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        dateOfBirth:
+          type: integer
+          nullable: true
+          description: Specified as a unix timestamp
+        email:
+          type: string
+          nullable: true
+        gender:
+          type: string
+          nullable: true
+        nationalities:
+          type: array
+          nullable: true
+          items:
+            type: number
+        passports:
+          type: array
+          nullable: true
+          items:
+            type: number
+        travellerTypes:
+          type: array
+          nullable: true
+          items:
+            type: number
+    trip:
+      type: object
+      properties:
+        tripId:
+          type: integer
+        user:
+          $ref: '#/components/schemas/user'
+        tripName:
+          type: string
+        tripDestinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/tripDestination'
+    tripDestination:
+      type: object
+      properties:
+        tripDestinationId:
+          type: number
+        destination:
+          $ref: '#/components/schemas/destination'
+        arrivalDate: 
+          type: number
+        arrivalTime:
+          type: number
+        departureDate:
+          type: number
+        departureTime: 
+          type: number
+      
+    trips:
+      type: array
+      items:
+        $ref: '#/components/schemas/trip'
+    travellerType:
+      type: object
+      properties:
+        travellerTypeId:
+          type: integer
+        travellerTypeName:
+          type: string
+    travellerTypes:
+      type: array
+      items:
+        $ref: '#/components/schemas/travellerType'
+    passport:
+      type: object
+      properties:
+        passportId:
+          type: integer
+        passportCountry:
+          type: string
+    passports:
+      type: array
+      items:
+        $ref: '#/components/schemas/passport'
+    nationality:
+      type: object
+      properties:
+        nationalityId:
+          type: integer
+        nationalityName:
+          type: string
+    nationalities:
+      type: array
+      items:
+        $ref: '#/components/schemas/nationality'
+    createEditTrip:
+      type: object
+      properties:
+        tripName:
+          type: string
+        tripDestinations:
+          type: array
+          items:
+            type: object
+            properties:
+              destinationId:
+                type: integer
+              arrivalDate:
+                type: integer
+              arrivalTime:
+                type: integer
+              departureDate:
+                type: integer
+              departureTime:
+                type: integer
+    updateTrip:
+      type: array
+      items:
+        type: object
+        properties:
+          destinationArrival:
+            type: integer
+          destinationDeparture:
+            type: integer
+          destinationId:
+            type: integer
+    destinationTypes: 
+      type: array
+      items:
+        $ref: '#/components/schemas/destinationType'
+    destinationType:
+      type: object
+      properties:
+        destinationTypeId:
+          type: integer
+        destinationTypeName:
+          type: string
+    districts:
+      type: array
+      items:
+        $ref: '#/components/schemas/district'
+    district:
+      type: object
+      properties:
+        districtId:
+          type: integer
+        districtName:
+          type: string
+        country:
+          $ref: '#/components/schemas/country'
+    country:
+      type: object
+      properties:
+        countryId: 
+          type: integer
+        countryName: 
+          type: string
+    signupUser:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    login:
+      type: object
+      properties:
+        email:
+          type: string
+        password: 
+          type: string
+  securitySchemes:
+    Authorization:
+      type: http
+      scheme: bearer

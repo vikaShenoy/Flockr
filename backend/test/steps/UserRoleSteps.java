@@ -99,7 +99,7 @@ public class UserRoleSteps {
         // Get user id
         JsonNode signUpResBody = utils.PlayResultToJson.convertResultToJson(signUpRes);
         this.userId = signUpResBody.get("userId").asInt();
-        Assert.assertEquals(200, signUpRes.status());
+        Assert.assertEquals(201, signUpRes.status());
         Assert.assertNotEquals(0, this.userId);
     }
 
@@ -117,7 +117,7 @@ public class UserRoleSteps {
                 .uri("/api/auth/users/signup")
                 .bodyJson(signUpReqBody);
         Result signUpRes = route(application, signUpReq);
-        Assert.assertEquals(200, signUpRes.status());
+        Assert.assertEquals(201, signUpRes.status());
     }
 
     @Given("ROLES - The admin is logged in...")

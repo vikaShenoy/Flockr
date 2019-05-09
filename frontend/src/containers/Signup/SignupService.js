@@ -1,11 +1,8 @@
-// import axios from "axios";
-
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 
-
 /**
- * Signs up a user
+ * Sign up a user.
  * @param {Object} user - The user to sign up
  * @param {string} user.firstName - The users first name
  * @param {string} user.lastName - The users last name
@@ -21,7 +18,7 @@ export async function signup(user) {
 }
 
 /**
- * Checks if the users email is already taken
+ * Check if the users email is already taken.
  * @param {string} email  - The users email
  * @returns {Promise<boolean>} True if the email is taken, false otherwise
  */

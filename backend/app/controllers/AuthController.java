@@ -15,6 +15,7 @@ import play.mvc.Result;
 import models.User;
 import play.mvc.With;
 import repository.AuthRepository;
+import repository.UserRepository;
 import repository.RoleRepository;
 import repository.TravellerRepository;
 import scala.reflect.internal.Trees;
@@ -26,28 +27,28 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import util.Responses;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static play.mvc.Results.*;
+import static util.AuthUtil.isAlpha;
+import static util.AuthUtil.isValidEmailAddress;
 
 /**
  * Controller handling authentication endpoints
  */
 public class AuthController {
     private final AuthRepository authRepository;
-    private final TravellerRepository travellerRepository;
+    private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final Security security;
     private final Responses responses;
 
     @Inject
-    public AuthController(AuthRepository authRepository, TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses, RoleRepository roleRepository) {
+    public AuthController(AuthRepository authRepository, UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses, RoleRepository roleRepository) {
         this.authRepository = authRepository;
-        this.travellerRepository = travellerRepository;
+        this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
         this.responses = responses;
@@ -55,41 +56,21 @@ public class AuthController {
     }
 
     /**
-     * A function that checks if the given string contains all alphabet letters. If yes, it returns true.
-     * Otherwise, return false.
-     * @param name The name of the User
-     * @return true or false depending on the content of the string
-     */
-    public boolean isAlpha(String name) {
-        return name.matches("[a-zA-Z]+");
-    }
-
-    /**
-     * A function that checks if the given email is a valid email format. If yes, it returns true.
-     * Otherwise, returns false.
-     * @param email
-     * @return
-     */
-    public boolean isValidEmailAddress(String email) {
-        String ePattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile(ePattern);
-        java.util.regex.Matcher m = p.matcher(email);
-        return m.matches();
-    }
-
-    /**
      * Signs a user up with minimal details and sends auth session to client
      * @param request Incoming http request
-     * @return The inserted user as JSON
+     * @return The inserted user as JSON, with status code 201.
+     * Return status code 400 if signup request invalid.
      */
     public CompletionStage<Result> signup(Request request) {
         JsonNode jsonRequest = request.body().asJson();
+
+        String messageKey = "message";
 
         // check that there is a request body, if not return badRequest
         if (jsonRequest == null) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid request body according to the API spec");
+                message.put(messageKey, "Please provide a valid request body according to the API spec");
                 return badRequest(message);
             });
         }
@@ -97,25 +78,25 @@ public class AuthController {
         if (!(jsonRequest.has("firstName"))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a first name with the JSON key as firstName");
+                message.put(messageKey, "Please provide a first name with the JSON key as firstName");
                 return badRequest(message);
             });
         } else if (!(jsonRequest.has("lastName"))) {  // Checks if the JSON contains a last name
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a last name with the JSON key as lastName");
+                message.put(messageKey, "Please provide a last name with the JSON key as lastName");
                 return badRequest(message);
             });
         } else if (!(jsonRequest.has("email"))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid email address with the JSON key as email");
+                message.put(messageKey, "Please provide a valid email address with the JSON key as email");
                 return badRequest(message);
             });
         } else if (!(jsonRequest.has("password"))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a password with at least 6 characters with the JSON key as password");
+                message.put(messageKey, "Please provide a password with at least 6 characters with the JSON key as password");
                 return badRequest(message);
             });
         }
@@ -134,7 +115,7 @@ public class AuthController {
             if (!(isAlpha(middleName)) || (middleName.length() < 2)) {
                 return supplyAsync(() -> {
                     ObjectNode message = Json.newObject();
-                    message.put("message", "Please provide a valid middle name that contains only letters and has at least 2 characters");
+                    message.put(messageKey, "Please provide a valid middle name that contains only letters and has at least 2 characters");
                     return badRequest(message);
                 });
             }
@@ -144,40 +125,39 @@ public class AuthController {
         if ((firstName.isEmpty()) || !(isAlpha(firstName)) || (firstName.length() < 2)) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid first name that contains only letters and has at least 2 characters");
+                message.put(messageKey, "Please provide a valid first name that contains only letters and has at least 2 characters");
                 return badRequest(message);
             });
         } else if ((lastName.isEmpty()) || !(isAlpha(lastName)) || (lastName.length() < 2)) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid last name that contains only letters and has at least 2 characters");
+                message.put(messageKey, "Please provide a valid last name that contains only letters and has at least 2 characters");
                 return badRequest(message);
             });
         } else if ((email.isEmpty()) || !(isValidEmailAddress(email))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid email address");
+                message.put(messageKey, "Please provide a valid email address");
                 return badRequest(message);
             });
         } else if (password.isEmpty() || (password.length() < 6) ) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid password with at least 6 characters");
+                message.put(messageKey, "Please provide a valid password with at least 6 characters");
                 return badRequest(message);
             });
         }
 
         User user = new User(firstName, middleName,lastName, email, hashedPassword, userToken);
         return authRepository.insert(user)
-                .thenApplyAsync((insertedUser) -> ok(Json.toJson(insertedUser)), httpExecutionContext.current());
-
-
+                .thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)), httpExecutionContext.current());
     }
 
     /**
      * Logs a user in
      * @param request - Request to get JSon fields from
-     * @return Either users data if valid credentials, otherwise sends unauthorized
+     * @return 200 status code with users data if valid credentials,
+     * otherwise sends 401 if unauthorized.
      */
     public CompletionStage<Result> login(Request request) {
         JsonNode jsonBody = request.body().asJson();
@@ -201,7 +181,7 @@ public class AuthController {
                     String token = this.security.generateToken();
                     user.setToken(token);
 
-                    return travellerRepository.updateUser(user);
+                    return userRepository.updateUser(user);
                 }, httpExecutionContext.current())
                 .thenApplyAsync((user) -> {
                             JsonNode userJson = Json.toJson(user);
@@ -219,18 +199,28 @@ public class AuthController {
                 });
     }
 
+    /**
+     * Logs a user out by setting their auth token to null.
+     * @param request incoming HTTP request.
+     * @return 200 status code.
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> logout(Request request) {
         User user = request.attrs().get(ActionState.USER);
         user.setToken(null);
 
-        return travellerRepository.updateUser(user)
+        return userRepository.updateUser(user)
                 .thenApplyAsync((u) -> {
                     return ok();
                 }, httpExecutionContext.current());
 
     }
 
+    /**
+     * Checks the database for the given email, to see whether it's available.
+     * @param email email to check the db for.
+     * @return 400 if the email is empty. 409 if the email is taken. 200 if the email is available.
+     */
     public CompletionStage<Result> checkEmailAvailable(String email) {
         if (email.isEmpty()) {
             return supplyAsync(() -> badRequest());
