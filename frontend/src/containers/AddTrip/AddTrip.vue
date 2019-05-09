@@ -74,8 +74,7 @@ export default {
     },
     /**
      * Iterates through destinations and check and renders error message
-     * if destinations are contiguous.
-     * @returns {boolean} True if contiguous destinations are found, false otherwise. 
+     * if destinations are contiguous
      */
     contiguousDestinations() {
       let foundContiguousDestination = false;
@@ -130,9 +129,6 @@ export default {
         // Add error handling here later
       }
     },
-    /**
-     * Sets the trip destinations list to empty.
-     */
     update(hello) {
       this.tripDestinations = [];
 

@@ -58,18 +58,6 @@
             </v-text-field>
           </div>
         </div>
-        <div class="item-value">
-          <span v-if="!this.isEditing"> {{ userProfile.middleName }} </span>
-          <v-text-field
-            class="edit-field"
-            v-else
-            v-model="middleName"
-            color="secondary"
-            :rules="optionalFieldRules"
-            :maxlength="50"
-          >
-          </v-text-field>
-        </div>
 
         <v-divider />
 
@@ -146,8 +134,9 @@
             </v-menu>
           </div>
         </div>
+
         <v-divider />
-      
+
         <div class="profile-item">
 
         <div class="item-signifier">
@@ -196,7 +185,6 @@ export default {
       hasInvalidCredentials: false,
       genderOptions: ["Male", "Female", "Other"],
       fieldRules: [rules.required, rules.noNumbers],
-      optionalFieldRules: [rules.noNumbers],
       dateRules: [rules.required],
       currentDate: moment().format("YYYY-MM-DD")
     };

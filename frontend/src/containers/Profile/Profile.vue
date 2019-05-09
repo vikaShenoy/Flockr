@@ -1,33 +1,24 @@
 <template>
   <div id="root-container" v-if="userProfile">
-    <v-alert
-      :value="shouldShowBanner()"
-      color="info"
-      icon="info"
-    >
-    Please fill in your full profile before using the site
+    <v-alert :value="shouldShowBanner()" color="info" icon="info">
+      Please fill in your full profile before using the site
     </v-alert>
-    
+
     <div class="row">
-    <div class="col-lg-4">
-      <ProfilePic :userId="userProfile.userId"/>
+      <div class="col-lg-4">
+        <ProfilePic :userId="userProfile.userId" />
 
-      <BasicInfo :userProfile.sync="userProfile" />
+        <BasicInfo :userProfile.sync="userProfile" />
 
-      <Photos />
-    </div>
-
-    <div class="col-lg-8">
-      <Nationalities :userNationalities.sync="userProfile.nationalities" :userId="userProfile.userId" />
-      <Passports :userPassports.sync="userProfile.passports" :userId="userProfile.userId" />
-      <TravellerTypes
-        :userTravellerTypes.sync="userProfile.travellerTypes"
-        :userId="userProfile.userId"
-      />
-      <div class="">
-        <Trips :trips.sync="userProfile.trips" :userId="userProfile.userId"/>
+        <Photos />
       </div>
-    </div>
+
+      <div class="col-lg-8">
+        <Nationalities :userNationalities.sync="userProfile.nationalities" :userId="userProfile.userId" />
+        <Passports :userPassports.sync="userProfile.passports" :userId="userProfile.userId" />
+        <TravellerTypes :userTravellerTypes.sync="userProfile.travellerTypes" :userId="userProfile.userId" />
+        <Trips />
+      </div>
     </div>
   </div>
 </template>

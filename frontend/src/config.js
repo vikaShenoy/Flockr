@@ -1,20 +1,3 @@
-const env = process.env.NODE_ENV;
-const REMOTE_URL = "http://csse-s302g5.canterbury.ac.nz";
-
-let backendUrl = "";
-
-switch (env) {
-  case "production":
-    backendUrl = `${REMOTE_URL}:443`;
-    break;
-  case "staging":
-    backendUrl = `${REMOTE_URL}:8443`;
-    break;
-  default:
-    backendUrl = "http://localhost:9000";
-    break;
-}
-
 export default {
-  backendUrl
+  backendUrl: "http://localhost:9000"
 };

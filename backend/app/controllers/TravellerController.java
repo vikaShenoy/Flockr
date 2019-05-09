@@ -6,13 +6,6 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Passport;
-import models.TravellerType;
-import models.User;
-import models.Nationality;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.typesafe.config.ConfigException;
 import models.*;
 import play.libs.Json;
@@ -20,13 +13,13 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
-import repository.UserRepository;
+import repository.TravellerRepository;
 
 import javax.inject.Inject;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ExecutionException;
@@ -37,45 +30,42 @@ import play.libs.concurrent.HttpExecutionContext;
 import util.Security;
 
 /**
- * Contains all endpoints associated with users.
+ * Contains all endpoints associated with travellers
  */
-public class UserController extends Controller {
-    final Logger log = LoggerFactory.getLogger(this.getClass());
-
-    private final UserRepository userRepository;
+public class TravellerController extends Controller {
+    private final TravellerRepository travellerRepository;
     private HttpExecutionContext httpExecutionContext;
     private final Security security;
 
     @Inject
-    public UserController(UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security) {
-        this.userRepository = userRepository;
+    public TravellerController(TravellerRepository travellerRepository, HttpExecutionContext httpExecutionContext, Security security) {
+        this.travellerRepository = travellerRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
     }
 
     /**
-     * Retrieves a user's details
-     * @param userId the traveller Id of the traveller to retrieve
+     * Retrieves a travellers details
+     * @param travellerId the traveller Id of the traveller to retrieve
      * @param request request Object
-     * @return HTTP response which can be
-     *  - 200 - with user's details, if successful.
+     * @return traveller details as a Json object
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> getTraveller(int userId, Http.Request request) {
+    public CompletionStage<Result> getTraveller(int travellerId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
         CompletionStage<Optional<User>> getUser;
 
-        if (user.getUserId() == userId || user.isAdmin()) {
-           getUser = userRepository.getUserById(userId, true);
+        if (user.getUserId() == travellerId || user.isAdmin()) {
+           getUser = travellerRepository.getUserById(travellerId, true);
         } else {
-            getUser = userRepository.getUserById(userId, false);
+            getUser = travellerRepository.getUserById(travellerId, false);
         }
 
         return getUser
                 .thenApplyAsync((optUser) -> {
                     if (!optUser.isPresent()) {
-                        ObjectNode message = Json.newObject().put("message", "User with id " + userId + " was not found");
+                        ObjectNode message = Json.newObject().put("message", "User with id " + travellerId + " was not found");
                         return notFound(message);
                     }
 
@@ -90,21 +80,21 @@ public class UserController extends Controller {
     }
 
     /**
-     * Updates a user's details
-      * @param userId Redundant ID
+     * Updates a travellers details
+      * @param travellerId Redundant ID
      * @param request Object to get the JSOn data
      * @return 200 status if update was successful, 500 otherwise
      */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> updateTraveller(int userId, Http.Request request) {
+    @With({LoggedIn.class})
+    public CompletionStage<Result> updateTraveller(int travellerId, Http.Request request) {
         JsonNode jsonBody = request.body().asJson();
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(userFromMiddleware, userId)) {
+        if (!security.userHasPermission(userFromMiddleware, travellerId)) {
             return supplyAsync(Controller::forbidden);
         }
 
-        return userRepository.getUserById(userId, false)
+        return travellerRepository.getUserById(travellerId, false)
                 .thenApplyAsync((user) -> {
                     if (!user.isPresent()) {
                         return notFound();
@@ -185,7 +175,7 @@ public class UserController extends Controller {
                     ObjectNode message = Json.newObject();
                     message.put("message", "Successfully updated the traveller's information");
 
-                    userRepository.updateUser(user.get());
+                    travellerRepository.updateUser(user.get());
                     return ok(message);
 
                 }, httpExecutionContext.current());
@@ -193,12 +183,11 @@ public class UserController extends Controller {
 
     /**
      * A function that gets a list of all the passports and returns a 200 ok code to the HTTP client
-     *
      * @param request Http.Request the HTTP request
      * @return a status code 200 if the request is successful, otherwise returns 500.
      */
     public CompletionStage<Result> getAllPassports(Http.Request request) {
-        return userRepository.getAllPassports()
+        return travellerRepository.getAllPassports()
                 .thenApplyAsync((passports) -> {
                     return ok(Json.toJson(passports));
                 }, httpExecutionContext.current());
@@ -207,25 +196,20 @@ public class UserController extends Controller {
 
     /**
      * Gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
-     *
-     * @param request <b>Http.Request</b> the http request.
-     * @return The completion function to be called on completion.
+     * @param request <b>Http.Request</b> the http request
+     * @return <b>CompletionStage&ltResult&gt</b> the completion function to be called on completion
      */
     public CompletionStage<Result> getNationalities(Http.Request request) {
-        return userRepository.getAllNationalities()
+        return travellerRepository.getAllNationalities()
                 .thenApplyAsync((nationalities) -> {
                     return ok(Json.toJson(nationalities));
                 }, httpExecutionContext.current());
     }
 
 
-    /**
-     * Get all users.
-     * @return status code of 200 with all traveller details in json body.
-     */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTravellers() {
-        return userRepository.getTravellers()
+        return travellerRepository.getTravellers()
                 .thenApplyAsync(travellers -> {
                     JsonNode travellersJson = Json.toJson(travellers);
                     return ok(travellersJson);
@@ -258,12 +242,12 @@ public class UserController extends Controller {
             roleTypes.add(roleTypeString);
         }
 
-        return userRepository.getUserById(travellerId, false)
+        return travellerRepository.getUserById(travellerId, false)
                 .thenApplyAsync(optionalUser -> {
                     if (!optionalUser.isPresent()) {
                         return notFound();
                     }
-                    List<Role> userRoles = userRepository.getRolesByRoleType(roleTypes);
+                    List<Role> userRoles = travellerRepository.getRolesByRoleType(roleTypes);
                     User user = optionalUser.get();
 
                     // Prevent the default admin from having their permission removed
@@ -292,19 +276,18 @@ public class UserController extends Controller {
 
     /**
      * A function that adds a passport to a user based on the given user ID
-     *
-     * @param userId  the traveller ID
+     * @param travellerId the traveller ID
      * @param request Object to get the passportId to add
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> addPassport(int userId, Http.Request request) {
+    public CompletionStage<Result> addPassport(int travellerId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
 
         int passportId = request.body().asJson().get("passportId").asInt();
 
-        return userRepository.getPassportById(passportId)
+        return travellerRepository.getPassportById(passportId)
                 .thenApplyAsync((passport) -> {
                     if (!passport.isPresent()) {
                         return notFound();
@@ -331,7 +314,7 @@ public class UserController extends Controller {
 
         boolean includeAllUserFields = true; // the current implementation will hide "sensitive" fields depending on the boolean taken in by travellerResposity.getUserById
 
-        return userRepository.getUserById(userId, includeAllUserFields)
+        return travellerRepository.getUserById(userId, includeAllUserFields)
             .thenApplyAsync((optionalUserBeingDeleted) -> {
                 if (!optionalUserBeingDeleted.isPresent()) {
                     // check that the user being deleted actually exists
@@ -348,7 +331,7 @@ public class UserController extends Controller {
                     if (userDoingDeletion.isAdmin() || userDoingDeletion.isDefaultAdmin()) {
                         // only admins and the default admin can delete admins
                         message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
-                        CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                        CompletionStage<Result> completionStage = travellerRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
                         CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
                         try {
                             return completableFuture.get();
@@ -365,7 +348,7 @@ public class UserController extends Controller {
                     if (userDoingDeletion.equals(userBeingDeleted) && !userBeingDeleted.isDefaultAdmin()) {
                         // a user can delete itself
                         message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
-                        CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                        CompletionStage<Result> completionStage = travellerRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
                         CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
                         try {
                             return completableFuture.get();
@@ -376,7 +359,7 @@ public class UserController extends Controller {
                         }
                     } else if ((userDoingDeletion.isAdmin() && !userBeingDeleted.isDefaultAdmin()) || userDoingDeletion.isDefaultAdmin()) {
                         message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
-                        CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                        CompletionStage<Result> completionStage = travellerRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
                         CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
                         try {
                             return completableFuture.get();
@@ -396,16 +379,15 @@ public class UserController extends Controller {
 
     /**
      * A function that deletes a passport from a user based on the given user ID
-     *
-     * @param userId     the traveller ID
+     * @param travellerId the traveller ID
      * @param passportId the passport ID
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> removePassport(int userId, int passportId, Http.Request request) {
+    public CompletionStage<Result> removePassport(int travellerId, int passportId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        return userRepository.getPassportById(passportId)
+        return travellerRepository.getPassportById(passportId)
                 .thenApplyAsync((passport) -> {
                     if (!passport.isPresent()) {
                         return notFound();
@@ -414,7 +396,6 @@ public class UserController extends Controller {
                     passports.remove(passport.get());
                     user.setPassports(passports);
                     user.save();
-                    log.debug(user.getPassports().toString());
                     return ok();
                 }, httpExecutionContext.current());
     }
@@ -422,17 +403,16 @@ public class UserController extends Controller {
 
     /**
      * A function that adds a nationality to the user based on the user ID given
-     *
-     * @param userId  the traveller ID
+     * @param travellerId the traveller ID
      * @param request Object to get the nationality to add.
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> addNationality(int userId, Http.Request request) {
+    public CompletionStage<Result> addNationality(int travellerId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         int nationalityId = request.body().asJson().get("nationalityId").asInt();
 
-        return userRepository.getNationalityById(nationalityId)
+        return travellerRepository.getNationalityById(nationalityId)
                 .thenApplyAsync((nationality) -> {
                     if (!nationality.isPresent()) {
                         return notFound();
@@ -448,15 +428,14 @@ public class UserController extends Controller {
 
     /**
      * Deletes a nationality for a logged in user given a nationality id in the request body
-     *
-     * @param userId  the traveller for which we want to delete the nationality
+     * @param travellerId the traveller for which we want to delete the nationality
      * @param request the request passed by the routes file
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> deleteNationalityForUser(int userId, int nationalityId, Http.Request request) {
+    public CompletionStage<Result> deleteNationalityForUser(int travellerId, int nationalityId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
-        return userRepository.getNationalityById(nationalityId)
+        return travellerRepository.getNationalityById(nationalityId)
                 .thenApplyAsync((optionalNationality) -> {
                     if (!optionalNationality.isPresent()) {
                         return notFound("Could not find nationality " + nationalityId);
@@ -480,22 +459,21 @@ public class UserController extends Controller {
 
     /**
      * Get a list of all valid traveller types
-     *
      * @param request unused request object
      * @return ok with status 200 if types obtained, 401 if no token is provided
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTravellerTypes(Http.Request request) {
-        return userRepository.getAllTravellerTypes()
+        return travellerRepository.getAllTravellerTypes()
                 .thenApplyAsync((types) -> {
                     return ok(Json.toJson(types));
                 }, httpExecutionContext.current());
     }
 
 
+
     /**
      * Allows the front-end to search for a traveller.
-     *
      * @param request
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -514,34 +492,34 @@ public class UserController extends Controller {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())
                 nationality = Integer.parseInt(nationalityQuery);
-        } catch (Exception e){ log.error("No Parameter nationality");}
+        } catch (Exception e){ System.out.println("No Parameter nationality");}
         try {
             String ageMinQuery = request.getQueryString("ageMin");
             if (!ageMinQuery.isEmpty())
                 ageMin = Long.parseLong(ageMinQuery);
-        } catch (Exception e){ log.error("No Parameter ageMin");}
+        } catch (Exception e){ System.out.println("No Parameter ageMin");}
         try {
             String ageMaxQuery = request.getQueryString("ageMax");
-            if (!ageMaxQuery.isEmpty())
+            if(!ageMaxQuery.isEmpty())
                 ageMax = Long.parseLong(ageMaxQuery);
-        } catch (Exception e){ log.error("No Parameter ageMax");}
+        } catch (Exception e){ System.out.println("No Parameter ageMax");}
         try {
             String travellerTypeQuery = request.getQueryString("travellerType");
             if (!travellerTypeQuery.isEmpty())
                 travellerType = Integer.parseInt(travellerTypeQuery);
-        } catch (Exception e){ log.error("No Parameter travellerType");}
+        } catch (Exception e){ System.out.println("No Parameter travellerType");}
         try {
             gender = request.getQueryString("gender");
-        } catch (Exception e){ log.error("No Parameter gender");}
+        } catch (Exception e){ System.out.println("No Parameter gender");}
         Date dateMin = new Date(ageMin);
         Date dateMax = new Date(ageMax);
 
-        log.debug("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
+        System.out.println("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
 
-        return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType)  //Just for testing purposes
+        return travellerRepository.searchUser(nationality,gender,dateMin,dateMax,travellerType)  //Just for testing purposes
                 .thenApplyAsync((user) -> {
                     JsonNode userAsJson = Json.toJson(user);
-                    log.debug(userAsJson.asText());
+                    System.out.println(userAsJson);
 
                     return ok(userAsJson);
 

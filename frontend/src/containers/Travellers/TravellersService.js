@@ -2,8 +2,7 @@ import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 
 /**
- * Get a list of travellers.
- * @return json data for all travellers.
+ * Gets a list of travellers
  */
 export async function getTravellers() {
   const authToken = localStorage.getItem("authToken");

@@ -46,7 +46,6 @@ export default {
       height: 100%;
       background-color: $primary;
       color: #FFF;
-      width: 50px;
     }
 
     } 

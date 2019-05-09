@@ -45,7 +45,7 @@ public class AdminSteps {
     private int roleId;
     private int otherUserId;
 
-    @Before
+    @Before("@AdminSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -60,7 +60,7 @@ public class AdminSteps {
         Helpers.start(application);
     }
 
-    @After
+    @After("@AdminSteps")
     public void tearDown() {
         Helpers.stop(application);
     }

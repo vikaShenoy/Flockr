@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.LoggedIn;
+import akka.actor.FSM;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.NotFoundException;
@@ -22,7 +23,7 @@ import play.libs.concurrent.HttpExecutionContext;
 
 
 /**
- * Controller to manage endpoints related to destinations.
+ * Contains all endpoints associated with destinations
  */
 public class DestinationController  extends Controller{
     private final DestinationRepository destinationRepository;
@@ -34,6 +35,7 @@ public class DestinationController  extends Controller{
         this.httpExecutionContext = httpExecutionContext;
     }
 
+
     /**
      * A function that gets a list of all the destinations and returns it with a 200 ok code to the HTTP client
      * @param request Http.Request the http request
@@ -41,15 +43,16 @@ public class DestinationController  extends Controller{
      */
     public CompletionStage<Result> getDestinations(Http.Request request) {
         return destinationRepository.getDestinations()
-                .thenApplyAsync(destinations -> ok(Json.toJson(destinations)), httpExecutionContext.current());
+                .thenApplyAsync((destinations) -> {
+                    return ok(Json.toJson(destinations));
+                }, httpExecutionContext.current());
     }
 
     /**
      * A function that retrieves a destination details based on the destination ID given
      * @param destinationId the destination Id of the destination to retrieve
      * @param request request Object
-     * @return a completion stage and a Status code of 200 and destination details as a Json object if successful,
-     * otherwise returns status code 404 if the destination can't be found in the db.
+     * @return destination details as a Json object
      */
 
     public CompletionStage<Result> getDestination(int destinationId, Http.Request request) {
@@ -57,9 +60,7 @@ public class DestinationController  extends Controller{
         return destinationRepository.getDestinationById(destinationId)
                 .thenApplyAsync((destination) -> {
                     if (!destination.isPresent()) {
-                        ObjectNode message = Json.newObject();
-                        message.put("message", "No destination exists with the specified ID");
-                        return notFound(message);
+                        return notFound();
                     }
 
                     JsonNode destAsJson = Json.toJson(destination);
@@ -72,7 +73,7 @@ public class DestinationController  extends Controller{
     /**
      * Function to add destinations to the database
      * @param request the HTTP post request.
-     * @return a completion stage with a 200 status code and the new json object or a status code 400.
+     * @return a completion stage with the new json object or a bad request error/
      */
 
     public CompletionStage<Result> addDestination(Http.Request request) {
@@ -105,11 +106,9 @@ public class DestinationController  extends Controller{
                     latitude,longitude,countryAdd);
 
             return destinationRepository.insert(destination)
-                    .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)), httpExecutionContext.current());
+                    .thenApplyAsync((insertedDestination) -> ok(Json.toJson(insertedDestination)), httpExecutionContext.current());
         } catch (Exception e) {
-            ObjectNode message = Json.newObject();
-            message.put("message", "Please provide a valid Destination with complete data");
-            return supplyAsync(() -> badRequest(message));
+            return supplyAsync(() -> badRequest());
         }
 
     }
@@ -118,13 +117,14 @@ public class DestinationController  extends Controller{
      * Endpoint to update a destination's details
      * @param request Request body to get json body from
      * @param destinationId The destination ID to update
-     * @return Returns status code 200 if successful, 404 if the destination isn't found, 500 for other errors.
+     * @return Returns the http response which can be
+     *         - Ok - User was updated successfully
      *
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> updateDestination(Http.Request request, int destinationId) {
        return destinationRepository.getDestinationById(destinationId)
-       .thenComposeAsync(optionalDest -> {
+       .thenComposeAsync((optionalDest) -> {
         if (!optionalDest.isPresent()) {
             throw new CompletionException(new NotFoundException());
         }
@@ -138,6 +138,7 @@ public class DestinationController  extends Controller{
         double longitude = jsonBody.get("longitude").asDouble();
 
         Destination destination = optionalDest.get();
+
 
         DestinationType destType = new DestinationType(null);
         destType.setDestinationTypeId(destinationTypeId);
@@ -157,10 +158,10 @@ public class DestinationController  extends Controller{
 
         return destinationRepository.update(destination);
         }, httpExecutionContext.current())
-       .thenApplyAsync(destination -> (Result) ok(), httpExecutionContext.current())
-       .exceptionally(error -> {
+       .thenApplyAsync((Destination) -> (Result) ok(), httpExecutionContext.current())
+       .exceptionally(e -> {
             try {
-                throw error.getCause();
+                throw e.getCause();
             } catch (NotFoundException notFoundE) {
                 return notFound();
             } catch (Throwable ee) {
@@ -173,12 +174,12 @@ public class DestinationController  extends Controller{
      * Endpoint to delete a destination given its id
      * @param destinationId the id of the destination that we want to delete
      * @param request the request sent by the routes file
-     * @return Status code 200 if successful, 404 if not found, 500 otherwise.
+     * @return a Play result
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteDestination(int destinationId, Http.Request request) {
         return destinationRepository.getDestinationById(destinationId)
-                .thenComposeAsync(optionalDestination -> {
+                .thenComposeAsync((optionalDestination) -> {
                     if(!optionalDestination.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
@@ -202,8 +203,8 @@ public class DestinationController  extends Controller{
     }
 
     /**
-     * Endpoint to get all countries.
-     * @return A completion stage and status code 200 with countries in JSON body if successful, 500 for errors.
+     * Endpoint to get all countries
+     * @return The countries as json
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getCountries() {
@@ -216,8 +217,8 @@ public class DestinationController  extends Controller{
     }
 
     /**
-     * Endpoint to get destination types.
-     * @return A completion stage and status code 200 with destination types in body if successful, 500 for errors.
+     * Endpoint to get destination types
+     * @return The destination types as json
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getDestinationTypes() {
@@ -229,13 +230,9 @@ public class DestinationController  extends Controller{
                 .exceptionally(e -> internalServerError());
     }
 
-    /**
-     * Endpoint to get all districts for a country.
-     * @param countryId country to get districts for.
-     * @return A completion stage and status code of 200 with districts in the json body if successful.
-     */
     @With(LoggedIn.class)
     public CompletionStage<Result> getDistricts(int countryId) {
+
         return destinationRepository.getDistricts(countryId)
                 .thenApplyAsync(districts -> {
                     JsonNode districtsJson = Json.toJson(districts);

@@ -6,9 +6,6 @@ import io.ebean.Model;
 import javax.persistence.*;
 import java.util.List;
 
-/**
- * Model for passports the user can add to their profile.
- */
 @Entity
 public class Passport extends Model {
 
@@ -20,10 +17,6 @@ public class Passport extends Model {
 
     private String passportCountry;
 
-    /**
-     * Constructor.
-     * @param passportCountry country the passport is for.
-     */
     public Passport(String passportCountry) {
         this.passportCountry = passportCountry;
     }
@@ -41,7 +34,7 @@ public class Passport extends Model {
     }
 
     /**
-     * This is required by EBean to make queries on the database.
+     * This is required by EBean to make queries on the database
      */
     public static final Finder<Integer, Passport> find = new Finder<>(Passport.class);
 }

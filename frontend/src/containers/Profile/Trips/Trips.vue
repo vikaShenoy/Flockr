@@ -1,63 +1,15 @@
 <template>
-  <div>
-    <div id="header">
-      <h3 class="header-text">Trips</h3>
-    </div>
-    <v-card
-      id="trips-card"
-      max-height="320px"
-      class="scroll"
-    >
-      <TripList :userId="userId" />
-    </v-card>
-  </div>
+  
 </template>
 
 <script>
-
-import TripList from "../../../components/TripList/TripList"; 
-
 export default {
-  components: {
-    TripList
-  },
-  data() {
-    return {
-      // Tells TripList what user to get trips from
-      userId: localStorage.getItem("userId")
-    };
-  }
-};
+    
+}
 </script>
 
-<style lang="scss" scoped>
-.header-text {
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
+<style lang="scss">
 
-#header {
-  width: 100%;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
-  align-items: center;
-  > * {
-    flex-grow: 1;
-  }
-}
-
-#trips-card {
-  padding: 10px 5px 10px 5px;
-}
-
-.trip-filter {
-  margin-bottom: 17px;
-}
-
-.scroll {
-  overflow-y: auto;
-}
 </style>
 
 

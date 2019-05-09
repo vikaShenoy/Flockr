@@ -28,7 +28,6 @@
         label="Password"
         color="secondary"
         :rules="fieldRules"
-        v-on:keyup.enter="login"
       >
       </v-text-field>
 

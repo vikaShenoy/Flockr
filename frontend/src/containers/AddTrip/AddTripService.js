@@ -3,11 +3,10 @@ import { endpoint } from "../../utils/endpoint";
 import moment from "moment";
 
 /**
- * Sends a request to add a trip.
- * @param {string} tripName name of the trip to add.
- * @param {object[]} tripDestinations list of trip destinations to add as part of the trip.
+ * Sends a request to add a trip
+ * @param {string} tripName 
+ * @param {object[]} tripDestinations 
  * @param {number} userId The userID to create the trip for
- * @return response from backend.
  */
 export async function addTrip(tripName, tripDestinations, userId) {
   const transformedTripDestinations = tripDestinations.map(tripDestination => {
@@ -22,6 +21,7 @@ export async function addTrip(tripName, tripDestinations, userId) {
     return transformedTripDestination;
   }); 
 
+  
 
   const res = await superagent.post(endpoint(`/users/${userId}/trips`))
   .set("Authorization", localStorage.getItem("authToken"))

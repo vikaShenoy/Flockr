@@ -67,7 +67,7 @@ public class UserRoleSteps {
 
     private int statusResult;
 
-    @Before
+    @Before("@UserRoleSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -99,7 +99,7 @@ public class UserRoleSteps {
         // Get user id
         JsonNode signUpResBody = utils.PlayResultToJson.convertResultToJson(signUpRes);
         this.userId = signUpResBody.get("userId").asInt();
-        Assert.assertEquals(201, signUpRes.status());
+        Assert.assertEquals(200, signUpRes.status());
         Assert.assertNotEquals(0, this.userId);
     }
 
@@ -117,7 +117,7 @@ public class UserRoleSteps {
                 .uri("/api/auth/users/signup")
                 .bodyJson(signUpReqBody);
         Result signUpRes = route(application, signUpReq);
-        Assert.assertEquals(201, signUpRes.status());
+        Assert.assertEquals(200, signUpRes.status());
     }
 
     @Given("ROLES - The admin is logged in...")
@@ -248,7 +248,7 @@ public class UserRoleSteps {
         traveller.save();
     }
 
-    @After
+    @After("@UserRoleSteps")
     public void tearDown() {
         Helpers.stop(application);
     }

@@ -2,7 +2,7 @@ import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 
 /**
- * Log the user in.
+ * Logs the user in
  * @param {string} email  - Users email
  * @param {string} password  - Users password
  * @throws Error if status code was not 200

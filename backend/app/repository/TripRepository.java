@@ -2,6 +2,7 @@ package repository;
 
 import models.Trip;
 
+import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +14,6 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
  * Contains all trip related db interactions
  */
 public class TripRepository {
-
     private final DatabaseExecutionContext executionContext;
 
     @Inject

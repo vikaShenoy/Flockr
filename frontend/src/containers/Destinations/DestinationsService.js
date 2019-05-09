@@ -3,7 +3,7 @@ import { endpoint } from "../../utils/endpoint";
 
 
 /**
- * Get a list of all the destinations currently in the database, must be logged in to succeed
+ * Gets a list of all the destinations currently in the database, must be logged in to succeed
  * @returns {Promise<Array>} of all destinations
  */
 export async function requestDestinations() {
@@ -14,7 +14,7 @@ export async function requestDestinations() {
 }
 
 /**
- * Get a list of all the countries currently in the database, must be logged in to succeed
+ * Gets a list of all the countries currently in the database, must be logged in to succeed
  * @returns {Promise<Array>} of all countries
  */
 export async function requestCountries() {
@@ -25,7 +25,7 @@ export async function requestCountries() {
 }
 
 /**
- * Get a list of all the destination Types currently in the database, must be logged in to succeed
+ * Gets a list of all the destination Types currently in the database, must be logged in to succeed
  * @returns {Promise<Array>} of all destination types
  */
 export async function requestDestinationTypes() {
@@ -36,7 +36,7 @@ export async function requestDestinationTypes() {
 }
 
 /**
- * Get a list of all the districts for the given country currently in the database, must be logged in to succeed
+ * Gets a list of all the districts for the given country currently in the database, must be logged in to succeed
  * @param countryId int id of the country selected
  * @returns {Promise<Array>}  of all countries
  */
@@ -48,7 +48,7 @@ export async function requestDistricts(countryId) {
 }
 
 /**
- * Delete a destination from the database
+ * Deletes a destination from the database
  * @param destinationId int id of the destination
  * @returns {Promise<>} contains nothing
  */
@@ -60,7 +60,7 @@ export async function sendDeleteDestination(destinationId) {
 }
 
 /**
- * Add a destination to the database
+ * Adds a destination to the database
  * @param destinationInfo JSON object containing the destination
  * @param destinationInfo.destinationName String name of the destination
  * @param destinationInfo.destinationTypeId int id of the destination type
@@ -79,7 +79,7 @@ export async function sendAddDestination(destinationInfo) {
 }
 
 /**
- * Update an existing destination in the database
+ * Updates an existing destination in the database
  * @param destinationInfo JSON object containing the destination
  * @param destinationInfo.destinationName String name of the destination
  * @param destinationInfo.destinationTypeId int id of the destination type

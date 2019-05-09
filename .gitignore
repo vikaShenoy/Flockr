@@ -16,9 +16,6 @@ dist/
 .cache
 *.log
 
-# Ignore production frontend files
-vue-front-end-goes-here/
-
 # Things that don't belong under source control see https://github.com/github/gitignore
 
 # Java
@@ -159,7 +156,6 @@ local.properties
 .settings/
 .loadpath
 
-
 # Eclipse Core
 .project
 
@@ -202,7 +198,5 @@ local.properties
 # Frontend related .gitignore
 
 node_modules/
-.vscode/
 
 *.iml
-

@@ -49,7 +49,7 @@ public class DeleteUserTestSteps {
     private Role travellerRole;
     private Result resultBeingInspected; // user to persist results between test steps
 
-    @Before
+    @Before("@DeleteUserSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -100,7 +100,7 @@ public class DeleteUserTestSteps {
         southKorean.save();
     }
 
-    @After
+    @After("@DeleteUserSteps")
     public void tearDown() {
         if (adminAnna != null) {
             User.find.deleteById(adminAnna.getUserId());

@@ -1,12 +1,10 @@
 package models;
 
 import io.ebean.Model;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-/**
- * Linking class to show the association between users and roles.
- */
 @Entity
 public class UserRole extends Model {
 
@@ -15,11 +13,6 @@ public class UserRole extends Model {
     private int roleId;
     private int userId;
 
-    /**
-     * Create a new user role.
-     * @param roleId id of the role the user has.
-     * @param userId id of the user who has the role.
-     */
     public UserRole(int roleId, int userId) {
         this.roleId = roleId;
         this.userId = userId;

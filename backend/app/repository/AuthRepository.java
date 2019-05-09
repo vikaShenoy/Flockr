@@ -15,7 +15,6 @@ import java.util.concurrent.CompletionStage;
  * Repository methods for authentication
  */
 public class AuthRepository {
-
     private final EbeanServer ebeanServer;
     private final DatabaseExecutionContext executionContext;
     private final EbeanDynamicEvolutions ebeanDynamicEvolutions;

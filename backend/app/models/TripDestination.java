@@ -4,17 +4,15 @@ package models;
 import io.ebean.Model;
 
 import javax.persistence.*;
+import java.sql.Time;
 import java.util.Date;
 
-/**
- * TripDestinations are a combination of destinations and the date/time at which
- * a user arrives and leaves the destination as part of their trip.
- */
 @Entity
 public class TripDestination extends Model {
 
     @Id
     private int tripDestinationId;
+
 
     @ManyToOne
     @JoinColumn
@@ -29,14 +27,6 @@ public class TripDestination extends Model {
     private Date departureDate;
     private int departureTime;
 
-    /**
-     * Constructor to create a new trip destination.
-     * @param destination the destination the user is visiting as part of their trip.
-     * @param arrivalDate date on which this destination is arrived at as part of the trip.
-     * @param arrivalTime time at which this destination is arrived at as part of the trip.
-     * @param departureDate date on which this destination is left as part of the trip.
-     * @param departureTime time on which this destination is left as part of the trip.
-     */
     public TripDestination(Destination destination, Date arrivalDate, int arrivalTime, Date departureDate, int departureTime) {
         this.destination = destination;
         this.arrivalDate = arrivalDate;

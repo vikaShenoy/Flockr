@@ -7,7 +7,7 @@ function formatTime(time) {
 }
 
 /**
- * Transform/format a trip response object.
+ * 
  * @param {Object} trip The trip to transform
  * @param {string} trip.tripName The name of the trip
  * @param {Object[]} trip.tripDestinations The destinations in a trip
@@ -34,7 +34,7 @@ export function transformTripResponse(trip) {
 }
 
 /**
- * Send a request to get a trip
+ * Sends a request to get a trip
  * @param {number} tripId The trip ID to get
  * @param {userId} The userID of who to get the trip for
  */
@@ -46,8 +46,7 @@ export async function getTrip(tripId, userId) {
 }
 
 /**
- * Edit a trip. Send a request to the edit trip backend endpoint with
- * the trip data to edit.
+ * 
  * @param {number} tripId - The ID of the trip to edit
  * @param {string} tripName - The edited trip name
  * @param {Object[]} tripDestinations - The edited trip destinations
