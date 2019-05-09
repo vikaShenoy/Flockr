@@ -21,7 +21,7 @@ release-artifacts-backend:
   only:
     - master 
   script:
-    - "cd backend && sbt dist &&"
+    - "cd backend && sbt dist"
   stage: build
 
 staging-artifacts-backend:
