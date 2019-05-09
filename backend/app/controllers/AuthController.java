@@ -5,26 +5,18 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.UnauthorizedException;
-import models.Role;
-import models.RoleType;
 import play.libs.Json;
-import play.mvc.Controller;
 import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
-import models.User;
+import models.*;
 import play.mvc.With;
 import repository.AuthRepository;
 import repository.UserRepository;
 import repository.RoleRepository;
-import repository.TravellerRepository;
-import scala.reflect.internal.Trees;
 import util.Security;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
