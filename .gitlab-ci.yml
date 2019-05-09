@@ -14,40 +14,14 @@ recent-artifacts-backend:
     - "cd backend && sbt dist"
   stage: build
 
-recent-artifacts-frontend:
-  artifacts:
-    expire_in: "1 week"
-    paths:
-      - frontend/dist
-  except:
-    - tags
-  script:
-    - "echo $USER"
-    - "echo \"Checking that npm version exists\""
-    - "npm -v"
-    - "cd frontend && npm install && npm run build"
-  stage: build
-
 release-artifacts-backend:
   artifacts:
     paths:
       - backend/target/universal/*.zip
   only:
-    - tags
+    - master 
   script:
     - "cd backend && sbt dist &&"
-  stage: build
-
-release-artifacts-frontend:
-  artifacts:
-    paths:
-      - frontend/dist
-  only:
-    - tags
-  script:
-    - "echo \"Checking that npm version exists\""
-    - "npm -v | echo"
-    - "cd frontend && npm install && npm run build"
   stage: build
 
 staging-artifacts-backend:
