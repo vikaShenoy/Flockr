@@ -43,6 +43,9 @@ public class User extends Model {
     @ManyToMany(mappedBy = "users")
     public List<Passport> passports;
 
+    @ManyToMany(mappedBy = "users")
+    public List<Role> roles;
+
     @Constraints.Required
     @CreatedTimestamp
     @Column(updatable=false)
@@ -53,6 +56,26 @@ public class User extends Model {
 
 
     private String token;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", firstName='" + firstName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", nationalities=" + nationalities +
+                ", dateOfBirth=" + dateOfBirth +
+                ", gender='" + gender + '\'' +
+                ", email='" + email + '\'' +
+                ", travellerTypes=" + travellerTypes +
+                ", passports=" + passports +
+                ", roles=" + roles +
+                ", timestamp=" + timestamp +
+                ", passwordHash='" + passwordHash + '\'' +
+                ", token='" + token + '\'' +
+                '}';
+    }
 
 
     /**
@@ -68,7 +91,7 @@ public class User extends Model {
      * @param passports the traveller's passports
      * @param token the traveller's token
      */
-    public User(String firstName, String middleName, String lastName, String passwordHash, String gender, String email, List<Nationality> nationalities, List<TravellerType> travellerTypes, Date dateOfBirth, List<Passport> passports, String token) {
+    public User(String firstName, String middleName, String lastName, String passwordHash, String gender, String email, List<Nationality> nationalities, List<TravellerType> travellerTypes, Date dateOfBirth, List<Passport> passports, List<Role> roles, String token) {
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
@@ -79,6 +102,7 @@ public class User extends Model {
         this.travellerTypes = travellerTypes;
         this.dateOfBirth = dateOfBirth;
         this.passports =passports;
+        this.roles = roles;
         this.token = token;
     }
 
@@ -99,6 +123,32 @@ public class User extends Model {
         this.token = token;
     }
 
+    /**
+     * Return true if the user is the default admin
+     * @return true if the user is the default admin
+     */
+    public boolean isDefaultAdmin() {
+        for (Role r : roles) {
+            if (r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * Return true if the user is an admin
+     * @return true if the user is an admin
+     */
+    public boolean isAdmin() {
+        for (Role r : roles) {
+            if (r.getRoleType().equals(RoleType.ADMIN.toString()) || r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public int getUserId() {
         return userId;
@@ -188,6 +238,7 @@ public class User extends Model {
         this.timestamp = timestamp;
     }
 
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -202,6 +253,14 @@ public class User extends Model {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 
     public boolean profileCompleted() {

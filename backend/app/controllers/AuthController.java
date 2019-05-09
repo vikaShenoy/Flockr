@@ -9,10 +9,11 @@ import play.libs.Json;
 import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
-import models.User;
+import models.*;
 import play.mvc.With;
 import repository.AuthRepository;
 import repository.UserRepository;
+import repository.RoleRepository;
 import util.Security;
 
 import javax.inject.Inject;
@@ -26,22 +27,24 @@ import static util.AuthUtil.isAlpha;
 import static util.AuthUtil.isValidEmailAddress;
 
 /**
- * Controller handling authentication endpoints.
+ * Controller handling authentication endpoints
  */
 public class AuthController {
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final Security security;
     private final Responses responses;
 
     @Inject
-    public AuthController(AuthRepository authRepository, UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses) {
+    public AuthController(AuthRepository authRepository, UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses, RoleRepository roleRepository) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
         this.responses = responses;
+        this.roleRepository = roleRepository;
     }
 
     /**

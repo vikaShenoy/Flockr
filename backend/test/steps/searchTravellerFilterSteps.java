@@ -37,8 +37,8 @@ public class searchTravellerFilterSteps {
     private String authToken;
     private ArrayNode array;
 
-    @Before
-    public void setUp() {
+    @Before("@SearchTravellerSteps")
+    public void setUp() throws IOException {
         Module testModule = new AbstractModule() {
             @Override
             public void configure() {
@@ -52,7 +52,7 @@ public class searchTravellerFilterSteps {
         Helpers.start(application);
     }
 
-    @After
+    @After("@SearchTravellerSteps")
     public void tearDown() {
         Helpers.stop(application);
     }
@@ -172,7 +172,7 @@ public class searchTravellerFilterSteps {
         List<Map<String,String>> expectedResults = dataTable.asMaps();
         for (int i = 0; i < expectedResults.size(); i++) {
             Assert.assertEquals(Integer.parseInt(expectedResults.get(i).get("nationalityId")), this.array.get(i).get("nationalityId").asInt());
-            Assert.assertEquals(expectedResults.get(i).get("nationalityName"), this.array.get(i).get("nationalityCountry").asText());
+            Assert.assertEquals(expectedResults.get(i).get("nationalityName"), this.array.get(i).get("nationalityName").asText());
         }
     }
 

@@ -53,6 +53,7 @@ public class AuthRepository {
                     .fetch("passports")              // contacts is a OneToMany path
                     .fetch("travellerTypes")
                     .fetch("nationalities")
+                    .fetch("roles")
                     .where()
                     .eq("token", token)
                     .findOneOrEmpty();
@@ -70,6 +71,7 @@ public class AuthRepository {
                     .fetch("passports")
                     .fetch("nationalities")
                     .fetch("travellerTypes")
+                    .fetch("roles")
                     .where()
                     .eq("email", email)
                     .findOneOrEmpty();

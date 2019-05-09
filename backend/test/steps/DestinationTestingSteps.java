@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
+import cucumber.api.PendingException;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
@@ -39,7 +40,7 @@ public class DestinationTestingSteps {
     // user data
     private String authToken;
 
-    @Before
+    @Before("@DestinationSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -54,7 +55,7 @@ public class DestinationTestingSteps {
         Helpers.start(application);
     }
 
-    @After
+    @After("@DestinationSteps")
     public void tearDown() {
         Helpers.stop(application);
     }
@@ -102,7 +103,6 @@ public class DestinationTestingSteps {
     public void thatIWantToCreateADestinationWithTheFollowingIncompleteData(DataTable dataTable) {
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
-        System.out.println(list.get(0));
 
         this.destinationData = Json.toJson(firstRow);
     }
@@ -150,14 +150,14 @@ public class DestinationTestingSteps {
         Assert.assertEquals(200, this.result.status());
     }
 
-    @Then("I should receive a {int} status code indicating that the Destination is successfully created")
-    public void iShouldReceiveAnStatusCodeIndicatingThatDestinationIsSuccessfullyCreated(Integer expectedStatusCode) {
-        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+    @Then("The destination should be created successfully")
+    public void iShouldReceiveAnStatusCodeIndicatingThatDestinationIsSuccessfullyCreated() {
+        Assert.assertEquals(201, this.result.status());
     }
 
-    @Then("I should receive a {int} status code indicating that the Destination is not successfully created")
-    public void iShouldReceiveAStatusCodeIndicatingThatTheDestinationIsNotSuccessfullyCreated(Integer expectedStatusCode) {
-        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+    @Then("I should receive an error, because the data is incomplete")
+    public void iShouldReceiveAStatusCodeIndicatingThatTheDestinationIsNotSuccessfullyCreated() {
+        Assert.assertEquals(400, this.result.status());
     }
 
     @Then("I try to search the Destination with the id of {int}")
@@ -168,12 +168,12 @@ public class DestinationTestingSteps {
         this.result = route(application, request);
     }
 
-    @Then("I should receive a {int} status code when getting the destination with id {int} indicating that the Destination with the given ID is not found")
-    public void iShouldReceiveAStatusCodeWhenGettingTheDeletedDestinationWithId(Integer expectedStatusCode, Integer destinationId) {
+    @Then("I should receive an error when getting the destination indicating that the Destination is not found")
+    public void iShouldReceiveAStatusCodeWhenGettingTheDeletedDestinationWithId() {
         Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
                 .method("GET")
-                .uri("/api/destinations/" + destinationId.toString());
+                .uri("/api/destinations/1");
         this.result = route(application, checkDeletion);
-        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+        Assert.assertEquals(404, this.result.status());
     }
 }

@@ -34,7 +34,7 @@
             v-bind:key="nationality.nationalityId"
             color="primary"
             text-color="white"
-          >{{ nationality.nationalityCountry }}</v-chip>
+          >{{ nationality.nationalityName }}</v-chip>
         </div>
 
         <div>

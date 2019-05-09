@@ -5,6 +5,7 @@ Feature: The user can search travellers
       | firstName | middleName | lastName | email             | password      |
       | Felipe    | Rogelio    | Sanchez  | rogelio@email.com | much-security |
 
+  @SearchTravellerSteps
   Scenario: I can get a list of available nationalities from the database
     And I have logged in with email "rogelio@email.com" and password "much-security"
     And I populate the database with test data
@@ -16,7 +17,7 @@ Feature: The user can search travellers
       | 3             | Afghanistan     |
       | 4             | Peru            |
 
-
+  @SearchTravellerSteps
   Scenario Outline: The user can search a traveller by nationality id
     And I have logged in with email "rogelio@email.com" and password "much-security"
     And I populate the database with test data
@@ -29,7 +30,7 @@ Feature: The user can search travellers
       | 3             | ["p.andre@hotmail.com"]    |
       | 4             | ["luis@gmail.com"]         |
 
-
+  @SearchTravellerSteps
   Scenario Outline: The user can search a traveller by gender
     And I have logged in with email "rogelio@email.com" and password "much-security"
     And I populate the database with test data
@@ -43,20 +44,7 @@ Feature: The user can search travellers
       | Other  | ["p.andre@hotmail.com"]    |
 
 
-#  Scenario Outline: The user can search a traveller by age in a range
-#    Given I have logged in with email "luis@gmail.com" and password "so-secure"
-#    And the database has been populated with test data
-#    When I search travellers with the age range of <minAge> to <maxAge>
-#    Then I get the following <results>
-#
-#    Examples:
-#      | minAge | maxAge | results                                   |
-#      | 18     | 20     | ["Barry", "Baz", "Bazza"]                 |
-#      | 20     | 100    | ["Caroline", "Anna", "Stephen", "Steven"] |
-#      | 4000   | 4001   | []                                        |
-#      | 100    | 130    | ["Suzie"]                                 |
-
-
+  @SearchTravellerSteps
   Scenario Outline: The user can search a traveller by traveller type
     And I have logged in with email "rogelio@email.com" and password "much-security"
     And I populate the database with test data

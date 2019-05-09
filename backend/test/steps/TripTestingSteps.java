@@ -44,7 +44,7 @@ public class TripTestingSteps {
     private Result result;
     private String authToken;
 
-    @Before
+    @Before("@TripSteps")
     public void setUp() {
         Module testModule = new AbstractModule() {
             @Override
@@ -59,10 +59,8 @@ public class TripTestingSteps {
         Helpers.start(application);
     }
 
-    @After
-    public void tearDown() {
-        Helpers.stop(application);
-    }
+    @After("@TripSteps")
+    public void tearDown() { Helpers.stop(application); }
 
     @Given("this user exists:")
     public void thisUserExists(DataTable dataTable) throws IOException {

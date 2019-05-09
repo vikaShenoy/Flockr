@@ -105,6 +105,20 @@ public class InternalController {
             passports.add(passport3);
             passports.add(passport4);
 
+            Role admin = new Role(RoleType.ADMIN);
+            Role superAdmin = new Role(RoleType.SUPER_ADMIN);
+            Role traveller = new Role(RoleType.TRAVELLER);
+
+            admin.save();
+            superAdmin.save();
+            traveller.save();
+
+            List<Role> superAdminRoles = new ArrayList<>();
+            superAdminRoles.add(superAdmin);
+
+            List<Role> adminRoles = new ArrayList<>();
+            adminRoles.add(admin);
+
             ArrayList<String> userStrings1 = new ArrayList<>();
             userStrings1.add("Luis");
             userStrings1.add("Sebastian");
@@ -132,7 +146,7 @@ public class InternalController {
             userStrings3.add("Female");
             userStrings3.add("big-token");
 
-            User user1 = generateMockUser(userStrings1, nationalityList, travellerTypeList, passports);
+            User user1 = generateMockUser(userStrings1, nationalityList, travellerTypeList, passports, superAdminRoles);
 
             nationalityList.remove(0);
             nationalityList.add(nationality3);
@@ -141,14 +155,14 @@ public class InternalController {
             passports.remove(1);
             passports.remove(0);
             passports.add(passport3);
-            generateMockUser(userStrings2, nationalityList, travellerTypeList, passports);
+            generateMockUser(userStrings2, nationalityList, travellerTypeList, passports, adminRoles);
             nationalityList.remove(0);
             nationalityList.add(nationality1);
             travellerTypeList.remove(0);
             travellerTypeList.add(travellerType1);
             passports.remove(0);
             passports.add(passport1);
-            generateMockUser(userStrings3, nationalityList, travellerTypeList, passports);
+            generateMockUser(userStrings3, nationalityList, travellerTypeList, passports, new ArrayList<>());
 
             Trip trip = new Trip(tripDestinations, user1, "My trip name");
 
@@ -164,13 +178,13 @@ public class InternalController {
      * Helper function. Create a user and save to database.
      * NOTE: also creates a passport, nationality, traveller type and gender in the database
      */
-    private User generateMockUser(ArrayList<String> userStrings, List<Nationality> nationalities, List<TravellerType> travellerTypes, List<Passport> passports) {
+    private User generateMockUser(ArrayList<String> userStrings, List<Nationality> nationalities, List<TravellerType> travellerTypes, List<Passport> passports, List<Role> roles) {
         Security security = new Security();
 
         String passwordHash = security.hashPassword(userStrings.get(3));
         Timestamp dateOfBirth = new Timestamp(637920534);
 
-        User user = new User(userStrings.get(0), userStrings.get(1), userStrings.get(2), passwordHash, userStrings.get(5), userStrings.get(4), nationalities, travellerTypes, dateOfBirth, passports, userStrings.get(6));
+        User user = new User(userStrings.get(0), userStrings.get(1), userStrings.get(2), passwordHash, userStrings.get(5), userStrings.get(4), nationalities, travellerTypes, dateOfBirth, passports, roles, userStrings.get(6));
         user.save();
 
         return user;
