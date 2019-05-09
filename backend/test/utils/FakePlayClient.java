@@ -67,6 +67,7 @@ public class FakePlayClient implements FakeClient {
         return route(this.application, request);
     }
 
+    @Override
     public User loginMadeUpUser(User user, String password) throws FailedToLoginException {
         // make request
         ObjectNode req = Json.newObject();
