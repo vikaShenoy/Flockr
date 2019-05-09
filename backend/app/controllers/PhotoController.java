@@ -1,6 +1,5 @@
 package controllers;
 
-import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,7 +15,7 @@ import play.mvc.With;
 import repository.PhotoRepository;
 import play.libs.Files.TemporaryFile;
 
-import repository.TravellerRepository;
+import repository.UserRepository;
 import util.PhotoUtil;
 import util.Security;
 
@@ -25,11 +24,7 @@ import javax.inject.Inject;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import java.io.*;
-import java.net.URLConnection;
-import java.nio.file.Files;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
@@ -37,14 +32,14 @@ public class PhotoController extends Controller {
 
     private final Security security;
     private final PhotoRepository photoRepository;
-    private final TravellerRepository travellerRepository;
+    private final UserRepository userRepository;
     private final PhotoUtil photoUtil;
 
     @Inject
-    public PhotoController(Security security, PhotoRepository photoRepository, TravellerRepository travellerRepository, PhotoUtil photoUtil) {
+    public PhotoController(Security security, PhotoRepository photoRepository, UserRepository userRepository, PhotoUtil photoUtil) {
         this.security = security;
         this.photoRepository = photoRepository;
-        this.travellerRepository = travellerRepository;
+        this.userRepository = userRepository;
         this.photoUtil = photoUtil;
     }
 
@@ -192,7 +187,7 @@ public class PhotoController extends Controller {
         File newFile = new File("./app/photos/"+ filenameHash);
         file.copyTo(newFile);
 
-        return travellerRepository.getUserById(userId)
+        return userRepository.getUserById(userId)
                 .thenComposeAsync(optionalUser -> {
                     if (!optionalUser.isPresent()) {
                         throw new CompletionException(new BadRequestException("User doesn't exist"));
@@ -212,7 +207,7 @@ public class PhotoController extends Controller {
                     }
 
                     // Could not figure out how to break out of
-                    return travellerRepository.updateUser(user);
+                    return userRepository.updateUser(user);
                 })
                 .thenApplyAsync(user -> (Result) ok())
                 .exceptionally(e -> {

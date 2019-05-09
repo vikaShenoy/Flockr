@@ -46,6 +46,12 @@ public class User extends Model {
     @ManyToMany(mappedBy = "users")
     public List<Role> roles;
 
+    @OneToMany
+    private List<PersonalPhoto> personalPhotos;
+
+    @OneToOne
+    private PersonalPhoto profilePhoto;
+
     @Constraints.Required
     @CreatedTimestamp
     @Column(updatable=false)
@@ -238,6 +244,21 @@ public class User extends Model {
         this.timestamp = timestamp;
     }
 
+    public List<PersonalPhoto> getPersonalPhotos() {
+        return personalPhotos;
+    }
+
+    public void setPersonalPhotos(List<PersonalPhoto> personalPhotos) {
+        this.personalPhotos = personalPhotos;
+    }
+
+    public PersonalPhoto getProfilePhoto() {
+        return profilePhoto;
+    }
+
+    public void setProfilePhoto(PersonalPhoto profilePhoto) {
+        this.profilePhoto = profilePhoto;
+    }
 
     public String getPasswordHash() {
         return passwordHash;
