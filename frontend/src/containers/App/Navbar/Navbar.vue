@@ -28,21 +28,6 @@
         </v-list-tile-content>
       </v-list-tile>
 
-      <v-list-tile
-        :style="{
-          backgroundColor: '#c0392b',
-        }"
-        @click="resampleClick"
-        class="nav-item"
-      >
-        <v-list-tile-action>
-          <v-icon class="nav-icon">cog</v-icon>
-        </v-list-tile-action>
-
-        <v-list-tile-content>
-          <v-list-tile-title>Resample (DEV)</v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
 
     </v-list>
  </v-navigation-drawer>
@@ -52,7 +37,6 @@
 
 import UserStore from "../../../stores/UserStore";
 import { logout } from "./NavbarService";
-import { resample } from "../../Home/HomeService";
 
 export default {
   data() {
@@ -64,7 +48,8 @@ export default {
           url: "/",
           icon: "dashboard",
           loggedIn: true,
-          loggedOut: true
+          loggedOut: true,
+          requiresAdminRole: false
         },
         {
           title: "Search Travellers",
@@ -72,7 +57,8 @@ export default {
           url: "/search",
           profileCompleted: true,
           loggedIn: true,
-          loggedOut: false
+          loggedOut: false,
+          requiresAdminRole: false
         },
         {
           title: "Destinations",
@@ -80,7 +66,8 @@ export default {
           url: "/destinations",
           profileCompleted: true,
           loggedIn: true,
-          loggedOut: false
+          loggedOut: false,
+          requiresAdminRole: false
         },
         {
           title: "Trips",
@@ -88,28 +75,32 @@ export default {
           url: "/trips",
           profileCompleted: true,
           loggedIn: true,
-          loggedOut: false
+          loggedOut: false,
+          requiresAdminRole: false
         },
         {
           title: "Sign up",
           icon: "person_add",
           url: "/signup",
           loggedIn: false,
-          loggedOut: true 
+          loggedOut: true,
+          requiresAdminRole: false
         },
         {
           title: "Log in",
           icon: "exit_to_app",
           url: "/login",
           loggedIn: false,
-          loggedOut: true
+          loggedOut: true,
+          requiresAdminRole: false
         },
         {
           title: "Profile",
           icon: "face",
           url: "/profile",
           loggedIn: true,
-          loggedOut: false
+          loggedOut: false,
+          requiresAdminRole: false
         },
         {
           title: "Travellers",
@@ -117,19 +108,30 @@ export default {
           url: "/travellers",
           profileCompleted: true,
           loggedIn: true,
-          loggedOut: false
+          loggedOut: false,
+          requiresAdminRole: false
         },
         {
           title: "Log out",
           url: "/logout",
           icon: "power_settings_new",
           loggedIn: true,
-          loggedOut: false
+          loggedOut: false,
+          requiresAdminRole: false
+        },
+        {
+          title: "Admin Panel",
+          url: "/admin",
+          icon: "how_to_reg",
+          loggedIn: true,
+          loggedOut: false,
+          requiresAdminRole: true
         }
       ]
     };
   },
   methods: {
+
     /**
      * Run when the nav was clicked on
      * @param {string} url - The url of nav item that was clicked on
@@ -150,22 +152,7 @@ export default {
           this.$router.push(url);
           break;
       }
-    },
-    /**
-     * Resample the database with test data.
-     */
-    resampleClick() {
-      try {
-      
-        resample(); 
-        console.log(1);
-      } catch (e) {
-        console.log(e);
-      }
-  }  
-
-    
-
+    }
   },
   computed: {
     /**
@@ -174,12 +161,26 @@ export default {
     itemsToShow() {
       const loggedIn = UserStore.methods.loggedIn();
       const profileCompleted = UserStore.methods.profileCompleted();
+      const isAdmin = UserStore.methods.isAdmin();
 
       return this.items.filter(item => {
-        return (item.loggedIn && loggedIn && (item.profileCompleted && profileCompleted || !item.profileCompleted)) || item.loggedOut && !loggedIn;
+        if (item.loggedIn && loggedIn) {
+          if ((item.profileCompleted && profileCompleted) || !item.profileCompleted) {
+            if (item.requiresAdminRole && !isAdmin) {
+              return false;
+            } else {
+              return true;
+            }
+          } else {
+            return false
+          }
+        } else if (item.loggedOut && !loggedIn) {
+          return true;
+        }
+        else {
+          return false;
+        }
       });
-
-      return this.items;
     },
     /**
      * Event handler called when nav item has been clicked

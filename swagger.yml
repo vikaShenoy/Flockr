@@ -8,30 +8,30 @@ info:
 tags:
   - name: auth
     description: All authentication endpoints
-  - name: travellers
-    description: All traveller related endpoints
+  - name: users
+    description: All user related endpoints
   - name: destinations
     description: All destination related endpoints
   - name: trips
     description: All trip related endpoints
 paths:
-  '/auth/travellers/signup':
+  '/auth/users/signup':
     post:
       tags:
         - auth
-      summary: Sign's up a traveller
+      summary: Sign's up a user
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/signupTraveller'
+              $ref: '#/components/schemas/signupUser'
       responses:
         '201':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/traveller'
+                $ref: '#/components/schemas/user'
         '400':
           description: Bad request.
           content:
@@ -44,7 +44,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/auth/travellers/{email}/available':
+  '/auth/users/{email}/available':
     get:
       tags:
         - auth
@@ -52,7 +52,7 @@ paths:
       parameters:
         - in: path
           name: email
-          description: The email of the traveller
+          description: The email of the user
           required: true
           schema:
             type: string
@@ -82,18 +82,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
        
-  '/auth/travellers/login':
+  '/auth/users/login':
     post:
       tags:
         - auth
-      summary: Logs in a traveller
+      summary: Logs in a user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/login'
       responses:
         '200':
-          description: Traveller has logged in successfully
+          description: User has logged in successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/traveller'
+                $ref: '#/components/schemas/user'
         '400':
           description: Malformed request body
           content:
@@ -112,7 +117,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/auth/travellers/logout':
+  '/auth/users/logout':
     post:
       tags:
         - auth
@@ -138,11 +143,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/travellers':
+  '/users':
     get:
       tags:
-        - travellers
-      summary: Searches a list of travellers
+        - users
+      summary: Gets a list of all users
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/users'
+        '400':
+          description: Query strings were malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: User is not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: User has not filled out their profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+
+  '/users/search':
+    get:
+      tags:
+        - users
+      summary: Searches for all users
       security:
         - cookieAuth: []
       parameters:
@@ -178,11 +223,11 @@ paths:
             type: string
       responses:
         '200':
-          description: Successfully retrieved travellers
+          description: Successfully retrieved users
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/travellers'
+                $ref: '#/components/schemas/users'
         '400':
           description: Query strings were malformed
           content:
@@ -207,17 +252,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/travellers/{userId}':
+                
+  '/users/{userId}':
     get:
       tags:
-        - travellers
-      summary: Gets a travellers details
+        - users
+      summary: Gets a users details
       security:
         - cookieAuth: []
       parameters:
         - in: path
           name: userId
-          description: ID of the traveller
+          description: ID of the user
           required: true
           schema:
             type: integer
@@ -228,7 +274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/traveller'
+                $ref: '#/components/schemas/user'
         '400':
           description: Bad request.
           content:
@@ -249,8 +295,8 @@ paths:
                 $ref: '#/components/schemas/error'
     patch:
       tags:
-        - travellers
-      summary: Updates parts of a traveller
+        - users
+      summary: Updates parts of a user
       parameters:
         - in: path
           name: userId
@@ -265,7 +311,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/updateTraveller'
+              $ref: '#/components/schemas/updateUser'
       responses:
         '201':
           description: User has succesfully been updated
@@ -287,6 +333,32 @@ paths:
                 $ref: '#/components/schemas/error'
         '403':
           description: Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  '/destinations/types':
+    get:
+      tags:
+        - destinations
+      summary: Gets a list of the types of destinations
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved types of destinations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destinationTypes'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -331,12 +403,78 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/destination'
+              $ref: '#/components/schemas/createDestination'
       security:
         - cookieAuth: []
       responses:
         '201':
           description: Successfully created new destination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destination'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                
+  '/destinations/countries':
+    get:
+      tags:
+        - destinations
+      summary: Get a list of all destination countries
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved destination countries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destinations'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  
+  '/destinations/countries/{countryId}/districts':
+    get:
+      tags:
+        - destinations
+      summary: Gets a list of destination districts from a country
+      parameters:
+        - in: path
+          name: countryId
+          description: ID of the country
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved destinations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/destinations'
         '401':
           description: Unauthorized
           content:
@@ -395,6 +533,11 @@ paths:
       summary: Edit an existing destination
       security:
         - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createDestination'
       responses:
         '200':
           description: Successfully updated destination
@@ -449,10 +592,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/travellers/types':
+  '/users/types':
     get:
       tags:
-        - travellers
+        - users
       summary: Gets a list of valid traveller types
       security:
         - cookieAuth: []
@@ -483,10 +626,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/travellers/passports':
+  '/users/passports':
     get:
       tags:
-        - travellers
+        - users
       summary: Gets a list of all valid passports
       security:
         - cookieAuth: []
@@ -517,10 +660,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/travellers/nationalities':
+  '/users/nationalities':
     get:
       tags:
-        - travellers
+        - users
       summary: Gets a list of all valid nationalities
       security:
         - cookieAuth: []
@@ -551,7 +694,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/travellers/{userId}/trips':
+  '/users/{userId}/trips':
     get:
       tags:
         - trips
@@ -559,7 +702,7 @@ paths:
       parameters:
         - in: path
           name: userId
-          description: ID of the traveller
+          description: ID of the user
           required: true
           schema:
             type: integer
@@ -600,7 +743,7 @@ paths:
       parameters:
         - in: path
           name: userId
-          description: ID of the traveller
+          description: ID of the user
           required: true
           schema:
             type: integer
@@ -609,7 +752,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/createTrip'
+              $ref: '#/components/schemas/createEditTrip'
       security:
         - cookieAuth: []
       responses:
@@ -645,7 +788,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  '/travellers/{userId}/trips/{tripId}':
+  '/users/{userId}/trips/{tripId}':
     get:
       tags:
         - trips
@@ -653,7 +796,7 @@ paths:
       parameters:
         - in: path
           name: userId
-          description: ID of the traveller
+          description: ID of the user
           required: true
           schema:
             type: integer
@@ -701,7 +844,7 @@ paths:
       parameters:
         - in: path
           name: userId
-          description: ID of the traveller
+          description: ID of the user
           required: true
           schema:
             type: integer
@@ -717,7 +860,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/updateTrip'
+              $ref: '#/components/schemas/createEditTrip'
       security:
         - cookieAuth: []
       responses:
@@ -760,7 +903,7 @@ paths:
       parameters:
         - in: path
           name: userId
-          description: ID of the traveller
+          description: ID of the user
           required: true
           schema:
             type: integer
@@ -820,16 +963,31 @@ components:
         destinationName:
           type: string
         destinationType:
+          $ref: '#/components/schemas/destinationType'
+        destinationDistrict:
+          $ref: '#/components/schemas/districts'
+        destinationLat:
+          type: number
+        destinationLon:
+          type: number
+        destinationCountry:
+          $ref: '#/components/schemas/country'
+    createDestination:
+      type: object
+      properties:
+        destinationName:
           type: string
-        district:
-          type: string
+        destinationTypeId:
+          type: integer
+        districtId:
+          type: integer
         latitude:
           type: number
         longitude:
           type: number
-        country:
-          type: string
-    traveller:
+        countryId:
+          type: number
+    user:
       type: object
       properties:
         userId:
@@ -845,6 +1003,8 @@ components:
           type: string
           nullable: true
           description: Specified as a specific format
+        email:
+          type: string
         gender:
           type: string
           nullable: true
@@ -860,43 +1020,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/travellerType'
-    travellers:
+        timestamp:
+          type: string
+        token:
+          type: string
+    users:
       type: array
       items:
-        $ref: '#/components/schemas/traveller'
+        $ref: '#/components/schemas/user'
     error:
       type: object
       properties:
         error:
           type: string
           description: An informative error message (to help with debugging)
-    updateTraveller:
+    updateUser:
       type: object
       properties:
-        userId:
-          type: integer
         firstName:
           type: string
+          nullable: true
         middleName:
           type: string
           nullable: true
         lastName:
           type: string
+          nullable: true
         dateOfBirth:
           type: integer
+          nullable: true
           description: Specified as a unix timestamp
         gender:
           type: string
+          nullable: true
         nationalities:
           type: array
+          nullable: true
           items:
             type: number
         passports:
           type: array
+          nullable: true
           items:
             type: number
         travellerTypes:
           type: array
+          nullable: true
           items:
             type: number
     trip:
@@ -904,15 +1073,30 @@ components:
       properties:
         tripId:
           type: integer
-        destinations:
-          type: object
-          properties:
-            destination:
-              $ref: '#/components/schemas/destination'
-            destinationArrival:
-              type: integer
-            destinationDeparture:
-              type: integer
+        user:
+          $ref: '#/components/schemas/user'
+        tripName:
+          type: string
+        tripDestinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/tripDestination'
+    tripDestination:
+      type: object
+      properties:
+        tripDestinationId:
+          type: number
+        destination:
+          $ref: '#/components/schemas/destination'
+        arrivalDate: 
+          type: number
+        arrivalTime:
+          type: number
+        departureDate:
+          type: number
+        departureTime: 
+          type: number
+      
     trips:
       type: array
       items:
@@ -950,17 +1134,26 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/nationality'
-    createTrip:
-      type: array
-      items:
-        type: object
-        properties:
-          destinationId:
-            type: integer
-          destinationArrival:
-            type: integer
-          destinationDeparture:
-            type: integer
+    createEditTrip:
+      type: object
+      properties:
+        tripName:
+          type: string
+        tripDestinations:
+          type: array
+          items:
+            type: object
+            properties:
+              destinationId:
+                type: integer
+              arrivalDate:
+                type: integer
+              arrivalTime:
+                type: integer
+              departureDate:
+                type: integer
+              departureTime:
+                type: integer
     updateTrip:
       type: array
       items:
@@ -972,7 +1165,38 @@ components:
             type: integer
           destinationId:
             type: integer
-    signupTraveller:
+    destinationTypes: 
+      type: array
+      items:
+        $ref: '#/components/schemas/destinationType'
+    destinationType:
+      type: object
+      properties:
+        destinationTypeId:
+          type: integer
+        destinationTypeName:
+          type: string
+    districts:
+      type: array
+      items:
+        $ref: '#/components/schemas/district'
+    district:
+      type: object
+      properties:
+        districtId:
+          type: integer
+        districtName:
+          type: string
+        country:
+          $ref: '#/components/schemas/country'
+    country:
+      type: object
+      properties:
+        countryId: 
+          type: integer
+        countryName: 
+          type: string
+    signupUser:
       type: object
       properties:
         firstName:
@@ -982,6 +1206,13 @@ components:
         email:
           type: string
         password:
+          type: string
+    login:
+      type: object
+      properties:
+        email:
+          type: string
+        password: 
           type: string
   securitySchemes:
     Authorization:

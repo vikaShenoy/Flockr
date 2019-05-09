@@ -8,6 +8,9 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import java.util.List;
 
+/**
+ * Nationality a user can have.
+ */
 @Entity
 public class Nationality extends Model {
     @Id
@@ -15,13 +18,23 @@ public class Nationality extends Model {
 
     @ManyToMany
     private List<User> users;
+    private String nationalityName;
 
-    private String nationalityCountry;
-
-    public Nationality(String nationalityCountry) {
-        this.nationalityCountry = nationalityCountry;
+    /**
+     * Constructor.
+     * @param nationalityName country the nationaltiy is from.
+     */
+    public Nationality(String nationalityName) {
+        this.nationalityName = nationalityName;
     }
 
+    @Override
+    public String toString() {
+        return "Nationality{" +
+                "nationalityId=" + nationalityId +
+                ", nationalityName='" + nationalityName + '\'' +
+                '}';
+    }
 
     public int getNationalityId() {
         return nationalityId;
@@ -31,18 +44,13 @@ public class Nationality extends Model {
         this.nationalityId = nationalityId;
     }
 
-    public String getNationalityCountry() {
-        return nationalityCountry;
+    public String getNationalityName() {
+        return nationalityName;
     }
 
     /**
      * This is required by EBean to make queries on the database
      */
     public static final Finder<Integer, Nationality> find = new Finder<>(Nationality.class);
-
-//    @Override
-//    public String toString() {
-//        return
-//    }
 }
 

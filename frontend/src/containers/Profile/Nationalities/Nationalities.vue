@@ -23,7 +23,7 @@
           v-bind:key="nationality.nationalityId"
           color="primary"
           text-color="white"
-        >{{ nationality.nationalityCountry }}</v-chip>
+        >{{ nationality.nationalityName }}</v-chip>
 
         <span v-if="!userNationalities.length">Please provide at least one Nationality</span>
       </div>
@@ -49,7 +49,7 @@
             close
             @input="remove(data.item)"
           >
-            <strong>{{ data.item.nationalityCountry }}</strong>&nbsp;
+            <strong>{{ data.item.nationalityName }}</strong>&nbsp;
           </v-chip>
         </template>
       </v-combobox>
@@ -117,7 +117,7 @@ export default {
     /**
      * Gets the nationality country from the list of nationalities
      */
-    getNationalityText: item => item.nationalityCountry,
+    getNationalityText: item => item.nationalityName,
     /**
      * Removes a nationality in edit mode
      */

@@ -9,7 +9,7 @@ import {endpoint} from '../../utils/endpoint';
  */
 export async function getUser(userId) {
   const authToken = localStorage.getItem('authToken');
-  const res = await superagent(endpoint(`/travellers/${userId}`))
+  const res = await superagent(endpoint(`/users/${userId}`))
                   .set('Authorization', authToken);
   return res.body;
 }

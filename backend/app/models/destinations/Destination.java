@@ -1,18 +1,23 @@
 package models.destinations;
 
-import play.data.format.Formats;
-import play.data.validation.Constraints;
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.validation.Constraint;
 import io.ebean.*;
 
 /**
- * A destination that a traveller can choose to go to
+ * A destination that a traveller can choose to go to.
  */
 @Entity
 public class Destination extends models.BaseModel {
+
+    /**
+     * Constructor.
+     * @param name name of the destination.
+     * @param destinationType type of the destination.
+     * @param district district the destination is in.
+     * @param latitude latitude of the destination.
+     * @param longitude longitude of the destination.
+     * @param country country the destination is in.
+     */
     public Destination(String name, DestinationType destinationType, String district, Double latitude, Double longitude, String country) {
         this.name = name;
         this.destinationType = destinationType;

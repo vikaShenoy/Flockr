@@ -6,6 +6,7 @@ import play.db.ebean.EbeanConfig;
 import play.db.ebean.EbeanDynamicEvolutions;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+
 import javax.inject.Inject;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -14,6 +15,7 @@ import java.util.concurrent.CompletionStage;
  * Repository methods for authentication
  */
 public class AuthRepository {
+
     private final EbeanServer ebeanServer;
     private final DatabaseExecutionContext executionContext;
     private final EbeanDynamicEvolutions ebeanDynamicEvolutions;
@@ -27,6 +29,7 @@ public class AuthRepository {
 
     /**
      * Add a new user
+     *
      * @param user The user to add
      * @return The added user
      */
@@ -39,6 +42,7 @@ public class AuthRepository {
 
     /**
      * Gets a user by their auth token
+     *
      * @param token The token to find the user by
      * @return The user
      */
@@ -49,10 +53,11 @@ public class AuthRepository {
                     .fetch("passports")              // contacts is a OneToMany path
                     .fetch("travellerTypes")
                     .fetch("nationalities")
+                    .fetch("roles")
                     .where()
                     .eq("token", token)
                     .findOneOrEmpty();
-           return user;
+            return user;
         }, executionContext);
     }
 
@@ -66,6 +71,7 @@ public class AuthRepository {
                     .fetch("passports")
                     .fetch("nationalities")
                     .fetch("travellerTypes")
+                    .fetch("roles")
                     .where()
                     .eq("email", email)
                     .findOneOrEmpty();
@@ -73,8 +79,9 @@ public class AuthRepository {
         }, executionContext);
     }
 
-       /**
+    /**
      * Gets a user by their email
+     *
      * @param email The email of the user
      * @return The user (which may not exist)
      */
@@ -85,7 +92,7 @@ public class AuthRepository {
                     .where()
                     .eq("email", email)
                     .findOneOrEmpty();
-           return user;
+            return user;
         }, executionContext);
     }
 }

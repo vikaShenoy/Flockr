@@ -3,13 +3,12 @@ package models;
 import javax.persistence.*;
 
 import io.ebean.*;
-import org.checkerframework.common.aliasing.qual.Unique;
 
 import java.util.List;
 
 
 /**
- * A destination that a traveller can choose to go to
+ * A destination that a traveller can choose to go to.
  */
 @Entity
 public class Destination extends Model {
@@ -26,8 +25,6 @@ public class Destination extends Model {
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
     private List<TripDestination> tripDestinations;
 
-
-
     @ManyToOne
     private District destinationDistrict;
     private Double destinationLat;
@@ -36,7 +33,15 @@ public class Destination extends Model {
     @ManyToOne
     private Country destinationCountry;
 
-
+    /**
+     * Constructor.
+     * @param destinationName name of the destination
+     * @param destinationType type of destination
+     * @param destinationDistrict district the destination is in
+     * @param destinationLat latitiude of the destination
+     * @param destinationLon longitude of the destination
+     * @param destinationCountry country the destination is in
+     */
     public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry) {
         this.destinationName = destinationName;
         this.destinationType = destinationType;
@@ -102,5 +107,8 @@ public class Destination extends Model {
         this.destinationCountry = destinationCountry;
     }
 
+    /**
+     * This is required by EBean to make queries on the database.
+     */
     public static final Finder<Integer, Destination> find = new Finder<>(Destination.class);
 }

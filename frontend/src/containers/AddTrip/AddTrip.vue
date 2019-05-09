@@ -74,7 +74,8 @@ export default {
     },
     /**
      * Iterates through destinations and check and renders error message
-     * if destinations are contiguous
+     * if destinations are contiguous.
+     * @returns {boolean} True if contiguous destinations are found, false otherwise. 
      */
     contiguousDestinations() {
       let foundContiguousDestination = false;
@@ -112,13 +113,26 @@ export default {
 
       if (!validFields) return;
       try {
-        const tripId = await addTrip(this.tripName, this.tripDestinations);
-        this.$router.push(`/trips/${tripId}`); 
+        
+        const travellerId = this.$route.params.travellerId;
+        // Use travellerId from URL only if creating a trip for another traveller
+        const userId = travellerId ? travellerId : localStorage.getItem("userId");
+        const tripId = await addTrip(this.tripName, this.tripDestinations, userId);
+
+        // If admin is adding trip, go to admin trip page
+        if (travellerId) {
+          this.$router.push(`/travellers/${travellerId}/trips/${tripId}`); 
+        } else {
+          this.$router.push(`/trips/${tripId}`); 
+        }
       } catch (e) {
         console.log(e);
         // Add error handling here later
       }
     },
+    /**
+     * Sets the trip destinations list to empty.
+     */
     update(hello) {
       this.tripDestinations = [];
 
