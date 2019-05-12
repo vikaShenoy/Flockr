@@ -23,6 +23,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import steps.TestState;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -32,38 +33,10 @@ import java.util.Map;
 import static play.test.Helpers.route;
 
 public class SignUpTestSteps {
-    @Inject
-    private Application application;
 
     private JsonNode userData;
     private Result result;
     private Result signUpResponse;
-
-    /**
-     * Set up the backend server
-     */
-    @Before("@SignUpSteps")
-    public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-
-        Helpers.start(application);
-    }
-
-    /**
-     * Stop the backend server
-     */
-    @After("@SignUpSteps")
-    public void tearDown() {
-        Helpers.stop(application);
-    }
 
     @Given("that I have valid user data to sign up:")
     public void thatIHaveValidUserDataToSignUp(DataTable dataTable) {
@@ -87,6 +60,7 @@ public class SignUpTestSteps {
                 .method("POST")
                 .uri("/api/auth/users/signup")
                 .bodyJson(this.userData);
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
         Assert.assertTrue(!(this.result == null));
     }

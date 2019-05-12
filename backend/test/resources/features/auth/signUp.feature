@@ -18,7 +18,6 @@ Feature: The user can sign up
     Then I should receive a 201 status code indicating that the User is successfully created
 
   # Test that a 400 code is returned when signing up with *some* incomplete data
-  @SignUpSteps
   Scenario: A user tries to sign up without a lastname
     Given that I have incomplete user data to sign up:
       | firstName | middleName | email          | password      |
@@ -26,7 +25,6 @@ Feature: The user can sign up
     When I click the Sign Up button
     Then I should receive a 400 status code indicating that the User filled the form with invalid data
 
-  @SignUpSteps
   Scenario: A user tries to sign up without a password
     Given that I have incomplete user data to sign up:
       | firstName | middleName | lastName  | email          |
@@ -34,7 +32,6 @@ Feature: The user can sign up
     When I click the Sign Up button
     Then I should receive a 400 status code indicating that the User filled the form with invalid data
 
-  @SignUpSteps
   Scenario: A user tries to sign up without an email
     Given that I have incomplete user data to sign up:
       | firstName | middleName | lastName  | password  |
@@ -42,7 +39,6 @@ Feature: The user can sign up
     When I click the Sign Up button
     Then I should receive a 400 status code indicating that the User filled the form with invalid data
 
-  @SignUpSteps
   Scenario: A user tries to sign up without a first name
     Given that I have incomplete user data to sign up:
       | middleName | lastName | email              | password    |

@@ -3,11 +3,6 @@ package steps;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Module;
-import cucumber.api.java.After;
-import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -15,10 +10,6 @@ import cucumber.api.java.en.When;
 import models.*;
 import org.junit.Assert;
 import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -26,7 +17,6 @@ import play.test.Helpers;
 import util.Security;
 import utils.PlayResultToJson;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -35,35 +25,12 @@ import static play.test.Helpers.route;
 
 public class AdminSteps {
 
-    @Inject
-    private Application application;
-
     // data
     private int userId;
     private String authToken;
     private ArrayNode roles;
     private int roleId;
     private int otherUserId;
-
-    @Before("@AdminSteps")
-    public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-
-        Helpers.start(application);
-    }
-
-    @After("@AdminSteps")
-    public void tearDown() {
-        Helpers.stop(application);
-    }
 
     @Given("A traveller user exists")
     public void a_traveller_user_exists() {
@@ -111,17 +78,6 @@ public class AdminSteps {
 
         Assert.assertNotEquals(0, this.otherUserId);
         Assert.assertNotEquals(0, this.userId);
-    }
-
-    @Given("roles are created")
-    public void rolesAreCreated() {
-        Role admin = new Role(RoleType.ADMIN);
-        Role superAdmin = new Role(RoleType.SUPER_ADMIN);
-        Role traveller = new Role(RoleType.TRAVELLER);
-
-        admin.save();
-        superAdmin.save();
-        traveller.save();
     }
 
     /**
@@ -175,6 +131,7 @@ public class AdminSteps {
                 .method("POST")
                 .bodyJson(reqJsonBody)
                 .uri("/api/auth/users/login");
+        Application application = TestState.getInstance().getApplication();
         Result loginResult = route(application, loginRequest);
         JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
 
@@ -193,6 +150,7 @@ public class AdminSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/" + this.userId + "/roles");
+        Application application = TestState.getInstance().getApplication();
         Result rolesResult = route(application, rolesRequest);
         this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
 
@@ -208,6 +166,7 @@ public class AdminSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/" + this.otherUserId + "/roles");
+        Application application = TestState.getInstance().getApplication();
         Result rolesResult = route(application, rolesRequest);
         this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
 
@@ -224,6 +183,7 @@ public class AdminSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/roles");
+        Application application = TestState.getInstance().getApplication();
         Result rolesResult = route(application, rolesRequest);
         this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
 

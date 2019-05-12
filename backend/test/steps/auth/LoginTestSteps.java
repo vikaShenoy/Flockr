@@ -21,6 +21,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import steps.TestState;
 import utils.PlayResultToJson;
 
 import javax.inject.Inject;
@@ -31,38 +32,11 @@ import java.util.Map;
 import static play.test.Helpers.route;
 
 public class LoginTestSteps {
-    @Inject
-    private Application application;
 
     private JsonNode userData;
     private Result result;
     private Result signUpResponse;
     private Result loginResponse;
-
-    /**
-     * Set up the backend server
-     */
-    @Before("@LoginSteps")
-    public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-        Helpers.start(application);
-    }
-
-    /**
-     * Stop the backend server
-     */
-    @After("@LoginSteps")
-    public void tearDown() {
-        Helpers.stop(application);
-    }
 
     @Given("that I have signed up successfully with valid data:")
     public void thatIHaveSignedUpSuccessfullyWithValidData(DataTable dataTable) {
@@ -73,6 +47,7 @@ public class LoginTestSteps {
                 .method("POST")
                 .uri("/api/auth/users/signup")
                 .bodyJson(this.userData);
+        Application application = TestState.getInstance().getApplication();
         this.signUpResponse = route(application, request);
         Assert.assertEquals(201, this.signUpResponse.status());
     }
@@ -93,6 +68,7 @@ public class LoginTestSteps {
                 .method("POST")
                 .uri("/api/auth/users/login")
                 .bodyJson(reqJsonBody);
+        Application application = TestState.getInstance().getApplication();
         this.loginResponse = route(application, request);
         Assert.assertTrue(!(this.loginResponse == null));
     }
@@ -120,6 +96,7 @@ public class LoginTestSteps {
                 .method("POST")
                 .uri("/api/auth/users/login")
                 .bodyJson(reqJsonBody);
+        Application application = TestState.getInstance().getApplication();
         this.loginResponse = route(application, request);
         Assert.assertTrue(!(this.loginResponse == null));
     }

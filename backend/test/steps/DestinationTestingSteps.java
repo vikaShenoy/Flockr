@@ -32,36 +32,16 @@ import java.util.Map;
 import static play.test.Helpers.route;
 
 public class DestinationTestingSteps {
-    @Inject
-    private Application application;
+
     private JsonNode destinationData;
     private Result result;
 
     // user data
     private String authToken;
 
-    @Before("@DestinationSteps")
-    public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-
-        Helpers.start(application);
-    }
-
-    @After("@DestinationSteps")
-    public void tearDown() {
-        Helpers.stop(application);
-    }
-
     @Given("a user with the following information exists:")
     public void aUserWithTheFollowingInformationExists(DataTable dataTable) throws IOException {
+        Application application = TestState.getInstance().getApplication();
         this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
     }
 
@@ -84,6 +64,7 @@ public class DestinationTestingSteps {
         Http.RequestBuilder deleteRequest = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/destinations/" + destinationId);
+        Application application = TestState.getInstance().getApplication();
         Result result = route(application, deleteRequest);
 
         // check that the destination's name has some text in it
@@ -136,6 +117,7 @@ public class DestinationTestingSteps {
                 .method("POST")
                 .uri("/api/destinations")
                 .bodyJson(this.destinationData);
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
         Assert.assertNotNull(this.result);
     }
@@ -146,6 +128,7 @@ public class DestinationTestingSteps {
                 .method("DELETE")
                 .uri("/api/destinations/1")
                 .header("Authorization", this.authToken);
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, deleteReq);
         Assert.assertEquals(200, this.result.status());
     }
@@ -165,6 +148,7 @@ public class DestinationTestingSteps {
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/destinations/" + destinationId.toString());
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
     }
 
@@ -173,6 +157,7 @@ public class DestinationTestingSteps {
         Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/destinations/1");
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, checkDeletion);
         Assert.assertEquals(404, this.result.status());
     }

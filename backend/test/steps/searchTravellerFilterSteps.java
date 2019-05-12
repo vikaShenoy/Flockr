@@ -31,40 +31,21 @@ import java.util.Map;
 import static play.test.Helpers.route;
 
 public class searchTravellerFilterSteps {
-    @Inject
-    private Application application;
+
     private Result result;
     private String authToken;
     private ArrayNode array;
 
-    @Before("@SearchTravellerSteps")
-    public void setUp() throws IOException {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-
-        Helpers.start(application);
-    }
-
-    @After("@SearchTravellerSteps")
-    public void tearDown() {
-        Helpers.stop(application);
-    }
-
     @Given("the following user exists:")
     public void theFollowingUserExists(DataTable dataTable) throws IOException {
+        Application application = TestState.getInstance().getApplication();
         this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
     }
 
     @And("^I have logged in with email \"([^\"]*)\" and password \"([^\"]*)\"$")
     public void iHaveLoggedInWithEmailAndPassword(String email, String password) throws IOException {
-        this.authToken = TestAuthenticationHelper.login(email, password, this.application);
+        Application application = TestState.getInstance().getApplication();
+        this.authToken = TestAuthenticationHelper.login(email, password, application);
     }
 
     @Given("I populate the database with test data")
@@ -72,6 +53,7 @@ public class searchTravellerFilterSteps {
         Http.RequestBuilder resampleRequest = Helpers.fakeRequest()
                 .method("POST")
                 .uri("/api/internal/resample");
+        Application application = TestState.getInstance().getApplication();
         Result resampleResult = route(application, resampleRequest);
 
         Assert.assertEquals(200, resampleResult.status());
@@ -93,6 +75,7 @@ public class searchTravellerFilterSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/nationalities");
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -106,6 +89,7 @@ public class searchTravellerFilterSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&nationality=" + nationalityId);
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -119,6 +103,7 @@ public class searchTravellerFilterSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Male");
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -132,6 +117,7 @@ public class searchTravellerFilterSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Female");
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -145,6 +131,7 @@ public class searchTravellerFilterSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Other");
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
@@ -159,6 +146,7 @@ public class searchTravellerFilterSteps {
                 .method("GET")
                 .header("authorization", this.authToken)
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&travellerType=" + travellerTypeId.toString());
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 

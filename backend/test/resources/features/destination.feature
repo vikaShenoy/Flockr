@@ -6,7 +6,6 @@ Feature: The user can manage destinations
       | Felipe    | Rogelio    | Sanchez  | rogelio@email.com | much-security |
 
   # Test that a 201 code is returned when creating a Destinations with valid data
-  @DestinationSteps
   Scenario: A user tries to create a destination with complete valid data
     Given that I am logged in
     Given the database has been populated with countries, districts and destination types
@@ -16,7 +15,6 @@ Feature: The user can manage destinations
     When I click the Add Destination button
     Then The destination should be created successfully
 
-  @DestinationSteps
     # Test that a 400 status code is returned when a user creates a Destination with incomplete data
     Scenario: A user tries to create a destination with no country
       Given that I am logged in
@@ -28,7 +26,6 @@ Feature: The user can manage destinations
       Then I should receive an error, because the data is incomplete
 
   # Test deleting a destination
-  @DestinationSteps
   Scenario: A user tries to delete a destination
     Given that I am logged in
     And the database has been populated with countries, districts and destination types

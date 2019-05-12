@@ -37,39 +37,22 @@ import utils.TestAuthenticationHelper;
 import static play.test.Helpers.route;
 
 public class TripTestingSteps {
-   @Inject
-    private Application application;
+
     private String tripName;
     private ArrayNode tripDestinations;
     private Result result;
     private String authToken;
 
-    @Before("@TripSteps")
-    public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-
-        Helpers.start(application);
-    }
-
-    @After("@TripSteps")
-    public void tearDown() { Helpers.stop(application); }
-
     @Given("this user exists:")
     public void thisUserExists(DataTable dataTable) throws IOException {
-        this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, this.application);
+        Application application = TestState.getInstance().getApplication();
+        this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
         Assert.assertNotNull(this.authToken);
     }
 
     @Given("^I log in with email \"([^\"]*)\" and password \"([^\"]*)\"$")
     public void iLogInWithEmailAndPassword(String email, String password) throws IOException {
+        Application application = TestState.getInstance().getApplication();
 
         ObjectNode reqJsonBody = Json.newObject();
         reqJsonBody.put("email", email);
@@ -143,6 +126,7 @@ public class TripTestingSteps {
 
     @When("I click the Add Trip button")
     public void iClickTheAddATripButton() {
+        Application application = TestState.getInstance().getApplication();
         ObjectNode jsonBody = Json.newObject();
         jsonBody.set("tripName", Json.toJson(this.tripName));
         jsonBody.set("tripDestinations", Json.toJson(this.tripDestinations));
@@ -158,6 +142,7 @@ public class TripTestingSteps {
 
     @When("I update a trip and click the Save Trip button")
     public void iUpdateATripAndClickTheSaveTripButton() {
+        Application application = TestState.getInstance().getApplication();
         ObjectNode jsonBody = Json.newObject();
 
         jsonBody.set("tripName", Json.toJson(this.tripName));
@@ -173,6 +158,7 @@ public class TripTestingSteps {
 
     @When("^I send a request to get a trip with id (\\d+)$")
     public void iSendARequestToGetATrip(int tripId) {
+        Application application = TestState.getInstance().getApplication();
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/users/1/trips/" + tripId)
@@ -183,6 +169,7 @@ public class TripTestingSteps {
 
     @When("I send a request to get trips")
     public void iSendARequestToGetTrips() {
+        Application application = TestState.getInstance().getApplication();
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/users/1/trips")

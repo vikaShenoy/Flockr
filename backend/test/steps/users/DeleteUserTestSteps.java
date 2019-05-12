@@ -15,6 +15,7 @@ import cucumber.api.java.en.When;
 import exceptions.FailedToLoginException;
 import models.*;
 import org.junit.Assert;
+import org.junit.Test;
 import play.Application;
 import play.ApplicationLoader;
 import play.Environment;
@@ -22,6 +23,7 @@ import play.inject.guice.GuiceApplicationBuilder;
 import play.inject.guice.GuiceApplicationLoader;
 import play.mvc.Result;
 import play.test.Helpers;
+import steps.TestState;
 import util.Security;
 import utils.FakeClient;
 import utils.FakePlayClient;
@@ -34,93 +36,18 @@ import java.util.List;
 
 public class DeleteUserTestSteps {
 
-    @Inject
-    private Application application;
-
-    private FakeClient fakeClient;
     private String sharedPassword = "IAmASecurePassword"; // made up password for tests
     private User adminAnna; // admin
     private User defaultAdminDaniel; // default admin
     private User alice; // regular user
     private User bob; // regular user
 
-    private Role superAdminRole;
-    private Role adminRole;
-    private Role travellerRole;
     private Result resultBeingInspected; // user to persist results between test steps
-
-    @Before("@DeleteUserSteps")
-    public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-
-        Helpers.start(application);
-        this.fakeClient = new FakePlayClient(application);
-        this.createRoles();
-        this.createNationalities();
-        this.createPassports();
-    }
-
-    /**
-     * Set up the roles for each user
-     */
-    private void createRoles() {
-        superAdminRole = new Role(RoleType.SUPER_ADMIN);
-        adminRole = new Role(RoleType.ADMIN);
-        travellerRole = new Role(RoleType.TRAVELLER);
-        superAdminRole.save();
-        adminRole.save();
-        travellerRole.save();
-    }
-
-    /**
-     * Make up some nationalities in the database
-     */
-    private void createNationalities() {
-        Nationality chilean = new Nationality("Chile");
-        Nationality mexican = new Nationality("Mexico");
-        chilean.save();
-        mexican.save();
-    }
-
-    /**
-     * Make up some passports in the database
-     */
-    private void createPassports() {
-        Passport china = new Passport("China");
-        Passport southKorean = new Passport("South Korea");
-        china.save();
-        southKorean.save();
-    }
-
-    @After("@DeleteUserSteps")
-    public void tearDown() {
-        if (adminAnna != null) {
-            User.find.deleteById(adminAnna.getUserId());
-        }
-        if (alice != null) {
-            User.find.deleteById(alice.getUserId());
-        }
-        if (bob != null) {
-            User.find.deleteById(bob.getUserId());
-        }
-        if (defaultAdminDaniel != null) {
-            User.find.deleteById(defaultAdminDaniel.getUserId());
-        }
-        Helpers.stop(application);
-    }
 
     @Given("that the default admin exists")
     public void thatTheDefaultAdminExists() {
         List<Role> roles = new ArrayList<>();
-        roles.add(superAdminRole);
+        roles.add(TestState.getInstance().getSuperAdminRole());
         this.defaultAdminDaniel = this.createUser(roles, "Daniel", "Default Admin", "admin@travelea.com");
         Assert.assertTrue(this.defaultAdminDaniel.isDefaultAdmin());
     }
@@ -128,7 +55,7 @@ public class DeleteUserTestSteps {
     @Given("an admin user exists")
     public void anAdminUserExists() {
         List<Role> roles = new ArrayList<>();
-        roles.add(adminRole);
+        roles.add(TestState.getInstance().getAdminRole());
         this.adminAnna = this.createUser(roles, "Anna", "Admin", "anna.admin@travelea.com");
         Assert.assertTrue(this.adminAnna.isAdmin());
     }
@@ -136,40 +63,43 @@ public class DeleteUserTestSteps {
     @Given("^a regular user with first name Alice exists$")
     public void aRegularUserWithFirstNameAliceExists() {
         List<Role> roles = new ArrayList<>();
-        roles.add(travellerRole);
+        roles.add(TestState.getInstance().getTravellerRole());
         this.alice = this.createUser(roles, "Alice", "Traveller", "alice@gmail.com");
     }
 
     @Given("^a regular user with first name Bob exists$")
     public void aRegularUserWithFirstNameBobExists() {
         List<Role> roles = new ArrayList<>();
-        roles.add(travellerRole);
+        roles.add(TestState.getInstance().getTravellerRole());
         this.bob = this.createUser(roles, "Bob", "Admin", "bob@email.com");
     }
 
     @Given("^that the default admin is logged in$")
     public void thatTheDefaultAdminIsLoggedIn() throws FailedToLoginException {
-        defaultAdminDaniel = this.fakeClient.loginMadeUpUser(defaultAdminDaniel, this.sharedPassword);
+        defaultAdminDaniel = TestState.getInstance().getFakeClient().loginMadeUpUser(defaultAdminDaniel, this.sharedPassword);
         Assert.assertTrue(defaultAdminDaniel.getToken().length() > 0);
         Assert.assertTrue(defaultAdminDaniel.isDefaultAdmin());
     }
 
     @Given("^the admin is logged in$")
     public void theAdminIsLoggedIn() throws FailedToLoginException {
-        adminAnna = this.fakeClient.loginMadeUpUser(adminAnna, this.sharedPassword);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        adminAnna = fakeClient.loginMadeUpUser(adminAnna, this.sharedPassword);
         Assert.assertTrue(adminAnna.getToken().length() > 0);
     }
 
     @Given("^the two regular users are logged in$")
     public void theTwoRegularUsersAreLoggedIn() throws FailedToLoginException {
-        alice = this.fakeClient.loginMadeUpUser(alice, this.sharedPassword);
-        bob = this.fakeClient.loginMadeUpUser(bob, this.sharedPassword);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        alice = fakeClient.loginMadeUpUser(alice, this.sharedPassword);
+        bob = fakeClient.loginMadeUpUser(bob, this.sharedPassword);
         Assert.assertTrue(alice.getToken().length() > 0);
         Assert.assertTrue(bob.getToken().length() > 0);
     }
 
     @When("^the admin tries to delete the regular user Alice$")
     public void theAdminTriesToDeleteTheRegularUserAlice() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + alice.getUserId(), this.adminAnna.getToken());
         JsonNode resAsJson = PlayResultToJson.convertResultToJson(res);
         Assert.assertEquals(200, res.status());
@@ -177,6 +107,7 @@ public class DeleteUserTestSteps {
 
     @Then("^the regular user Alice should be deleted$")
     public void theRegularUserAliceShouldBeDeleted() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("GET", "/api/users/" + alice.getUserId(), this.adminAnna.getToken());
         JsonNode resAsJson = PlayResultToJson.convertResultToJson(res);
         Assert.assertEquals(404, res.status());
@@ -184,54 +115,63 @@ public class DeleteUserTestSteps {
 
     @When("the admin tries to delete the default admin")
     public void theAdminTriesToDeleteTheDefaultAdmin() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + defaultAdminDaniel.getUserId(), this.adminAnna.getToken());
         Assert.assertEquals(401, res.status());
     }
 
     @Then("the default admin should not be deleted")
     public void theDefaultAdminShouldNotBeDeleted() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("GET", "/api/users/" + defaultAdminDaniel.getUserId(), this.defaultAdminDaniel.getToken());
         Assert.assertEquals(200, res.status());
     }
 
     @When("^the regular user Alice tries to delete the other regular user Bob$")
     public void theRegularUserAliceTriesToDeleteTheOtherRegularUserBob() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + bob.getUserId(), this.alice.getToken());
         Assert.assertEquals(401, res.status());
     }
 
     @Then("^the regular user Bob should not be deleted$")
     public void theRegularUserBobShouldNotBeDeleted() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("GET", "/api/users/" + bob.getUserId(), this.alice.getToken());
         Assert.assertEquals(200, res.status());
     }
 
     @When("^a regular user Bob tries to delete their own profile$")
     public void aRegularUserBobTriesToDeleteTheirOwnProfile() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + bob.getUserId(), this.bob.getToken());
         Assert.assertEquals(200, res.status());
     }
 
     @Then("^the regular user Bob should be deleted$")
     public void theRegularUserBobShouldBeDeleted() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("GET", "/api/users/" + bob.getUserId(), this.alice.getToken());
         Assert.assertEquals(404, res.status());
     }
 
     @When("the default admin tries to delete their own profile")
     public void theDefaultAdminTriesToDeleteTheirOwnProfile() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + defaultAdminDaniel.getUserId(), this.defaultAdminDaniel.getToken());
         Assert.assertEquals(401, res.status());
     }
 
     @When("^a regular user Bob tries to delete the default admin$")
     public void aRegularUserBobTriesToDeleteTheDefaultAdmin() throws Throwable {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         Result res = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + defaultAdminDaniel.getUserId(), this.bob.getToken());
         Assert.assertEquals(401, res.status());
     }
 
     @When("^someone tries to delete a user that does not exist$")
     public void someoneTriesToDeleteAUserThatDoesNotExist() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         this.resultBeingInspected = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + -1, this.defaultAdminDaniel.getToken());
     }
 

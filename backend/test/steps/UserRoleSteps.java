@@ -39,17 +39,7 @@ import static play.test.Helpers.route;
 
 public class UserRoleSteps {
 
-    @Inject
-    private Application application;
-
-
-    private JsonNode userData;
-    private Result result;
-
     // User data
-    private String firstName;
-    private String middleName;
-    private String lastName;
     private String userEmail;
     private String userPassword;
     private String userAuthToken;
@@ -67,22 +57,9 @@ public class UserRoleSteps {
 
     private int statusResult;
 
-    @Before("@UserRoleSteps")
-    public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-        Helpers.start(application);
-    }
-
     @Given("ROLES - A user with the following info exists...")
     public void raUserWithTheFollowingInformationExists(DataTable dataTable) throws IOException {
+        Application application = TestState.getInstance().getApplication();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
         this.userEmail = firstRow.get("email");
@@ -104,7 +81,8 @@ public class UserRoleSteps {
     }
 
     @Given("ROLES - An admin with the following info exists...")
-    public void ranAdminWithTheFollowingInformationExists(DataTable dataTable) throws IOException {
+    public void ranAdminWithTheFollowingInformationExists(DataTable dataTable) {
+        Application application = TestState.getInstance().getApplication();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
         this.adminEmail = firstRow.get("email");
@@ -122,6 +100,7 @@ public class UserRoleSteps {
 
     @Given("ROLES - The admin is logged in...")
     public void rthe_admin_is_logged_in() throws IOException {
+        Application application = TestState.getInstance().getApplication();
         // Log in to get the auth token
         ObjectNode logInReqBody = Json.newObject();
         logInReqBody.put("email", this.adminEmail);
@@ -152,6 +131,7 @@ public class UserRoleSteps {
 
     @Given("ROLES - the user is logged in...")
     public void rthe_user_is_logged_in() throws IOException {
+        Application application = TestState.getInstance().getApplication();
         // Log in to get the auth token
         ObjectNode logInReqBody = Json.newObject();
         logInReqBody.put("email", this.userEmail);
@@ -172,6 +152,7 @@ public class UserRoleSteps {
 
     @When("ROLES - An admin adds an admin role to a user")
     public void ran_admin_adds_an_admin_role_to_a_user() {
+        Application application = TestState.getInstance().getApplication();
         List<String> types = new ArrayList<>();
         types.add("ADMIN");
         JsonNode typesJson = Json.toJson(types);
@@ -190,6 +171,7 @@ public class UserRoleSteps {
 
     @When("ROLES - A user adds an admin role to themselves")
     public void ra_user_adds_an_admin_role_to_themselves() {
+        Application application = TestState.getInstance().getApplication();
         List<String> roles = new ArrayList<>();
         roles.add("ADMIN");
         JsonNode typesJson = Json.toJson(roles);
@@ -208,6 +190,7 @@ public class UserRoleSteps {
 
     @When("ROLES - I request roles from the database")
     public void ri_request_roles_from_the_database() throws IOException  {
+        Application application = TestState.getInstance().getApplication();
         // TODO - Can anyone request roles?
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method(GET)
@@ -225,7 +208,7 @@ public class UserRoleSteps {
     }
 
     @Then("ROLES - The user has an admin role")
-    public void rthe_user_has_role() {
+    public void the_user_has_role() {
         ArrayList<String> expected = new ArrayList<>();
         expected.add("ADMIN");
         Assert.assertEquals(expected, this.userRoles);
@@ -236,22 +219,4 @@ public class UserRoleSteps {
         System.out.println(this.userRoles);
         Assert.assertEquals(401, statusResult);
     }
-
-    @Given("all roles are created")
-    public void allRolesAreCreated() {
-        Role admin = new Role(RoleType.ADMIN);
-        Role superAdmin = new Role(RoleType.SUPER_ADMIN);
-        Role traveller = new Role(RoleType.TRAVELLER);
-
-        admin.save();
-        superAdmin.save();
-        traveller.save();
-    }
-
-    @After("@UserRoleSteps")
-    public void tearDown() {
-        Helpers.stop(application);
-    }
-
-
 }
