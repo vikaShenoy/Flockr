@@ -1,17 +1,5 @@
 Feature: The admin user can do any task that is available within the system
 
-    @Given("all roles are created")
-    public void allRolesAreCreated() {
-        Application application = TestState.getInstance().getApplication();
-        Role admin = new Role(RoleType.ADMIN);
-        Role superAdmin = new Role(RoleType.SUPER_ADMIN);
-        Role traveller = new Role(RoleType.TRAVELLER);
-
-        admin.save();
-        superAdmin.save();
-        traveller.save();
-    }
-
   Scenario: A traveller user wants to check what roles it has
     Given A traveller user exists
     And The user is logged in
