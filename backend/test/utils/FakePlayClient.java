@@ -1,9 +1,12 @@
 package utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToLoginException;
+import exceptions.FailedToSignUpException;
 import models.User;
+import org.junit.Assert;
 import play.Application;
 import play.libs.Json;
 import play.mvc.Http;
@@ -18,6 +21,7 @@ import static play.test.Helpers.route;
  * A fake client for the Play application.
  */
 public class FakePlayClient implements FakeClient {
+
     /**
      * The play application under test.
      */
@@ -95,5 +99,34 @@ public class FakePlayClient implements FakeClient {
                 throw new FailedToLoginException("Failed to convert the Play result to JSON" + e.getMessage());
             }
         }
+    }
+
+    @Override
+    public User signUpUser(String firstName, String lastName, String email, String password) throws IOException, FailedToSignUpException {
+        ObjectNode userAsJson = Json.newObject();
+        userAsJson.put("firstName", firstName);
+        userAsJson.put("lastName", lastName);
+        userAsJson.put("email", email);
+        userAsJson.put("password", password);
+
+        return this.signUpUser(userAsJson);
+    }
+
+    @Override
+    public User signUpUser(JsonNode userJson) throws IOException, FailedToSignUpException {
+        Result result = this.makeRequestWithNoToken("POST", (ObjectNode) userJson, "/api/auth/users/signup");
+        if (result.status() == 400) {
+            throw new FailedToSignUpException("Failed to sign up the user.");
+        } else if (result.status() == 201) {
+            JsonNode userAsJsonNode = PlayResultToJson.convertResultToJson(result);
+            User user = new User(userAsJsonNode.get("firstName").asText(), "",
+                    userAsJsonNode.get("lastName").asText(), userAsJsonNode.get("email").asText(),
+                    userAsJsonNode.get("passwordHash").asText(), userAsJsonNode.get("token").asText());
+            user.setUserId(userAsJsonNode.get("userId").asInt());
+            return user;
+            // TODO: fix everything to use default admin instead of super admin so the following will work.
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            return objectMapper.treeToValue(userAsJsonNode, User.class);
+        } else return null;
     }
 }
