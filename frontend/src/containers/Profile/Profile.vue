@@ -18,17 +18,6 @@
             </div>
 
             <div class="col-lg-8">
-                <Nationalities :userNationalities.sync="userProfile.nationalities" :userId="userProfile.userId"/>
-                <Passports :userPassports.sync="userProfile.passports" :userId="userProfile.userId"/>
-                <TravellerTypes
-                        :userTravellerTypes.sync="userProfile.travellerTypes"
-                        :userId="userProfile.userId"
-                />
-                <Trips/>
-            </div>
-        </div>
-    </div>
-      <div class="col-lg-8">
         <Nationalities :userNationalities.sync="userProfile.nationalities" :userId="userProfile.userId" />
         <Passports :userPassports.sync="userProfile.passports" :userId="userProfile.userId" />
         <TravellerTypes
@@ -39,8 +28,8 @@
           <Trips :trips.sync="userProfile.trips" :userId="userProfile.userId"/>
         </div>
       </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <script>
