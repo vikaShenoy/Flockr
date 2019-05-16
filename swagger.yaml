@@ -83,7 +83,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-       
+
   '/auth/users/login':
     post:
       tags:
@@ -183,7 +183,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-                
+
 
   '/users/search':
     get:
@@ -254,7 +254,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-                
+
   '/users/{userId}':
     get:
       tags:
@@ -345,8 +345,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-                
-                
+
+
   '/users/{userId}/roles':
     patch:
       tags:
@@ -472,7 +472,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-                
+
   '/destinations/countries':
     get:
       tags:
@@ -499,7 +499,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-  
+
   '/destinations/countries/{countryId}/districts':
     get:
       tags:
@@ -991,7 +991,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-                
+
   '/users/photos/{photoId}':
     get:
       tags:
@@ -1032,20 +1032,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-                
-    put:
+
+    patch:
       tags:
         - photos
       summary: Make a photo public or private
       parameters:
-        - in: path    
-          name: photoId 
+        - in: path
+          name: photoId
           description: The ID of the photo
           required: true
           schema:
@@ -1055,7 +1061,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/updateUserPhoto'      
+              $ref: '#/components/schemas/updateUserPhoto'
       security:
         - cookieAuth: []
       responses:
@@ -1065,6 +1071,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/response'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         '401':
           description: Unauthorized
           content:
@@ -1083,8 +1095,51 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'              
-                
+                $ref: '#/components/schemas/error'
+
+    delete:
+      tags:
+        - photos
+      summary: Delete a specific photo
+      parameters:
+        - in: path
+          name: photoId
+          description: The ID of the photo
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully deleted photo
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: >-
+            Profile has not been completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
   '/users/{userId}/photos':
     post:
       tags:
@@ -1105,10 +1160,10 @@ paths:
           schema:
             type: integer
             minimum: 0
-          required: true  
+          required: true
       requestBody:
         content:
-          application/x-www-form-urlencoded:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -1117,9 +1172,17 @@ paths:
                   format: binary
                 isPublic:
                   type: boolean
+                isPrimary:
+                  type: boolean
       responses:
         '201':
           description: Created
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         '401':
           description: Unauthorized
           content:
@@ -1138,7 +1201,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error' 
+                $ref: '#/components/schemas/error'
     get:
       tags:
         - photos
@@ -1178,61 +1241,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'              
-                
-  '/users/photos/{photoFilename}':
-    delete:
-      tags:
-        - photos
-      summary: Delete a specific photo
-      parameters:
-        - in: path
-          name: photoFilename
-          description: The filename of the photo
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-      security:
-        - cookieAuth: []
-      responses:
-        '200':
-          description: Successfully deleted photo
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
                 $ref: '#/components/schemas/error'
-        '403':
-          description: >-
-            Profile has not been completed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '404':
-          description: Not found
-          content:
-            application/json:
-              schema:
-                  $ref: '#/components/schemas/error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-                
-  '/users/photos/{photoFilename}/thumbnail':
+
+  '/users/photos/{photoId}/thumbnail':
     get:
       tags:
         - photos
       summary: Get the thumbnail for a specific photo
       parameters:
         - in: path
-          name: photoFilename
-          description: The filename of the photo that we wish to retrieve the thumbnail of
+          name: photoId
+          description: The ID of the photo that we wish to retrieve the thumbnail of
           required: true
           schema:
             type: integer
@@ -1264,13 +1283,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'              
-      
+                $ref: '#/components/schemas/error'
+
 components:
   schemas:
     updateUserRole:
@@ -1362,13 +1387,13 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/user'
-        
-    
+
+
     userPhotos:
       type: array
       items:
         $ref: '#/components/schemas/userPhoto'
-     
+
     userPhoto:
       type: object
       properties:
@@ -1376,14 +1401,15 @@ components:
           type: integer
         isPrimary:
           type: boolean
-          
+        isPublic:
+          type: boolean
+
     updateUserPhoto:
       type: object
       properties:
         isPublic:
           type: boolean
-              
-          
+
     error:
       type: object
       properties:
@@ -1447,15 +1473,15 @@ components:
           type: number
         destination:
           $ref: '#/components/schemas/destination'
-        arrivalDate: 
+        arrivalDate:
           type: number
         arrivalTime:
           type: number
         departureDate:
           type: number
-        departureTime: 
+        departureTime:
           type: number
-      
+
     trips:
       type: array
       items:
@@ -1524,7 +1550,7 @@ components:
             type: integer
           destinationId:
             type: integer
-    destinationTypes: 
+    destinationTypes:
       type: array
       items:
         $ref: '#/components/schemas/destinationType'
@@ -1551,9 +1577,9 @@ components:
     country:
       type: object
       properties:
-        countryId: 
+        countryId:
           type: integer
-        countryName: 
+        countryName:
           type: string
     signupUser:
       type: object
@@ -1571,7 +1597,7 @@ components:
       properties:
         email:
           type: string
-        password: 
+        password:
           type: string
   securitySchemes:
     Authorization:
