@@ -128,20 +128,33 @@ public class PhotoController extends Controller {
     /**
      * Gets a specific photo
      *
-     * @param photoFilename the filename of the photo to retrieve
+     * @param photoId the id of the photo to retrieve
      * @param request       HTTP request object
-     * @return ok with 200 if photo found, notFound with 404 if photo not found //TODO: fgr27: add more response types
+     * @return binary photo data with status 200 if found
+     *         notFound with 404 if photo not found //TODO Add this to the API spec!
+     *         forbidden 403 if trying to get a photo that you do not have permission to
+     *         500 server error for any other server related error
+     *         //TODO remove 401 unauthorized from API spec as doesn't make sense maybe?
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> getPhoto(String photoFilename, Http.Request request) {
+    public CompletionStage<Result> getPhoto(int photoId, Http.Request request) {
         return supplyAsync(() -> {
-            // TODO: need to check the database to see if the photo exists there too.
-            File photo = new File("./app/photos/" + photoFilename);
+            // TODO: Check whether photo exists in DB
+            // TODO: Check whether user has permission to get the photo in the database
+            // TODO: Get Filename from DB
+            // TODO: Get photo from storage and return binary data
+
+
+            /*
+            File photo = new File("./app/photos/" + photoId);
             if (!photo.exists()) {
                 return notFound();
             } else {
                 return ok(photo);
             }
+            */
+
+            return ok();
         });
     }
 

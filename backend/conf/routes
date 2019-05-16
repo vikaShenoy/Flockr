@@ -26,7 +26,7 @@ DELETE       /api/users/:userId                                 controllers.User
 PATCH        /api/users/:userId/roles                           controllers.UserController.updateTravellerRole(userId: Int, request: Request)
 
 # Traveller photos routes
-GET          /api/travellers/photos/:photoFilename              controllers.PhotoController.getPhoto(photoFilename: String, request: Request)
+GET          /api/users/photos/:photoId                         controllers.PhotoController.getPhoto(photoId: Int, request: Request)
 DELETE       /api/travellers/photos/:photoFilename              controllers.PhotoController.deletePhoto(photoFilename: String, request: Request)
 GET          /api/travellers/:userId/photos                     controllers.PhotoController.getPhotos(userId: Int, request: Request)
 POST         /api/travellers/:userId/photos                     controllers.PhotoController.addPhoto(userId: Int, request: Request)
