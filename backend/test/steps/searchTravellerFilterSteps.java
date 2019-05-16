@@ -7,20 +7,16 @@ import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import models.*;
 import org.junit.Assert;
-import play.Application;
-import play.mvc.Http;
 import play.mvc.Result;
-import play.test.Helpers;
 import util.Security;
 import utils.FakeClient;
 import utils.PlayResultToJson;
+import utils.TestState;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
-
-import static play.test.Helpers.route;
 
 public class searchTravellerFilterSteps {
 

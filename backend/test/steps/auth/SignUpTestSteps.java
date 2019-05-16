@@ -1,6 +1,5 @@
 package steps.auth;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -10,11 +9,8 @@ import io.cucumber.datatable.DataTable;
 import models.User;
 import org.junit.Assert;
 import play.libs.Json;
-import play.mvc.Result;
-import steps.TestState;
+import utils.TestState;
 import utils.FakeClient;
-import utils.FakePlayClient;
-import utils.PlayResultToJson;
 
 import java.io.IOException;
 import java.util.List;

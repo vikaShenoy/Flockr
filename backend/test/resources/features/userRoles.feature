@@ -2,12 +2,12 @@ Feature: A user can have their roles updated
 
   Background:
     Given ROLES - A user with the following info exists...
-      | firstName | middleName | lastName | password             | email |
-      | Russell    | Vikas    | Westbrook  | testPass | russWest44@gmail.com |
+      | firstName | middleName | lastName  | password | email                |
+      | Russell   | Vikas      | Westbrook | testPass | russWest44@gmail.com |
 
     Given ROLES - An admin with the following info exists...
-      | firstName | middleName | lastName | password             | email |
-      | Andy    | Admin    | Holden | passwordTest | test@gmail.com |
+      | firstName | middleName | lastName | password     | email          |
+      | Andy      | Admin      | Holden   | passwordTest | test@gmail.com |
 
 #   Test the patch endpoint works to change user role
   Scenario: A user has their role changed from TRAVELLER to ADMIN by an admin

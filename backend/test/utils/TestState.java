@@ -1,11 +1,10 @@
-package steps;
+package utils;
 
 
 import models.Destination;
 import models.Role;
 import models.User;
 import play.Application;
-import utils.FakeClient;
 
 import java.util.ArrayList;
 import java.util.List;

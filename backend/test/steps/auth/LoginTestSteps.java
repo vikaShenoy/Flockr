@@ -12,12 +12,11 @@ import models.User;
 import org.junit.Assert;
 import play.libs.Json;
 import play.mvc.Result;
-import steps.TestState;
+import utils.TestState;
 import utils.FakeClient;
 import utils.PlayResultToJson;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

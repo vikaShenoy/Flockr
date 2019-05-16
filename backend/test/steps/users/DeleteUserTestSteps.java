@@ -8,7 +8,7 @@ import exceptions.FailedToLoginException;
 import models.*;
 import org.junit.Assert;
 import play.mvc.Result;
-import steps.TestState;
+import utils.TestState;
 import util.Security;
 import utils.FakeClient;
 import utils.PlayResultToJson;
