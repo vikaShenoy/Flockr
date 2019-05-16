@@ -1,6 +1,5 @@
 package steps;
 
-import akka.http.impl.util.JavaMapping;
 import akka.stream.javadsl.FileIO;
 import akka.stream.javadsl.Source;
 import akka.util.ByteString;
@@ -11,6 +10,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 import controllers.routes;
+import cucumber.api.PendingException;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
@@ -53,6 +53,7 @@ public class UserPhotoSteps {
     private String photoName = "";
     private boolean isPublic = false;
     private boolean isPrimary = false;
+    private DataTable photoList;
 
     @Before("@UserPhoto")
     public void setUpUserPhoto() {
@@ -85,10 +86,10 @@ public class UserPhotoSteps {
         // sign up a user
         Http.RequestBuilder signUpReq = Helpers.fakeRequest()
                 .method("POST")
-                .uri("/api/auth/travellers/signup")
+                .uri("/api/auth/users/signup")
                 .bodyJson(signUpReqBody);
         Result signUpRes = route(application, signUpReq);
-        Assert.assertEquals(200, signUpRes.status());
+        Assert.assertEquals(201, signUpRes.status());
 
         // log in to get the auth token
         ObjectNode logInReqBody = Json.newObject();
@@ -96,7 +97,7 @@ public class UserPhotoSteps {
         logInReqBody.put("password", this.plainTextPassword);
         Http.RequestBuilder logInReq = Helpers.fakeRequest()
                 .method("POST")
-                .uri("/api/auth/travellers/login")
+                .uri("/api/auth/users/login")
                 .bodyJson(signUpReqBody);
         Result logInRes = route(application, logInReq);
 
@@ -113,13 +114,15 @@ public class UserPhotoSteps {
 
     @Given("^the user has the following photos in the system:$")
     public void theUserHasTheFollowingPhotosInTheSystem(DataTable dataTable) {
+        this.photoList = dataTable;
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
 
         User user = User.find.byId(this.userId);
-        ArrayList<PersonalPhoto> photos = new ArrayList<>();
+        Assert.assertNotNull(user);
+        List<PersonalPhoto> photos = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             Map<String, String> row = list.get(i);
-            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPrimary")));
+            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")));
             photo.save();
             photos.add(photo);
 
@@ -134,7 +137,7 @@ public class UserPhotoSteps {
     public void theUserTriesToRetrieveTheirPhotos() throws IOException {
         Http.RequestBuilder photosReq = Helpers.fakeRequest()
                 .method("GET")
-                .uri("/api/travellers/" + this.userId + "/photos")
+                .uri("/api/users/" + this.userId + "/photos")
                 .header("authorization", this.authToken);
         Result photosRes = route(application, photosReq);
 
@@ -156,8 +159,8 @@ public class UserPhotoSteps {
         }
     }
 
-    @Given("a user has a photo called {string}")
-    public void aUserHasAPhotoCalled(String photoName) throws IOException {
+    @Given("^a user has a photo called \"([^\"]*)\"$")
+    public void aUserHasAPhotoCalled(String photoName) {
         this.photoName = photoName;
     }
 
@@ -204,4 +207,13 @@ public class UserPhotoSteps {
         Assert.assertEquals(200, result.status());
     }
 
+    @When("^the user requests all their photos$")
+    public void theUserRequestsAllTheirPhotos() {
+        
+    }
+
+    @Then("^the user gets the same list$")
+    public void theUserGetsTheSameList() {
+
+    }
 }
