@@ -1,31 +1,18 @@
 package steps;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Module;
-import cucumber.api.java.After;
-import cucumber.api.java.Before;
-import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import models.User;
 import org.junit.Assert;
-import org.junit.Test;
 import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import utils.PlayResultToJson;
-import utils.TestAuthenticationHelper;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +139,7 @@ public class searchTravellerFilterSteps {
     @Then("I get a list of all nationalities as follows:")
     public void iGetAListOfAllNationalitiesAsFollows(DataTable dataTable) {
 
-        List<Map<String,String>> expectedResults = dataTable.asMaps();
+        List<Map<String, String>> expectedResults = dataTable.asMaps();
         for (int i = 0; i < expectedResults.size(); i++) {
             Assert.assertEquals(Integer.parseInt(expectedResults.get(i).get("nationalityId")), this.array.get(i).get("nationalityId").asInt());
             Assert.assertEquals(expectedResults.get(i).get("nationalityName"), this.array.get(i).get("nationalityName").asText());

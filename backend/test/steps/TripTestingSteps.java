@@ -1,13 +1,7 @@
 package steps;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Module;
-import cucumber.api.java.After;
-import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -15,21 +9,13 @@ import io.cucumber.datatable.DataTable;
 import models.*;
 import org.junit.Assert;
 import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
-import javax.inject.Inject;
-import java.io.IOException;
+
 import java.util.List;
 import java.util.Map;
-
-import utils.PlayResultToJson;
-import utils.TestAuthenticationHelper;
 
 import static play.test.Helpers.route;
 
@@ -65,8 +51,8 @@ public class TripTestingSteps {
         district1.save();
         district2.save();
 
-        Destination destination1 = new Destination("Burning Man",destinationType1, district1, 12.1234,12.1234, country1 );
-        Destination destination2 = new Destination("Brisbane City",destinationType2, district2, 11.1234,11.1234, country2 );
+        Destination destination1 = new Destination("Burning Man", destinationType1, district1, 12.1234, 12.1234, country1);
+        Destination destination2 = new Destination("Brisbane City", destinationType2, district2, 11.1234, 11.1234, country2);
 
         destination1.save();
         destination2.save();
@@ -123,7 +109,7 @@ public class TripTestingSteps {
                 .method("PUT")
                 .uri("/api/users/1/trips/1")
                 .bodyJson(jsonBody)
-                .header("Authorization",  user.getToken());
+                .header("Authorization", user.getToken());
 
         this.result = route(application, checkCreation);
     }
@@ -135,7 +121,7 @@ public class TripTestingSteps {
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/users/1/trips/" + tripId)
-                .header("Authorization",  user.getToken());
+                .header("Authorization", user.getToken());
 
         this.result = route(application, checkCreation);
     }
@@ -147,7 +133,7 @@ public class TripTestingSteps {
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/users/1/trips")
-                .header("authorization",  user.getToken());
+                .header("authorization", user.getToken());
 
         this.result = route(application, checkCreation);
     }

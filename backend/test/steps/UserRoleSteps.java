@@ -2,32 +2,20 @@ package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Module;
-import controllers.InternalController;
-import cucumber.api.java.Before;
-import cucumber.api.java.After;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import models.Role;
-import models.RoleType;
 import models.User;
 
 import org.junit.Assert;
 import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,7 +109,7 @@ public class UserRoleSteps {
         // Give the admin an admin role
         User admin = User.find.byId(this.adminUserId);
         List<Role> adminRoles = Role.find.all();
-        System.out.println("Admin roles are: "  + adminRoles);
+        System.out.println("Admin roles are: " + adminRoles);
 
         admin.setRoles(adminRoles);
         admin.save();
@@ -189,7 +177,7 @@ public class UserRoleSteps {
     }
 
     @When("ROLES - I request roles from the database")
-    public void ri_request_roles_from_the_database() throws IOException  {
+    public void ri_request_roles_from_the_database() throws IOException {
         Application application = TestState.getInstance().getApplication();
         // TODO - Can anyone request roles?
         Http.RequestBuilder request = Helpers.fakeRequest()

@@ -1,32 +1,16 @@
 package steps.users;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Module;
-import cucumber.api.PendingException;
-import cucumber.api.java.After;
-import cucumber.api.java.Before;
-import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import exceptions.FailedToLoginException;
 import models.*;
 import org.junit.Assert;
-import org.junit.Test;
-import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.mvc.Result;
-import play.test.Helpers;
 import steps.TestState;
 import util.Security;
 import utils.FakeClient;
-import utils.FakePlayClient;
 import utils.PlayResultToJson;
 
 import java.io.IOException;

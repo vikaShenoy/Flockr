@@ -1,15 +1,12 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import cucumber.api.java.After;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import cucumber.api.java.hu.De;
 import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import io.cucumber.datatable.DataTable;
-import jdk.nashorn.internal.ir.ObjectNode;
 import models.*;
 import org.junit.Assert;
 import play.Application;
@@ -82,27 +79,21 @@ public class DestinationTestingSteps {
         this.destinationData = Json.toJson(firstRow);
     }
 
-    @Given("the database has been populated with countries, districts and destination types")
-    public void theDatabaseHasBeenPopulatedWithCountriesDistrictsAndDestinationTypes() {
+    @Given("the database has been populated with the following countries, districts and destination types:")
+    public void theDatabaseHasBeenPopulatedWithCountriesDistrictsAndDestinationTypes(DataTable dataTable) {
+        List<Map<String, String>> rows = dataTable.asMaps();
 
-        DestinationType destinationType1 = new DestinationType("Event");
-        DestinationType destinationType2 = new DestinationType("City");
-
-        Country country1 = new Country("United States of America");
-        Country country2 = new Country("Australia");
-
-        District district1 = new District("Black Rock City", country1);
-        District district2 = new District("New Farm", country2);
-
-        destinationType1.save();
-        destinationType2.save();
-
-        country1.save();
-        country2.save();
-
-        district1.save();
-        district2.save();
-
+        for (Map<String, String> row : rows) {
+            DestinationType destinationType = new DestinationType(row.get("destinationType"));
+            Country country = new Country(row.get("country"));
+            District district = new District(row.get("district"), country);
+            destinationType.save();
+            country.save();
+            district.save();
+            Assert.assertNotEquals(0, destinationType.getDestinationTypeId());
+            Assert.assertNotEquals(0, country.getCountryId());
+            Assert.assertNotEquals(0, district.getDistrictId());
+        }
     }
 
     @When("I click the Add Destination button")

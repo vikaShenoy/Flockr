@@ -9,11 +9,8 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import models.*;
 import org.junit.Assert;
-import play.Application;
 import play.libs.Json;
-import play.mvc.Http;
 import play.mvc.Result;
-import play.test.Helpers;
 import util.Security;
 import utils.FakeClient;
 import utils.PlayResultToJson;
@@ -21,8 +18,6 @@ import utils.PlayResultToJson;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-
-import static play.test.Helpers.route;
 
 public class AdminSteps {
 
