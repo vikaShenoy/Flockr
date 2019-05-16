@@ -11,7 +11,9 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
+import models.User;
 import org.junit.Assert;
+import org.junit.Test;
 import play.Application;
 import play.ApplicationLoader;
 import play.Environment;
@@ -33,23 +35,11 @@ import static play.test.Helpers.route;
 public class searchTravellerFilterSteps {
 
     private Result result;
-    private String authToken;
     private ArrayNode array;
-
-    @Given("the following user exists:")
-    public void theFollowingUserExists(DataTable dataTable) throws IOException {
-        Application application = TestState.getInstance().getApplication();
-        this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
-    }
-
-    @And("^I have logged in with email \"([^\"]*)\" and password \"([^\"]*)\"$")
-    public void iHaveLoggedInWithEmailAndPassword(String email, String password) throws IOException {
-        Application application = TestState.getInstance().getApplication();
-        this.authToken = TestAuthenticationHelper.login(email, password, application);
-    }
 
     @Given("I populate the database with test data")
     public void iPopulateTheDatabaseWithTestData() throws IOException {
+        User user = TestState.getInstance().getUser(0);
         Http.RequestBuilder resampleRequest = Helpers.fakeRequest()
                 .method("POST")
                 .uri("/api/internal/resample");
@@ -57,10 +47,9 @@ public class searchTravellerFilterSteps {
         Result resampleResult = route(application, resampleRequest);
 
         Assert.assertEquals(200, resampleResult.status());
-
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
-                .header("authorization", this.authToken)
+                .header("Authorization", user.getToken())
                 .uri("/api/users");
         this.result = route(application, request);
         ArrayNode array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
@@ -71,9 +60,10 @@ public class searchTravellerFilterSteps {
 
     @When("I want all types of nationalities from the database")
     public void iRequestNationalitiesFromTheDatabase() throws IOException {
+        User user = TestState.getInstance().getUser(0);
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
-                .header("authorization", this.authToken)
+                .header("authorization", user.getToken())
                 .uri("/api/users/nationalities");
         Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
@@ -85,9 +75,10 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the {int} nationality id")
     public void iSearchTravellersWithTheNationalityId(Integer nationalityId) throws IOException {
+        User user = TestState.getInstance().getUser(0);
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
-                .header("authorization", this.authToken)
+                .header("authorization", user.getToken())
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&nationality=" + nationalityId);
         Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
@@ -99,9 +90,10 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the gender Male")
     public void iSearchTravellersWithTheGenderMale() throws IOException {
+        User user = TestState.getInstance().getUser(0);
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
-                .header("authorization", this.authToken)
+                .header("authorization", user.getToken())
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Male");
         Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
@@ -113,9 +105,10 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the gender Female")
     public void iSearchTravellersWithTheGenderFemale() throws IOException {
+        User user = TestState.getInstance().getUser(0);
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
-                .header("authorization", this.authToken)
+                .header("authorization", user.getToken())
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Female");
         Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
@@ -127,9 +120,10 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the gender Other")
     public void iSearchTravellersWithTheGenderOther() throws IOException {
+        User user = TestState.getInstance().getUser(0);
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
-                .header("authorization", this.authToken)
+                .header("authorization", user.getToken())
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Other");
         Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
@@ -141,10 +135,11 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the traveller type ID {int}")
     public void iSearchTravellersWithTheTravellerTypeID(Integer travellerTypeId) throws IOException {
+        User user = TestState.getInstance().getUser(0);
 
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("GET")
-                .header("authorization", this.authToken)
+                .header("authorization", user.getToken())
                 .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&travellerType=" + travellerTypeId.toString());
         Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);

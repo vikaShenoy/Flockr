@@ -12,10 +12,7 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
-import models.Country;
-import models.Destination;
-import models.DestinationType;
-import models.District;
+import models.*;
 import org.junit.Assert;
 import play.Application;
 import play.ApplicationLoader;
@@ -41,33 +38,6 @@ public class TripTestingSteps {
     private String tripName;
     private ArrayNode tripDestinations;
     private Result result;
-    private String authToken;
-
-    @Given("this user exists:")
-    public void thisUserExists(DataTable dataTable) throws IOException {
-        Application application = TestState.getInstance().getApplication();
-        this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
-        Assert.assertNotNull(this.authToken);
-    }
-
-    @Given("^I log in with email \"([^\"]*)\" and password \"([^\"]*)\"$")
-    public void iLogInWithEmailAndPassword(String email, String password) throws IOException {
-        Application application = TestState.getInstance().getApplication();
-
-        ObjectNode reqJsonBody = Json.newObject();
-        reqJsonBody.put("email", email);
-        reqJsonBody.put("password", password);
-
-        Http.RequestBuilder loginRequest = Helpers.fakeRequest()
-                .method("POST")
-                .bodyJson(reqJsonBody)
-                .uri("/api/auth/users/login");
-        Result loginResult = route(application, loginRequest);
-        JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
-        Assert.assertEquals(200, loginResult.status());
-        this.authToken = authenticationResponseAsJson.get("token").asText();
-        Assert.assertNotNull(this.authToken);
-    }
 
     @Given("^I have a trip named \"([^\"]*)\"$")
     public void iHaveATripNamed(String tripName) {
@@ -126,6 +96,7 @@ public class TripTestingSteps {
 
     @When("I click the Add Trip button")
     public void iClickTheAddATripButton() {
+        User user = TestState.getInstance().getUser(0);
         Application application = TestState.getInstance().getApplication();
         ObjectNode jsonBody = Json.newObject();
         jsonBody.set("tripName", Json.toJson(this.tripName));
@@ -134,7 +105,7 @@ public class TripTestingSteps {
                 .method("POST")
                 .uri("/api/users/1/trips")
                 .bodyJson(jsonBody)
-                .header("Authorization", this.authToken);
+                .header("Authorization", user.getToken());
 
         this.result = route(application, checkCreation);
         Assert.assertNotNull(this.result);
@@ -142,6 +113,7 @@ public class TripTestingSteps {
 
     @When("I update a trip and click the Save Trip button")
     public void iUpdateATripAndClickTheSaveTripButton() {
+        User user = TestState.getInstance().getUser(0);
         Application application = TestState.getInstance().getApplication();
         ObjectNode jsonBody = Json.newObject();
 
@@ -151,29 +123,31 @@ public class TripTestingSteps {
                 .method("PUT")
                 .uri("/api/users/1/trips/1")
                 .bodyJson(jsonBody)
-                .header("Authorization",  this.authToken);
+                .header("Authorization",  user.getToken());
 
         this.result = route(application, checkCreation);
     }
 
     @When("^I send a request to get a trip with id (\\d+)$")
     public void iSendARequestToGetATrip(int tripId) {
+        User user = TestState.getInstance().getUser(0);
         Application application = TestState.getInstance().getApplication();
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/users/1/trips/" + tripId)
-                .header("Authorization",  this.authToken);
+                .header("Authorization",  user.getToken());
 
         this.result = route(application, checkCreation);
     }
 
     @When("I send a request to get trips")
     public void iSendARequestToGetTrips() {
+        User user = TestState.getInstance().getUser(0);
         Application application = TestState.getInstance().getApplication();
         Http.RequestBuilder checkCreation = Helpers.fakeRequest()
                 .method("GET")
                 .uri("/api/users/1/trips")
-                .header("authorization",  this.authToken);
+                .header("authorization",  user.getToken());
 
         this.result = route(application, checkCreation);
     }

@@ -2,15 +2,21 @@ package utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.FailedToLoginException;
+import exceptions.FailedToSignUpException;
+import exceptions.ServerErrorException;
 import io.cucumber.datatable.DataTable;
+import models.User;
 import org.junit.Assert;
 import play.Application;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import steps.TestState;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -21,50 +27,34 @@ public class TestAuthenticationHelper {
 
     /**
      * A helper method for creating and authenticating a user for running tests.
+     * The user object is placed in the TestState for retrieval by multiple test classes.
+     *
      * @param dataTable a DataTable with the users details
      * @param application a play Application
-     * @return String the authentication token returned from the database after login
-     * @throws IOException when the server returns an error
      */
-    public static String theFollowingUserExists(DataTable dataTable, Application application) throws IOException {
+    public static void theFollowingUserExists(DataTable dataTable, Application application) {
+        TestState testState = TestState.getInstance();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
-        String email = firstRow.get("email");
         String plainTextPassword = firstRow.get("password");
-
 
         // sign up a user
         JsonNode signUpReqBody = Json.toJson(firstRow);
-        Http.RequestBuilder signUpReq = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/auth/users/signup")
-                .bodyJson(signUpReqBody);
-        Result signUpRes = route(application, signUpReq);
-        Assert.assertEquals(201, signUpRes.status());
+        try {
+            User user = testState.getFakeClient().signUpUser(signUpReqBody);
+            Assert.assertNotEquals(0, user.getUserId());
 
-        // log in to get the auth token
-        ObjectNode logInReqBody = Json.newObject();
-        logInReqBody.put("email", email);
-        logInReqBody.put("password", plainTextPassword);
-        Http.RequestBuilder logInReq = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/auth/users/login")
-                .bodyJson(signUpReqBody);
-        Result logInRes = route(application, logInReq);
-
-        Assert.assertEquals(200, logInRes.status());
-
-        JsonNode logInResBody = utils.PlayResultToJson.convertResultToJson(logInRes);
-
-        // make the token available for the rest of the class
-        String authToken = logInResBody.get("token").asText();
-
-        Assert.assertNotNull(authToken);
-        return authToken;
+            user = testState.getFakeClient().loginMadeUpUser(user, plainTextPassword);
+            Assert.assertNotEquals("", user.getToken());
+            testState.addUser(user);
+        } catch (IOException | FailedToSignUpException | ServerErrorException | FailedToLoginException e) {
+            Assert.fail(Arrays.toString(e.getStackTrace()));
+        }
     }
 
     /**
      * Method to log in with given user credentials and return an auth token
+     *
      * @param email String the email of the user
      * @param password String the password of the user
      * @param application play Application instance

@@ -1,12 +1,7 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Module;
-import cucumber.api.PendingException;
 import cucumber.api.java.After;
-import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -14,17 +9,12 @@ import io.cucumber.datatable.DataTable;
 import models.*;
 import org.junit.Assert;
 import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import utils.TestAuthenticationHelper;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -36,18 +26,16 @@ public class DestinationTestingSteps {
     private JsonNode destinationData;
     private Result result;
 
-    // user data
-    private String authToken;
-
     @Given("a user with the following information exists:")
     public void aUserWithTheFollowingInformationExists(DataTable dataTable) throws IOException {
         Application application = TestState.getInstance().getApplication();
-        this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
+        TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
     }
 
     @Given("that I am logged in")
     public void thatIAmLoggedIn() {
-        Assert.assertTrue(this.authToken.length() > 0);
+        User user = TestState.getInstance().getUser(0);
+        Assert.assertTrue(user.getToken().length() > 0);
     }
 
     @Given("^that I have a destination created with id (\\d+)$")
@@ -58,7 +46,7 @@ public class DestinationTestingSteps {
         Country country1 = Country.find.query().
                 where().eq("country_id", 1).findOne();
         District district1 = District.find.query().where().eq("district_id", 1).findOne();
-        Destination destination1 = new Destination("Burning Man",destinationType1, district1, 12.1234,12.1234, country1 );
+        Destination destination1 = new Destination("Burning Man", destinationType1, district1, 12.1234, 12.1234, country1);
         destination1.save();
 
         Http.RequestBuilder deleteRequest = Helpers.fakeRequest()
@@ -112,10 +100,12 @@ public class DestinationTestingSteps {
     }
 
     @When("I click the Add Destination button")
-    public void iClicktheAddDestination() {
+    public void IClickTheAddDestination() {
+        User user = TestState.getInstance().removeUser(0);
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("POST")
                 .uri("/api/destinations")
+                .header("Authorization", user.getToken())
                 .bodyJson(this.destinationData);
         Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
@@ -123,11 +113,12 @@ public class DestinationTestingSteps {
     }
 
     @When("I click the Delete Destination button")
-    public void iClickTheDeleteDestinationButton() {
+    public void IClickTheDeleteDestinationButton() {
+        User user = TestState.getInstance().removeUser(0);
         Http.RequestBuilder deleteReq = Helpers.fakeRequest()
                 .method("DELETE")
                 .uri("/api/destinations/1")
-                .header("Authorization", this.authToken);
+                .header("Authorization", user.getToken());
         Application application = TestState.getInstance().getApplication();
         this.result = route(application, deleteReq);
         Assert.assertEquals(200, this.result.status());

@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToLoginException;
 import exceptions.FailedToSignUpException;
+import exceptions.ServerErrorException;
+import exceptions.UnauthorizedException;
+import models.Destination;
 import models.User;
 import org.junit.Assert;
 import play.Application;
@@ -14,6 +17,7 @@ import play.mvc.Result;
 import play.test.Helpers;
 
 import java.io.IOException;
+import java.rmi.ServerError;
 
 import static play.test.Helpers.route;
 
@@ -93,7 +97,7 @@ public class FakePlayClient implements FakeClient {
                 JsonNode resAsJson = PlayResultToJson.convertResultToJson(res);
                 String authToken = resAsJson.get("token").asText();
                 user.setToken(authToken);
-                user.save();
+                user.update();
                 return user;
             } catch (IOException e) {
                 throw new FailedToLoginException("Failed to convert the Play result to JSON" + e.getMessage());
@@ -102,7 +106,7 @@ public class FakePlayClient implements FakeClient {
     }
 
     @Override
-    public User signUpUser(String firstName, String lastName, String email, String password) throws IOException, FailedToSignUpException {
+    public User signUpUser(String firstName, String lastName, String email, String password) throws IOException, FailedToSignUpException, ServerErrorException {
         ObjectNode userAsJson = Json.newObject();
         userAsJson.put("firstName", firstName);
         userAsJson.put("lastName", lastName);
@@ -113,7 +117,7 @@ public class FakePlayClient implements FakeClient {
     }
 
     @Override
-    public User signUpUser(JsonNode userJson) throws IOException, FailedToSignUpException {
+    public User signUpUser(JsonNode userJson) throws IOException, FailedToSignUpException, ServerErrorException {
         Result result = this.makeRequestWithNoToken("POST", (ObjectNode) userJson, "/api/auth/users/signup");
         if (result.status() == 400) {
             throw new FailedToSignUpException("Failed to sign up the user.");
@@ -127,6 +131,22 @@ public class FakePlayClient implements FakeClient {
             // TODO: fix everything to use default admin instead of super admin so the following will work.
 //            ObjectMapper objectMapper = new ObjectMapper();
 //            return objectMapper.treeToValue(userAsJsonNode, User.class);
-        } else return null;
+        } else {
+            throw new ServerErrorException();
+        }
+    }
+
+    @Override
+    public Destination makeTestDestination(ObjectNode destinationNode, String authToken) throws IOException, UnauthorizedException, ServerErrorException {
+        Result result = this.makeRequestWithToken("POST", destinationNode, "/api/destinations", authToken);
+        if (result.status() == 201) {
+            JsonNode destinationAsJsonNode = PlayResultToJson.convertResultToJson(result);
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.treeToValue(destinationAsJsonNode, Destination.class);
+        } else if (result.status() == 401) {
+            throw new UnauthorizedException("You are not authorized to perform this operation.");
+        } else {
+            throw new ServerErrorException();
+        }
     }
 }

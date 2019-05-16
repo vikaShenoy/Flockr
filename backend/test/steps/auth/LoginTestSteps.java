@@ -10,7 +10,10 @@ import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import exceptions.FailedToSignUpException;
+import exceptions.ServerErrorException;
 import io.cucumber.datatable.DataTable;
+import models.User;
 import org.junit.Assert;
 import play.Application;
 import play.ApplicationLoader;
@@ -26,6 +29,7 @@ import utils.PlayResultToJson;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -35,26 +39,25 @@ public class LoginTestSteps {
 
     private JsonNode userData;
     private Result result;
-    private Result signUpResponse;
     private Result loginResponse;
 
     @Given("that I have signed up successfully with valid data:")
     public void thatIHaveSignedUpSuccessfullyWithValidData(DataTable dataTable) {
+        TestState testState = TestState.getInstance();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
         this.userData = Json.toJson(firstRow);
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/auth/users/signup")
-                .bodyJson(this.userData);
-        Application application = TestState.getInstance().getApplication();
-        this.signUpResponse = route(application, request);
-        Assert.assertEquals(201, this.signUpResponse.status());
+        try {
+            User user = testState.getFakeClient().signUpUser(userData);
+            Assert.assertNotEquals(0, user.getUserId());
+        } catch (IOException | FailedToSignUpException | ServerErrorException e) {
+            Assert.fail(Arrays.toString(e.getStackTrace()));
+        }
     }
 
 
     @When("I write correct login credentials in the Login form and I click the Login button")
-    public void iWriteCorrectLoginCredentialsinTheLoginFormAndIClickTheLoginButton() {
+    public void iWriteCorrectLoginCredentialsInTheLoginFormAndIClickTheLoginButton() {
         // Gets the user credentials from the initial data
         String email = this.userData.get("email").asText();
         String password = this.userData.get("password").asText();
@@ -82,7 +85,7 @@ public class LoginTestSteps {
     }
 
     @When("I write incorrect login credentials in the Login form and I click the Login button")
-    public void iWriteIncorrectLoginCredentialsinTheLoginFormAndIClickTheLoginButton() {
+    public void iWriteIncorrectLoginCredentialsInTheLoginFormAndIClickTheLoginButton() {
         // Gets the user credential from the initial data
         String email = this.userData.get("email").asText();
         String password = this.userData.get("password").asText();

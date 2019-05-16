@@ -1,9 +1,14 @@
 package steps;
 
 
+import models.Destination;
 import models.Role;
+import models.User;
 import play.Application;
 import utils.FakeClient;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestState {
 
@@ -13,6 +18,15 @@ public class TestState {
     private Role superAdminRole;
     private Role adminRole;
     private Role travellerRole;
+    private Destination testDestination;
+    private List<User> users;
+
+    /**
+     * Constructor to create any lists of objects to be used in multiple classes
+     */
+    public TestState() {
+        this.users = new ArrayList<>();
+    }
 
     /**
      * Get an instance of this class, creates it if necessary.
@@ -24,6 +38,13 @@ public class TestState {
             testState = new TestState();
         }
         return testState;
+    }
+
+    /**
+     * Clears current test state to wipe saved data.
+     */
+    public static void clear() {
+        testState = null;
     }
 
     public Application getApplication() {
@@ -64,5 +85,29 @@ public class TestState {
 
     public void setTravellerRole(Role travellerRole) {
         this.travellerRole = travellerRole;
+    }
+
+    public Destination getTestDestination() {
+        return testDestination;
+    }
+
+    public void setTestDestination(Destination testDestination) {
+        this.testDestination = testDestination;
+    }
+
+    public void addUser(User user) {
+        this.users.add(user);
+    }
+
+    public User getUser(int index) {
+        return this.users.get(index);
+    }
+
+    public User removeUser(int index) {
+        return this.users.remove(index);
+    }
+
+    public int getUsersSize() {
+        return this.users.size();
     }
 }

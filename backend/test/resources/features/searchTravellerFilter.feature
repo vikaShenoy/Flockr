@@ -1,12 +1,11 @@
 Feature: The user can search travellers
 
   Background:
-    Given the following user exists:
-      | firstName | middleName | lastName | email             | password      |
-      | Felipe    | Rogelio    | Sanchez  | rogelio@email.com | much-security |
+    Given a user with the following information exists:
+      | firstName | lastName | email                    | password        |
+      | Sally     | Searcher | sally.searcher@email.com | me-gusta-buscar |
 
   Scenario: I can get a list of available nationalities from the database
-    And I have logged in with email "rogelio@email.com" and password "much-security"
     And I populate the database with test data
     When I want all types of nationalities from the database
     Then I get a list of all nationalities as follows:
@@ -19,7 +18,6 @@ Feature: The user can search travellers
       | 6             | Peru            |
 
   Scenario Outline: The user can search a traveller by nationality id
-    And I have logged in with email "rogelio@email.com" and password "much-security"
     And I populate the database with test data
     When I search travellers with the <nationalityId> nationality id
     Then I get the following <emails> emails
@@ -31,7 +29,6 @@ Feature: The user can search travellers
       | 6             | ["luis@gmail.com"]         |
 
   Scenario Outline: The user can search a traveller by gender
-    And I have logged in with email "rogelio@email.com" and password "much-security"
     And I populate the database with test data
     When I search travellers with the gender <gender>
     Then I get the following <emails> emails
@@ -44,7 +41,6 @@ Feature: The user can search travellers
 
 
   Scenario Outline: The user can search a traveller by traveller type
-    And I have logged in with email "rogelio@email.com" and password "much-security"
     And I populate the database with test data
     When I search travellers with the traveller type ID <travellerTypeId>
     Then I get the following <emails> emails

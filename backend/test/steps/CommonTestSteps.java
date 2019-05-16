@@ -83,7 +83,7 @@ public class CommonTestSteps {
     public void tearDown() {
         Application application = TestState.getInstance().getApplication();
         Helpers.stop(application);
-
+        TestState.clear();
     }
 
 

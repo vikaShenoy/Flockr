@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToLoginException;
 import exceptions.FailedToSignUpException;
+import exceptions.ServerErrorException;
+import exceptions.UnauthorizedException;
+import models.Destination;
 import models.User;
 import play.mvc.Result;
 
@@ -72,7 +75,7 @@ public interface FakeClient {
      * @return the user object.
      * @throws IOException when the result cannot be parsed into a json.
      */
-    User signUpUser(String firstName, String lastName, String email, String password) throws IOException, FailedToSignUpException;
+    User signUpUser(String firstName, String lastName, String email, String password) throws IOException, FailedToSignUpException, ServerErrorException;
 
     /**
      * Sends a request to sign up a user from a user json object.
@@ -81,5 +84,14 @@ public interface FakeClient {
      * @return the user object.
      * @throws IOException when the result cannot be parsed into a json.
      */
-    User signUpUser(JsonNode userJson) throws IOException, FailedToSignUpException;
+    User signUpUser(JsonNode userJson) throws IOException, FailedToSignUpException, ServerErrorException;
+
+    /**
+     * Creates a test destination to run tests with. Using the create destination endpoint.
+     *
+     * @param destinationNode the JsonNode containing the new destinations data.
+     * @param authToken the suthentication token to add to the request.
+     * @return the test destination.
+     */
+    Destination makeTestDestination(ObjectNode destinationNode, String authToken) throws IOException, UnauthorizedException, ServerErrorException;
 }
