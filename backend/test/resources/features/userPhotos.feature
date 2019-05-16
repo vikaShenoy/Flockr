@@ -1,7 +1,7 @@
 Feature: As a registered user I want to have photos that display on my profile.
 
   Background:
-    Given a user exists with the following information:
+    Given a user with the following information exists:
       | firstName | lastName   | email                  | password   |
       | Phillip   | Phototaker | ppt@phillipsphotos.com | say-cheese |
 

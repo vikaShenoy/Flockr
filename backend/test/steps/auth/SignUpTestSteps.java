@@ -45,7 +45,7 @@ public class SignUpTestSteps {
         FakeClient fakeClient = testState.getFakeClient();
         try {
             User user = fakeClient.signUpUser(Json.toJson(testState.getUserData()));
-            testState.setUser(user);
+            testState.addUser(user);
             Assert.assertNotNull(user);
             Assert.assertNotEquals(0, user.getUserId());
         } catch (Exception e) {
@@ -55,7 +55,7 @@ public class SignUpTestSteps {
 
     @Then("the user now exists in the system")
     public void theUserIsNowStoredInTheSystem() {
-        User createdUser = TestState.getInstance().getUser();
+        User createdUser = TestState.getInstance().getUser(0);
         User user = User.find.byId(createdUser.getUserId());
         Assert.assertNotNull(user);
         Assert.assertEquals(createdUser.getUserId(), user.getUserId());
