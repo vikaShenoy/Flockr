@@ -2,6 +2,14 @@ import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 import moment from "moment";
 
+// Specifies states that a trip can have
+export const tripState = {
+  UNKNOWN: "Unknown",
+  ONGOING: "Ongoing",
+  UPCOMING: "Upcoming",
+  PASSED: "Passed"
+};
+
 /**
  * Gets all of a users trips
  * @param {number} userId
@@ -17,6 +25,7 @@ export async function getTrips(userId) {
 /**
  * Finds the start date of the trip
  * @param {Object[]} tripDestinations
+ * @returns {moment} A moment object of the start date (and time if it exists)
  */
 export function findStart(tripDestinations) {
   for (const tripDestination of tripDestinations) {
@@ -42,6 +51,7 @@ export function findStart(tripDestinations) {
 /**
  * Finds the end date of the trip
  * @param {Object[]} tripDestinations
+ * @returns {moment} A moment object of the start date (and time if it exists)
  */
 export function findEnd(tripDestinations) {
   for (let i = tripDestinations.length - 1; i > -1; i--) {
@@ -78,15 +88,15 @@ export function transformTrips(trips) {
     let tripStatus;
 
     if (!tripStart || !tripEnd) {
-      tripStatus = "Unknown";
+      tripStatus = tripState.UNKNOWN;
     } else if (currentTime.isAfter(tripStart) && currentTime.isBefore(tripEnd)) {
-      tripStatus = "Ongoing";
+      tripStatus = tripState.ONGOING;
     } else if (currentTime.isBefore(tripStart)) {
-      tripStatus = "Upcoming";
+      tripStatus = tripState.UPCOMING;
     } else if (currentTime.isAfter(tripEnd)) {
-      tripStatus = "Passed";
+      tripStatus = tripState.PASSED;
     } else {
-      tripStatus = "Unknown";
+      tripStatus = tripState.UNKNOWN;
     }
 
     return {
@@ -103,20 +113,24 @@ export function transformTrips(trips) {
  * @param {Object[]} trips
  */
 export function sortTrips(trips) {
-  console.log(trips);
   return trips.sort((tripA, tripB) => {
     const startA = findStart(tripA.tripDestinations);
     const startB = findStart(tripB.tripDestinations);
 
     // Will put trips that don't have any dates at the top
-    if (!startA) {
+    if (!startA && startB) {
       return -1;
     }
 
-    if (startA.isSame(startB)) {
+    if (!startB && startA) {
+      return 1;
+    }
+    
+    // If 2 trips compared don't have any dates or the dates are the same
+    if (!startA && !startB || startA.isSame(startB)) {
       return tripA.tripId - tripB.tripId;
     } else {
-      return startA.unix() - startB.unix();
+      return startA.valueOf() - startB.valueOf();
     }
   });
 }

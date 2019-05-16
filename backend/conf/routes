@@ -3,9 +3,6 @@
 # Home page
 GET          /                                                  controllers.Assets.at(path="/public/vue-front-end-goes-here", file="index.html")
 
-#Interval routes
-POST         /api/internal/resample                             controllers.InternalController.resample
-
 # Auth routes
 POST         /api/auth/users/signup               controllers.AuthController.signup(request: Request)
 POST         /api/auth/users/login                controllers.AuthController.login(request: Request)
