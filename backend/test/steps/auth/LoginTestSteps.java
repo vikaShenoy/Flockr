@@ -25,6 +25,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import steps.TestState;
+import utils.FakeClient;
 import utils.PlayResultToJson;
 
 import javax.inject.Inject;
@@ -38,7 +39,6 @@ import static play.test.Helpers.route;
 public class LoginTestSteps {
 
     private JsonNode userData;
-    private Result result;
     private Result loginResponse;
 
     @Given("that I have signed up successfully with valid data:")
@@ -58,6 +58,7 @@ public class LoginTestSteps {
 
     @When("I write correct login credentials in the Login form and I click the Login button")
     public void iWriteCorrectLoginCredentialsInTheLoginFormAndIClickTheLoginButton() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         // Gets the user credentials from the initial data
         String email = this.userData.get("email").asText();
         String password = this.userData.get("password").asText();
@@ -67,12 +68,8 @@ public class LoginTestSteps {
         reqJsonBody.put("email", email);
         reqJsonBody.put("password", password);
 
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/auth/users/login")
-                .bodyJson(reqJsonBody);
-        Application application = TestState.getInstance().getApplication();
-        this.loginResponse = route(application, request);
+        this.loginResponse = fakeClient.makeRequestWithNoToken(
+                "POST", reqJsonBody, "/api/auth/users/login");
         Assert.assertTrue(!(this.loginResponse == null));
     }
 
@@ -81,11 +78,13 @@ public class LoginTestSteps {
         JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(this.loginResponse);
         String authToken = authenticationResponseAsJson.get("token").asText();
 
+        Assert.assertEquals(200, this.loginResponse.status());
         Assert.assertTrue(authToken.length() > 0);
     }
 
     @When("I write incorrect login credentials in the Login form and I click the Login button")
     public void iWriteIncorrectLoginCredentialsInTheLoginFormAndIClickTheLoginButton() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         // Gets the user credential from the initial data
         String email = this.userData.get("email").asText();
         String password = this.userData.get("password").asText();
@@ -95,13 +94,9 @@ public class LoginTestSteps {
         reqJsonBody.put("email", email);
         reqJsonBody.put("password", password + "wrong-password");
 
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/auth/users/login")
-                .bodyJson(reqJsonBody);
-        Application application = TestState.getInstance().getApplication();
-        this.loginResponse = route(application, request);
-        Assert.assertTrue(!(this.loginResponse == null));
+        this.loginResponse = fakeClient.makeRequestWithNoToken(
+                "POST", reqJsonBody, "/api/auth/users/login");
+        Assert.assertNotNull(this.loginResponse);
     }
 
     @Then("the server should not log me in")

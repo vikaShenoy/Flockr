@@ -15,6 +15,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import util.Security;
+import utils.FakeClient;
 import utils.PlayResultToJson;
 
 import java.io.IOException;
@@ -123,16 +124,13 @@ public class AdminSteps {
 
     @And("The user is logged in")
     public void the_user_is_logged_in() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         ObjectNode reqJsonBody = Json.newObject();
         reqJsonBody.put("email", "user@travelEA.com");
         reqJsonBody.put("password", "password");
 
-        Http.RequestBuilder loginRequest = Helpers.fakeRequest()
-                .method("POST")
-                .bodyJson(reqJsonBody)
-                .uri("/api/auth/users/login");
-        Application application = TestState.getInstance().getApplication();
-        Result loginResult = route(application, loginRequest);
+        Result loginResult = fakeClient.makeRequestWithNoToken("POST", reqJsonBody, "/api/auth/users/login");
+
         JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
 
         Assert.assertEquals(200, loginResult.status());
@@ -145,13 +143,9 @@ public class AdminSteps {
 
     @When("The user requests its roles")
     public void the_user_requests_its_roles() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
 
-        Http.RequestBuilder rolesRequest = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", this.authToken)
-                .uri("/api/users/" + this.userId + "/roles");
-        Application application = TestState.getInstance().getApplication();
-        Result rolesResult = route(application, rolesRequest);
+        Result rolesResult = fakeClient.makeRequestWithToken("GET", "/api/users/" + this.userId + "/roles", this.authToken);
         this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
 
         this.roles.get(0);
@@ -162,12 +156,9 @@ public class AdminSteps {
 
     @When("The user requests the roles of another user")
     public void the_user_requests_the_roles_of_another_user() throws IOException {
-        Http.RequestBuilder rolesRequest = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", this.authToken)
-                .uri("/api/users/" + this.otherUserId + "/roles");
-        Application application = TestState.getInstance().getApplication();
-        Result rolesResult = route(application, rolesRequest);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        Result rolesResult = fakeClient.makeRequestWithToken("GET", "/api/users/" + this.otherUserId + "/roles", this.authToken);
         this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
 
         this.roles.get(0);
@@ -179,12 +170,8 @@ public class AdminSteps {
 
     @When("The user requests the roles available on the system")
     public void the_user_requests_the_roles_available_on_the_system() throws IOException {
-        Http.RequestBuilder rolesRequest = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", this.authToken)
-                .uri("/api/users/roles");
-        Application application = TestState.getInstance().getApplication();
-        Result rolesResult = route(application, rolesRequest);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result rolesResult = fakeClient.makeRequestWithToken("GET", "/api/users/roles", this.authToken);
         this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
 
         this.roles.get(0);
