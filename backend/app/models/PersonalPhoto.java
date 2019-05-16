@@ -38,9 +38,14 @@ public class PersonalPhoto extends Model {
         this.user = user;
     }
 
+    public boolean getIsPublic() {
+        return this.isPublic;
+    }
     public int getPhotoId() {
         return photoId;
     }
+
+    public String getFileNameHash() {return this.filenameHash;}
 
 
     public User getUser() {
@@ -54,6 +59,8 @@ public class PersonalPhoto extends Model {
     public void setUser(User user) {
         this.user = user;
     }
+
+
 
 
     /**

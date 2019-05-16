@@ -1,5 +1,6 @@
 package controllers;
 
+import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -25,6 +26,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import java.io.*;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
@@ -131,31 +133,29 @@ public class PhotoController extends Controller {
      * @param photoId the id of the photo to retrieve
      * @param request       HTTP request object
      * @return binary photo data with status 200 if found
+     *         unauthorized with 401 if not authorized
      *         notFound with 404 if photo not found //TODO Add this to the API spec!
      *         forbidden 403 if trying to get a photo that you do not have permission to
      *         500 server error for any other server related error
-     *         //TODO remove 401 unauthorized from API spec as doesn't make sense maybe?
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhoto(int photoId, Http.Request request) {
-        return supplyAsync(() -> {
-            // TODO: Check whether photo exists in DB
-            // TODO: Check whether user has permission to get the photo in the database
-            // TODO: Get Filename from DB
-            // TODO: Get photo from storage and return binary data
 
+        User user = request.attrs().get(ActionState.USER);
 
-            /*
-            File photo = new File("./app/photos/" + photoId);
-            if (!photo.exists()) {
+        return photoRepository.getPhotoById(photoId).thenApplyAsync(optionalPhoto -> {
+            if (!optionalPhoto.isPresent()) {
                 return notFound();
-            } else {
-                return ok(photo);
-            }
-            */
+            } else{
 
-            return ok();
+                if (!user.isAdmin() && !optionalPhoto.get().getIsPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
+                    return forbidden();
+                } else {
+                    return ok().sendFile(new File("./app/photos/" + optionalPhoto.get().getFileNameHash()));
+                }
+            }
         });
+
     }
 
     /**
