@@ -19,6 +19,7 @@ import util.Security;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 
 import util.Responses;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -140,9 +141,28 @@ public class AuthController {
             });
         }
 
-        User user = new User(firstName, middleName,lastName, email, hashedPassword, userToken);
-        return authRepository.insert(user)
-                .thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)), httpExecutionContext.current());
+        // check that a user with that email does not already exist, if so, return request forbidden
+        String finalMiddleName = middleName;
+        return authRepository.getUserByEmail(email).thenApplyAsync((optionalUser -> {
+            if (optionalUser.isPresent()) {
+                ObjectNode message = Json.newObject();
+                message.put(messageKey, "Sorry, that email is taken");
+                return forbidden(message);
+            } else {
+                User user = new User(firstName, finalMiddleName, lastName, email, hashedPassword, userToken);
+                try {
+                    CompletionStage<Result> completionStage = authRepository.insert(user)
+                            .thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)), httpExecutionContext.current());
+                    Result result = completionStage.toCompletableFuture().get();
+                    return result;
+                } catch (InterruptedException | ExecutionException e) {
+                    System.err.println("Failed to create a new user: " + e);
+                    ObjectNode message = Json.newObject();
+                    message.put(messageKey, "Something went wrong trying to sign up the user");
+                    return internalServerError(message);
+                }
+            }
+        }), httpExecutionContext.current());
     }
 
     /**
