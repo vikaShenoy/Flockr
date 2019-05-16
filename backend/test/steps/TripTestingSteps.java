@@ -13,6 +13,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import utils.FakeClient;
 import utils.TestState;
 
 import java.util.List;
@@ -31,39 +32,10 @@ public class TripTestingSteps {
         this.tripName = tripName;
     }
 
-    @Given("Destinations have been added to the database")
-    public void destinationsHaveBeenAddedToTheDatabase() {
-
-        DestinationType destinationType1 = new DestinationType("Event");
-        DestinationType destinationType2 = new DestinationType("City");
-
-        Country country1 = new Country("United States of America");
-        Country country2 = new Country("Australia");
-
-        District district1 = new District("Black Rock City", country1);
-        District district2 = new District("New Farm", country2);
-
-        destinationType1.save();
-        destinationType2.save();
-
-        country1.save();
-        country2.save();
-
-        district1.save();
-        district2.save();
-
-        Destination destination1 = new Destination("Burning Man", destinationType1, district1, 12.1234, 12.1234, country1);
-        Destination destination2 = new Destination("Brisbane City", destinationType2, district2, 11.1234, 11.1234, country2);
-
-        destination1.save();
-        destination2.save();
-    }
-
     @Given("I have trip destinations")
     public void iHaveTripDestinations(DataTable dataTable) {
         List<Map<String, String>> tripDestinations = dataTable.asMaps(String.class, String.class);
         ArrayNode tripDestinationsJson = Json.newArray();
-
 
         for (Map<String, String> tripDestinationJson : tripDestinations) {
             ObjectNode tripDestination = Json.newObject();
@@ -75,68 +47,45 @@ public class TripTestingSteps {
 
             tripDestinationsJson.add(tripDestination);
         }
-
         this.tripDestinations = tripDestinationsJson;
-
-        System.out.println(tripDestinationsJson.asText());
     }
 
     @When("I click the Add Trip button")
     public void iClickTheAddATripButton() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        Application application = TestState.getInstance().getApplication();
         ObjectNode jsonBody = Json.newObject();
         jsonBody.set("tripName", Json.toJson(this.tripName));
         jsonBody.set("tripDestinations", Json.toJson(this.tripDestinations));
-        Http.RequestBuilder checkCreation = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/users/1/trips")
-                .bodyJson(jsonBody)
-                .header("Authorization", user.getToken());
 
-        this.result = route(application, checkCreation);
+        this.result = fakeClient.makeRequestWithToken("POST", jsonBody, "/api/users/1/trips", user.getToken());
         Assert.assertNotNull(this.result);
     }
 
     @When("I update a trip and click the Save Trip button")
     public void iUpdateATripAndClickTheSaveTripButton() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        Application application = TestState.getInstance().getApplication();
         ObjectNode jsonBody = Json.newObject();
 
         jsonBody.set("tripName", Json.toJson(this.tripName));
         jsonBody.set("tripDestinations", Json.toJson(this.tripDestinations));
-        Http.RequestBuilder checkCreation = Helpers.fakeRequest()
-                .method("PUT")
-                .uri("/api/users/1/trips/1")
-                .bodyJson(jsonBody)
-                .header("Authorization", user.getToken());
 
-        this.result = route(application, checkCreation);
+        this.result = fakeClient.makeRequestWithToken("PUT", jsonBody, "/api/users/1/trips/1", user.getToken());
     }
 
     @When("^I send a request to get a trip with id (\\d+)$")
     public void iSendARequestToGetATrip(int tripId) {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        Application application = TestState.getInstance().getApplication();
-        Http.RequestBuilder checkCreation = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/api/users/1/trips/" + tripId)
-                .header("Authorization", user.getToken());
-
-        this.result = route(application, checkCreation);
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/1/trips/" + tripId, user.getToken());
     }
 
     @When("I send a request to get trips")
     public void iSendARequestToGetTrips() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        Application application = TestState.getInstance().getApplication();
-        Http.RequestBuilder checkCreation = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/api/users/1/trips")
-                .header("authorization", user.getToken());
-
-        this.result = route(application, checkCreation);
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/1/trips", user.getToken());
     }
 
     @Then("The server should return a {int} status indicating the Trip is successfully created")

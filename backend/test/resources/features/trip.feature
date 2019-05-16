@@ -7,7 +7,6 @@ Feature: The user can manage trips
 
   #Test that a trip can be created
   Scenario: A user tries to create a trip
-    Given Destinations have been added to the database
     And I have a trip named "Trip Name"
     And I have trip destinations
       | destinationId | arrivalDate   | arrivalTime | departureDate | departureTime |
@@ -17,7 +16,6 @@ Feature: The user can manage trips
     Then The server should return a 201 status indicating the Trip is successfully created
 
   Scenario: A user tries to add a trip with less then 2 trip destinations
-    Given Destinations have been added to the database
     When I have a trip named "Trip Name"
     And I have trip destinations
       | destinationId | arrivalDate   | arrivalTime | departureDate | departureTime |
@@ -26,7 +24,6 @@ Feature: The user can manage trips
     Then The server should return a 400 status indicating the Trip is not successfully created
 
   Scenario: A user tries to add a trip with adjacent destination ID's
-    Given Destinations have been added to the database
     When I have a trip named "Trip Name"
     And I have trip destinations
       | destinationId | arrivalDate   | arrivalTime | departureDate | departureTime |
@@ -37,7 +34,6 @@ Feature: The user can manage trips
     Then The server should return a 400 status indicating the Trip is not successfully created
 
   Scenario: A user tries to update a trip
-    Given Destinations have been added to the database
     And I have a trip named "Trip Name"
     And I have trip destinations
       | destinationId | arrivalDate   | arrivalTime | departureDate | departureTime |
@@ -49,7 +45,6 @@ Feature: The user can manage trips
     Then The server should return a 200 status indicating the Trip is successfully updated
 
   Scenario: A user tries to get a trip
-    Given Destinations have been added to the database
     And I have a trip named "Trip Name"
     And I have trip destinations
       | destinationId | arrivalDate   | arrivalTime | departureDate | departureTime |

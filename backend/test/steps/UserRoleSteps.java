@@ -68,7 +68,6 @@ public class UserRoleSteps {
 
             // Give the admin an admin role
             List<Role> adminRoles = Role.find.all();
-            System.out.println("Admin roles are: " + adminRoles);
             this.admin.setRoles(adminRoles);
             this.admin.update();
             Assert.assertNotEquals(0, this.admin.getUserId());
@@ -143,7 +142,6 @@ public class UserRoleSteps {
 
     @Then("ROLES - I receive a {int} status code")
     public void roles_I_receive_a_status_code(Integer int1) {
-        System.out.println(this.userRoles);
         Assert.assertEquals(401, statusResult);
     }
 }
