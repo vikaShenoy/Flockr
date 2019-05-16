@@ -195,7 +195,7 @@ public class PhotoController extends Controller {
 
                     User user = optionalUser.get();
 
-                    PersonalPhoto photo = new PersonalPhoto(filenameHash, isPublic, user);
+                    PersonalPhoto photo = new PersonalPhoto(filenameHash, isPublic, user, isPrimary);
 
                     return photoRepository.insert(photo);
                 })
