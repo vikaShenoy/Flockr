@@ -7,6 +7,11 @@
             <p>Manage users</p>
           </div>
 
+          <v-btn class="new-user-button"
+            @click="signupButtonClicked">
+            Sign Up User
+          </v-btn>
+
           <v-btn class="edit-trips-button" :disabled="this.selectedUsers.length === 0"
             @click="editTripsButtonClicked">
             View Trips
@@ -20,6 +25,7 @@
             @click="deleteUsersButtonClicked">
             Delete users
           </v-btn>
+
         </v-subheader>
 
         <!-- User tile -->
@@ -39,13 +45,29 @@
         </v-list-tile>
       </v-list>
     </v-card>
+
+      <v-dialog v-model="showSignup" persistent max-width="500">
+      <template v-slot:activator="{ on }">
+      </template>
+      <v-card>
+        <SignUp></SignUp>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" flat @click="dialog = false">Disagree</v-btn>
+          <v-btn color="green darken-1" flat @click="dialog = false">Agree</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </div>
+
 </template>
 
 
 <script>
 import {deleteUsers} from "../AdminPanelService";
 import moment from "moment";
+import SignUp from "../../Signup/Signup.vue";
 
 export default {
   mounted () {
@@ -54,7 +76,8 @@ export default {
   },
   data() {
     return {
-      items: []
+      items: [],
+      showSignup: null,
     };
   },
   computed: {
@@ -69,6 +92,11 @@ export default {
     }
   },
   methods: {
+
+    signupButtonClicked: function() {
+      showSignup = true;
+    },
+
     // event handler for when the button to edit an user is clicked
     // emit an event for the parent to handle editing users
     editUserButtonClicked: function() {
@@ -100,7 +128,7 @@ export default {
     users(newUsers) {
       this.items = this.mapUsers();
     }
-  }
+  },
 }
 </script>
 
