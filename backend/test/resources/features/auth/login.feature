@@ -1,15 +1,24 @@
 Feature: The user can log in
 
-  Scenario: A user signs up successfully and then tries to log in
-    Given that I have signed up successfully with valid data:
-      | firstName | lastName | email           | password      |
-      | Matias    | Gomez    | gomez@email.com | much-security |
-    When I write correct login credentials in the Login form and I click the Login button
-    Then the response should have an authentication token
-
-  Scenario: A user signs up successfully and then tries to log in with incorrect credentials
-    Given that I have signed up successfully with valid data:
+  Background: A user has signed up
+    Given that the user has valid user data to sign up
       | firstName | lastName | email              | password    |
-      | Josefina  | Pena     | josefina@email.com | catsAreCool |
-    When I write incorrect login credentials in the Login form and I click the Login button
-    Then the server should not log me in
+      | Josefina  | Perez    | josefina@email.com | so-security |
+    When the user signs up
+    Then the user now exists in the system
+
+  Scenario: A user can login successfully
+    Given the user has the following data to login with
+      | email              | password      |
+      | josefina@email.com | so-security   |
+    When the user tries to login
+    Then the user should be logged in
+
+  Scenario:
+    Given the user has the following data to login with
+      | email              | password       |
+      | josefina@email.com | wrong-password |
+    When the user tries to login
+    Then the user should not be logged in
+
+

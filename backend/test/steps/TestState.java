@@ -9,6 +9,7 @@ import utils.FakeClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TestState {
 
@@ -20,6 +21,8 @@ public class TestState {
     private Role travellerRole;
     private List<Destination> destinations;
     private List<User> users;
+    private User user;
+    Map<String, String> userData;
 
     /**
      * Constructor to create any lists of objects to be used in multiple classes
@@ -46,6 +49,23 @@ public class TestState {
      */
     public static void clear() {
         testState = null;
+
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Map<String, String> getUserData() {
+        return userData;
+    }
+
+    public void setUserData(Map<String, String> userData) {
+        this.userData = userData;
     }
 
     public Application getApplication() {
