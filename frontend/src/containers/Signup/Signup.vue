@@ -73,6 +73,7 @@ import { signup, emailTaken } from "./SignupService.js";
 import { validate } from "email-validator";
 
 export default {
+  name: "sign-up",
   data() {
     return {
       firstName: "",

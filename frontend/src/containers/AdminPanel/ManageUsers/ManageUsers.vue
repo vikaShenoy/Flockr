@@ -47,14 +47,10 @@
     </v-card>
 
       <v-dialog v-model="showSignup" persistent max-width="500">
-      <template v-slot:activator="{ on }">
-      </template>
       <v-card>
         <SignUp></SignUp>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="green darken-1" flat @click="dialog = false">Disagree</v-btn>
-          <v-btn color="green darken-1" flat @click="dialog = false">Agree</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -67,9 +63,12 @@
 <script>
 import {deleteUsers} from "../AdminPanelService";
 import moment from "moment";
-import SignUp from "../../Signup/Signup.vue";
+import SignUp from "../../Signup/Signup";
 
 export default {
+  components: {
+    SignUp
+  },
   mounted () {
     this.items = this.mapUsers();
     //console.log(mapUsers())
@@ -94,7 +93,7 @@ export default {
   methods: {
 
     signupButtonClicked: function() {
-      showSignup = true;
+      this.showSignup = true;
     },
 
     // event handler for when the button to edit an user is clicked
