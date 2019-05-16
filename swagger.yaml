@@ -1148,12 +1148,6 @@ paths:
       security:
         - cookieAuth: []
       parameters:
-        - in: header
-          name: Content-Type
-          schema:
-            type: string
-            format: uuid
-          required: true
         - in: path
           name: userId
           description: The id of the user to post a photo for
