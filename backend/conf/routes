@@ -25,6 +25,9 @@ PATCH        /api/users/:userId                                 controllers.User
 DELETE       /api/users/:userId                                 controllers.UserController.deleteUser(userId: Int, request: Request)
 PATCH        /api/users/:userId/roles                           controllers.UserController.updateTravellerRole(userId: Int, request: Request)
 
+# Photos
+POST        /api/users/:userId/photos                           controllers.PhotoController.uploadPhotoForUser(userId: Int, request: Request)
+
 # Destination Routes
 GET         /api/destinations                                   controllers.DestinationController.getDestinations(request: Request)
 GET         /api/destinations/countries                         controllers.DestinationController.getCountries()

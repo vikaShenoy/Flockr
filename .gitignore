@@ -16,6 +16,9 @@ dist/
 .cache
 *.log
 
+# Do not upload files to the repo pls
+/backend/storage
+
 # Ignore production frontend files
 vue-front-end-goes-here/
 
