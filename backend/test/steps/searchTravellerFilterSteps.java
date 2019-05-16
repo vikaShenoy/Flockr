@@ -2,7 +2,6 @@ package steps;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import cucumber.api.java.en.And;
-import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
@@ -13,6 +12,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import util.Security;
+import utils.FakeClient;
 import utils.PlayResultToJson;
 
 import java.io.IOException;
@@ -67,13 +67,9 @@ public class searchTravellerFilterSteps {
 
     @When("I want all types of nationalities from the database")
     public void iRequestNationalitiesFromTheDatabase() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", user.getToken())
-                .uri("/api/users/nationalities");
-        Application application = TestState.getInstance().getApplication();
-        this.result = route(application, request);
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/nationalities", user.getToken());
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
@@ -82,13 +78,11 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the {int} nationality id")
     public void iSearchTravellersWithTheNationalityId(Integer nationalityId) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", user.getToken())
-                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&nationality=" + nationalityId);
-        Application application = TestState.getInstance().getApplication();
-        this.result = route(application, request);
+        this.result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&nationality=" + nationalityId,
+                user.getToken());
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
@@ -97,13 +91,10 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the gender Male")
     public void iSearchTravellersWithTheGenderMale() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", user.getToken())
-                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Male");
-        Application application = TestState.getInstance().getApplication();
-        this.result = route(application, request);
+        this.result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Male", user.getToken());
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
@@ -112,13 +103,10 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the gender Female")
     public void iSearchTravellersWithTheGenderFemale() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", user.getToken())
-                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Female");
-        Application application = TestState.getInstance().getApplication();
-        this.result = route(application, request);
+        this.result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Female", user.getToken());
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
@@ -127,13 +115,10 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the gender Other")
     public void iSearchTravellersWithTheGenderOther() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", user.getToken())
-                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Other");
-        Application application = TestState.getInstance().getApplication();
-        this.result = route(application, request);
+        this.result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&gender=Other", user.getToken());
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
@@ -142,14 +127,11 @@ public class searchTravellerFilterSteps {
 
     @When("I search travellers with the traveller type ID {int}")
     public void iSearchTravellersWithTheTravellerTypeID(Integer travellerTypeId) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", user.getToken())
-                .uri("/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&travellerType=" + travellerTypeId.toString());
-        Application application = TestState.getInstance().getApplication();
-        this.result = route(application, request);
+        this.result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/search?ageMin=1143441273223&ageMax=-2075388926777&travellerType=" +
+                        travellerTypeId.toString(), user.getToken());
         this.array = (ArrayNode) PlayResultToJson.convertResultToJson(result);
 
         Assert.assertTrue(array.size() > 0);
@@ -161,8 +143,10 @@ public class searchTravellerFilterSteps {
 
         List<Map<String, String>> expectedResults = dataTable.asMaps();
         for (int i = 0; i < expectedResults.size(); i++) {
-            Assert.assertEquals(Integer.parseInt(expectedResults.get(i).get("nationalityId")), this.array.get(i).get("nationalityId").asInt());
-            Assert.assertEquals(expectedResults.get(i).get("nationalityName"), this.array.get(i).get("nationalityName").asText());
+            Assert.assertEquals(Integer.parseInt(expectedResults.get(i).get("nationalityId")),
+                    this.array.get(i).get("nationalityId").asInt());
+            Assert.assertEquals(expectedResults.get(i).get("nationalityName"),
+                    this.array.get(i).get("nationalityName").asText());
         }
     }
 
