@@ -29,10 +29,11 @@ Feature: The user can manage destinations
   Scenario: A user tries to delete a destination
     Given that I am logged in
     And the database has been populated with countries, districts and destination types
-    And that I have a destination created with id 1
+    And that I have the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          | =41.2    | 174.9     | 1         |
     When I click the Delete Destination button
-    Then I try to search the Destination with the id of 1
-    Then I should receive an error when getting the destination indicating that the Destination is not found
+    Then I should receive an error indicating that the Destination is not found
 
 
 

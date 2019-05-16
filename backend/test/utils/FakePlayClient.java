@@ -137,8 +137,8 @@ public class FakePlayClient implements FakeClient {
     }
 
     @Override
-    public Destination makeTestDestination(ObjectNode destinationNode, String authToken) throws IOException, UnauthorizedException, ServerErrorException {
-        Result result = this.makeRequestWithToken("POST", destinationNode, "/api/destinations", authToken);
+    public Destination makeTestDestination(JsonNode destinationNode, String authToken) throws IOException, UnauthorizedException, ServerErrorException {
+        Result result = this.makeRequestWithToken("POST", (ObjectNode) destinationNode, "/api/destinations", authToken);
         if (result.status() == 201) {
             JsonNode destinationAsJsonNode = PlayResultToJson.convertResultToJson(result);
             ObjectMapper objectMapper = new ObjectMapper();

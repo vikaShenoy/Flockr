@@ -5,7 +5,11 @@ import cucumber.api.java.After;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import cucumber.api.java.hu.De;
+import exceptions.ServerErrorException;
+import exceptions.UnauthorizedException;
 import io.cucumber.datatable.DataTable;
+import jdk.nashorn.internal.ir.ObjectNode;
 import models.*;
 import org.junit.Assert;
 import play.Application;
@@ -13,11 +17,14 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import utils.FakeClient;
 import utils.TestAuthenticationHelper;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static play.test.Helpers.route;
 
@@ -38,27 +45,26 @@ public class DestinationTestingSteps {
         Assert.assertTrue(user.getToken().length() > 0);
     }
 
-    @Given("^that I have a destination created with id (\\d+)$")
-    public void thatIHaveADestinationCreatedWithId(int destinationId) throws IOException {
+    @Given("that I have the following destinations:")
+    public void thatIHaveTheFollowingDestinations(DataTable dataTable) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+        List<Map<String, String>> destinationList = dataTable.asMaps();
+        for (int i = 0; i < destinationList.size(); i++) {
+            try {
+                Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
+                TestState.getInstance().addDestination(destination);
 
-        DestinationType destinationType1 = DestinationType.find.query().
-                where().eq("destination_type_id", 1).findOne();
-        Country country1 = Country.find.query().
-                where().eq("country_id", 1).findOne();
-        District district1 = District.find.query().where().eq("district_id", 1).findOne();
-        Destination destination1 = new Destination("Burning Man", destinationType1, district1, 12.1234, 12.1234, country1);
-        destination1.save();
+                Result result = fakeClient.makeRequestWithNoToken("GET", "/api/destinations/" + destination.getDestinationId());
 
-        Http.RequestBuilder deleteRequest = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/api/destinations/" + destinationId);
-        Application application = TestState.getInstance().getApplication();
-        Result result = route(application, deleteRequest);
-
-        // check that the destination's name has some text in it
-        JsonNode res = utils.PlayResultToJson.convertResultToJson(result);
-        String destinationName = res.get("destinationName").asText();
-        Assert.assertTrue(destinationName.length() > 0);
+                // check that the destination's name has some text in it
+                JsonNode res = utils.PlayResultToJson.convertResultToJson(result);
+                String destinationName = res.get("destinationName").asText();
+                Assert.assertTrue(destinationName.length() > 0);
+            } catch (UnauthorizedException | ServerErrorException e) {
+                Assert.fail(Arrays.toString(e.getStackTrace()));
+            }
+        }
     }
 
     @Given("that I want to create a Destination with the following valid data:")
@@ -114,14 +120,10 @@ public class DestinationTestingSteps {
 
     @When("I click the Delete Destination button")
     public void IClickTheDeleteDestinationButton() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().removeUser(0);
-        Http.RequestBuilder deleteReq = Helpers.fakeRequest()
-                .method("DELETE")
-                .uri("/api/destinations/1")
-                .header("Authorization", user.getToken());
-        Application application = TestState.getInstance().getApplication();
-        this.result = route(application, deleteReq);
-        Assert.assertEquals(200, this.result.status());
+        Result result = fakeClient.makeRequestWithToken("DELETE", "/api/destinations/1", user.getToken());
+        Assert.assertEquals(200, result.status());
     }
 
     @Then("The destination should be created successfully")
@@ -134,22 +136,9 @@ public class DestinationTestingSteps {
         Assert.assertEquals(400, this.result.status());
     }
 
-    @Then("I try to search the Destination with the id of {int}")
-    public void iTryToSearchTheDestinationWithTheIdOf(Integer destinationId) {
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/api/destinations/" + destinationId.toString());
-        Application application = TestState.getInstance().getApplication();
-        this.result = route(application, request);
-    }
-
-    @Then("I should receive an error when getting the destination indicating that the Destination is not found")
+    @Then("I should receive an error indicating that the Destination is not found")
     public void iShouldReceiveAStatusCodeWhenGettingTheDeletedDestinationWithId() {
-        Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/api/destinations/1");
-        Application application = TestState.getInstance().getApplication();
-        this.result = route(application, checkDeletion);
-        Assert.assertEquals(404, this.result.status());
+        Optional<Destination> destination = Destination.find.query().where().eq("destination_id", 1).findOneOrEmpty();
+        Assert.assertFalse(destination.isPresent());
     }
 }

@@ -18,7 +18,7 @@ public class TestState {
     private Role superAdminRole;
     private Role adminRole;
     private Role travellerRole;
-    private Destination testDestination;
+    private List<Destination> destinations;
     private List<User> users;
 
     /**
@@ -26,6 +26,7 @@ public class TestState {
      */
     public TestState() {
         this.users = new ArrayList<>();
+        this.destinations = new ArrayList<>();
     }
 
     /**
@@ -87,14 +88,6 @@ public class TestState {
         this.travellerRole = travellerRole;
     }
 
-    public Destination getTestDestination() {
-        return testDestination;
-    }
-
-    public void setTestDestination(Destination testDestination) {
-        this.testDestination = testDestination;
-    }
-
     public void addUser(User user) {
         this.users.add(user);
     }
@@ -107,7 +100,15 @@ public class TestState {
         return this.users.remove(index);
     }
 
-    public int getUsersSize() {
-        return this.users.size();
+    public void addDestination(Destination destination) {
+        this.destinations.add(destination);
+    }
+
+    public Destination getDestination(int index) {
+        return this.destinations.get(index);
+    }
+
+    public Destination removeDestination(int index) {
+        return this.destinations.remove(index);
     }
 }

@@ -93,5 +93,5 @@ public interface FakeClient {
      * @param authToken the suthentication token to add to the request.
      * @return the test destination.
      */
-    Destination makeTestDestination(ObjectNode destinationNode, String authToken) throws IOException, UnauthorizedException, ServerErrorException;
+    Destination makeTestDestination(JsonNode destinationNode, String authToken) throws IOException, UnauthorizedException, ServerErrorException;
 }
