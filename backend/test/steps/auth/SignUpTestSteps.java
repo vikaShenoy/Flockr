@@ -29,6 +29,7 @@ import play.test.Helpers;
 import steps.TestState;
 import utils.FakeClient;
 import utils.FakePlayClient;
+import utils.PlayResultToJson;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -36,55 +37,52 @@ import java.util.List;
 import java.util.Map;
 
 import static play.test.Helpers.route;
+import static play.test.Helpers.testServer;
 
 public class SignUpTestSteps {
 
-    private JsonNode userData;
-    private Result result;
-    private Result signUpResponse;
-    private User user;
-    private Exception exception;
+    private Exception signUpException;
 
-    @Given("that I have valid user data to sign up:")
+    @Given("that the user has valid user data to sign up")
     public void thatIHaveValidUserDataToSignUp(DataTable dataTable) {
+        TestState testState = TestState.getInstance();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
-        this.userData = Json.toJson(firstRow);
-
-        Assert.assertEquals(4, this.userData.size());
+        testState.setUserData(firstRow);
     }
 
-    @Given("that I have incomplete user data to sign up:")
+    @Given("the user has incomplete user data to sign up")
     public void thatIHaveIncompleteUserDataToSignUp(DataTable dataTable) {
+        TestState testState = TestState.getInstance();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
-        this.userData = Json.toJson(firstRow);
-        Assert.assertTrue(this.userData.size() < 4);
+        testState.setUserData(firstRow);
     }
 
-    @When("I sign up the user")
-    public void iSignUpTheUser() throws IOException {
-        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+    @When("the user signs up")
+    public void iSignUpTheUser() throws FailedToSignUpException, ServerErrorException, IOException {
+        TestState testState = TestState.getInstance();
+        FakeClient fakeClient = testState.getFakeClient();
         try {
-            this.user = fakeClient.signUpUser(this.userData);
-            Assert.assertNotNull(this.user);
-            Assert.assertNotEquals(0, this.user.getUserId());
-        } catch (FailedToSignUpException e) {
-            this.exception = e;
-            Assert.assertNotNull(this.exception);
-        } catch (ServerErrorException e) {
-            Assert.fail("Server Error");
+            User user = fakeClient.signUpUser(Json.toJson(testState.getUserData()));
+            testState.setUser(user);
+            Assert.assertNotNull(user);
+            Assert.assertNotEquals(0, user.getUserId());
+        } catch (Exception e) {
+            signUpException = e;
         }
     }
 
-    @Then("The user now exists in the system")
+    @Then("the user now exists in the system")
     public void theUserIsNowStoredInTheSystem() {
-        User user = User.find.byId(this.user.getUserId());
-        Assert.assertEquals(this.user.getUserId(), user.getUserId());
+        User createdUser = TestState.getInstance().getUser();
+        User user = User.find.byId(createdUser.getUserId());
+        Assert.assertNotNull(user);
+        Assert.assertEquals(createdUser.getUserId(), user.getUserId());
     }
 
     @Then("^I should receive an error message saying \"([^\"]*)\"$")
     public void iShouldReceiveAnErrorMessageSaying(String message) {
-        Assert.assertEquals(message, this.exception.getMessage());
+        Assert.assertEquals(message, signUpException.getMessage());
     }
 }

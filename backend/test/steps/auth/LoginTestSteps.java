@@ -25,10 +25,12 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import steps.TestState;
+import utils.FakeClient;
 import utils.PlayResultToJson;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -36,10 +38,10 @@ import java.util.Map;
 import static play.test.Helpers.route;
 
 public class LoginTestSteps {
-
     private JsonNode userData;
     private Result result;
     private Result loginResponse;
+    private JsonNode loginData;
 
     @Given("that I have signed up successfully with valid data:")
     public void thatIHaveSignedUpSuccessfullyWithValidData(DataTable dataTable) {
@@ -55,25 +57,23 @@ public class LoginTestSteps {
         }
     }
 
+    @Given("the user has the following data to login with")
+    public void iHaveTheFollowingDataToLoginWith(DataTable loginData) {
+        List<Map<String, String>> list = loginData.asMaps(String.class, String.class);
+        Map<String, String> firstRow = list.get(0);
+        this.loginData = Json.toJson(firstRow);
+    }
 
-    @When("I write correct login credentials in the Login form and I click the Login button")
-    public void iWriteCorrectLoginCredentialsInTheLoginFormAndIClickTheLoginButton() {
-        // Gets the user credentials from the initial data
-        String email = this.userData.get("email").asText();
-        String password = this.userData.get("password").asText();
 
-        // Constructing the request body
-        ObjectNode reqJsonBody = Json.newObject();
-        reqJsonBody.put("email", email);
-        reqJsonBody.put("password", password);
+    @When("the user tries to login")
+    public void theUserTriesToLogin() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        List<User> users = User.find.all();
 
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/auth/users/login")
-                .bodyJson(reqJsonBody);
-        Application application = TestState.getInstance().getApplication();
-        this.loginResponse = route(application, request);
-        Assert.assertTrue(!(this.loginResponse == null));
+        Assert.assertEquals(users.size(), 1);
+
+        Result loginResponse = fakeClient.makeRequestWithNoToken("POST", (ObjectNode) loginData, "/api/auth/users/login");
+        this.loginResponse = loginResponse;
     }
 
     @Then("the response should have an authentication token")
@@ -84,25 +84,18 @@ public class LoginTestSteps {
         Assert.assertTrue(authToken.length() > 0);
     }
 
-    @When("I write incorrect login credentials in the Login form and I click the Login button")
-    public void iWriteIncorrectLoginCredentialsInTheLoginFormAndIClickTheLoginButton() {
-        // Gets the user credential from the initial data
-        String email = this.userData.get("email").asText();
-        String password = this.userData.get("password").asText();
-
-        // Constructing the request body
-        ObjectNode reqJsonBody = Json.newObject();
-        reqJsonBody.put("email", email);
-        reqJsonBody.put("password", password + "wrong-password");
-
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/auth/users/login")
-                .bodyJson(reqJsonBody);
-        Application application = TestState.getInstance().getApplication();
-        this.loginResponse = route(application, request);
-        Assert.assertTrue(!(this.loginResponse == null));
+    @Then("the user should be logged in")
+    public void theUserShouldBeLoggedIn() throws IOException  {
+        JsonNode loginResponseBody = PlayResultToJson.convertResultToJson(loginResponse);
+        Assert.assertEquals(200, loginResponse.status());
+        Assert.assertNotEquals("", loginResponseBody.get("token"));
     }
+
+    @Then("the user should not be logged in")
+    public void theUserShouldNotBeLoggedIn() {
+        Assert.assertNotEquals(200, loginResponse.status());
+    }
+
 
     @Then("the server should not log me in")
     public void theServerShouldNotLogMeIn() {
