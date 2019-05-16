@@ -6,10 +6,7 @@ import com.google.inject.Inject;
 import com.google.inject.Module;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
-import models.Nationality;
-import models.Passport;
-import models.Role;
-import models.RoleType;
+import models.*;
 import play.Application;
 import play.ApplicationLoader;
 import play.Environment;
@@ -40,6 +37,8 @@ public class CommonTestSteps {
         this.createRoles();
         this.createNationalities();
         this.createPassports();
+        this.createDestinations();
+        this.createTravellerTypes();
     }
 
     /**
@@ -65,8 +64,17 @@ public class CommonTestSteps {
     private void createNationalities() {
         Nationality chilean = new Nationality("Chile");
         Nationality mexican = new Nationality("Mexico");
+        Nationality newZealand = new Nationality("New Zealand");
+        Nationality australia = new Nationality("Australia");
+        Nationality afghanistan = new Nationality("Afghanistan");
+        Nationality peru = new Nationality("Peru");
+
         chilean.save();
         mexican.save();
+        newZealand.save();
+        australia.save();
+        afghanistan.save();
+        peru.save();
     }
 
     /**
@@ -75,8 +83,69 @@ public class CommonTestSteps {
     private void createPassports() {
         Passport china = new Passport("China");
         Passport southKorean = new Passport("South Korea");
+        Passport nz = new Passport("NZ");
+        Passport aus = new Passport("Australia");
+        Passport peru = new Passport("Peru");
+        Passport bolivia = new Passport("Bolivia");
+
         china.save();
         southKorean.save();
+        nz.save();
+        aus.save();
+        peru.save();
+        bolivia.save();
+
+    }
+
+    /**
+     * Make some Destinations in the database
+     */
+    private void createDestinations() {
+        DestinationType event = new DestinationType("Event");
+        DestinationType city = new DestinationType("City");
+
+        event.save();
+        city.save();
+
+        Country unitedStatesOfAmerica = new Country("United States of America");
+        Country australia = new Country("Australia");
+
+        unitedStatesOfAmerica.save();
+        australia.save();
+
+        District blackRockCity = new District("Black Rock City", unitedStatesOfAmerica);
+        District newFarm = new District("New Farm", australia);
+
+        blackRockCity.save();
+        newFarm.save();
+
+
+        Destination burningMan = new Destination("Burning Man",event, blackRockCity, 12.1234,12.1234, unitedStatesOfAmerica );
+        Destination brisbaneCity = new Destination("Brisbane City", city, newFarm, 11.1234,11.1234, australia );
+
+        burningMan.save();
+        brisbaneCity.save();
+    }
+
+    /**
+     * Make some traveller types in the database
+     */
+    private void createTravellerTypes() {
+        TravellerType travellerType1 = new TravellerType("Groupies");
+        TravellerType travellerType2 = new TravellerType("Thrillseeker");
+        TravellerType travellerType3 = new TravellerType("Gap Year");
+        TravellerType travellerType4 = new TravellerType("Frequent Weekender");
+        TravellerType travellerType5 = new TravellerType("Holidaymaker");
+        TravellerType travellerType6 = new TravellerType("Functional/Business");
+        TravellerType travellerType7 = new TravellerType("Backpacker");
+
+        travellerType1.save();
+        travellerType2.save();
+        travellerType3.save();
+        travellerType4.save();
+        travellerType5.save();
+        travellerType6.save();
+        travellerType7.save();
     }
 
     @After
