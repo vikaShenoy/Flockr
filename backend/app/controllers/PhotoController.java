@@ -11,17 +11,11 @@ import models.User;
 import play.libs.Files;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
-import exceptions.BadRequestException;
-import exceptions.NotFoundException;
-import models.PersonalPhoto;
-import models.User;
-import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
 import repository.PhotoRepository;
-import play.libs.Files.TemporaryFile;
 
 import repository.UserRepository;
 import util.PhotoUtil;
@@ -31,7 +25,6 @@ import javax.inject.Inject;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
-import java.io.*;
 import java.io.File;
 import java.util.Map;
 import java.util.Optional;
@@ -44,6 +37,7 @@ public class PhotoController extends Controller {
     private final PhotoRepository photoRepository;
     private final UserRepository userRepository;
     private final PhotoUtil photoUtil;
+    private final HttpExecutionContext httpExecutionContext;
 
     @Inject
     public PhotoController(Security security, PhotoRepository photoRepository, UserRepository userRepository, PhotoUtil photoUtil, HttpExecutionContext httpExecutionContext) {
@@ -262,16 +256,16 @@ public class PhotoController extends Controller {
         String token = security.generateToken();
         String extension = photoContentType.equals("image/png") ? ".png" : ".jpg";
         String filename = token + extension;
-        File destination = new File(path, filename);
+        File fileDestination = new File(path, filename);
 
         // if the file path already exists, generate another token
-        while (destination.exists()) {
+        while (fileDestination.exists()) {
             token = security.generateToken();
             filename = token + extension;
-            destination = new File(path, filename);
+            fileDestination = new File(path, filename);
         }
 
-        temporaryPhotoFile.moveFileTo(destination);
+        temporaryPhotoFile.moveFileTo(fileDestination);
 
         response.put(messageKey, "Endpoint under development");
         return supplyAsync(() -> internalServerError(response), httpExecutionContext.current());

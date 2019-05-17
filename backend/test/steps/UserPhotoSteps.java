@@ -115,15 +115,15 @@ public class UserPhotoSteps {
         Http.MultipartFormData.DataPart isPrimaryForm = new Http.MultipartFormData.DataPart("isPrimary", Boolean.toString(isPrimary));
         Http.MultipartFormData.DataPart isPublicForm = new Http.MultipartFormData.DataPart("isPublic", Boolean.toString(isPublic));
 
-        Http.RequestBuilder request = Helpers.fakeRequest().uri(routes.PhotoController.addPhoto(user.getUserId()).url())
-                .method("POST")
-                .header("Authorization", user.getToken())
-                .bodyRaw(
-                        Collections.singletonList(part),
-                        play.libs.Files.singletonTemporaryFileCreator(),
-                        application.asScala().materializer()
-                );
-        result = Helpers.route(application, request);
+//        Http.RequestBuilder request = Helpers.fakeRequest().uri(routes.PhotoController.addPhoto(user.getUserId()).url())
+//                .method("POST")
+//                .header("Authorization", user.getToken())
+//                .bodyRaw(
+//                        Collections.singletonList(part),
+//                        play.libs.Files.singletonTemporaryFileCreator(),
+//                        application.asScala().materializer()
+//                );
+//        result = Helpers.route(application, request);
     }
 
     @Then("the photo is added")
