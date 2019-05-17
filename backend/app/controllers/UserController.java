@@ -211,6 +211,18 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
+    /**
+     * Get all users, including those who haven't filled in their complete profile.
+     * @return status code of 200 with all traveller details in json body.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getAllTravellers() {
+        return userRepository.getAllTravellers()
+                .thenApplyAsync(travellers -> {
+                    JsonNode travellersJson = Json.toJson(travellers);
+                    return ok(travellersJson);
+                }, httpExecutionContext.current());
+    }
 
     /**
      * Get all users.

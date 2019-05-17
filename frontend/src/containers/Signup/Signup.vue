@@ -118,7 +118,7 @@ export default {
       return this.lastNameErrors.length === 0;
     },
     /**
-     * Checks the following errors in order and renders if an error exists
+     * Checks the f ollowing errors in order and renders if an error exists
      * - Checks if the email is blank 
      * - Checks if the email is not valid
      * - Checks if the email is taken 
@@ -202,7 +202,6 @@ export default {
      */
     async signup() {
       const validFields = await this.validate();
-
       if (!validFields) return;
 
       try {
@@ -213,14 +212,17 @@ export default {
           password: this.password,
         });
 
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("userId", userId);
-
-        this.$router.push(`/profile/${userId}`);
-        
+        // Only set fields and redirect if they are 
+        // NOT currently logged in. (Useful for admin panel).
+        if (!localStorage.getItem("authToken")) {
+          localStorage.setItem("authToken", token);
+          localStorage.setItem("userId", userId);
+          this.$router.push(`/profile/${userId}`);
+        } else {
+          this.$emit('exit', true);
+        }
       } catch (e) {
         console.log(e);
-        
       }
     }
   }

@@ -22,7 +22,7 @@
 <script>
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 import EditUserForm from "./EditUserForm/EditUserForm.vue";
-import { getUsers } from "./AdminPanelService.js";
+import { getUsers, getAllUsers } from "./AdminPanelService.js";
 import { patchUser } from "./AdminPanelService.js";
 import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
@@ -55,8 +55,13 @@ export default {
   },
   methods: {
 
+    /** 
+     * Call admin panel service method to retrieve 
+     * all users, including those with incomplete profiles.
+     * Set the users so they display on the panel.
+     */
     async getAllUsers() {
-      const allUsers = await getUsers();
+      const allUsers = await getAllUsers();
       this.users = allUsers;
       console.log(this.users);
     },

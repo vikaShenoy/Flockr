@@ -141,6 +141,20 @@ public class UserRepository {
         }, executionContext);
     }
 
+    /**
+     * Get a list of travellers, including those without a complete profile.
+     */
+    public CompletionStage<List<User>> getAllTravellers() {
+        return supplyAsync(() -> {
+            List<User> user = User.find.query()
+                    .fetch("passports")              // contacts is a OneToMany path
+                    .fetch("travellerTypes")
+                    .fetch("nationalities")
+                    .findList();
+            return user;
+        }, executionContext);
+    }
+
 
     /**
      * Gets a list of travellers

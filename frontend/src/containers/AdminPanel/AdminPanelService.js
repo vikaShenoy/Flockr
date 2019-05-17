@@ -18,6 +18,17 @@ export async function getUsers() {
     return res.body;
 }
 
+/**
+ * Get user data for all users, including those without a complete profile.
+ * Used so admin can edit signed up users they created.
+ */
+export async function getAllUsers() {
+    const authToken = localStorage.getItem("authToken");
+    const res = await superagent.get(endpoint("/users/all"))
+        .set("Authorization", authToken);
+    return res.body;
+}
+
 export async function patchUser(userId, body) {
     const authToken = localStorage.getItem("authToken");
     const res = await superagent.patch(endpoint(`/users/${userId}`))

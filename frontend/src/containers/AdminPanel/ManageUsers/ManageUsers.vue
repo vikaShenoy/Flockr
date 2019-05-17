@@ -13,7 +13,7 @@
           </v-btn>
 
           <v-btn class="edit-trips-button" :disabled="this.selectedUsers.length === 0"
-            @click="editTripsButtonClicked">
+            @click="viewTripsButtonClicked">
             View Trips
           </v-btn>
 
@@ -46,9 +46,9 @@
       </v-list>
     </v-card>
 
-      <v-dialog v-model="showSignup" persistent max-width="500">
+      <v-dialog v-model="showSignup" max-width="800">
       <v-card>
-        <SignUp></SignUp>
+        <SignUp @exit="closeSignupModal()"></SignUp>
         <v-card-actions>
           <v-spacer></v-spacer>
         </v-card-actions>
@@ -61,7 +61,7 @@
 
 
 <script>
-import {deleteUsers} from "../AdminPanelService";
+import {deleteUsers, getAllUsers} from "../AdminPanelService";
 import moment from "moment";
 import SignUp from "../../Signup/Signup";
 
@@ -71,12 +71,11 @@ export default {
   },
   mounted () {
     this.items = this.mapUsers();
-    //console.log(mapUsers())
   },
   data() {
     return {
       items: [],
-      showSignup: null,
+      showSignup: false,
     };
   },
   computed: {
@@ -92,26 +91,49 @@ export default {
   },
   methods: {
 
+    /**
+     * Close the modal containing the signup component.
+     */
+    closeSignupModal() {
+      this.showSignup = false;
+      this.$parent.getAllUsers();
+    },
+
+    /**
+     * Open the modal component containing the signup component.
+     */
     signupButtonClicked: function() {
       this.showSignup = true;
     },
 
-    // event handler for when the button to edit an user is clicked
-    // emit an event for the parent to handle editing users
+    /**
+     * Event handler for when the button to edit an user is clicked.
+     * Emit an event for the parent to handle editing users.
+     */
     editUserButtonClicked: function() {
       const userId = this.selectedUsers[0];
       this.$emit('wantToEditUserById', userId);
     },
-    // call the admin panel service to delete the given user ids
+    /**
+     * Call the admin panel service to delete the given user ids.
+     */
     deleteUsersButtonClicked: async function() {
       const userIds = this.selectedUsers;
       console.log(userIds);
       this.$emit("deleteUsersByIds", userIds);
     },
-    editTripsButtonClicked: function() {
+
+    /**
+     * Open the trips page for the selected user.
+     */
+    viewTripsButtonClicked: function() {
       const userId = this.selectedUsers[0];
       this.$router.push(`/travellers/${userId}/trips`);
     },
+    /**
+     * Format the user data to be displayed on the admin panel. 
+     * Use a generic avatar untill photos are implemented.
+     */
     mapUsers: function() {
       return this.users.map((user) => ({
           avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
