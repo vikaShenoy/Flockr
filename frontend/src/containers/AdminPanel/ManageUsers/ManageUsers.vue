@@ -22,7 +22,7 @@
           </v-btn>
 
           <v-btn class="delete-users-button" :disabled="this.selectedUsers.length === 0"
-            @click="deleteUsersButtonClicked">
+            @click="showPrompt('Are you sure?', deleteUsersButtonClicked)">
             Delete users
           </v-btn>
 
@@ -54,7 +54,11 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
+    <prompt-dialog
+    :message=prompt.message
+    :onConfirm="prompt.onConfirm"
+    :dialog="prompt.show" 
+    v-on:promptEnded="prompt.show=false"></prompt-dialog>
   </div>
 
 </template>
@@ -64,9 +68,11 @@
 import {deleteUsers, getAllUsers} from "../AdminPanelService";
 import moment from "moment";
 import SignUp from "../../Signup/Signup";
+import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
 
 export default {
   components: {
+    PromptDialog,
     SignUp
   },
   mounted () {
@@ -76,6 +82,11 @@ export default {
     return {
       items: [],
       showSignup: false,
+      prompt: {
+        message: "",
+        onConfirm: null,
+        show: false
+      }
     };
   },
   computed: {
@@ -90,6 +101,12 @@ export default {
     }
   },
   methods: {
+
+    showPrompt(message, onConfirm) {
+      this.prompt.message = message;
+      this.prompt.onConfirm = onConfirm;
+      this.prompt.show = true;
+    },
 
     /**
      * Close the modal containing the signup component.
@@ -120,6 +137,7 @@ export default {
     deleteUsersButtonClicked: async function() {
       const userIds = this.selectedUsers;
       console.log(userIds);
+      
       this.$emit("deleteUsersByIds", userIds);
     },
 

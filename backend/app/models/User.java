@@ -27,7 +27,7 @@ public class User extends Model {
     @Constraints.Required
     private String lastName;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
     public List<Nationality> nationalities;
 
     private Date dateOfBirth;
@@ -37,14 +37,17 @@ public class User extends Model {
     @Constraints.Required
     private String email;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
     public List <TravellerType> travellerTypes;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
     public List<Passport> passports;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
     public List<Role> roles;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Trip> trips;
 
     @Constraints.Required
     @CreatedTimestamp
