@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.*;
 import io.ebean.annotation.CreatedTimestamp;
 import play.data.validation.Constraints;
@@ -58,6 +59,7 @@ public class User extends Model {
     private java.sql.Timestamp timestamp;
 
     @Constraints.Required
+    @JsonIgnore
     private String passwordHash;
 
 

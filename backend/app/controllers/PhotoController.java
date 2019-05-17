@@ -290,6 +290,12 @@ public class PhotoController extends Controller {
                 boolean isPrimary = isPrimaryAsText.equals("true");
                 boolean isPublic = isPublicAsText.equals("true");
 
+                // A photo cannot be primary and private as other users need to see the profile photo
+                if (isPrimary && !isPublic) {
+                    response.put(messageKey, "A photo cannot be primary and private");
+                    return supplyAsync(() -> forbidden(response), httpExecutionContext.current());
+                }
+
                 // get the photo as a file from the request
                 Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
 

@@ -4,7 +4,7 @@
       v-model="imageDialog"
       max-width="800px"
     >
-    <UploadPhoto />
+    <UploadPhoto v-on:imageUploaded="closeDialog" />
    </v-dialog>
 
     <v-btn
@@ -14,16 +14,6 @@
     >
       <v-icon>add</v-icon>
     </v-btn>
-
-
-    <input
-      type="file"
-      style="display: none"
-      ref="image"
-      accept="image/*"
-      @change="onFilePicked"
-    />
-
   </div>
 </template>
 
@@ -55,15 +45,8 @@ export default {
   },
 
   methods: {
-    /**
-     * Called when the dataDialog variable is modified.
-     * Emits an event called dialogChangedEvent with a parameter of the dataDialog variable
-     */
-    closeDialog: function() {
-      this.$emit("closeDialog");
-    },
-    onFilePicked() {
-        console.log("I have picked the photo"); 
+   closeDialog: function() {
+      this.imageDialog = false;
     },
     showImageDialog() {
       this.imageDialog = true;

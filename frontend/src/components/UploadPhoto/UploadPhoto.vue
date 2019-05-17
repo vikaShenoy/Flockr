@@ -126,6 +126,7 @@ export default {
 
       try{
         await uploadImage(imageFile, isPublic, isPrimary, userId);
+        this.$emit("imageUploaded");
       } catch (e) {
         console.log(e);
         // Handle errors later

@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
 import play.data.validation.Constraints;
@@ -12,6 +13,7 @@ import javax.persistence.*;
 @Entity
 public class PersonalPhoto extends Model {
 
+    @JsonIgnore
     @ManyToOne
     private User user;
 
