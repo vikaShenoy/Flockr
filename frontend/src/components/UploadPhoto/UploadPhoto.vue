@@ -7,8 +7,16 @@
       id="preview-image"
     />
 
-    
+    <v-alert
+      :value="true"
+      type="error"
+      id="upload-image-error"
+      v-if="fileTypeError"
+    >
+    Please upload an image file (png or jpeg)
+    </v-alert>
 
+    
     <div
       id="uploader"
       @drop="onDrop"
@@ -28,12 +36,12 @@
       <h3>Choose a file or drag it here</h3>
     </div>
 
-    <div id="switch">
-      <v-switch switch v-model="isPublic" label="Set to public" color="secondary"></v-switch>
+    <div class="switch">
+      <v-switch :disabled="isPrimary" switch v-model="isPublic" label="Set to public" id="is-public-switch" color="secondary"></v-switch>
     </div>
 
-    <div id="switch">
-      <v-switch switch v-model="isPrimary" label="Set to primary" color="secondary"></v-switch>
+    <div class="switch">
+      <v-switch switch v-model="isPrimary" label="Set to primary" id="is-primary-switch" color="secondary"></v-switch>
     </div>
 
     <v-btn id="upload-btn" :disabled="!uploadReady" color="secondary" @click="upload">Upload</v-btn>
@@ -52,7 +60,9 @@ export default {
       imageUrl: null,
       imageName: null,
       isPublic: false,
-      isPrimary: false
+      isPrimary: false,
+      // Denotes if the user has selected a file that isn't a png or jpeg
+      fileTypeError: false
     };
   },
   methods: {
@@ -81,6 +91,18 @@ export default {
      * Processes files to show preview and prepare for upload
      */
     processFiles(files) {
+      this.fileTypeError = false;
+      const mimeType = files[0].type;
+      if (mimeType !== "image/png" && mimeType !== "image/jpeg") {
+        this.fileTypeError = true;
+
+        // Reset image
+        this.imageUrl = null;
+        this.imageFile = null;
+        this.imageName = null;
+        return;
+      }
+
       this.imageName = files[0].name;
       const fileReader = new FileReader();
 
@@ -94,7 +116,6 @@ export default {
      * Uploads photo to backend
      */
     async upload() {
-      console.log("I made it here");
       const {
         imageFile,
         isPublic,
@@ -135,10 +156,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../../../../../styles/_variables.scss";
+@import "../../styles/_variables.scss";
 
 #dialog-card {
   padding-top: 30px;
+  padding-left: 10px;
+  padding-right: 10px;
   padding-bottom: 30px;
 }
 
@@ -175,7 +198,7 @@ export default {
   display: block;
 }
 
-#switch {
+.switch {
   width: 150px;
   margin: 0 auto;
 }

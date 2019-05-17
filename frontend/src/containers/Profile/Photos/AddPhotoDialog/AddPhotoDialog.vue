@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import UploadPhoto from "./UploadPhoto/UploadPhoto";
+import UploadPhoto from "../../../../components/UploadPhoto/UploadPhoto";
 
 export default {
   components: {

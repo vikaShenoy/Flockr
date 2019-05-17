@@ -1,5 +1,5 @@
 import superagent from "superagent";
-import { endpoint } from "../../../../../utils/endpoint";
+import { endpoint } from "../../utils/endpoint";
 
 /**
  * Uploads a personal photo
@@ -9,7 +9,7 @@ import { endpoint } from "../../../../../utils/endpoint";
  * @param {number} userId The user ID that the photo belongs to
  */
 export function uploadImage(imageFile, isPublic, isPrimary, userId) {
-  return superagent.post(endpoint(`/travellers/${userId}/photos`))
+  return superagent.post(endpoint(`/users/${userId}/photos`))
     .set("Authorization", localStorage.getItem("authToken"))
     .field("isPublic", isPublic)
     .field("isPrimary", isPrimary)
