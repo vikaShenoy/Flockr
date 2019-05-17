@@ -3,40 +3,24 @@ package steps;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Module;
-import cucumber.api.java.After;
-import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import models.*;
 import org.junit.Assert;
-import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.libs.Json;
-import play.mvc.Http;
 import play.mvc.Result;
-import play.test.Helpers;
 import util.Security;
+import utils.FakeClient;
 import utils.PlayResultToJson;
+import utils.TestState;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
-import static play.test.Helpers.route;
-
 public class AdminSteps {
-
-    @Inject
-    private Application application;
 
     // data
     private int userId;
@@ -44,26 +28,6 @@ public class AdminSteps {
     private ArrayNode roles;
     private int roleId;
     private int otherUserId;
-
-    @Before("@AdminSteps")
-    public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-
-        Helpers.start(application);
-    }
-
-    @After("@AdminSteps")
-    public void tearDown() {
-        Helpers.stop(application);
-    }
 
     @Given("A traveller user exists")
     public void a_traveller_user_exists() {
@@ -113,17 +77,6 @@ public class AdminSteps {
         Assert.assertNotEquals(0, this.userId);
     }
 
-    @Given("roles are created")
-    public void rolesAreCreated() {
-        Role admin = new Role(RoleType.ADMIN);
-        Role superAdmin = new Role(RoleType.SUPER_ADMIN);
-        Role traveller = new Role(RoleType.TRAVELLER);
-
-        admin.save();
-        superAdmin.save();
-        traveller.save();
-    }
-
     /**
      * A helper function to create a user with the roles in the list given.
      * @param roles List&ltRole&gt list of roles the user will have.
@@ -167,15 +120,13 @@ public class AdminSteps {
 
     @And("The user is logged in")
     public void the_user_is_logged_in() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
         ObjectNode reqJsonBody = Json.newObject();
         reqJsonBody.put("email", "user@travelEA.com");
         reqJsonBody.put("password", "password");
 
-        Http.RequestBuilder loginRequest = Helpers.fakeRequest()
-                .method("POST")
-                .bodyJson(reqJsonBody)
-                .uri("/api/auth/users/login");
-        Result loginResult = route(application, loginRequest);
+        Result loginResult = fakeClient.makeRequestWithNoToken("POST", reqJsonBody, "/api/auth/users/login");
+
         JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
 
         Assert.assertEquals(200, loginResult.status());
@@ -188,12 +139,9 @@ public class AdminSteps {
 
     @When("The user requests its roles")
     public void the_user_requests_its_roles() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
 
-        Http.RequestBuilder rolesRequest = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", this.authToken)
-                .uri("/api/users/" + this.userId + "/roles");
-        Result rolesResult = route(application, rolesRequest);
+        Result rolesResult = fakeClient.makeRequestWithToken("GET", "/api/users/" + this.userId + "/roles", this.authToken);
         this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
 
         this.roles.get(0);
@@ -204,11 +152,9 @@ public class AdminSteps {
 
     @When("The user requests the roles of another user")
     public void the_user_requests_the_roles_of_another_user() throws IOException {
-        Http.RequestBuilder rolesRequest = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", this.authToken)
-                .uri("/api/users/" + this.otherUserId + "/roles");
-        Result rolesResult = route(application, rolesRequest);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        Result rolesResult = fakeClient.makeRequestWithToken("GET", "/api/users/" + this.otherUserId + "/roles", this.authToken);
         this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
 
         this.roles.get(0);
@@ -220,11 +166,8 @@ public class AdminSteps {
 
     @When("The user requests the roles available on the system")
     public void the_user_requests_the_roles_available_on_the_system() throws IOException {
-        Http.RequestBuilder rolesRequest = Helpers.fakeRequest()
-                .method("GET")
-                .header("authorization", this.authToken)
-                .uri("/api/users/roles");
-        Result rolesResult = route(application, rolesRequest);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result rolesResult = fakeClient.makeRequestWithToken("GET", "/api/users/roles", this.authToken);
         this.roles =  (ArrayNode) PlayResultToJson.convertResultToJson(rolesResult);
 
         this.roles.get(0);
