@@ -5,6 +5,7 @@
       :users="this.users"
       v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
+      v-on:logoutUsersByIds="handleLogoutUsersByIds"
     />
     <EditUserForm
       v-if="userBeingEdited"
@@ -119,6 +120,28 @@ export default {
         this.snackbarModel.color = 'red';
         this.snackbarModel.show = true;
         console.error(`Could not delete those users: ${err}`);
+      }
+    },
+
+    handleLogoutUsersByIds: async function(userIds) {
+      const promises = [];
+      console.log('userIds being logged out: ' + userIds)
+      userIds.forEach(userId => {
+        const promise = superagent
+          .post(endpoint(`/auth/users/${userId}/logout`)).set('Authorization', localStorage.getItem('authToken'));
+        promises.push(promise);
+      });
+      try {
+        await Promise.all(promises);
+        this.getAllUsers();
+        this.snackbarModel.text = 'Successfully logged out user(s)';
+        this.snackbarModel.color = 'green';
+        this.snackbarModel.show = true;
+      } catch(err) {
+        this.snackbarModel.text = 'Could not logout user(s)';
+        this.snackbarModel.color = 'red';
+        this.snackbarModel.show = true;
+        console.error(`Could not delete logout users: ${err}`);
       }
     }
   }

@@ -6,6 +6,11 @@
           <div class="manage-users-text">
             <p>Manage users</p>
           </div>
+          
+          <v-btn class="logout-user-button" v-on:click.stop="logoutUsersButtonClicked" :disabled="this.selectedUsers.length != 1"
+            @click="logoutUsersButtonClicked">
+            Log Out User
+          </v-btn>
 
           <v-btn class="new-user-button"
             @click="signupButtonClicked">
@@ -130,6 +135,15 @@ export default {
     editUserButtonClicked: function() {
       const userId = this.selectedUsers[0];
       this.$emit('wantToEditUserById', userId);
+    },
+    /**
+     * Call the admin panel service to logout the given user ids.
+     */
+    logoutUsersButtonClicked: async function() {
+      const userIds = this.selectedUsers;
+      console.log(userIds);
+      
+      this.$emit("logoutUsersByIds", userIds);
     },
     /**
      * Call the admin panel service to delete the given user ids.

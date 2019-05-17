@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.ActionState;
+import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -215,8 +216,8 @@ public class AuthController {
      * @param request incoming HTTP request.
      * @return 200 status code.
      */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> logoutBuId( int userId, Request request) {
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> logoutById( int userId, Request request) {
         User user = request.attrs().get(ActionState.USER);
 
 
@@ -233,6 +234,7 @@ public class AuthController {
 
             User userToLogut = optionalUser.get();
             userToLogut.setToken(null);
+            userToLogut.save();
            ObjectNode message = Json.newObject();
            message.put("message", "User successfully logged out");
            return ok(message);
