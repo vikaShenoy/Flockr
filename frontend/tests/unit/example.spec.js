@@ -8,5 +8,6 @@ describe("Component", () => {
   test("is a Vue instance", () => {
     const wrapper = shallowMount(App);
     expect(wrapper.isVueInstance()).toBeTruthy();
+    
   });
 });
