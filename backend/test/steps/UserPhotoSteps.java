@@ -22,10 +22,7 @@ import utils.TestState;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class UserPhotoSteps {
 
@@ -47,8 +44,7 @@ public class UserPhotoSteps {
         List<PersonalPhoto> photos = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             Map<String, String> row = list.get(i);
-            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")),
-                    user, Boolean.valueOf(row.get("isPrimary")));
+            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), user, Boolean.valueOf(row.get("isPublic")), Boolean.valueOf(row.get("isPrimary")));
             photo.save();
             photos.add(photo);
 
@@ -108,22 +104,46 @@ public class UserPhotoSteps {
     public void theyAddThePhoto() throws IOException {
         User user = TestState.getInstance().getUser(0);
         Application application = TestState.getInstance().getApplication();
-        File file = new File("app/photos/" + photoName);
+        File file = new File(System.getProperty("user.dir") + "/test/fileStorageForTests/photos/" + photoName);
+        Assert.assertTrue(file.exists());
 
-        Http.MultipartFormData.Part<Source<ByteString, ?>> part = new Http.MultipartFormData.FilePart<>("picture", "file.pdf", "application/pdf", FileIO.fromPath(file.toPath()), Files.size(file.toPath()));
+        // determine content type for photo
+        String contentType = "";
+        if (file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
+            contentType = "image/jpeg";
+        } else if (file.getName().contains(".png")) {
+            contentType = "image/png";
+        }
 
-        Http.MultipartFormData.DataPart isPrimaryForm = new Http.MultipartFormData.DataPart("isPrimary", Boolean.toString(isPrimary));
-        Http.MultipartFormData.DataPart isPublicForm = new Http.MultipartFormData.DataPart("isPublic", Boolean.toString(isPublic));
+        Http.MultipartFormData.FilePart<Source<ByteString, ?>> part = new Http.MultipartFormData.FilePart<>("image", file.getName(), contentType, FileIO.fromFile(file));
 
-//        Http.RequestBuilder request = Helpers.fakeRequest().uri(routes.PhotoController.addPhoto(user.getUserId()).url())
+        // construct text fields
+        Map<String, String[]> textFields = new HashMap<>();
+        String[] isPrimaryArray = {Boolean.toString(isPrimary)};
+        String[] isPublicArray = {Boolean.toString(isPublic)};
+        textFields.put("isPrimary", isPrimaryArray);
+        textFields.put("isPublic", isPublicArray);
+
+        // construct file parts
+        List<Http.MultipartFormData.FilePart> fileParts = new ArrayList<>();
+        fileParts.add(part);
+
+        // TODO: add this kind of request to FakeClient interface
+
+        Http.RequestBuilder request = Helpers.fakeRequest().uri("/api/users/" + user.getUserId() + "/photos")
+                .method("POST")
+                .header("Authorization", user.getToken())
+                .bodyMultipart(textFields, fileParts);
+
+//        Http.RequestBuilder request = Helpers.fakeRequest().uri("/api/" + user.getUserId() + "/photos")
 //                .method("POST")
 //                .header("Authorization", user.getToken())
 //                .bodyRaw(
-//                        Collections.singletonList(part),
-//                        play.libs.Files.singletonTemporaryFileCreator(),
-//                        application.asScala().materializer()
+//                    Collections.singletonList(part),
+//                    play.libs.Files.singletonTemporaryFileCreator(),
+//                    application.asScala().materializer()
 //                );
-//        result = Helpers.route(application, request);
+        result = Helpers.route(application, request);
     }
 
     @Then("the photo is added")
