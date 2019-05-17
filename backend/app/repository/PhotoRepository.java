@@ -1,8 +1,8 @@
 package repository;
 
 import models.PersonalPhoto;
-
 import javax.inject.Inject;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;

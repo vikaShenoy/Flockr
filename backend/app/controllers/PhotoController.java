@@ -11,33 +11,43 @@ import models.User;
 import play.libs.Files;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
+import exceptions.BadRequestException;
+import exceptions.NotFoundException;
+import models.PersonalPhoto;
+import models.User;
+import play.libs.Json;
+import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
 import repository.PhotoRepository;
+import play.libs.Files.TemporaryFile;
+
 import repository.UserRepository;
 import util.PhotoUtil;
 import util.Security;
 
 import javax.inject.Inject;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+
+import java.io.*;
 import java.io.File;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static play.mvc.Results.*;
+public class PhotoController extends Controller {
 
-
-public class PhotoController {
+    private final Security security;
     private final PhotoRepository photoRepository;
-    private HttpExecutionContext httpExecutionContext;
-    private UserRepository userRepository;
-    private PhotoUtil photoUtil;
+    private final UserRepository userRepository;
+    private final PhotoUtil photoUtil;
 
     @Inject
-    public PhotoController(PhotoRepository photoRepository, UserRepository userRepository, PhotoUtil photoUtil, HttpExecutionContext httpExecutionContext) {
+    public PhotoController(Security security, PhotoRepository photoRepository, UserRepository userRepository, PhotoUtil photoUtil, HttpExecutionContext httpExecutionContext) {
+        this.security = security;
         this.photoRepository = photoRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.userRepository = userRepository;

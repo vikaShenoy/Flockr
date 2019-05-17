@@ -33,12 +33,14 @@ public class LoggedIn extends Action.Simple {
      */
     @Override
     public CompletionStage<Result> call(Http.Request request) {
-            Optional<String> token = request.getHeaders().get("Authorization");
+            Optional<String> optionalToken = request.getHeaders().get("Authorization");
+            String token = optionalToken.isPresent() ? optionalToken.get() : request.getQueryString("Authorization");
 
-            if (!token.isPresent()) {
+
+            if (token == null) {
                 return supplyAsync(() -> unauthorized("You are unauthorized"));
             }
-            return authRepository.getByToken(token.get())
+            return authRepository.getByToken(token)
             .thenCompose((user) -> {
                if (!user.isPresent()) {
                    return supplyAsync(() -> unauthorized("You are unauthorized"));
