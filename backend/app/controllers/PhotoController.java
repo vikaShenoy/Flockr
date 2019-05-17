@@ -293,7 +293,7 @@ public class PhotoController extends Controller {
                 // get the photo as a file from the request
                 Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
 
-                // copy file to local file system
+                // start copying the file to file system
                 String path = System.getProperty("user.dir") + "/storage/photos";
                 Security security = new Security();
                 String token = security.generateToken();
@@ -308,10 +308,23 @@ public class PhotoController extends Controller {
                     fileDestination = new File(path, filename);
                 }
 
+                // save to filesystem
                 temporaryPhotoFile.moveFileTo(fileDestination);
 
-                response.put(messageKey, "Endpoint under development");
-                return supplyAsync(() -> internalServerError(response), httpExecutionContext.current());
+                // create photo model in database
+                final String usedFilename = filename;
+                return userRepository.getUserById(userId)
+                    .thenComposeAsync(optionalReceivingUser -> {
+                        if (!optionalReceivingUser.isPresent()) {
+                            response.put(messageKey, String.format("User %d does not exist", userId));
+                            return supplyAsync(() -> notFound(response));
+                        }
+
+                        User receivingUser = optionalReceivingUser.get();
+                        PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, receivingUser, isPublic, isPrimary);
+                        return photoRepository.insert(personalPhoto)
+                            .thenApplyAsync((insertedPhoto) -> (Result) created());
+                    });
             }, httpExecutionContext.current())
             .exceptionally(error -> {
                 try {
