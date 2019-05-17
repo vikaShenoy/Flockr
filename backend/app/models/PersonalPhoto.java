@@ -30,11 +30,11 @@ public class PersonalPhoto extends Model {
     /**
      * Constructor
      * @param filenameHash the hashed filename of the photo
-     * @param isPublic true if the photo is public, otherwise photo is private
      * @param user the user that the photo is associated to
+     * @param isPublic true if the photo is public, otherwise photo is private
      * @param isPrimary true if the photo is the primary photo of the user, otherwise false
      */
-    public PersonalPhoto(String filenameHash, boolean isPublic, User user, boolean isPrimary) {
+    public PersonalPhoto(String filenameHash, User user, boolean isPublic, boolean isPrimary) {
         this.filenameHash = filenameHash;
         this.isPublic = isPublic;
         this.user = user;

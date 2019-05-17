@@ -83,6 +83,19 @@ public class User extends Model {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof User)) {
+            return false;
+        }
+        User otherUser = (User) o;
+        return this.getUserId() == otherUser.getUserId();
+    }
+
+    @Override
+    public int hashCode() {
+        return ((Integer) this.getUserId()).hashCode();
+    }
 
     /**
      * Create a new traveller
