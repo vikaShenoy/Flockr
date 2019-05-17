@@ -1,8 +1,5 @@
 # SENG302 Team 500
 
-
-Colons can be used to align columns.
-
 | Pipeline      | Status        |
 | ------------- |:-------------:|
 | Master        | ![Master Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/master/pipeline.svg?style=flat) |
