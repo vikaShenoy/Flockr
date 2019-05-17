@@ -1,10 +1,18 @@
 # SENG302 Team 500
 
+
+Colons can be used to align columns.
+
+| Pipeline      | Status        |
+| ------------- |:-------------:|
+| Master        | ![Master Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/master/pipeline.svg?style=flat) |
+| Dev           | ![Dev Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/dev/pipeline.svg?style=flat)      |
+
 ##### Master pipeline
-![Master Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/master/pipeline.svg?style=flat)
+
 
 ##### Dev pipeline
-![Dev Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/dev/pipeline.svg?style=flat)
+
 
 Project split into:
 - API backend using Play and Java
