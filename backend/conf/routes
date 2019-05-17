@@ -7,6 +7,7 @@ GET          /                                                  controllers.Asse
 POST         /api/auth/users/signup               controllers.AuthController.signup(request: Request)
 POST         /api/auth/users/login                controllers.AuthController.login(request: Request)
 POST         /api/auth/users/logout               controllers.AuthController.logout(request: Request)
+POST        /api/auth/users/:userId/logout        controllers.AuthController.logoutById(userId: Int, request: Request)
 GET          /api/auth/users/:email/available     controllers.AuthController.checkEmailAvailable(email: String)
 
 # Traveller routes

@@ -17,6 +17,7 @@ import repository.RoleRepository;
 import util.Security;
 
 import javax.inject.Inject;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
@@ -205,6 +206,37 @@ public class AuthController {
                 .thenApplyAsync((u) -> {
                     return ok();
                 }, httpExecutionContext.current());
+
+    }
+
+    /**
+     * Logs a user of a given id out by setting their auth token to null.
+     * @param userId User ID to Logout
+     * @param request incoming HTTP request.
+     * @return 200 status code.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> logoutBuId( int userId, Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+
+        CompletionStage<Optional<User>> getUser;
+
+        getUser = userRepository.getUserById(userId);
+
+       return userRepository.getUserById(userId).thenApplyAsync(optionalUser -> {
+            if (!optionalUser.isPresent()) {
+                ObjectNode message = Json.newObject();
+                message.put("message", "User not found");
+                return notFound(message);
+            }
+
+            User userToLogut = optionalUser.get();
+            userToLogut.setToken(null);
+           ObjectNode message = Json.newObject();
+           message.put("message", "User successfully logged out");
+           return ok(message);
+        });
 
     }
 
