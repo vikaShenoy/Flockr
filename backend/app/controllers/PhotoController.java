@@ -124,6 +124,10 @@ public class PhotoController extends Controller {
                         throw new CompletionException(new NotFoundException());
                     }
                     PersonalPhoto photo = optionalPhoto.get();
+                    File photoToDelete = new File("./storage/photos/" + photo.getFileNameHash());
+                    if (!photoToDelete.delete()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
                     ObjectNode message = Json.newObject();
                     message.put("message", "Successfully deleted the given filename photo");
                     return this.photoRepository.deletePhoto(photo.getPhotoId());
@@ -183,7 +187,7 @@ public class PhotoController extends Controller {
                 if (!user.isAdmin() && !optionalPhoto.get().getIsPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
                     return forbidden();
                 } else {
-                    return ok().sendFile(new File("./app/photos/" + optionalPhoto.get().getFileNameHash()));
+                    return ok().sendFile(new File("./storage/photos/" + optionalPhoto.get().getFileNameHash()));
                 }
             }
         });
