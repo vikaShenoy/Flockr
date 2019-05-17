@@ -102,9 +102,11 @@ public class UserPhotoSteps {
 
     @When("they add the photo")
     public void theyAddThePhoto() throws IOException {
+        // TODO: Exe to clean up this mess
+
         User user = TestState.getInstance().getUser(0);
         Application application = TestState.getInstance().getApplication();
-        File file = new File(System.getProperty("user.dir") + "/test/fileStorageForTests/photos/" + photoName);
+        File file = new File(System.getProperty("user.dir") + "/test/fileStorageForTests/photos/", photoName);
         Assert.assertTrue(file.exists());
 
         // determine content type for photo
