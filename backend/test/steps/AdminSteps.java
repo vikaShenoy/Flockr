@@ -192,4 +192,17 @@ public class AdminSteps {
             Assert.assertEquals(roles.get(i).getRoleType().toString(), this.roles.get(i).get("roleType").asText());
         }
     }
+
+    @When("The admin user tries to log out the other user")
+    public void theAdminUserTriesToLogOutTheOtherUser() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Then("The session token of the other user is removed from the database")
+    public void theSessionTokenOfTheOtherUserIsRemovedFromTheDatabase() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
 }
