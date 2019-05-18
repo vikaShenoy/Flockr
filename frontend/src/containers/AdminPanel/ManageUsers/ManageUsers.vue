@@ -6,7 +6,8 @@
           <div class="manage-users-text">
             <p>Manage users</p>
           </div>
-          
+          <v-text-field label="Search User" color="secondary" @input="searchAdminChange">
+          </v-text-field>
           <v-btn class="logout-user-button" v-on:click.stop="logoutUsersButtonClicked" :disabled="this.selectedUsers.length != 1"
             @click="logoutUsersButtonClicked">
             Log Out User
@@ -32,7 +33,7 @@
           </v-btn>
 
         </v-subheader>
-
+        
         <!-- User tile -->
         <v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
           <v-list-tile-avatar>
@@ -106,7 +107,11 @@ export default {
     }
   },
   methods: {
-
+    searchAdminChange(searchAdmin) 
+    {
+      this.$emit('update:adminSearch',searchAdmin);
+      console.log(searchAdmin);
+    },
     showPrompt(message, onConfirm) {
       this.prompt.message = message;
       this.prompt.onConfirm = onConfirm;

@@ -2,7 +2,8 @@
   <div class="admin-panel">
     <h2>Admin Panel</h2>
     <ManageUsers
-      :users="this.users"
+      v-bind:adminSearch.sync="adminSearch"
+      :users="getFilteredUsers"
       v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
       v-on:logoutUsersByIds="handleLogoutUsersByIds"
@@ -42,6 +43,7 @@ export default {
 
   data() {
     return {
+      adminSearch: '',
       showEditUserForm: false,
       userBeingEdited: null,
       users: [], // single source of truth for children components relying on users so that info stays up to date
@@ -52,6 +54,14 @@ export default {
         color: '', // green, red, yellow, red, etc
         snackbarId: 0 // used to know which snackbar was manually dismissed
       }
+    }
+  },
+  computed:{
+    getFilteredUsers() {
+      return this.users.filter(user => {
+        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+        return fullName.includes(this.adminSearch.toLowerCase());
+      });
     }
   },
   methods: {
