@@ -71,7 +71,7 @@ public class AdminSteps {
         Assert.assertNotEquals(0, this.roleId);
 
         this.otherUserId = createUser(travellerList, true);
-        createUser(adminList, false);
+        this.userId = createUser(adminList, false);
 
         Assert.assertNotEquals(0, this.otherUserId);
         Assert.assertNotEquals(0, this.userId);
@@ -106,9 +106,13 @@ public class AdminSteps {
         User user;
 
         if (otherUser) {
-            user = new User("traveller", "", "user", password, "male", "other-user@travelEA.com", nationalities, travellerTypes, date, passports, roles, "");
+            user = new User("traveller", "", "user", password, "male",
+                    "other-user@travelEA.com", nationalities, travellerTypes, date, passports, roles,
+                    "Token1");
         } else {
-            user = new User("traveller", "", "user", password, "male", "user@travelEA.com", nationalities, travellerTypes, date, passports, roles, "");
+            user = new User("traveller", "", "user", password, "male",
+                    "user@travelEA.com", nationalities, travellerTypes, date, passports, roles,
+                    "Token2");
         }
 
         user.save();
@@ -195,14 +199,15 @@ public class AdminSteps {
 
     @When("The admin user tries to log out the other user")
     public void theAdminUserTriesToLogOutTheOtherUser() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result rolesResult = fakeClient.makeRequestWithToken("POST", "/api/auth/users/" + this.otherUserId + "/logout", this.authToken);
+        Assert.assertEquals(200, rolesResult.status());
     }
 
     @Then("The session token of the other user is removed from the database")
     public void theSessionTokenOfTheOtherUserIsRemovedFromTheDatabase() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+        List<User> userList = User.find.query().where().eq("user_id", this.otherUserId).findList();
+        Assert.assertNull(userList.get(0).getToken());
     }
 
 }
