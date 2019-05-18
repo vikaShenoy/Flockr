@@ -1,6 +1,5 @@
 <template>
   <v-card id="dialog-card">
-
     <img
       v-if="imageUrl"
       :src="imageUrl"
@@ -44,7 +43,7 @@
       <v-switch switch v-model="isPrimary" label="Set to primary" id="is-primary-switch" color="secondary"></v-switch>
     </div>
 
-    <v-btn id="upload-btn" :disabled="!uploadReady" color="secondary" @click="upload">Upload</v-btn>
+    <v-btn id="upload-btn" :disabled="!uploadReady || imageUploading" :loading="imageUploading" color="secondary" @click="upload">Upload</v-btn>
 
 
   </v-card>
@@ -62,7 +61,8 @@ export default {
       isPublic: false,
       isPrimary: false,
       // Denotes if the user has selected a file that isn't a png or jpeg
-      fileTypeError: false
+      fileTypeError: false,
+      imageUploading: false
     };
   },
   methods: {
@@ -125,10 +125,12 @@ export default {
       const userId = this.$route.params.id;
 
       try{
+        this.imageUploading = true;
         await uploadImage(imageFile, isPublic, isPrimary, userId);
+        this.imageUploading = false;
         this.$emit("imageUploaded");
       } catch (e) {
-        console.log(e);
+        this.imageUploading = false;
         // Handle errors later
       }
     }
