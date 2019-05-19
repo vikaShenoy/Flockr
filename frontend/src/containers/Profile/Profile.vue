@@ -13,7 +13,7 @@
 
     <div class="row">
       <div class="col-lg-4">
-        <ProfilePic :photos="userProfile.personalPhotos" :userId="userProfile.userId" />
+        <ProfilePic :photos="userProfile.personalPhotos" :userId="userProfile.userId" v-on:newProfilePic="changeProfilePic" v-on:showError="showError"/>
 
         <BasicInfo :userProfile.sync="userProfile" />
 
@@ -41,6 +41,7 @@
         </div>
       </div>
     </div>
+    <Snackbar :snackbarModel="errorSnackbar" v-on:dismissSnackbar="errorSnackbar.show=false"></Snackbar>
   </div>
 </template>
 
@@ -55,9 +56,11 @@ import Photos from "./Photos/Photos";
 
 import moment from "moment";
 import { getUser } from "./ProfileService";
+import Snackbar from "../../components/Snackbars/Snackbar";
 
 export default {
   components: {
+    Snackbar,
     ProfilePic,
     Nationalities,
     Passports,
@@ -68,7 +71,14 @@ export default {
   },
   data() {
     return {
-      userProfile: null
+      userProfile: null,
+      errorSnackbar: {
+        show: false,
+        text: "",
+        color: "error",
+        duration: 3000,
+        snackbarId: 1
+      }
     };
   },
   mounted() {
@@ -102,6 +112,23 @@ export default {
         this.userProfile.nationalities.length &&
         this.userProfile.travellerTypes.length
       );
+    },
+
+    /**
+     * Updates the profile picture of a user after it has been changed.
+     *
+     * @param imageObject the new profile picture.
+     */
+    changeProfilePic(imageObject) {
+      this.userProfile.profilePhoto = imageObject;
+    },
+    /**
+     * Shows an snackbar error message
+     * @param {string} text the text to display on the snackbar
+     */
+    showError(text) {
+      this.errorSnackbar.text = text;
+      this.errorSnackbar.show = true;
     }
   }
 };

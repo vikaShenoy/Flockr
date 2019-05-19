@@ -239,6 +239,7 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> uploadPhotoForUser(int userId, Http.Request request) {
+        // TODO: On is Primary don't save to list of photos just set as primary photo, and delete old primary photo if exists.
         User userUploadingPhoto = request.attrs().get(ActionState.USER);
         ObjectNode response = Json.newObject();
         String messageKey = "message";
@@ -335,7 +336,7 @@ public class PhotoController extends Controller {
                         User receivingUser = optionalReceivingUser.get();
                         PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary);
                         return photoRepository.insert(personalPhoto)
-                            .thenApplyAsync((insertedPhoto) -> (Result) created());
+                            .thenApplyAsync((insertedPhoto) -> created(Json.toJson(insertedPhoto)));
                     });
             }, httpExecutionContext.current())
             .exceptionally(error -> {
