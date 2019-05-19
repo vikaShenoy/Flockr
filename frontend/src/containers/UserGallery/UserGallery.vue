@@ -20,7 +20,7 @@
             v-on:click="openPhotoDialog(photo)"
           >
             <v-img
-              :src="getPhotoUrl(photo)"
+              :src="photo.thumbEndpoint"
               aspect-ratio="1"
               class="grey lighten-2"
               >
@@ -44,43 +44,42 @@
         :photo="currentPhoto"
         :showDialog="showPhotoDialog"
         v-on:closeDialog="closePhotoDialog"/>
+      <snackbar :snackbarModel="this.snackbarModel"/>
     </v-card>
 </template>
 
 <script>
 
   import PhotoPanel from "./PhotoPanel/PhotoPanel";
+  import {getPhotosForUser} from "./UserGalleryService";
+  import Snackbar from "../../components/Snackbars/Snackbar";
   export default {
 
     name: "UserGallery",
-    components: {PhotoPanel},
+    components: {Snackbar, PhotoPanel},
     data() {
       return {
         userId: null,
         photos: [],
         allPhotos: [],
         currentPhoto: {
+          thumbEndpoint: null,
           endpoint: null,
           isPrimary: false,
           isPublic: false
         },
-        showPhotoDialog: false
+        showPhotoDialog: false,
+        snackbarModel: {
+          show: false, // whether the snackbar is currently shown or not
+          timeout: 5000, // how long the snackbar will be shown for, it will not update the show property automatically though
+          text: '', // the text to show in the snackbar
+          color: '', // green, red, yellow, red, etc
+          snackbarId: 0 // used to know which snackbar was manually dismissed
+        }
       }
     },
 
     methods: {
-
-      /**
-       * Gets the url for this photo.
-       *
-       * @param photo the object containing the photo information
-       * @return {string} the url of the endpoint containing the photo data
-       */
-      getPhotoUrl(photo) {
-        // return endpoint(`/travellers/${this.userId}/photos/${photo.filename}/thumbnail`);
-        return `https://picsum.photos/500/300?image=55`;
-      },
-
       /**
        * Closes the photo dialog
        */
@@ -126,16 +125,29 @@
       },
 
       /**
+       * Displays an error message using the snack bar component.
+       */
+      displayErrorMessage(message) {
+        this.snackbarModel.text = message;
+        this.snackbarModel.color = "red";
+        this.snackbarModel.show = true;
+      },
+
+      /**
        * Gets a list of photos for the user from the server.
        */
-      getUsersPhotos() {
-
+      async getUsersPhotos() {
+        try {
+          this.allPhotos = await getPhotosForUser(this.userId);
+        } catch (error) {
+          this.displayErrorMessage(error.message);
+        }
       }
     },
 
-    mounted: function() {
-      this.userId = this.$route.params.id;
-      this.allPhotos = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40];
+    mounted: async function () {
+      this.userId = parseInt(this.$route.params.id);
+      await this.getUsersPhotos();
       this.getMorePhotos();
       this.setScroll();
     }
