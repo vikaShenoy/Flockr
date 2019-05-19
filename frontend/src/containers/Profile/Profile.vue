@@ -13,7 +13,7 @@
 
     <div class="row">
       <div class="col-lg-4">
-        <ProfilePic :userId="userProfile.userId" />
+        <ProfilePic :photos="userProfile.personalPhotos" :userId="userProfile.userId" />
 
         <BasicInfo :userProfile.sync="userProfile" />
 
