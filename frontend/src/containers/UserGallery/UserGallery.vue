@@ -17,6 +17,7 @@
             sm6
             xs12
             class="photo-tile"
+            v-on:click="openPhotoDialog(photo)"
           >
             <v-img
               :src="getPhotoUrl(photo)"
@@ -39,27 +40,66 @@
 
       </v-container>
       </v-responsive>
+      <photo-panel
+        :photo="currentPhoto"
+        :showDialog="showPhotoDialog"
+        v-on:closeDialog="closePhotoDialog"/>
     </v-card>
 </template>
 
 <script>
-  import {endpoint} from "../../utils/endpoint";
 
+  import PhotoPanel from "./PhotoPanel/PhotoPanel";
   export default {
 
     name: "UserGallery",
-
+    components: {PhotoPanel},
     data() {
       return {
         userId: null,
-        photos: [1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8]
+        photos: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40],
+        currentPhoto: {
+          endpoint: null,
+          isPrimary: false,
+          isPublic: false
+        },
+        showPhotoDialog: false
       }
     },
 
     methods: {
+
+      /**
+       * Gets the url for this photo.
+       *
+       * @param photo the object containing the photo information
+       * @return {string} the url of the endpoint containing the photo data
+       */
       getPhotoUrl: function(photo) {
         // return endpoint(`/travellers/${this.userId}/photos/${photo.filename}/thumbnail`);
         return `https://picsum.photos/500/300?image=55`;
+      },
+
+      /**
+       * Closes the photo dialog
+       */
+      closePhotoDialog() {
+        this.showPhotoDialog = false;
+        this.currentPhoto = {
+          endpoint: null,
+          isPrimary: false,
+          isPublic: false
+        };
+      },
+
+      /**
+       * Sets the current photo to the one clicked on and opens the photo dialog
+       *
+       * @param photo the object containing the photo data
+       */
+      openPhotoDialog(photo) {
+        this.currentPhoto = photo;
+        this.showPhotoDialog = true;
       }
     },
 
@@ -71,6 +111,7 @@
 
 <style lang="scss" scoped>
   @import "../../styles/_variables.scss";
+
   #user-gallery {
     h1{
       color: $primary;
@@ -78,8 +119,13 @@
     width:100%;
     margin:1.5em;
   }
+
   .photo-tile {
     padding: 0.2em;
+  }
+
+  .photo-tile :hover {
+    cursor: pointer;
   }
 
 </style>
