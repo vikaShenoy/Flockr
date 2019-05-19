@@ -5,8 +5,6 @@ import akka.stream.javadsl.Source;
 import akka.util.ByteString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import controllers.routes;
-import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -16,8 +14,6 @@ import models.Role;
 import models.User;
 import org.junit.Assert;
 import play.Application;
-import play.api.http.HttpEntity;
-import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
@@ -27,7 +23,6 @@ import utils.TestState;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 
 public class UserPhotoSteps {
@@ -185,7 +180,7 @@ public class UserPhotoSteps {
             JsonNode nextPhoto = iterator.next();
             PersonalPhoto personalPhoto = objectMapper.treeToValue(nextPhoto, PersonalPhoto.class);
             Map<String, String> row = rowsIterator.next();
-            Assert.assertEquals(row.get("filename"), personalPhoto.getFileNameHash());
+            Assert.assertEquals(row.get("filename"), personalPhoto.getFilenameHash());
             Assert.assertEquals(Boolean.valueOf(row.get("isPrimary")), personalPhoto.isPrimary());
             Assert.assertEquals(Boolean.valueOf(row.get("isPublic")), personalPhoto.isPublic());
         }

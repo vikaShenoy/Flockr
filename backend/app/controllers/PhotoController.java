@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 
 public class PhotoController extends Controller {
 
@@ -124,7 +123,7 @@ public class PhotoController extends Controller {
                         throw new CompletionException(new NotFoundException());
                     }
                     PersonalPhoto photo = optionalPhoto.get();
-                    File photoToDelete = new File("./storage/photos/" + photo.getFileNameHash());
+                    File photoToDelete = new File("./storage/photos/" + photo.getFilenameHash());
                     if (!photoToDelete.delete()) {
                         throw new CompletionException(new NotFoundException());
                     }
@@ -151,7 +150,11 @@ public class PhotoController extends Controller {
      *
      * @param userId  the id of the user
      * @param request the http request
-     * @return a completion stage and a status code 200.
+     * @return HTTP response which can be
+     *  - 200 - with a list of photos if successful
+     *  - 401 - if the user is not authorized
+     *  - 403 - if the user has not completed their profile
+     *  - 404 - if the user does not exist
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int userId, Http.Request request) {
@@ -192,7 +195,7 @@ public class PhotoController extends Controller {
                 if (!user.isAdmin() && !optionalPhoto.get().isPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
                     return forbidden();
                 } else {
-                    return ok().sendFile(new File("./storage/photos/" + optionalPhoto.get().getFileNameHash()));
+                    return ok().sendFile(new File("./storage/photos/" + optionalPhoto.get().getFilenameHash()));
                 }
             }
         });
