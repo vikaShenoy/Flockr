@@ -6,27 +6,29 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
+import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import models.PersonalPhoto;
 import models.User;
 import play.libs.Files;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.With;
+import play.mvc.*;
 import repository.PhotoRepository;
 
 import repository.UserRepository;
 import util.PhotoUtil;
 import util.Security;
 
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
@@ -312,17 +314,41 @@ public class PhotoController extends Controller {
                 String token = security.generateToken();
                 String extension = photoContentType.equals("image/png") ? ".png" : ".jpg";
                 String filename = token + extension;
+                String thumbFilename = token + "_thumb" + extension;
                 File fileDestination = new File(path, filename);
+                File thumbFileDestination = new File(path, thumbFilename);
 
                 // if the file path already exists, generate another token
                 while (fileDestination.exists()) {
                     token = security.generateToken();
                     filename = token + extension;
+                    thumbFilename = token + "_thumb" + extension;
                     fileDestination = new File(path, filename);
+                    thumbFileDestination = new File(path, thumbFilename);
                 }
 
                 // save to filesystem
                 temporaryPhotoFile.moveFileTo(fileDestination);
+                try {
+                    BufferedImage bufferedImage = ImageIO.read(fileDestination);
+                    int midWidth = bufferedImage.getWidth() / 2;
+                    int midHeight = bufferedImage.getHeight() / 2;
+                    Image img;
+                    if (midWidth > 150 && midHeight > 150) {
+                        img = bufferedImage.getSubimage(midWidth - 150, midHeight - 150, 300, 300);
+                    } else if (midWidth > midHeight) {
+                        img = bufferedImage.getSubimage(midWidth - midHeight, bufferedImage.getHeight(), bufferedImage.getHeight(), bufferedImage.getHeight());
+                        img.getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                    } else {
+                        img = bufferedImage.getSubimage(bufferedImage.getWidth(), midHeight - midWidth, bufferedImage.getWidth(), bufferedImage.getWidth());
+                        img.getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                    }
+                    BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
+                    image.createGraphics().drawImage(img, 0, 0, null);
+                    ImageIO.write(image, photoContentType, thumbFileDestination);
+                } catch (IOException e) {
+                    return supplyAsync(Results::internalServerError, httpExecutionContext.current());
+                }
 
                 // create photo model in database
                 final String usedFilename = filename;
