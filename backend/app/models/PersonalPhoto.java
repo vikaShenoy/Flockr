@@ -1,20 +1,19 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
 import play.data.validation.Constraints;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 /**
  * A personal photo that is linked to a user
  */
-
 @Entity
 public class PersonalPhoto extends Model {
 
+    @JsonIgnore
     @ManyToOne
     private User user;
 
@@ -44,20 +43,21 @@ public class PersonalPhoto extends Model {
         this.isPrimary = isPrimary;
     }
 
-    public boolean getIsPublic() {
+    public boolean isPublic() {
         return this.isPublic;
     }
+
     public int getPhotoId() {
         return photoId;
     }
 
-    public String getFileNameHash() {return this.filenameHash;}
+    public String getFilenameHash() {return this.filenameHash;}
 
     public User getUser() {
         return this.user;
     }
 
-    public void setPermission(boolean isPublic) {
+    public void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }
 
@@ -73,7 +73,9 @@ public class PersonalPhoto extends Model {
         isPrimary = primary;
     }
 
-
+    public void setFilenameHash(String filenameHash) {
+        this.filenameHash = filenameHash;
+    }
 
     /**
      * This function allows EBean to make queries on the database

@@ -14,6 +14,7 @@ import EditTrip from "./containers/EditTrip/EditTrip.vue";
 import AdminPanel from "./containers/AdminPanel/AdminPanel.vue";
 
 import { loggedIn, loggedInOrOut, isAdmin } from "./utils/auth";
+import UserGallery from "./containers/UserGallery/UserGallery";
 
 // All routes need to be annotated with loggedIn or loggedInOrOut
 const routes = [
@@ -61,7 +62,7 @@ const routes = [
     // Allows an admin to view other traveller's trips
     path: "/travellers/:travellerId/trips",
     component: Trips,
-    beforeEnter: isAdmin 
+    beforeEnter: isAdmin
   },
   {
     path: "/trips/add",
@@ -82,7 +83,7 @@ const routes = [
   {
     path: "/travellers/:travellerId/trips/:id",
     component: Trip,
-    beforeEnter: isAdmin 
+    beforeEnter: isAdmin
   },
   {
     path: "/trips/:id/edit",
@@ -92,12 +93,17 @@ const routes = [
   {
     path: "/travellers/:travellerId/trips/:id/edit",
     component: EditTrip,
-    beforeEnter: isAdmin 
+    beforeEnter: isAdmin
   },
   {
     path: "/admin",
     component: AdminPanel,
     beforeEnter: isAdmin
+  },
+  {
+    path: "/profile/:id/photos",
+    component: UserGallery,
+    beforeEnter: loggedIn
   }
 ];
 

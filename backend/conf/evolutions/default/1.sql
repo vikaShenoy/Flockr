@@ -3,6 +3,55 @@
 
 # --- !Ups
 
+-- init script create procs
+-- Inital script to create stored procedures etc for mysql platform
+DROP PROCEDURE IF EXISTS usp_ebean_drop_foreign_keys;
+
+delimiter $$
+--
+-- PROCEDURE: usp_ebean_drop_foreign_keys TABLE, COLUMN
+-- deletes all constraints and foreign keys referring to TABLE.COLUMN
+--
+CREATE PROCEDURE usp_ebean_drop_foreign_keys(IN p_table_name VARCHAR(255), IN p_column_name VARCHAR(255))
+BEGIN
+  DECLARE done INT DEFAULT FALSE;
+  DECLARE c_fk_name CHAR(255);
+  DECLARE curs CURSOR FOR SELECT CONSTRAINT_NAME from information_schema.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE() and TABLE_NAME = p_table_name and COLUMN_NAME = p_column_name
+      AND REFERENCED_TABLE_NAME IS NOT NULL;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+  OPEN curs;
+
+  read_loop: LOOP
+    FETCH curs INTO c_fk_name;
+    IF done THEN
+      LEAVE read_loop;
+    END IF;
+    SET @sql = CONCAT('ALTER TABLE ', p_table_name, ' DROP FOREIGN KEY ', c_fk_name);
+    PREPARE stmt FROM @sql;
+    EXECUTE stmt;
+  END LOOP;
+
+  CLOSE curs;
+END
+$$
+
+DROP PROCEDURE IF EXISTS usp_ebean_drop_column;
+
+delimiter $$
+--
+-- PROCEDURE: usp_ebean_drop_column TABLE, COLUMN
+-- deletes the column and ensures that all indices and constraints are dropped first
+--
+CREATE PROCEDURE usp_ebean_drop_column(IN p_table_name VARCHAR(255), IN p_column_name VARCHAR(255))
+BEGIN
+  CALL usp_ebean_drop_foreign_keys(p_table_name, p_column_name);
+  SET @sql = CONCAT('ALTER TABLE ', p_table_name, ' DROP COLUMN ', p_column_name);
+  PREPARE stmt FROM @sql;
+  EXECUTE stmt;
+END
+$$
 create table country (
   country_id                    integer auto_increment not null,
   country_name                  varchar(255),
@@ -57,6 +106,15 @@ create table passport_user (
   constraint pk_passport_user primary key (passport_passport_id,user_user_id)
 );
 
+create table personal_photo (
+  photo_id                      integer auto_increment not null,
+  user_user_id                  integer,
+  is_public                     tinyint(1) default 0 not null,
+  is_primary                    tinyint(1) default 0 not null,
+  filename_hash                 varchar(255),
+  constraint pk_personal_photo primary key (photo_id)
+);
+
 create table role (
   role_id                       integer auto_increment not null,
   role_type                     varchar(255),
@@ -92,9 +150,9 @@ create table trip_destination (
   trip_destination_id           integer auto_increment not null,
   trip_trip_id                  integer,
   destination_destination_id    integer,
-  arrival_date                  timestamp,
+  arrival_date                  datetime(6),
   arrival_time                  integer not null,
-  departure_date                timestamp,
+  departure_date                datetime(6),
   departure_time                integer not null,
   constraint pk_trip_destination primary key (trip_destination_id)
 );
@@ -104,12 +162,14 @@ create table user (
   first_name                    varchar(255),
   middle_name                   varchar(255),
   last_name                     varchar(255),
-  date_of_birth                 timestamp,
+  date_of_birth                 datetime(6),
   gender                        varchar(255),
   email                         varchar(255),
+  profile_photo_photo_id        integer,
   password_hash                 varchar(255),
   token                         varchar(255),
-  timestamp                     timestamp not null,
+  timestamp                     datetime(6) not null,
+  constraint uq_user_profile_photo_photo_id unique (profile_photo_photo_id),
   constraint pk_user primary key (user_id)
 );
 
@@ -144,6 +204,9 @@ alter table passport_user add constraint fk_passport_user_passport foreign key (
 create index ix_passport_user_user on passport_user (user_user_id);
 alter table passport_user add constraint fk_passport_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
+create index ix_personal_photo_user_user_id on personal_photo (user_user_id);
+alter table personal_photo add constraint fk_personal_photo_user_user_id foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
 create index ix_role_user_role on role_user (role_role_id);
 alter table role_user add constraint fk_role_user_role foreign key (role_role_id) references role (role_id) on delete restrict on update restrict;
 
@@ -165,53 +228,60 @@ alter table trip_destination add constraint fk_trip_destination_trip_trip_id for
 create index ix_trip_destination_destination_destination_id on trip_destination (destination_destination_id);
 alter table trip_destination add constraint fk_trip_destination_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
 
+alter table user add constraint fk_user_profile_photo_photo_id foreign key (profile_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
+
 
 # --- !Downs
 
-alter table destination drop constraint if exists fk_destination_destination_type_destination_type_id;
-drop index if exists ix_destination_destination_type_destination_type_id;
+alter table destination drop foreign key fk_destination_destination_type_destination_type_id;
+drop index ix_destination_destination_type_destination_type_id on destination;
 
-alter table destination drop constraint if exists fk_destination_destination_district_district_id;
-drop index if exists ix_destination_destination_district_district_id;
+alter table destination drop foreign key fk_destination_destination_district_district_id;
+drop index ix_destination_destination_district_district_id on destination;
 
-alter table destination drop constraint if exists fk_destination_destination_country_country_id;
-drop index if exists ix_destination_destination_country_country_id;
+alter table destination drop foreign key fk_destination_destination_country_country_id;
+drop index ix_destination_destination_country_country_id on destination;
 
-alter table district drop constraint if exists fk_district_country_country_id;
-drop index if exists ix_district_country_country_id;
+alter table district drop foreign key fk_district_country_country_id;
+drop index ix_district_country_country_id on district;
 
-alter table nationality_user drop constraint if exists fk_nationality_user_nationality;
-drop index if exists ix_nationality_user_nationality;
+alter table nationality_user drop foreign key fk_nationality_user_nationality;
+drop index ix_nationality_user_nationality on nationality_user;
 
-alter table nationality_user drop constraint if exists fk_nationality_user_user;
-drop index if exists ix_nationality_user_user;
+alter table nationality_user drop foreign key fk_nationality_user_user;
+drop index ix_nationality_user_user on nationality_user;
 
-alter table passport_user drop constraint if exists fk_passport_user_passport;
-drop index if exists ix_passport_user_passport;
+alter table passport_user drop foreign key fk_passport_user_passport;
+drop index ix_passport_user_passport on passport_user;
 
-alter table passport_user drop constraint if exists fk_passport_user_user;
-drop index if exists ix_passport_user_user;
+alter table passport_user drop foreign key fk_passport_user_user;
+drop index ix_passport_user_user on passport_user;
 
-alter table role_user drop constraint if exists fk_role_user_role;
-drop index if exists ix_role_user_role;
+alter table personal_photo drop foreign key fk_personal_photo_user_user_id;
+drop index ix_personal_photo_user_user_id on personal_photo;
 
-alter table role_user drop constraint if exists fk_role_user_user;
-drop index if exists ix_role_user_user;
+alter table role_user drop foreign key fk_role_user_role;
+drop index ix_role_user_role on role_user;
 
-alter table traveller_type_user drop constraint if exists fk_traveller_type_user_traveller_type;
-drop index if exists ix_traveller_type_user_traveller_type;
+alter table role_user drop foreign key fk_role_user_user;
+drop index ix_role_user_user on role_user;
 
-alter table traveller_type_user drop constraint if exists fk_traveller_type_user_user;
-drop index if exists ix_traveller_type_user_user;
+alter table traveller_type_user drop foreign key fk_traveller_type_user_traveller_type;
+drop index ix_traveller_type_user_traveller_type on traveller_type_user;
 
-alter table trip drop constraint if exists fk_trip_user_user_id;
-drop index if exists ix_trip_user_user_id;
+alter table traveller_type_user drop foreign key fk_traveller_type_user_user;
+drop index ix_traveller_type_user_user on traveller_type_user;
 
-alter table trip_destination drop constraint if exists fk_trip_destination_trip_trip_id;
-drop index if exists ix_trip_destination_trip_trip_id;
+alter table trip drop foreign key fk_trip_user_user_id;
+drop index ix_trip_user_user_id on trip;
 
-alter table trip_destination drop constraint if exists fk_trip_destination_destination_destination_id;
-drop index if exists ix_trip_destination_destination_destination_id;
+alter table trip_destination drop foreign key fk_trip_destination_trip_trip_id;
+drop index ix_trip_destination_trip_trip_id on trip_destination;
+
+alter table trip_destination drop foreign key fk_trip_destination_destination_destination_id;
+drop index ix_trip_destination_destination_destination_id on trip_destination;
+
+alter table user drop foreign key fk_user_profile_photo_photo_id;
 
 drop table if exists country;
 
@@ -228,6 +298,8 @@ drop table if exists nationality_user;
 drop table if exists passport;
 
 drop table if exists passport_user;
+
+drop table if exists personal_photo;
 
 drop table if exists role;
 

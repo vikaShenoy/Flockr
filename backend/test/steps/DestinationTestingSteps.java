@@ -31,10 +31,10 @@ public class DestinationTestingSteps {
     private JsonNode destinationData;
     private Result result;
 
-    @Given("a user with the following information exists:")
-    public void aUserWithTheFollowingInformationExists(DataTable dataTable) throws IOException {
+    @Given("users with the following information exist:")
+    public void usersWithTheFollowingInformationExists(DataTable dataTable) {
         Application application = TestState.getInstance().getApplication();
-        TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
+        TestAuthenticationHelper.theFollowingUsersExists(dataTable, application);
     }
 
     @Given("that I am logged in")

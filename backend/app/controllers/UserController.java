@@ -5,6 +5,7 @@ import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.ebean.Ebean;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,25 +59,14 @@ public class UserController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTraveller(int userId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-
-        CompletionStage<Optional<User>> getUser;
-
-        if (user.getUserId() == userId || user.isAdmin()) {
-            getUser = userRepository.getUserById(userId);
-        } else {
-            getUser = userRepository.getUserById(userId);
-        }
-
-        return getUser
+        return userRepository.getUserById(userId)
                 .thenApplyAsync((optUser) -> {
                     if (!optUser.isPresent()) {
                         ObjectNode message = Json.newObject().put("message", "User with id " + userId + " was not found");
                         return notFound(message);
                     }
-
-                    JsonNode userAsJson = Json.toJson(optUser.get());
-
+                    User user = optUser.get();
+                    JsonNode userAsJson = Json.toJson(user);
                     return ok(userAsJson);
                 }, httpExecutionContext.current());
     }

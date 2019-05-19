@@ -13,6 +13,7 @@ import java.util.List;
  */
 @Entity
 public class Nationality extends Model {
+
     @Id
     private int nationalityId;
 

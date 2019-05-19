@@ -4,46 +4,53 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
+import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import models.PersonalPhoto;
 import models.User;
 import play.libs.Files;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.With;
+import play.mvc.*;
 import repository.PhotoRepository;
+
 import repository.UserRepository;
 import util.PhotoUtil;
 import util.Security;
 
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static play.mvc.Results.*;
+public class PhotoController extends Controller {
 
-
-public class PhotoController {
+    private final Security security;
     private final PhotoRepository photoRepository;
-    private HttpExecutionContext httpExecutionContext;
-    private UserRepository userRepository;
-    private PhotoUtil photoUtil;
+    private final UserRepository userRepository;
+    private final PhotoUtil photoUtil;
+    private final HttpExecutionContext httpExecutionContext;
 
     @Inject
-    public PhotoController(PhotoRepository photoRepository, UserRepository userRepository, PhotoUtil photoUtil, HttpExecutionContext httpExecutionContext) {
+    public PhotoController(Security security, PhotoRepository photoRepository, UserRepository userRepository, PhotoUtil photoUtil, HttpExecutionContext httpExecutionContext) {
+        this.security = security;
         this.photoRepository = photoRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.userRepository = userRepository;
         this.photoUtil = photoUtil;
     }
-
 
     /**
      * This function is responsible for changing the permissions of a photo to either a private or a public.
@@ -85,7 +92,7 @@ public class PhotoController {
                     }
 
                     PersonalPhoto photo = optionalPhoto.get();
-                    photo.setPermission(isPublic);
+                    photo.setPublic(isPublic);
                     return photoRepository.updatePhoto(photo);
                 }).thenApplyAsync(PersonalPhoto -> ok("Successfully updated permission groups"))
                 .exceptionally(e -> {
@@ -104,7 +111,6 @@ public class PhotoController {
                 });
     }
 
-
     /**
      * This function is responsible for deleting the photo with the given ID
      *
@@ -120,6 +126,10 @@ public class PhotoController {
                         throw new CompletionException(new NotFoundException());
                     }
                     PersonalPhoto photo = optionalPhoto.get();
+                    File photoToDelete = new File("./storage/photos/" + photo.getFilenameHash());
+                    if (!photoToDelete.delete()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
                     ObjectNode message = Json.newObject();
                     message.put("message", "Successfully deleted the given filename photo");
                     return this.photoRepository.deletePhoto(photo.getPhotoId());
@@ -143,16 +153,25 @@ public class PhotoController {
      *
      * @param userId  the id of the user
      * @param request the http request
-     * @return a completion stage and a status code 200.
+     * @return HTTP response which can be
+     *  - 200 - with a list of photos if successful
+     *  - 401 - if the user is not authorized
+     *  - 403 - if the user has not completed their profile
+     *  - 404 - if the user does not exist
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int userId, Http.Request request) {
-        return photoRepository.getPhotosById(userId)
-                .thenApplyAsync((photos) -> {
-                    JsonNode photosAsJSON = Json.toJson(photos);
-                    System.out.println(photosAsJSON.asText());
-                    return ok(photosAsJSON);
-                });
+        // Check user exists
+        if (User.find.byId(userId) == null) {
+            JsonNode response = Json.newObject().put("error", "Not Found");
+            return supplyAsync(() -> notFound(response));
+        } else {
+            return photoRepository.getPhotosById(userId)
+                    .thenApplyAsync((photos) -> {
+                        JsonNode photosAsJSON = Json.toJson(photos);
+                        return ok(photosAsJSON);
+                    });
+        }
     }
 
     /**
@@ -176,14 +195,43 @@ public class PhotoController {
                 return notFound();
             } else{
 
-                if (!user.isAdmin() && !optionalPhoto.get().getIsPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
+                if (!user.isAdmin() && !optionalPhoto.get().isPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
                     return forbidden();
                 } else {
-                    return ok().sendFile(new File("./app/photos/" + optionalPhoto.get().getFileNameHash()));
+                    return ok().sendFile(new File("./storage/photos/" + optionalPhoto.get().getFilenameHash()));
                 }
             }
         });
 
+    }
+
+    /**
+     * Determine whether the user doing an upload can upload a photo for receiving user
+     * @param uploadingUserId the id of the user doing the upload
+     * @param receivingUserId the if of the user for which the uploaded photo is
+     * @return true (wrapped in a completion stage) if upload is allowed, false (wrapped in a
+     * completion stage) otherwise
+     */
+    private CompletionStage<Boolean> canUserUploadPhoto(int uploadingUserId, int receivingUserId) {
+        return userRepository.getUserById(uploadingUserId)
+            .thenCombineAsync(userRepository.getUserById(receivingUserId), (optionalUploadingUser, optionalReceivingUser) -> {
+                // if either user does not exist, we can't really upload
+                if (!optionalUploadingUser.isPresent() || !optionalReceivingUser.isPresent()) {
+                    return false;
+                }
+
+                User uploadingUser = optionalUploadingUser.get();
+                User receivingUser = optionalReceivingUser.get();
+
+                if (uploadingUser.isAdmin() || uploadingUser.isDefaultAdmin()) {
+                    return true;
+                }
+
+                if (uploadingUser.equals(receivingUser)) {
+                    return true;
+                }
+                return false;
+            }, httpExecutionContext.current());
     }
 
     /**
@@ -192,78 +240,153 @@ public class PhotoController {
      * @param request the HTTP request requesting the upload
      * @return the result for the request
      */
+    @With(LoggedIn.class)
     public CompletionStage<Result> uploadPhotoForUser(int userId, Http.Request request) {
-        Optional<String> optionalContentType = request.contentType();
+        // TODO: On is Primary don't save to list of photos just set as primary photo, and delete old primary photo if exists.
+        User userUploadingPhoto = request.attrs().get(ActionState.USER);
         ObjectNode response = Json.newObject();
         String messageKey = "message";
 
-        // TODO: check that we are authorised to upload the photo
+        return canUserUploadPhoto(userUploadingPhoto.getUserId(), userId)
+            .thenComposeAsync(canUploadPhoto -> {
+                if (!canUploadPhoto) {
+                    String message = String.format("User %d is not allowed to upload a photo for user %d", userUploadingPhoto.getUserId(), userId);
+                    throw new CompletionException(new ForbiddenRequestException(message));
+                }
 
-        // check that a content type is specified
-        if (!optionalContentType.isPresent()) {
-            response.put(messageKey, "Please specify the Content Type as specified in the API spec");
-            return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-        }
+                Optional<String> optionalContentType = request.contentType();
 
-        String contentType = optionalContentType.get();
+                // check that a content type is specified
+                if (!optionalContentType.isPresent()) {
+                    response.put(messageKey, "Please specify the Content Type as specified in the API spec");
+                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                }
 
-        // check that the content type is allowed
-        if (!contentType.equals("multipart/form-data")) {
-            response.put(messageKey, "Please specify the Content Type as specified in the API spec");
-            return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-        }
+                String contentType = optionalContentType.get();
 
-        // parse request body to multipart form data
-        Http.MultipartFormData multipartFormData = request.body().asMultipartFormData();
-        Http.MultipartFormData.FilePart photo = multipartFormData.getFile("image");
-        Map<String, String[]> textFields = multipartFormData.asFormUrlEncoded();
+                // check that the content type is allowed
+                if (!contentType.equals("multipart/form-data")) {
+                    response.put(messageKey, "Please specify the Content Type as specified in the API spec");
+                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                }
 
-        // check that the body includes fields as specified in the API spec
-        if (!(textFields.containsKey("isPrimary") || textFields.containsKey("isPublic"))) {
-            response.put(messageKey, "Please provide the request body as specified in the API spec");
-            return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-        }
+                // parse request body to multipart form data
+                Http.MultipartFormData multipartFormData = request.body().asMultipartFormData();
+                Http.MultipartFormData.FilePart photo = multipartFormData.getFile("image");
+                Map<String, String[]> textFields = multipartFormData.asFormUrlEncoded();
 
-        // check that the body includes the photo
-        if (photo == null) {
-            response.put(messageKey, "Missing photo in the request body");
-            return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-        }
+                // check that the body includes fields as specified in the API spec
+                if (!(textFields.containsKey("isPrimary") || textFields.containsKey("isPublic"))) {
+                    response.put(messageKey, "Please provide the request body as specified in the API spec");
+                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                }
 
-        // check for the photo's content type
-        String photoContentType = photo.getContentType();
-        if (!(photoContentType.equals("image/png") || photoContentType.equals("image/jpeg"))) {
-            response.put(messageKey, "Your photo must be a .png or .jpg file");
-            return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-        }
+                // check that the body includes the photo
+                if (photo == null) {
+                    response.put(messageKey, "Missing photo in the request body");
+                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                }
 
-        // initialise the text components of the request
-        String isPrimaryAsText = textFields.get("isPrimary")[0];
-        String isPublicAsText = textFields.get("isPublic")[0];
-        boolean isPrimary = isPrimaryAsText.equals("true");
-        boolean isPublic = isPublicAsText.equals("true");
+                // check for the photo's content type
+                String photoContentType = photo.getContentType();
+                if (!(photoContentType.equals("image/png") || photoContentType.equals("image/jpeg"))) {
+                    response.put(messageKey, "Your photo must be a .png or .jpg file");
+                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                }
 
-        // get the photo as a file from the request
-        Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
+                // initialise the text components of the request
+                String isPrimaryAsText = textFields.get("isPrimary")[0];
+                String isPublicAsText = textFields.get("isPublic")[0];
+                boolean isPrimary = isPrimaryAsText.equals("true");
+                boolean isPublic = isPublicAsText.equals("true");
 
-        // copy file to local file system
-        String path = System.getProperty("user.dir") + "/storage/photos";
-        Security security = new Security();
-        String token = security.generateToken();
-        String extension = photoContentType.equals("image/png") ? ".png" : ".jpg";
-        String filename = token + extension;
-        File destination = new File(path, filename);
+                // A photo cannot be primary and private as other users need to see the profile photo
+                if (isPrimary && !isPublic) {
+                    response.put(messageKey, "A photo cannot be primary and private");
+                    return supplyAsync(() -> forbidden(response), httpExecutionContext.current());
+                }
 
-        // if the file path already exists, generate another token
-        while (destination.exists()) {
-            token = security.generateToken();
-            filename = token + extension;
-            destination = new File(path, filename);
-        }
+                // get the photo as a file from the request
+                Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
 
-        temporaryPhotoFile.moveFileTo(destination);
+                // start copying the file to file system
+                String path = System.getProperty("user.dir") + "/storage/photos";
+                Security security = new Security();
+                String token = security.generateToken();
+                String extension = photoContentType.equals("image/png") ? ".png" : ".jpg";
+                String filename = token + extension;
+                String thumbFilename = token + "_thumb" + extension;
+                File fileDestination = new File(path, filename);
+                File thumbFileDestination = new File(path, thumbFilename);
 
-        response.put(messageKey, "Endpoint under development");
-        return supplyAsync(() -> internalServerError(response), httpExecutionContext.current());
+                // if the file path already exists, generate another token
+                while (fileDestination.exists()) {
+                    token = security.generateToken();
+                    filename = token + extension;
+                    thumbFilename = token + "_thumb" + extension;
+                    fileDestination = new File(path, filename);
+                    thumbFileDestination = new File(path, thumbFilename);
+                }
+
+                // save to filesystem
+                temporaryPhotoFile.moveFileTo(fileDestination);
+
+                // resize and save a thumbnail.
+                try {
+                    BufferedImage bufferedImage = ImageIO.read(fileDestination);
+                    int width = bufferedImage.getWidth();
+                    int height = bufferedImage.getHeight();
+                    int midWidth = bufferedImage.getWidth() / 2;
+                    int midHeight = bufferedImage.getHeight() / 2;
+                    Image img;
+                    if (midWidth > 150 && midHeight > 150) {
+                        if (midHeight > midWidth) {
+                            img = bufferedImage.getSubimage(0, midHeight - midWidth, width, width)
+                                    .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                        } else {
+                            img = bufferedImage.getSubimage(midWidth - midHeight, 0, height, height)
+                                    .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                        }
+                    } else if (midWidth > midHeight) {
+                        img = bufferedImage.getSubimage(midWidth - midHeight, 0, height, height)
+                                .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                    } else {
+                        img = bufferedImage.getSubimage(0, midHeight - midWidth, width, width)
+                                .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                    }
+                    BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
+                    image.createGraphics().drawImage(img, 0, 0, null);
+                    ImageIO.write(image, photoContentType.split("/")[1], thumbFileDestination);
+                } catch (IOException e) {
+                    return supplyAsync(Results::internalServerError, httpExecutionContext.current());
+                }
+
+                // create photo model in database
+                final String usedFilename = filename;
+                return userRepository.getUserById(userId)
+                    .thenComposeAsync(optionalReceivingUser -> {
+                        if (!optionalReceivingUser.isPresent()) {
+                            response.put(messageKey, String.format("User %d does not exist", userId));
+                            return supplyAsync(() -> notFound(response));
+                        }
+
+                        User receivingUser = optionalReceivingUser.get();
+                        PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary);
+                        return photoRepository.insert(personalPhoto)
+                            .thenApplyAsync((insertedPhoto) -> created(Json.toJson(insertedPhoto)));
+                    });
+            }, httpExecutionContext.current())
+            .exceptionally(error -> {
+                try {
+                    throw error.getCause();
+                } catch (ForbiddenRequestException forbiddenRequest) {
+                    response.put(messageKey, forbiddenRequest.getMessage());
+                    return forbidden(response);
+                } catch (Throwable throwable) {
+                    System.err.println("Unexpected error when uploading a photo: " + Arrays.toString(throwable.getStackTrace()));
+                    response.put(messageKey, "Something went wrong trying to upload the photo");
+                    return internalServerError(response);
+                }
+            });
     }
 }
