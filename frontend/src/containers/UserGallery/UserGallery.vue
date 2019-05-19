@@ -20,7 +20,7 @@
             v-on:click="openPhotoDialog(photo)"
           >
             <v-img
-              :src="photo.thumbEndpoint"
+              :src="photo.endpoint"
               aspect-ratio="1"
               class="grey lighten-2"
               >

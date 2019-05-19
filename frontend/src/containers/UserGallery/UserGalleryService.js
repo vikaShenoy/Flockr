@@ -22,8 +22,8 @@ export async function getPhotosForUser(userId) {
  */
 let addPhotoEndpoints = function(photosDetails) {
   for (let i = 0; i < photosDetails.length; i++) {
-    photosDetails[i].endpoint = endpoint(`/users/photos/${photosDetails[i]["photoId"]}`)
-    photosDetails[i].thumbEndpoint = endpoint(`/users/photos/${photosDetails[i]["photoId"]}/thumbnail`)
+    photosDetails[i].endpoint = endpoint(`/users/photos/${photosDetails[i]["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
+    photosDetails[i].thumbEndpoint = endpoint(`/users/photos/${photosDetails[i]["photoId"]}/thumbnail`);
   }
   return photosDetails;
 };
