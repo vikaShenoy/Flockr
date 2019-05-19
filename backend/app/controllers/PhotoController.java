@@ -29,6 +29,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
@@ -329,23 +330,33 @@ public class PhotoController extends Controller {
 
                 // save to filesystem
                 temporaryPhotoFile.moveFileTo(fileDestination);
+
+                // resize and save a thumbnail.
                 try {
                     BufferedImage bufferedImage = ImageIO.read(fileDestination);
+                    int width = bufferedImage.getWidth();
+                    int height = bufferedImage.getHeight();
                     int midWidth = bufferedImage.getWidth() / 2;
                     int midHeight = bufferedImage.getHeight() / 2;
                     Image img;
                     if (midWidth > 150 && midHeight > 150) {
-                        img = bufferedImage.getSubimage(midWidth - 150, midHeight - 150, 300, 300);
+                        if (midHeight > midWidth) {
+                            img = bufferedImage.getSubimage(0, midHeight - midWidth, width, width)
+                                    .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                        } else {
+                            img = bufferedImage.getSubimage(midWidth - midHeight, 0, height, height)
+                                    .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                        }
                     } else if (midWidth > midHeight) {
-                        img = bufferedImage.getSubimage(midWidth - midHeight, bufferedImage.getHeight(), bufferedImage.getHeight(), bufferedImage.getHeight());
-                        img.getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                        img = bufferedImage.getSubimage(midWidth - midHeight, 0, height, height)
+                                .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
                     } else {
-                        img = bufferedImage.getSubimage(bufferedImage.getWidth(), midHeight - midWidth, bufferedImage.getWidth(), bufferedImage.getWidth());
-                        img.getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                        img = bufferedImage.getSubimage(0, midHeight - midWidth, width, width)
+                                .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
                     }
                     BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
                     image.createGraphics().drawImage(img, 0, 0, null);
-                    ImageIO.write(image, photoContentType, thumbFileDestination);
+                    ImageIO.write(image, photoContentType.split("/")[1], thumbFileDestination);
                 } catch (IOException e) {
                     return supplyAsync(Results::internalServerError, httpExecutionContext.current());
                 }
@@ -372,7 +383,7 @@ public class PhotoController extends Controller {
                     response.put(messageKey, forbiddenRequest.getMessage());
                     return forbidden(response);
                 } catch (Throwable throwable) {
-                    System.err.println("Unexpected error when uploading a photo: " + throwable.getStackTrace());
+                    System.err.println("Unexpected error when uploading a photo: " + Arrays.toString(throwable.getStackTrace()));
                     response.put(messageKey, "Something went wrong trying to upload the photo");
                     return internalServerError(response);
                 }
