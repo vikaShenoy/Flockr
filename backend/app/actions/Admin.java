@@ -1,7 +1,9 @@
 package actions;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import models.RoleType;
 import models.User;
+import play.libs.Json;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -36,7 +38,8 @@ public class Admin extends Action.Simple {
             //return delegate.call(request.addAttr(ActionState.IS_ADMIN, true));
         }
 
-        return supplyAsync(() -> unauthorized("You are unauthorized"));
+        JsonNode response = Json.newObject().put("error", "Unauthorized");
+        return supplyAsync(() -> unauthorized(response));
         //return delegate.call(request.addAttr(ActionState.IS_ADMIN, false));
     }
 }

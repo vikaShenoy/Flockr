@@ -50,7 +50,6 @@ public class PhotoController extends Controller {
         this.photoUtil = photoUtil;
     }
 
-
     /**
      * This function is responsible for changing the permissions of a photo to either a private or a public.
      *
@@ -91,7 +90,7 @@ public class PhotoController extends Controller {
                     }
 
                     PersonalPhoto photo = optionalPhoto.get();
-                    photo.setPermission(isPublic);
+                    photo.setPublic(isPublic);
                     return photoRepository.updatePhoto(photo);
                 }).thenApplyAsync(PersonalPhoto -> ok("Successfully updated permission groups"))
                 .exceptionally(e -> {
@@ -109,7 +108,6 @@ public class PhotoController extends Controller {
                     }
                 });
     }
-
 
     /**
      * This function is responsible for deleting the photo with the given ID
@@ -157,12 +155,17 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int userId, Http.Request request) {
-        return photoRepository.getPhotosById(userId)
-                .thenApplyAsync((photos) -> {
-                    JsonNode photosAsJSON = Json.toJson(photos);
-                    System.out.println(photosAsJSON.asText());
-                    return ok(photosAsJSON);
-                });
+        // Check user exists
+        if (User.find.byId(userId) == null) {
+            JsonNode response = Json.newObject().put("error", "Not Found");
+            return supplyAsync(() -> notFound(response));
+        } else {
+            return photoRepository.getPhotosById(userId)
+                    .thenApplyAsync((photos) -> {
+                        JsonNode photosAsJSON = Json.toJson(photos);
+                        return ok(photosAsJSON);
+                    });
+        }
     }
 
     /**
@@ -186,7 +189,7 @@ public class PhotoController extends Controller {
                 return notFound();
             } else{
 
-                if (!user.isAdmin() && !optionalPhoto.get().getIsPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
+                if (!user.isAdmin() && !optionalPhoto.get().isPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
                     return forbidden();
                 } else {
                     return ok().sendFile(new File("./storage/photos/" + optionalPhoto.get().getFileNameHash()));
@@ -327,7 +330,7 @@ public class PhotoController extends Controller {
                         }
 
                         User receivingUser = optionalReceivingUser.get();
-                        PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, receivingUser, isPublic, isPrimary);
+                        PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary);
                         return photoRepository.insert(personalPhoto)
                             .thenApplyAsync((insertedPhoto) -> (Result) created());
                     });

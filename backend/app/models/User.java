@@ -47,7 +47,7 @@ public class User extends Model {
     @ManyToMany(mappedBy = "users")
     public List<Role> roles;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     private List<PersonalPhoto> personalPhotos;
 
     @OneToOne

@@ -27,36 +27,37 @@ public class PersonalPhoto extends Model {
     private boolean isPrimary;
 
     @Constraints.Required
-    private String filenameHash;
+    private String fileNameHash;
 
     /**
      * Constructor
      * @param filenameHash the hashed filename of the photo
-     * @param user the user that the photo is associated to
      * @param isPublic true if the photo is public, otherwise photo is private
+     * @param user the user that the photo is associated to
      * @param isPrimary true if the photo is the primary photo of the user, otherwise false
      */
-    public PersonalPhoto(String filenameHash, User user, boolean isPublic, boolean isPrimary) {
-        this.filenameHash = filenameHash;
+    public PersonalPhoto(String filenameHash, boolean isPublic, User user, boolean isPrimary) {
+        this.fileNameHash = filenameHash;
         this.isPublic = isPublic;
         this.user = user;
         this.isPrimary = isPrimary;
     }
 
-    public boolean getIsPublic() {
+    public boolean isPublic() {
         return this.isPublic;
     }
+
     public int getPhotoId() {
         return photoId;
     }
 
-    public String getFileNameHash() {return this.filenameHash;}
+    public String getFileNameHash() {return this.fileNameHash;}
 
     public User getUser() {
         return this.user;
     }
 
-    public void setPermission(boolean isPublic) {
+    public void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }
 
@@ -72,7 +73,9 @@ public class PersonalPhoto extends Model {
         isPrimary = primary;
     }
 
-
+    public void setFileNameHash(String filenameHash) {
+        this.fileNameHash = filenameHash;
+    }
 
     /**
      * This function allows EBean to make queries on the database
