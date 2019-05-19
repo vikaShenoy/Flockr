@@ -114,10 +114,8 @@ export default {
       cropper.getCroppedCanvas().toBlob(async blob => {
         try {
           const response = await sendProfilePicture(this.$route.params.id, blob);
-          throw new Error("hehe");
           this.$emit("closeDialog", response.body);
         } catch (error) {
-          console.log("I made it here");
           this.$emit("showError", "Could not upload profile picture");
         }
       });
