@@ -214,24 +214,24 @@ public class PhotoController extends Controller {
      */
     private CompletionStage<Boolean> canUserUploadPhoto(int uploadingUserId, int receivingUserId) {
         return userRepository.getUserById(uploadingUserId)
-            .thenCombineAsync(userRepository.getUserById(receivingUserId), (optionalUploadingUser, optionalReceivingUser) -> {
-                // if either user does not exist, we can't really upload
-                if (!optionalUploadingUser.isPresent() || !optionalReceivingUser.isPresent()) {
+                .thenCombineAsync(userRepository.getUserById(receivingUserId), (optionalUploadingUser, optionalReceivingUser) -> {
+                    // if either user does not exist, we can't really upload
+                    if (!optionalUploadingUser.isPresent() || !optionalReceivingUser.isPresent()) {
+                        return false;
+                    }
+
+                    User uploadingUser = optionalUploadingUser.get();
+                    User receivingUser = optionalReceivingUser.get();
+
+                    if (uploadingUser.isAdmin() || uploadingUser.isDefaultAdmin()) {
+                        return true;
+                    }
+
+                    if (uploadingUser.equals(receivingUser)) {
+                        return true;
+                    }
                     return false;
-                }
-
-                User uploadingUser = optionalUploadingUser.get();
-                User receivingUser = optionalReceivingUser.get();
-
-                if (uploadingUser.isAdmin() || uploadingUser.isDefaultAdmin()) {
-                    return true;
-                }
-
-                if (uploadingUser.equals(receivingUser)) {
-                    return true;
-                }
-                return false;
-            }, httpExecutionContext.current());
+                }, httpExecutionContext.current());
     }
 
     /**
@@ -249,122 +249,103 @@ public class PhotoController extends Controller {
         String messageKey = "message";
 
         return canUserUploadPhoto(userUploadingPhoto.getUserId(), userId)
-            .thenComposeAsync(canUploadPhoto -> {
-                if (!canUploadPhoto) {
-                    String message = String.format("User %d is not allowed to upload a photo for user %d", userUploadingPhoto.getUserId(), userId);
-                    throw new CompletionException(new ForbiddenRequestException(message));
-                }
-
-                Optional<String> optionalContentType = request.contentType();
-
-                // check that a content type is specified
-                if (!optionalContentType.isPresent()) {
-                    response.put(messageKey, "Please specify the Content Type as specified in the API spec");
-                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-                }
-
-                String contentType = optionalContentType.get();
-
-                // check that the content type is allowed
-                if (!contentType.equals("multipart/form-data")) {
-                    response.put(messageKey, "Please specify the Content Type as specified in the API spec");
-                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-                }
-
-                // parse request body to multipart form data
-                Http.MultipartFormData multipartFormData = request.body().asMultipartFormData();
-                Http.MultipartFormData.FilePart photo = multipartFormData.getFile("image");
-                Map<String, String[]> textFields = multipartFormData.asFormUrlEncoded();
-
-                // check that the body includes fields as specified in the API spec
-                if (!(textFields.containsKey("isPrimary") || textFields.containsKey("isPublic"))) {
-                    response.put(messageKey, "Please provide the request body as specified in the API spec");
-                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-                }
-
-                // check that the body includes the photo
-                if (photo == null) {
-                    response.put(messageKey, "Missing photo in the request body");
-                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-                }
-
-                // check for the photo's content type
-                String photoContentType = photo.getContentType();
-                if (!(photoContentType.equals("image/png") || photoContentType.equals("image/jpeg"))) {
-                    response.put(messageKey, "Your photo must be a .png or .jpg file");
-                    return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
-                }
-
-                // initialise the text components of the request
-                String isPrimaryAsText = textFields.get("isPrimary")[0];
-                String isPublicAsText = textFields.get("isPublic")[0];
-                boolean isPrimary = isPrimaryAsText.equals("true");
-                boolean isPublic = isPublicAsText.equals("true");
-
-                // A photo cannot be primary and private as other users need to see the profile photo
-                if (isPrimary && !isPublic) {
-                    response.put(messageKey, "A photo cannot be primary and private");
-                    return supplyAsync(() -> forbidden(response), httpExecutionContext.current());
-                }
-
-                System.out.println("Extracting photo from request");
-
-                // get the photo as a file from the request
-                Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
-
-                // start copying the file to file system
-                String path = System.getProperty("user.dir") + "/storage/photos";
-                Security security = new Security();
-                String token = security.generateToken();
-                String extension = photoContentType.equals("image/png") ? ".png" : ".jpg";
-                String filename = token + extension;
-                String thumbFilename = token + "_thumb" + extension;
-                File fileDestination = new File(path, filename);
-                File thumbFileDestination = new File(path, thumbFilename);
-
-                // if the file path already exists, generate another token
-                while (fileDestination.exists()) {
-                    token = security.generateToken();
-                    filename = token + extension;
-                    thumbFilename = token + "_thumb" + extension;
-                    fileDestination = new File(path, filename);
-                    thumbFileDestination = new File(path, thumbFilename);
-                }
-
-                // save to filesystem
-                temporaryPhotoFile.moveFileTo(fileDestination);
-                System.out.println("Saved file to filesystem");
-
-                // resize and save a thumbnail.
-                try {
-                    BufferedImage bufferedImage = ImageIO.read(fileDestination);
-                    int width = bufferedImage.getWidth();
-                    int height = bufferedImage.getHeight();
-                    int midWidth = bufferedImage.getWidth() / 2;
-                    int midHeight = bufferedImage.getHeight() / 2;
-                    Image img;
-                    if (midWidth > 150 && midHeight > 150) {
-                        if (midHeight > midWidth) {
-                            img = bufferedImage.getSubimage(0, midHeight - midWidth, width, width)
-                                    .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
-                        } else {
-                            img = bufferedImage.getSubimage(midWidth - midHeight, 0, height, height)
-                                    .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
-                        }
-                    } else if (midWidth > midHeight) {
-                        img = bufferedImage.getSubimage(midWidth - midHeight, 0, height, height)
-                                .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
-                    } else {
-                        img = bufferedImage.getSubimage(0, midHeight - midWidth, width, width)
-                                .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+                .thenComposeAsync(canUploadPhoto -> {
+                    if (!canUploadPhoto) {
+                        String message = String.format("User %d is not allowed to upload a photo for user %d", userUploadingPhoto.getUserId(), userId);
+                        throw new CompletionException(new ForbiddenRequestException(message));
                     }
-                    BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
-                    image.createGraphics().drawImage(img, 0, 0, null);
-                    ImageIO.write(image, photoContentType.split("/")[1], thumbFileDestination);
-                } catch (IOException e) {
-                    System.err.println("Internal Server Error when generating a thumbnail: " + e);
-                    return supplyAsync(Results::internalServerError, httpExecutionContext.current());
-                }
+
+                    Optional<String> optionalContentType = request.contentType();
+
+                    // check that a content type is specified
+                    if (!optionalContentType.isPresent()) {
+                        response.put(messageKey, "Please specify the Content Type as specified in the API spec");
+                        return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                    }
+
+                    String contentType = optionalContentType.get();
+
+                    // check that the content type is allowed
+                    if (!contentType.equals("multipart/form-data")) {
+                        response.put(messageKey, "Please specify the Content Type as specified in the API spec");
+                        return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                    }
+
+                    // parse request body to multipart form data
+                    Http.MultipartFormData multipartFormData = request.body().asMultipartFormData();
+                    Http.MultipartFormData.FilePart photo = multipartFormData.getFile("image");
+                    Map<String, String[]> textFields = multipartFormData.asFormUrlEncoded();
+
+                    // check that the body includes fields as specified in the API spec
+                    if (!(textFields.containsKey("isPrimary") || textFields.containsKey("isPublic"))) {
+                        response.put(messageKey, "Please provide the request body as specified in the API spec");
+                        return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                    }
+
+                    // check that the body includes the photo
+                    if (photo == null) {
+                        response.put(messageKey, "Missing photo in the request body");
+                        return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                    }
+
+                    // check for the photo's content type
+                    String photoContentType = photo.getContentType();
+                    if (!(photoContentType.equals("image/png") || photoContentType.equals("image/jpeg"))) {
+                        response.put(messageKey, "Your photo must be a .png or .jpg file");
+                        return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
+                    }
+
+                    // initialise the text components of the request
+                    String isPrimaryAsText = textFields.get("isPrimary")[0];
+                    String isPublicAsText = textFields.get("isPublic")[0];
+                    boolean isPrimary = isPrimaryAsText.equals("true");
+                    boolean isPublic = isPublicAsText.equals("true");
+
+                    // A photo cannot be primary and private as other users need to see the profile photo
+                    if (isPrimary && !isPublic) {
+                        response.put(messageKey, "A photo cannot be primary and private");
+                        return supplyAsync(() -> forbidden(response), httpExecutionContext.current());
+                    }
+
+                    System.out.println("Extracting photo from request");
+
+                    // get the photo as a file from the request
+                    Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
+
+                    checkForAndCreatePhotosDirectory();
+
+                    // start copying the file to file system
+                    String path = System.getProperty("user.dir") + "/storage/photos";
+                    Security security = new Security();
+                    String token = security.generateToken();
+                    String extension = photoContentType.equals("image/png") ? ".png" : ".jpg";
+                    String filename = token + extension;
+                    String thumbFilename = token + "_thumb" + extension;
+                    File fileDestination = new File(path, filename);
+                    File thumbFileDestination = new File(path, thumbFilename);
+
+                    // if the file path already exists, generate another token
+                    while (fileDestination.exists()) {
+                        token = security.generateToken();
+                        filename = token + extension;
+                        thumbFilename = token + "_thumb" + extension;
+                        fileDestination = new File(path, filename);
+                        thumbFileDestination = new File(path, thumbFilename);
+                    }
+
+                    // save to filesystem
+                    temporaryPhotoFile.moveFileTo(fileDestination);
+                    System.out.println("Saved file to filesystem");
+
+                    // resize and save a thumbnail.
+                    try {
+                        System.out.println("Saving thumbnail of photo");
+                        saveThumbnail(fileDestination, thumbFileDestination, contentType);
+                        System.out.println("Thumbnail created successfully of photo");
+                    } catch (IOException e) {
+                        System.err.println("Internal Server Error when generating a thumbnail: " + e);
+                        return supplyAsync(Results::internalServerError, httpExecutionContext.current());
+                    }
                     // save to filesystem
                     temporaryPhotoFile.moveFileTo(fileDestination);
                     // resize and save a thumbnail.
@@ -404,15 +385,32 @@ public class PhotoController extends Controller {
     }
 
     /**
+     * Checks if the photo directories are created and creates them if not.
+     *
+     * @return returns true only if both the storage and storage/photos are created, false otherwise.
+     */
+    private boolean checkForAndCreatePhotosDirectory() {
+        String path = System.getProperty("user.dir") + "/storage";
+        File file = new File(path);
+        if (!file.exists() && file.mkdir()) {
+            file = new File(path + "/photos");
+            if (!file.exists()) {
+                return file.mkdir();
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the thumbnail of a given photo.
      *
      * @param photoId the id of the photo of which the thumbnail will be returned.
      * @param request the Http request.
      * @return a Http response with one of the following:
-     *  - 200 - with the photo data in the body.
-     *  - 401 - when the user is not authenticated.
-     *  - 403 - when the user has not completed their profile.
-     *  - 404 - when the photo does not exist.
+     * - 200 - with the photo data in the body.
+     * - 401 - when the user is not authenticated.
+     * - 403 - when the user has not completed their profile.
+     * - 404 - when the photo does not exist.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getThumbnail(int photoId, Http.Request request) {
