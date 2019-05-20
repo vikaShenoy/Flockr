@@ -36,6 +36,7 @@ public class User extends Model {
     private String gender;
 
     @Constraints.Required
+    @Column(unique = true)
     private String email;
 
     @ManyToMany(mappedBy = "users")

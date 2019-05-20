@@ -3,6 +3,7 @@ package models;
 import io.ebean.Finder;
 import io.ebean.Model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
@@ -21,6 +22,7 @@ public class Role extends Model {
     @Id
     private int roleId;
 
+    @Column(unique = true)
     private String roleType;
 
     @Override

@@ -1,7 +1,7 @@
 package exceptions;
 
 /**
- * An error for a forbidden request
+ * Used to represent an exceptional case when the request is forbidden.
  */
 public class ForbiddenRequestException extends Exception {
 

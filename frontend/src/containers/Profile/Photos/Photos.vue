@@ -5,17 +5,17 @@
     <v-card id="photos">
       <v-card-actions>
         <v-spacer align="left">
-          <v-btn v-if="photos.length > 0" color="secondary" outline v-on:click="openGallery">View Gallery</v-btn>
+          <v-btn v-if="hasPhotos" color="secondary" outline v-on:click="openGallery">View Gallery</v-btn>
         </v-spacer>
       </v-card-actions>
       <v-responsive>
         <v-container grid-list-sm fluid>
 
           <!-- users photos -->
-          <v-layout v-if="photos.length" row wrap>
-            <v-flex sm12 md6 lg4 v-for="photo in photos" v-bind:key="photo">
+          <v-layout v-if="hasPhotos" row wrap>
+            <v-flex sm12 md6 lg4 v-for="photo in photos" v-bind:key="photo.photoId">
               <v-img class="photo clickable" v-on:click.stop="openViewPhotoDialog(photo)"
-                     :src="getThumbnailPhotoEndpoint(photo.filename)"></v-img>
+                     :src="photo.thumbEndpoint"></v-img>
             </v-flex>
           </v-layout>
 
@@ -42,7 +42,7 @@
     <view-photo-dialog
             :dialog="viewPhotoDialog"
             :photo="currentPhoto"
-            v-on:closeDialog="closeViewPhotoDialog"
+            v-on:dialogChanged="closeViewPhotoDialog"
     ></view-photo-dialog>
 
   </div>
@@ -50,8 +50,8 @@
 
 <script>
   import AddPhotoDialog from "./AddPhotoDialog/AddPhotoDialog";
-  import {endpoint} from "../../../utils/endpoint";
   import ViewPhotoDialog from "./ViewPhotoDialog/ViewPhotoDialog";
+  import {getPhotos} from "./PhotosService";
 
   export default {
 
@@ -65,28 +65,13 @@
         addPhotoDialog: false,
         userId: null,
         currentPhoto: null,
-        viewPhotoDialog: false
+        viewPhotoDialog: false,
+        photos: [],
+        hasPhotos: false
       };
     },
 
-    props: {
-      photos: {
-        type: Array,
-        required: true
-      }
-    },
-
     methods: {
-
-      /**
-       * Gets the photo thumbnail endpoint to query for the given photo filename
-       *
-       * @param photoFilename the filename of the photo
-       * @return String the url of photos the endpoint
-       */
-      getThumbnailPhotoEndpoint: function (photoFilename) {
-        return endpoint(`/travellers/photos/${photoFilename}/thumbnail`);
-      },
 
       /**
        * Called when a photo is clicked on.
@@ -105,9 +90,9 @@
        * Sets the current photo to null again.
        * Closes the view photo dialog by setting viewPhotoDialog to false
        */
-      closeViewPhotoDialog: function () {
+      closeViewPhotoDialog: function (newValue) {
         this.currentPhoto = null;
-        this.viewPhotoDialog = false;
+        this.viewPhotoDialog = newValue;
       },
 
       /**
@@ -128,8 +113,10 @@
 
     },
 
-    mounted: function () {
+    mounted: async function () {
       this.userId = this.$route.params.id;
+      this.photos = await getPhotos(this.userId, 6);
+      this.hasPhotos = this.photos.length > 0;
     }
   }
 </script>

@@ -1,14 +1,14 @@
 <template>
-    <v-dialog
-            id="ViewPhotoDialog"
-            v-model="dataDialog"
-            width="80%">
+  <v-dialog
+          id="ViewPhotoDialog"
+          v-model="dataDialog"
+          width="80%">
 
-        <v-card>
-            Add the view photo stuff here.
-        </v-card>
+    <v-card>
+      Add the view photo stuff here.
+    </v-card>
 
-    </v-dialog>
+  </v-dialog>
 </template>
 
 <script>
@@ -47,6 +47,10 @@
       "dialog": {
         handler: "onDialogChanged",
         immediate: true
+      },
+      dataDialog: {
+        handler: "closeDialog",
+        immediate: true
       }
     },
 
@@ -57,7 +61,7 @@
        * Emits an event called dialogChangedEvent with a parameter of the dataDialog variable
        */
       closeDialog: function () {
-        this.$emit("closeDialog");
+        this.$emit("dialogChanged", this.dataDialog);
       },
 
       /**

@@ -28,6 +28,7 @@ public class UserPhotoSteps {
     private boolean isPublic = false;
     private boolean isPrimary = false;
     private DataTable photoList;
+    private ArrayList<Integer> photoIds = new ArrayList<>();
     private int newPhotoId;
     private List<String> photosToRemove = new ArrayList<>();
 
@@ -64,7 +65,7 @@ public class UserPhotoSteps {
             photo.save();
             photo = PersonalPhoto.find.byId(photo.getPhotoId());
             photos.add(photo);
-
+            photoIds.add(photo.getPhotoId());
         }
         user.setPersonalPhotos(photos);
         user.save();
@@ -285,6 +286,48 @@ public class UserPhotoSteps {
                 "GET",
                 "/api/users/photos/5000");
 
+        Assert.assertNotNull(this.result);
+    }
+
+    @Given("the user with the id {int} has a photo with an id {int}")
+    public void theUserWithTheGivenIdHasAPhotoWithTheGivenId(int userId, int photoId) {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result photoRes = fakeClient.makeRequestWithToken("GET", "/api/users/" + userId + "photos",
+                "token-token");
+
+
+    }
+
+    @Given("The photo with an id of {int} has permission as public")
+    public void thePhotoWithAnIdHasPermissionAsPublic(Integer int1) {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @When("The user changes the photo permission to private")
+    public void theUserChangesThePhotoPermissionToPrivate() throws IOException {
+        User testUser = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result photosRes = fakeClient.makeRequestWithToken("GET", "/api/users/" +
+                testUser.getUserId() + "/photos", testUser.getToken());
+        System.out.println(testUser.getUserId());
+        Assert.assertEquals(200, photosRes.status());
+        this.photos = utils.PlayResultToJson.convertResultToJson(photosRes);
+        Assert.assertNotNull(this.photos);
+    }
+
+    @Then("The photo permission is set to private")
+    public void thePhotoPermissionIsSetToPrivate() {
+
+    }
+
+    @When("The admin changes the photo permission to private")
+    public void theAdminChangesThePhotoPermissionToPrivate() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+        User admin = TestState.getInstance().getUser(1);
+
+        this.result = fakeClient.makeRequestWithToken("PATCH", "/api/users/photos/" + user.getUserId(), admin.getToken());
         Assert.assertNotNull(this.result);
     }
 }

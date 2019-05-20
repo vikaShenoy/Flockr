@@ -12,7 +12,6 @@ import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import models.Destination;
 import models.User;
-import org.junit.Assert;
 import play.Application;
 import play.libs.Json;
 import play.mvc.Http;
@@ -21,7 +20,6 @@ import play.test.Helpers;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.ServerError;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

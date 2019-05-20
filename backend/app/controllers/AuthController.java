@@ -4,21 +4,26 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.ConflictingRequestException;
 import exceptions.UnauthorizedException;
+import play.api.http.Status;
+import models.User;
 import play.libs.Json;
+import play.mvc.Http;
 import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
+import play.mvc.Http.Request;
 import play.mvc.Result;
+import play.mvc.Results;
 import models.*;
 import play.mvc.Results;
 import play.mvc.With;
 import repository.AuthRepository;
-import repository.UserRepository;
 import repository.RoleRepository;
+import repository.UserRepository;
+import util.Responses;
 import util.Security;
-
 import javax.inject.Inject;
-import java.util.Arrays;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
@@ -95,7 +100,7 @@ public class AuthController {
             });
         }
 
-        String middleName = "";
+        String middleName = jsonRequest.has("middleName") ? jsonRequest.get("middleName").asText() : "";
         String firstName = jsonRequest.get("firstName").asText();
         String lastName = jsonRequest.get("lastName").asText();
         String email = jsonRequest.get("email").asText();
@@ -105,7 +110,6 @@ public class AuthController {
 
         // Middle name is optional and checks if the middle name is a valid name
         if (jsonRequest.has("middleName")) {
-            middleName = jsonRequest.get("middleName").asText();
             if (!(isAlpha(middleName)) || (middleName.length() < 2)) {
                 return supplyAsync(() -> {
                     ObjectNode message = Json.newObject();
@@ -142,9 +146,29 @@ public class AuthController {
             });
         }
 
-        User user = new User(firstName, middleName,lastName, email, hashedPassword, userToken);
-        return authRepository.insert(user)
-                .thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)), httpExecutionContext.current());
+        // check that a user with that email does not already exist, if so, return request forbidden
+        return authRepository.getUserByEmail(email).thenComposeAsync((optionalUser -> {
+            if (optionalUser.isPresent()) {
+                throw new CompletionException(new ConflictingRequestException("Sorry, that email is taken"));
+            }
+
+            User user = new User(firstName, middleName, lastName, email, hashedPassword, userToken);
+            return authRepository.insert(user).thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)),
+                httpExecutionContext.current());
+        }), httpExecutionContext.current())
+        .exceptionally(error -> {
+            try {
+                throw error.getCause();
+            } catch (ConflictingRequestException e) {
+                ObjectNode message = Json.newObject();
+                message.put(messageKey, e.getMessage());
+                return Results.status(Http.Status.CONFLICT, message);
+            } catch (Throwable throwable) {
+                ObjectNode message = Json.newObject();
+                message.put(messageKey, "Something went wrong trying to sign up");
+                return internalServerError(message);
+            }
+        });
     }
 
     /**

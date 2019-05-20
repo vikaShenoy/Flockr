@@ -14,16 +14,12 @@ import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.*;
 import repository.PhotoRepository;
-
 import repository.UserRepository;
 import util.PhotoUtil;
 import util.Security;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
-
-import static java.util.concurrent.CompletableFuture.supplyAsync;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -33,6 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class PhotoController extends Controller {
 
@@ -65,7 +63,7 @@ public class PhotoController extends Controller {
         ObjectNode response = Json.newObject();
 
         // If the request body does not contain is public key
-        if (!requestBody.has("isPublic")) {
+        if (!requestBody.has("isPublic") || !requestBody.has("isPrimary")) {
             response.put("message", "Please specify the JSON body as specified in the API spec");
             return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
         }
@@ -77,7 +75,26 @@ public class PhotoController extends Controller {
             return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
         }
 
-        boolean isPublic = requestBody.asBoolean();
+        boolean isPublic = false, isPrimary = false;
+        String isPublicStr = requestBody.get("isPublic").asText();
+        if (isPublicStr.toLowerCase().equals("true")) {
+            isPublic = true;
+        } else if (isPublicStr.toLowerCase().equals("false")) {
+            isPublic = false;
+        }
+
+        if (requestBody.has("isPrimary")) {
+            String isPrimaryStr = requestBody.get("isPrimary").asText();
+            if (isPrimaryStr.toLowerCase().equals("true")) {
+                isPrimary = true;
+            } else if (isPrimaryStr.toLowerCase().equals("false")) {
+                isPrimary = false;
+            }
+        }
+        final boolean isPublicFinal = isPublic;
+        final boolean isPrimaryFinal = isPrimary;
+        System.out.println(isPublic);
+        System.out.println(isPrimary);
         return photoRepository.getPhotoById(photoId)
                 .thenApplyAsync(optionalPhoto -> {
                     // If the photo with the given photo id does not exists
@@ -86,22 +103,23 @@ public class PhotoController extends Controller {
                     }
 
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
-                    if (!user.isAdmin() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
+                    if (!user.isAdmin() || user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
                         throw new CompletionException(new UnauthorizedException());
                     }
 
                     PersonalPhoto photo = optionalPhoto.get();
-                    photo.setPublic(isPublic);
+                    photo.setPublic(isPublicFinal);
+                    photo.setPrimary(isPrimaryFinal);
                     return photoRepository.updatePhoto(photo);
                 }).thenApplyAsync(PersonalPhoto -> ok("Successfully updated permission groups"))
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
                     } catch (NotFoundException notFoundException) {
-                        response.put("message", "Could not find a photo with the given user id and photo id");
+                        response.put("message", "Could not find a photo with the given photo ID");
                         return notFound(response);
                     } catch (UnauthorizedException unauthorizedException) {
-                        response.put("message", "You are unauthorised to change the photo permission");
+                        response.put("message", "You are unauthorised to change the photo permission of the photo");
                         return forbidden(response);
                     } catch (Throwable serverException) {
                         response.put("message", "Endpoint under development");
