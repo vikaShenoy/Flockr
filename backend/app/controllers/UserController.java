@@ -19,12 +19,9 @@ import repository.UserRepository;
 
 import javax.inject.Inject;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ExecutionException;
 
@@ -115,7 +112,7 @@ public class UserController extends Controller {
                             System.out.println("Date stored in db for user is: " + date);
                             user.get().setDateOfBirth(date);
                         } catch (ParseException e) {
-                            System.out.println(e);
+                            System.out.println(Arrays.toString(e.getStackTrace()));
                         }
                     }
 

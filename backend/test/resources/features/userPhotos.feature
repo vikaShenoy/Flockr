@@ -48,3 +48,16 @@ Feature: As a registered user I want to have photos that display on my profile.
     And they want the photo to be their profile photo
     When they add the photo
     Then the photo is added
+
+  Scenario: A user wants to get a thumbnail of a photo they have
+    Given the user has a photo in the system
+    When the user requests the thumbnail for this photo
+    Then the thumbnail is returned in the response
+
+  Scenario: A user wants to get a thumbnail of a photo they do not have
+    When the user requests the thumbnail for a non existent photo
+    Then they should receive a "Not Found" error message with a 404 error code
+
+  Scenario: A not logged in user wants to get a thumbnail of a photo they have
+    When the user requests the thumbnail for a non existent photo
+    Then they should receive a "Unauthorized" error message with a 401 error code
