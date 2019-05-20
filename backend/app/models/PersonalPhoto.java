@@ -29,6 +29,9 @@ public class PersonalPhoto extends Model {
     @Constraints.Required
     private String filenameHash;
 
+    @Constraints.Required
+    private String thumbnailName;
+
     /**
      * Constructor
      * @param filenameHash the hashed filename of the photo
@@ -36,11 +39,12 @@ public class PersonalPhoto extends Model {
      * @param user the user that the photo is associated to
      * @param isPrimary true if the photo is the primary photo of the user, otherwise false
      */
-    public PersonalPhoto(String filenameHash, boolean isPublic, User user, boolean isPrimary) {
+    public PersonalPhoto(String filenameHash, boolean isPublic, User user, boolean isPrimary, String thumbnailName) {
         this.filenameHash = filenameHash;
         this.isPublic = isPublic;
         this.user = user;
         this.isPrimary = isPrimary;
+        this.thumbnailName = thumbnailName;
     }
 
     public boolean isPublic() {
@@ -75,6 +79,14 @@ public class PersonalPhoto extends Model {
 
     public void setFilenameHash(String filenameHash) {
         this.filenameHash = filenameHash;
+    }
+
+    public String getThumbnailName() {
+        return thumbnailName;
+    }
+
+    public void setThumbnailName(String thumbnailName) {
+        this.thumbnailName = thumbnailName;
     }
 
     /**

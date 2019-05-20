@@ -355,8 +355,10 @@ public class PhotoController extends Controller {
                         return supplyAsync(Results::internalServerError, httpExecutionContext.current());
                     }
 
+
                     // create photo model in database
                     final String usedFilename = filename;
+                    String finalThumbFilename = thumbFilename;
                     return userRepository.getUserById(userId)
                             .thenComposeAsync(optionalReceivingUser -> {
                                 if (!optionalReceivingUser.isPresent()) {
@@ -365,7 +367,7 @@ public class PhotoController extends Controller {
                                 }
 
                                 User receivingUser = optionalReceivingUser.get();
-                                PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary);
+                                PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary, finalThumbFilename);
                                 return photoRepository.insert(personalPhoto)
                                         .thenApplyAsync((insertedPhoto) -> created(Json.toJson(insertedPhoto)));
                             });
