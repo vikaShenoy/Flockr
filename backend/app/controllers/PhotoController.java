@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
-import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import models.PersonalPhoto;
 import models.User;
@@ -154,10 +153,10 @@ public class PhotoController extends Controller {
      * @param userId  the id of the user
      * @param request the http request
      * @return HTTP response which can be
-     *  - 200 - with a list of photos if successful
-     *  - 401 - if the user is not authorized
-     *  - 403 - if the user has not completed their profile
-     *  - 404 - if the user does not exist
+     * - 200 - with a list of photos if successful
+     * - 401 - if the user is not authorized
+     * - 403 - if the user has not completed their profile
+     * - 404 - if the user does not exist
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int userId, Http.Request request) {
@@ -178,12 +177,12 @@ public class PhotoController extends Controller {
      * Gets a specific photo
      *
      * @param photoId the id of the photo to retrieve
-     * @param request       HTTP request object
+     * @param request HTTP request object
      * @return binary photo data with status 200 if found
-     *         unauthorized with 401 if not authorized
-     *         notFound with 404 if photo not found //TODO Add this to the API spec!
-     *         forbidden 403 if trying to get a photo that you do not have permission to
-     *         500 server error for any other server related error
+     * unauthorized with 401 if not authorized
+     * notFound with 404 if photo not found //TODO Add this to the API spec!
+     * forbidden 403 if trying to get a photo that you do not have permission to
+     * 500 server error for any other server related error
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhoto(int photoId, Http.Request request) {
@@ -193,7 +192,7 @@ public class PhotoController extends Controller {
         return photoRepository.getPhotoById(photoId).thenApplyAsync(optionalPhoto -> {
             if (!optionalPhoto.isPresent()) {
                 return notFound();
-            } else{
+            } else {
 
                 if (!user.isAdmin() && !optionalPhoto.get().isPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
                     return forbidden();
@@ -207,6 +206,7 @@ public class PhotoController extends Controller {
 
     /**
      * Determine whether the user doing an upload can upload a photo for receiving user
+     *
      * @param uploadingUserId the id of the user doing the upload
      * @param receivingUserId the if of the user for which the uploaded photo is
      * @return true (wrapped in a completion stage) if upload is allowed, false (wrapped in a
@@ -236,7 +236,8 @@ public class PhotoController extends Controller {
 
     /**
      * Upload a new photo for a user
-     * @param userId the id of the user we are trying to add the photo for
+     *
+     * @param userId  the id of the user we are trying to add the photo for
      * @param request the HTTP request requesting the upload
      * @return the result for the request
      */
@@ -306,7 +307,7 @@ public class PhotoController extends Controller {
                     return supplyAsync(() -> forbidden(response), httpExecutionContext.current());
                 }
 
-                System.out.println("Extracting photo form request");
+                System.out.println("Extracting photo from request");
 
                 // get the photo as a file from the request
                 Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
@@ -364,33 +365,117 @@ public class PhotoController extends Controller {
                     System.err.println("Internal Server Error when generating a thumbnail: " + e);
                     return supplyAsync(Results::internalServerError, httpExecutionContext.current());
                 }
+                    // save to filesystem
+                    temporaryPhotoFile.moveFileTo(fileDestination);
+                    // resize and save a thumbnail.
+                    try {
+                        saveThumbnail(fileDestination, thumbFileDestination, photoContentType.split("/")[1]);
+                    } catch (IOException e) {
+                        return supplyAsync(Results::internalServerError, httpExecutionContext.current());
+                    }
 
-                // create photo model in database
-                final String usedFilename = filename;
-                return userRepository.getUserById(userId)
-                    .thenComposeAsync(optionalReceivingUser -> {
-                        if (!optionalReceivingUser.isPresent()) {
-                            response.put(messageKey, String.format("User %d does not exist", userId));
-                            return supplyAsync(() -> notFound(response));
-                        }
+                    // create photo model in database
+                    final String usedFilename = filename;
+                    return userRepository.getUserById(userId)
+                            .thenComposeAsync(optionalReceivingUser -> {
+                                if (!optionalReceivingUser.isPresent()) {
+                                    response.put(messageKey, String.format("User %d does not exist", userId));
+                                    return supplyAsync(() -> notFound(response));
+                                }
 
-                        User receivingUser = optionalReceivingUser.get();
-                        PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary);
-                        return photoRepository.insert(personalPhoto)
-                            .thenApplyAsync((insertedPhoto) -> created(Json.toJson(insertedPhoto)));
-                    });
-            }, httpExecutionContext.current())
-            .exceptionally(error -> {
-                try {
-                    throw error.getCause();
-                } catch (ForbiddenRequestException forbiddenRequest) {
-                    response.put(messageKey, forbiddenRequest.getMessage());
-                    return forbidden(response);
-                } catch (Throwable throwable) {
-                    System.err.println("Unexpected error when uploading a photo: " + Arrays.toString(throwable.getStackTrace()));
-                    response.put(messageKey, "Something went wrong trying to upload the photo");
-                    return internalServerError(response);
-                }
-            });
+                                User receivingUser = optionalReceivingUser.get();
+                                PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary);
+                                return photoRepository.insert(personalPhoto)
+                                        .thenApplyAsync((insertedPhoto) -> created(Json.toJson(insertedPhoto)));
+                            });
+                }, httpExecutionContext.current())
+                .exceptionally(error -> {
+                    try {
+                        throw error.getCause();
+                    } catch (ForbiddenRequestException forbiddenRequest) {
+                        response.put(messageKey, forbiddenRequest.getMessage());
+                        return forbidden(response);
+                    } catch (Throwable throwable) {
+                        System.err.println("Unexpected error when uploading a photo: " + Arrays.toString(throwable.getStackTrace()));
+                        response.put(messageKey, "Something went wrong trying to upload the photo");
+                        return internalServerError(response);
+                    }
+                });
+    }
+
+    /**
+     * Returns the thumbnail of a given photo.
+     *
+     * @param photoId the id of the photo of which the thumbnail will be returned.
+     * @param request the Http request.
+     * @return a Http response with one of the following:
+     *  - 200 - with the photo data in the body.
+     *  - 401 - when the user is not authenticated.
+     *  - 403 - when the user has not completed their profile.
+     *  - 404 - when the photo does not exist.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getThumbnail(int photoId, Http.Request request) {
+        return photoRepository.getPhotoById(photoId)
+                .thenApplyAsync(photo -> {
+                    if (!photo.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    } else {
+                        int índiceDePunto = photo.get().getFilenameHash().lastIndexOf('.');
+                        String fileType = photo.get().getFilenameHash().substring(índiceDePunto);
+                        String filename = photo.get().getFilenameHash().substring(0, índiceDePunto);
+                        String path = System.getProperty("user.dir") + "/storage/photos";
+                        filename += "_thumb" + fileType;
+                        return ok().sendFile(new File(path, filename));
+                    }
+                }).exceptionally(error -> {
+                    try {
+                        throw error.getCause();
+                    } catch (NotFoundException notFoundException) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "Please provide a valid request body according to the API spec");
+                        return notFound(message);
+                    } catch (Throwable throwable) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "Something went wrong while retrieving your image.");
+                        return internalServerError(message);
+                    }
+                });
+    }
+
+    /**
+     * Saves a thumbnail of the given image file in the given destination.
+     *
+     * @param originalImage        the file containing the original image.
+     * @param thumbFileDestination the file containing the destination path and filename.
+     * @param photoContentType     the type of image.
+     * @throws IOException thrown when the thumbnail cannot be written to disk.
+     */
+    private void saveThumbnail(File originalImage, File thumbFileDestination, String photoContentType) throws IOException {
+        BufferedImage bufferedImage = ImageIO.read(originalImage);
+        int width = bufferedImage.getWidth();
+        int height = bufferedImage.getHeight();
+        int midWidth = bufferedImage.getWidth() / 2;
+        int midHeight = bufferedImage.getHeight() / 2;
+        Image img;
+        if (midWidth > 150 && midHeight > 150) {
+            if (midHeight > midWidth) {
+                img = bufferedImage.getSubimage(0, midHeight - midWidth, width, width)
+                        .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+            } else {
+                img = bufferedImage.getSubimage(midWidth - midHeight, 0, height, height)
+                        .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+            }
+        } else if (midWidth > midHeight) {
+            img = bufferedImage.getSubimage(midWidth - midHeight, 0, height, height)
+                    .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+        } else {
+            img = bufferedImage.getSubimage(0, midHeight - midWidth, width, width)
+                    .getScaledInstance(300, 300, BufferedImage.SCALE_SMOOTH);
+        }
+        BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
+        image.createGraphics().drawImage(img, 0, 0, null);
+        ImageIO.write(image, photoContentType, thumbFileDestination);
+
     }
 }

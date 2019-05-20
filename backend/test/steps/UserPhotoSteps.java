@@ -5,6 +5,7 @@ import akka.stream.javadsl.Source;
 import akka.util.ByteString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -22,6 +23,8 @@ import utils.FakeClient;
 import utils.PlayResultToJson;
 import utils.TestState;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -245,5 +248,41 @@ public class UserPhotoSteps {
 
         this.result = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", admin.getToken());
         Assert.assertNotNull(this.result);
+    }
+
+    @Given("^the user has a photo in the system$")
+    public void theUserHasAPhotoInTheSystem() throws IOException {
+//        String path = System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos";
+//        File file = new File(path, "cucumber.jpeg");
+//        Assert.assertTrue(file.exists());
+//
+//        // determine content type for photo
+//        String contentType = "";
+//        if (file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
+//            contentType = "image/jpeg";
+//        } else if (file.getName().contains(".png")) {
+//            contentType = "image/png";
+//        }
+//
+//        Http.MultipartFormData.FilePart<Source<ByteString, ?>> part = new Http.MultipartFormData.FilePart<>("image", file.getName(), contentType, FileIO.fromFile(file));
+
+    }
+
+    @When("^the user requests the thumbnail for this photo$")
+    public void theUserRequestsTheThumbnailForThisPhoto() throws Throwable {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @Then("^the thumbnail is returned in the response$")
+    public void theThumbnailIsReturnedInTheResponse() throws Throwable {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @When("^the user requests the thumbnail for a non existent photo$")
+    public void theUserRequestsTheThumbnailForANonExistentPhoto() throws Throwable {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
     }
 }

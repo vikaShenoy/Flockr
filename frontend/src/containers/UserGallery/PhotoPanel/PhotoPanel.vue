@@ -1,6 +1,6 @@
 <template>
   <v-dialog
-          v-model="showDialog"
+          v-model="dialog"
           width="80%"
   >
     <v-card>
@@ -39,9 +39,34 @@
       }
     },
 
+    watch: {
+      showDialog: {
+        handler: "showDialogChanged",
+        immediate: true
+      },
+      dialog: {
+        handler: "closeDialog",
+        immediate: true
+      }
+    },
+
+    data() {
+      return {
+        dialog: false
+      }
+    },
+
     methods: {
+      /**
+       * Called when the dialog is closed.
+       * Emits a closeDialog event.
+       */
       closeDialog() {
-        this.$emit("closeDialog");
+        this.$emit("closeDialog", this.dialog);
+      },
+
+      showDialogChanged() {
+        this.dialog = this.showDialog;
       }
     }
   }

@@ -10,6 +10,7 @@ import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
 import models.*;
+import play.mvc.Results;
 import play.mvc.With;
 import repository.AuthRepository;
 import repository.UserRepository;
@@ -17,6 +18,7 @@ import repository.RoleRepository;
 import util.Security;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
@@ -186,6 +188,7 @@ public class AuthController {
                     } catch (UnauthorizedException noAuthError) {
                         return unauthorized();
                     } catch (Throwable genericError) {
+                        genericError.printStackTrace();
                         return internalServerError();
                     }
                 });
@@ -214,9 +217,7 @@ public class AuthController {
      * @return 400 if the email is empty. 409 if the email is taken. 200 if the email is available.
      */
     public CompletionStage<Result> checkEmailAvailable(String email) {
-        if (email.isEmpty()) {
-            return supplyAsync(() -> badRequest());
-        }
+        if (email.isEmpty()) return supplyAsync(Results::badRequest);
         return authRepository.getUserByEmail(email)
                 .thenApplyAsync((user) -> {
                     if (user.isPresent()) {

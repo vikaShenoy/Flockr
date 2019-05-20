@@ -20,7 +20,7 @@
             v-on:click="openPhotoDialog(photo)"
           >
             <v-img
-              :src="photo.endpoint"
+              :src="photo.thumbEndpoint"
               aspect-ratio="1"
               class="grey lighten-2"
               >
@@ -83,8 +83,8 @@
       /**
        * Closes the photo dialog
        */
-      closePhotoDialog() {
-        this.showPhotoDialog = false;
+      closePhotoDialog(newValue) {
+        this.showPhotoDialog = newValue;
         this.currentPhoto = {
           endpoint: null,
           isPrimary: false,

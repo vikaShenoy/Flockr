@@ -8,7 +8,6 @@ require ('dotenv').config();
 
 Vue.use(VueRouter);
 
-
 Vue.config.productionTip = false;
 
 new Vue({
