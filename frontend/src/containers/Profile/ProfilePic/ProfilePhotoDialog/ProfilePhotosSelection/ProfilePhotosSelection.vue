@@ -1,7 +1,7 @@
 <!--Handles the selection of the profile photo-->
 <template>
   <div id="profile-photos-selection">
-    <div v-if="photo"></div>
+    <div></div>
     <span>Photos</span>
     <v-divider></v-divider>
 
@@ -31,7 +31,7 @@ export default {
   methods: {
     /**
      * Gets the full URL of a photo based on a photo ID
-     * @param {number} photoId The id of the photo to get 
+     * @param {number} photoIndex The index of the photo to get
      * @returns {string} The photo URL
      */
     selectPhoto(photoIndex) {
