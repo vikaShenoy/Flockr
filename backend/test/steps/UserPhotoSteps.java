@@ -5,6 +5,7 @@ import akka.stream.javadsl.Source;
 import akka.util.ByteString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -13,8 +14,10 @@ import io.cucumber.datatable.DataTable;
 import models.PersonalPhoto;
 import models.Role;
 import models.User;
+import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import play.Application;
+import play.libs.Files;
 import play.mvc.Http;
 import play.mvc.Http.MultipartFormData.FilePart;
 import play.mvc.Result;
@@ -24,10 +27,11 @@ import utils.PlayResultToJson;
 import utils.TestState;
 
 import javax.imageio.ImageIO;
+import javax.xml.ws.WebServiceClient;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public class UserPhotoSteps {
@@ -48,8 +52,7 @@ public class UserPhotoSteps {
         User user = User.find.byId(testUser.getUserId());
         Assert.assertNotNull(user);
         List<PersonalPhoto> photos = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            Map<String, String> row = list.get(i);
+        for (Map<String, String> row : list) {
             PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")));
             photo.save();
             photo = PersonalPhoto.find.byId(photo.getPhotoId());
@@ -83,8 +86,7 @@ public class UserPhotoSteps {
     public void theUserGetsAListOfTheFollowingPhotos(DataTable datatable) {
         List<Map<String, String>> list = datatable.asMaps(String.class, String.class);
 
-        for (int i = 0; i < list.size(); i++) {
-            Map<String, String> row = list.get(i);
+        for (Map<String, String> row : list) {
             Assert.assertEquals(row.get("filename"), this.photos.asText());
             Assert.assertEquals(row.get("isPrimary"), this.photos.asText());
         }
@@ -112,75 +114,31 @@ public class UserPhotoSteps {
 
     @When("they add the photo")
     public void theyAddThePhoto() {
-        // TODO: Exe to clean up this mess
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        Map<String, String> values = new HashMap<>();
+        values.put("isPrimary", Boolean.toString(this.isPrimary));
+        values.put("isPublic", Boolean.toString(this.isPublic));
 
         User user = TestState.getInstance().getUser(0);
-        Application application = TestState.getInstance().getApplication();
         File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", photoName);
 
         if (!file.exists()) {
             Assert.fail(String.format("File %s was not found", file));
-            return;
         }
 
-        // determine content type for photo
-        String contentType = "";
-        if (file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
-            contentType = "image/jpeg";
-        } else if (file.getName().contains(".png")) {
-            contentType = "image/png";
-        }
-
-        FilePart part = null;
-        try {
-            part = new FilePart<>("image", file.getName(), contentType, FileIO.fromPath(file.toPath()), Files.size(file.toPath()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println(file.getName());
-        System.out.println(contentType);
-        System.out.println(FileIO.fromPath(file.toPath()));
-        System.out.println(part.getFileSize());
-
-        // construct text fields
-        Map<String, String[]> textFields = new HashMap<>();
-        String[] isPrimaryArray = {Boolean.toString(isPrimary)};
-        String[] isPublicArray = {Boolean.toString(isPublic)};
-        textFields.put("isPrimary", isPrimaryArray);
-        textFields.put("isPublic", isPublicArray);
-
-        // construct file parts
-        List<FilePart> fileParts = new ArrayList<>();
-        fileParts.add(part);
-
-        // TODO: add this kind of request to FakeClient interface
-
-        System.out.println(textFields);
-
-        Http.RequestBuilder request = Helpers.fakeRequest().uri("/api/users/" + user.getUserId() + "/photos")
-                .method("POST")
-                .header("Authorization", user.getToken())
-                .bodyMultipart(textFields, fileParts);
-
-//        this way is deprecated and only allows to upload a file (not text fields, like we need for isPrimary)
-//        Http.RequestBuilder request = Helpers.fakeRequest().uri("/api/users" + user.getUserId() + "/photos")
-//                .method("POST")
-//                .header("Authorization", user.getToken())
-//                .bodyRaw(
-//                    Collections.singletonList(part),
-//                    play.libs.Files.singletonTemporaryFileCreator(),
-//                    application.asScala().materializer()
-//                );
-
-        // NOTE: the problem is that Helpers.route is returning null, I suspect that it's due to the request body
-        // not being built properly
-        result = Helpers.route(application, request);
-        System.out.println(result);
+        this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
+                "POST",
+                "/api/users/" + user.getUserId() + "/photos",
+                user.getToken(),
+                file,
+                values);
+        Assert.assertNotNull(this.result);
     }
 
     @Then("the photo is added")
     public void isItAdded() {
-        Assert.assertEquals(200, this.result.status());
+        Assert.assertEquals(201, this.result.status());
     }
 
     @When("^the user requests all their photos$")
@@ -269,19 +227,19 @@ public class UserPhotoSteps {
     }
 
     @When("^the user requests the thumbnail for this photo$")
-    public void theUserRequestsTheThumbnailForThisPhoto() throws Throwable {
+    public void theUserRequestsTheThumbnailForThisPhoto() {
         // Write code here that turns the phrase above into concrete actions
         throw new PendingException();
     }
 
     @Then("^the thumbnail is returned in the response$")
-    public void theThumbnailIsReturnedInTheResponse() throws Throwable {
+    public void theThumbnailIsReturnedInTheResponse() {
         // Write code here that turns the phrase above into concrete actions
         throw new PendingException();
     }
 
     @When("^the user requests the thumbnail for a non existent photo$")
-    public void theUserRequestsTheThumbnailForANonExistentPhoto() throws Throwable {
+    public void theUserRequestsTheThumbnailForANonExistentPhoto() {
         // Write code here that turns the phrase above into concrete actions
         throw new PendingException();
     }
