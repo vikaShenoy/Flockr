@@ -998,6 +998,12 @@ paths:
         - photos
       summary: Get a specific photo
       parameters:
+        - in: query
+          name: Authorization
+          description: Auth token of user requesting photo
+          required: true
+          schema:
+            type: string
         - in: path
           name: photoId
           description: The ID of the photo that we wish to retrieve
@@ -1026,18 +1032,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
         '403':
-          description: >-
-            Profile has not been completed
+          description: Forbidden
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+                
         '404':
           description: Not Found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/error'        
+                
         '500':
           description: Internal server error
           content:
