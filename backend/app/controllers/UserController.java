@@ -489,6 +489,9 @@ public class UserController extends Controller {
         long ageMax;
         ageMax = -1;
         String gender = "";
+
+        // TODO: do not catch generic Exceptions, if this is a query method, not specifying all query parameters should not be logged as an error, it can be an info level log e.g. "no parameter nationality, omitting from search"
+
         try {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())

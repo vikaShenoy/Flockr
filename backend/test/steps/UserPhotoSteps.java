@@ -15,6 +15,7 @@ import models.User;
 import org.junit.Assert;
 import play.Application;
 import play.mvc.Http;
+import play.mvc.Http.MultipartFormData.FilePart;
 import play.mvc.Result;
 import play.test.Helpers;
 import utils.FakeClient;
@@ -23,6 +24,7 @@ import utils.TestState;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 public class UserPhotoSteps {
@@ -109,40 +111,56 @@ public class UserPhotoSteps {
     public void theyAddThePhoto() {
         // TODO: Exe to clean up this mess
 
-//        User user = TestState.getInstance().getUser(0);
-//        Application application = TestState.getInstance().getApplication();
-//        File file = new File(System.getProperty("user.dir") + "/test/fileStorageForTests/photos/", photoName);
-//        Assert.assertTrue(file.exists());
-//
-//        // determine content type for photo
-//        String contentType = "";
-//        if (file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
-//            contentType = "image/jpeg";
-//        } else if (file.getName().contains(".png")) {
-//            contentType = "image/png";
-//        }
-//
-//        Http.MultipartFormData.FilePart<Source<ByteString, ?>> part = new Http.MultipartFormData.FilePart<>("image", file.getName(), contentType, FileIO.fromFile(file));
-//
-//        // construct text fields
-//        Map<String, String[]> textFields = new HashMap<>();
-//        String[] isPrimaryArray = {Boolean.toString(isPrimary)};
-//        String[] isPublicArray = {Boolean.toString(isPublic)};
-//        textFields.put("isPrimary", isPrimaryArray);
-//        textFields.put("isPublic", isPublicArray);
-//
-//        // construct file parts
-//        List<Http.MultipartFormData.FilePart> fileParts = new ArrayList<>();
-//        fileParts.add(part);
-//
-//        // TODO: add this kind of request to FakeClient interface
-//
-//        Http.RequestBuilder request = Helpers.fakeRequest().uri("/api/users/" + user.getUserId() + "/photos")
-//                .method("POST")
-//                .header("Authorization", user.getToken())
-//                .bodyMultipart(textFields, fileParts);
-//
-//        Http.RequestBuilder request = Helpers.fakeRequest().uri("/api/" + user.getUserId() + "/photos")
+        User user = TestState.getInstance().getUser(0);
+        Application application = TestState.getInstance().getApplication();
+        File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", photoName);
+
+        if (!file.exists()) {
+            Assert.fail(String.format("File %s was not found", file));
+            return;
+        }
+
+        // determine content type for photo
+        String contentType = "";
+        if (file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
+            contentType = "image/jpeg";
+        } else if (file.getName().contains(".png")) {
+            contentType = "image/png";
+        }
+
+        FilePart part = null;
+        try {
+            part = new FilePart<>("image", file.getName(), contentType, FileIO.fromPath(file.toPath()), Files.size(file.toPath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(file.getName());
+        System.out.println(contentType);
+        System.out.println(FileIO.fromPath(file.toPath()));
+        System.out.println(part.getFileSize());
+
+        // construct text fields
+        Map<String, String[]> textFields = new HashMap<>();
+        String[] isPrimaryArray = {Boolean.toString(isPrimary)};
+        String[] isPublicArray = {Boolean.toString(isPublic)};
+        textFields.put("isPrimary", isPrimaryArray);
+        textFields.put("isPublic", isPublicArray);
+
+        // construct file parts
+        List<FilePart> fileParts = new ArrayList<>();
+        fileParts.add(part);
+
+        // TODO: add this kind of request to FakeClient interface
+
+        System.out.println(textFields);
+
+        Http.RequestBuilder request = Helpers.fakeRequest().uri("/api/users/" + user.getUserId() + "/photos")
+                .method("POST")
+                .header("Authorization", user.getToken())
+                .bodyMultipart(textFields, fileParts);
+
+//        this way is deprecated and only allows to upload a file (not text fields, like we need for isPrimary)
+//        Http.RequestBuilder request = Helpers.fakeRequest().uri("/api/users" + user.getUserId() + "/photos")
 //                .method("POST")
 //                .header("Authorization", user.getToken())
 //                .bodyRaw(
@@ -150,13 +168,16 @@ public class UserPhotoSteps {
 //                    play.libs.Files.singletonTemporaryFileCreator(),
 //                    application.asScala().materializer()
 //                );
-//        result = Helpers.route(application, request);
+
+        // NOTE: the problem is that Helpers.route is returning null, I suspect that it's due to the request body
+        // not being built properly
+        result = Helpers.route(application, request);
+        System.out.println(result);
     }
 
     @Then("the photo is added")
     public void isItAdded() {
-        //TODO: fix this
-//        Assert.assertEquals(200, this.result.status());
+        Assert.assertEquals(200, this.result.status());
     }
 
     @When("^the user requests all their photos$")

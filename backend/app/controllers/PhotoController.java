@@ -306,6 +306,8 @@ public class PhotoController extends Controller {
                     return supplyAsync(() -> forbidden(response), httpExecutionContext.current());
                 }
 
+                System.out.println("Extracting photo form request");
+
                 // get the photo as a file from the request
                 Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
 
@@ -330,6 +332,7 @@ public class PhotoController extends Controller {
 
                 // save to filesystem
                 temporaryPhotoFile.moveFileTo(fileDestination);
+                System.out.println("Saved file to filesystem");
 
                 // resize and save a thumbnail.
                 try {
@@ -358,6 +361,7 @@ public class PhotoController extends Controller {
                     image.createGraphics().drawImage(img, 0, 0, null);
                     ImageIO.write(image, photoContentType.split("/")[1], thumbFileDestination);
                 } catch (IOException e) {
+                    System.err.println("Internal Server Error when generating a thumbnail: " + e);
                     return supplyAsync(Results::internalServerError, httpExecutionContext.current());
                 }
 
