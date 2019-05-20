@@ -1,5 +1,8 @@
 package utils;
 
+import akka.stream.javadsl.FileIO;
+import akka.stream.javadsl.Source;
+import akka.util.ByteString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -9,15 +12,17 @@ import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import models.Destination;
 import models.User;
-import org.junit.Assert;
 import play.Application;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 
+import java.io.File;
 import java.io.IOException;
-import java.rmi.ServerError;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static play.test.Helpers.route;
 
@@ -148,5 +153,121 @@ public class FakePlayClient implements FakeClient {
         } else {
             throw new ServerErrorException();
         }
+    }
+
+    @Override
+    public Result makeMultipartFormRequestWithFileAndToken(String method, String endpoint, String token, File file, Map<String, String> otherFields) {
+        // Determine the content type
+        String contentType = getContentType(file);
+
+        // Create the file part object
+        Http.MultipartFormData.FilePart<akka.stream.javadsl.Source<akka.util.ByteString,?>> part =
+                new Http.MultipartFormData.FilePart<>(
+                        "image",
+                        file.getName(),
+                        contentType,
+                        FileIO.fromPath(file.toPath()));
+
+        // Construct the part list and add the file and text fields
+        List<Http.MultipartFormData.Part<Source<ByteString, ?>>> partList = new ArrayList<>();
+        partList.add(part);
+        for (String key: otherFields.keySet()) {
+            partList.add(new Http.MultipartFormData.DataPart(key, otherFields.get(key)));
+        }
+
+        // Build the request
+        Http.RequestBuilder request = Helpers.fakeRequest().uri(endpoint)
+                .method(method)
+                .header("Authorization", token)
+                .bodyRaw(partList,
+                        play.libs.Files.singletonTemporaryFileCreator(),
+                        this.application.asScala().materializer());
+
+        // Send the request and return the result
+        return Helpers.route(this.application, request);
+    }
+
+    @Override
+    public Result makeMultipartFormRequestWithFileNoToken(String method, String endpoint, File file, Map<String, String> otherFields) {
+        // Determine the content type
+        String contentType = getContentType(file);
+
+        // Create the file part object
+        Http.MultipartFormData.FilePart<akka.stream.javadsl.Source<akka.util.ByteString,?>> part =
+                new Http.MultipartFormData.FilePart<>(
+                "image",
+                file.getName(),
+                contentType,
+                FileIO.fromPath(file.toPath()));
+
+        // Construct the part list and add the file and text fields
+        List<Http.MultipartFormData.Part<Source<ByteString, ?>>> partList = new ArrayList<>();
+        partList.add(part);
+        for (String key: otherFields.keySet()) {
+            partList.add(new Http.MultipartFormData.DataPart(key, otherFields.get(key)));
+        }
+
+        // Build the request
+        Http.RequestBuilder request = Helpers.fakeRequest().uri(endpoint)
+                .method(method)
+                .bodyRaw(partList,
+                        play.libs.Files.singletonTemporaryFileCreator(),
+                        this.application.asScala().materializer());
+
+        // Send the request and return the result
+        return Helpers.route(this.application, request);
+    }
+
+    @Override
+    public Result makeMultipartFormRequestWithToken(String method, String endpoint, String token, Map<String, String> otherFields) {
+        // Construct the part list and add the file and text fields
+        List<Http.MultipartFormData.Part<Source<ByteString, ?>>> partList = new ArrayList<>();
+        for (String key: otherFields.keySet()) {
+            partList.add(new Http.MultipartFormData.DataPart(key, otherFields.get(key)));
+        }
+
+        // Build the request
+        Http.RequestBuilder request = Helpers.fakeRequest().uri(endpoint)
+                .method(method)
+                .header("Authorization", token)
+                .bodyRaw(partList,
+                        play.libs.Files.singletonTemporaryFileCreator(),
+                        this.application.asScala().materializer());
+
+        // Send the request and return the result
+        return Helpers.route(this.application, request);
+    }
+
+    @Override
+    public Result makeMultipartFormRequestNoToken(String method, String endpoint, Map<String, String> otherFields) {
+        // Construct the part list and add the file and text fields
+        List<Http.MultipartFormData.Part<Source<ByteString, ?>>> partList = new ArrayList<>();
+        for (String key: otherFields.keySet()) {
+            partList.add(new Http.MultipartFormData.DataPart(key, otherFields.get(key)));
+        }
+
+        // Build the request
+        Http.RequestBuilder request = Helpers.fakeRequest().uri(endpoint)
+                .method(method)
+                .bodyRaw(partList,
+                        play.libs.Files.singletonTemporaryFileCreator(),
+                        this.application.asScala().materializer());
+
+        // Send the request and return the result
+        return Helpers.route(this.application, request);
+    }
+
+    /**
+     * Gets the content type from an image file.
+     *
+     * @param file the file object.
+     * @return the content type.
+     */
+    private String getContentType(File file) {
+        if (file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
+            return "image/jpeg";
+        } else if (file.getName().contains(".png")) {
+            return "image/png";
+        } else return null;
     }
 }

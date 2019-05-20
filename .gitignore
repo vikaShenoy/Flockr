@@ -17,7 +17,9 @@ dist/
 *.log
 
 # Do not upload files to the repo pls
-/backend/storage/photos
+/backend/storage/photos/*.jpg
+/backend/storage/photos/*.jpeg
+/backend/storage/photos/*.png
 /backend/storage/videos
 /backend/storage/audio
 
