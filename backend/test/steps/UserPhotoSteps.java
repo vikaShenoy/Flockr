@@ -1,8 +1,5 @@
 package steps;
 
-import akka.stream.javadsl.FileIO;
-import akka.stream.javadsl.Source;
-import akka.util.ByteString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cucumber.api.java.en.Given;
@@ -13,17 +10,16 @@ import models.PersonalPhoto;
 import models.Role;
 import models.User;
 import org.junit.Assert;
-import play.Application;
-import play.mvc.Http;
 import play.mvc.Result;
-import play.test.Helpers;
 import utils.FakeClient;
 import utils.PlayResultToJson;
 import utils.TestState;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class UserPhotoSteps {
 
@@ -33,6 +29,8 @@ public class UserPhotoSteps {
     private boolean isPublic = false;
     private boolean isPrimary = false;
     private DataTable photoList;
+    private User admin;
+    private ArrayList<Integer> photoIds = new ArrayList<>();
 
     @Given("^the user has the following photos in the system:$")
     public void theUserHasTheFollowingPhotosInTheSystem(DataTable dataTable) {
@@ -49,7 +47,7 @@ public class UserPhotoSteps {
             photo.save();
             photo = PersonalPhoto.find.byId(photo.getPhotoId());
             photos.add(photo);
-
+            photoIds.add(photo.getPhotoId());
         }
         user.setPersonalPhotos(photos);
         user.save();
@@ -224,5 +222,41 @@ public class UserPhotoSteps {
 
         this.result = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", admin.getToken());
         Assert.assertNotNull(this.result);
+    }
+
+    @Given("The photo {string} permission is public")
+    public void thePhotoPermissionIsPublic(String filename) {
+        List<Map<String, String>> list = photoList.asMaps(String.class, String.class);
+        for (int i = 0; i < list.size(); i++) {
+            Map<String, String> row = list.get(i);
+            if (row.get("filename").equals(filename)) {
+                Assert.assertFalse(Boolean.valueOf("isPublic"));
+            }
+        }
+    }
+
+    @When("The user changes the photo permission to private")
+    public void theUserChangesThePhotoPermissionToPrivate() throws IOException {
+        User testUser = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result photosRes = fakeClient.makeRequestWithToken("GET", "/api/users/" +
+                testUser.getUserId() + "/photos", testUser.getToken());
+        System.out.println(testUser.getUserId());
+        Assert.assertEquals(200, photosRes.status());
+        this.photos = utils.PlayResultToJson.convertResultToJson(photosRes);
+        Assert.assertNotNull(this.photos);
+
+
+
+    }
+
+    @Then("The photo permission is set to private")
+    public void thePhotoPermissionIsSetToPrivate() {
+
+    }
+
+    @When("The admin changes the photo permission to private")
+    public void theAdminChangesThePhotoPermissionToPrivate() {
+
     }
 }

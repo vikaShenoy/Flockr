@@ -48,3 +48,29 @@ Feature: As a registered user I want to have photos that display on my profile.
     And they want the photo to be their profile photo
     When they add the photo
     Then the photo is added
+
+  @UserPhoto
+  Scenario: A user wants to change their photo permission from public to private.
+    Given the user has the following photos in the system:
+      | filename      | isPrimary | isPublic |
+      | monkey.png    | true      | false    |
+      | dog.jpg       | false     | false    |
+      | cat.jpeg      | false     | false    |
+      | cucumber.jpeg | false     | false    |
+      | whale.png     | false     | false    |
+    And The photo "dog.jpg" permission is public
+    When The user changes the photo permission to private
+    Then The photo permission is set to private
+
+  @UserPhoto
+  Scenario: An admin wants to change a user's photo permission from public to private.
+    Given the user has the following photos in the system:
+      | filename      | isPrimary | isPublic |
+      | monkey.png    | true      | false    |
+      | dog.jpg       | false     | false    |
+      | cat.jpeg      | false     | false    |
+      | cucumber.jpeg | false     | false    |
+      | whale.png     | false     | false    |
+    And The photo "dog.jpg" permission is public
+    When The admin changes the photo permission to private
+    Then The photo permission is set to private
