@@ -145,5 +145,4 @@ public interface FakeClient {
      * @return the result of the request
      */
     Result makeMultipartFormRequestNoToken(String method, String endpoint, Map<String, String> otherFields);
-
 }

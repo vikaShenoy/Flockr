@@ -1,5 +1,8 @@
 Feature: As a registered user I want to have photos that display on my profile.
 
+# NOTE: please leave the @UserPhotos tags in here for tests that save photos to the hard drive as
+# this is used in the tear down to delete them.
+
   Background:
     Given users with the following information exist:
       | firstName | lastName   | email                  | password   |
@@ -41,7 +44,7 @@ Feature: As a registered user I want to have photos that display on my profile.
     When the admin user requests the photos of another user
     Then the user gets the same list
 
-  @UserPhoto
+  @UserPhotos
   Scenario: A user can add a photo
     Given a user has a photo called "dog.jpg"
     And they want the photo to be public
@@ -49,15 +52,19 @@ Feature: As a registered user I want to have photos that display on my profile.
     When they add the photo
     Then the photo is added
 
+  @UserPhotos
   Scenario: A user wants to get a thumbnail of a photo they have
-    Given the user has a photo in the system
+    Given a user has a photo called "cucumber.jpeg" already
     When the user requests the thumbnail for this photo
     Then the thumbnail is returned in the response
 
+  @UserPhotos
   Scenario: A user wants to get a thumbnail of a photo they do not have
     When the user requests the thumbnail for a non existent photo
     Then they should receive a "Not Found" error message with a 404 error code
 
+  @UserPhotos
   Scenario: A not logged in user wants to get a thumbnail of a photo they have
-    When the user requests the thumbnail for a non existent photo
+    Given a user has a photo called "cucumber.jpeg" already
+    When the user requests the thumbnail for a photo without their token
     Then they should receive a "Unauthorized" error message with a 401 error code

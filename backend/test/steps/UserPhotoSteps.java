@@ -1,12 +1,8 @@
 package steps;
 
-import akka.stream.javadsl.FileIO;
-import akka.stream.javadsl.Source;
-import akka.util.ByteString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
-import cucumber.api.PendingException;
+import cucumber.api.java.After;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -14,24 +10,14 @@ import io.cucumber.datatable.DataTable;
 import models.PersonalPhoto;
 import models.Role;
 import models.User;
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
-import play.Application;
-import play.libs.Files;
-import play.mvc.Http;
-import play.mvc.Http.MultipartFormData.FilePart;
 import play.mvc.Result;
-import play.test.Helpers;
 import utils.FakeClient;
 import utils.PlayResultToJson;
 import utils.TestState;
 
-import javax.imageio.ImageIO;
-import javax.xml.ws.WebServiceClient;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
 
 public class UserPhotoSteps {
@@ -42,6 +28,27 @@ public class UserPhotoSteps {
     private boolean isPublic = false;
     private boolean isPrimary = false;
     private DataTable photoList;
+    private int newPhotoId;
+    private List<String> photosToRemove = new ArrayList<>();
+
+    @After("@UserPhotos")
+    public void tearDown() {
+        if (this.photosToRemove.size() > 0) {
+            System.out.println("Now deleting test photo files...");
+            boolean deleted = false;
+            for (String filename : this.photosToRemove) {
+                int indexOfPoint = filename.lastIndexOf('.');
+                String fileType = filename.substring(indexOfPoint);
+                String filenameBody = filename.substring(0, indexOfPoint);
+                String thumbFilename = filenameBody + "_thumb" + fileType;
+                File file = new File(System.getProperty("user.dir") + "/storage/photos/", filename);
+                File thumbFile = new File(System.getProperty("user.dir") + "/storage/photos/", thumbFilename);
+                deleted = file.delete() && thumbFile.delete();
+            }
+            if (deleted) System.out.println("Deletion of test images successful");
+            else System.err.println("Deletion of test images failed");
+        }
+    }
 
     @Given("^the user has the following photos in the system:$")
     public void theUserHasTheFollowingPhotosInTheSystem(DataTable dataTable) {
@@ -113,7 +120,7 @@ public class UserPhotoSteps {
     }
 
     @When("they add the photo")
-    public void theyAddThePhoto() {
+    public void theyAddThePhoto() throws IOException {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
 
         Map<String, String> values = new HashMap<>();
@@ -133,7 +140,10 @@ public class UserPhotoSteps {
                 user.getToken(),
                 file,
                 values);
+
         Assert.assertNotNull(this.result);
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+        this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
     }
 
     @Then("the photo is added")
@@ -208,39 +218,73 @@ public class UserPhotoSteps {
         Assert.assertNotNull(this.result);
     }
 
-    @Given("^the user has a photo in the system$")
-    public void theUserHasAPhotoInTheSystem() throws IOException {
-//        String path = System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos";
-//        File file = new File(path, "cucumber.jpeg");
-//        Assert.assertTrue(file.exists());
-//
-//        // determine content type for photo
-//        String contentType = "";
-//        if (file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
-//            contentType = "image/jpeg";
-//        } else if (file.getName().contains(".png")) {
-//            contentType = "image/png";
-//        }
-//
-//        Http.MultipartFormData.FilePart<Source<ByteString, ?>> part = new Http.MultipartFormData.FilePart<>("image", file.getName(), contentType, FileIO.fromFile(file));
+    @Given("^a user has a photo called \"([^\"]*)\" already$")
+    public void aUserHasAPhotoCalledAlready(String filename) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
 
+        Map<String, String> values = new HashMap<>();
+        values.put("isPrimary", Boolean.toString(false));
+        values.put("isPublic", Boolean.toString(true));
+
+        File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", filename);
+
+        if (!file.exists()) {
+            Assert.fail(String.format("File %s was not found", file));
+        }
+
+        this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
+                "POST",
+                "/api/users/" + user.getUserId() + "/photos",
+                user.getToken(),
+                file,
+                values);
+
+        Assert.assertNotNull(this.result);
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+        this.newPhotoId = resultAsJson.get("photoId").asInt();
+        this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+
+        Assert.assertNotEquals(0, this.newPhotoId);
+        Assert.assertEquals(201, this.result.status());
     }
 
     @When("^the user requests the thumbnail for this photo$")
     public void theUserRequestsTheThumbnailForThisPhoto() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/" + this.newPhotoId + "?Authorization=" + user.getToken());
+
+        Assert.assertNotNull(this.result);
+        Assert.assertEquals(200, this.result.status());
     }
 
     @Then("^the thumbnail is returned in the response$")
     public void theThumbnailIsReturnedInTheResponse() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+        Assert.assertFalse(this.result.body().isKnownEmpty());
+        Assert.assertTrue(this.result.body().contentLength().get().intValue() > 2000);
     }
 
     @When("^the user requests the thumbnail for a non existent photo$")
     public void theUserRequestsTheThumbnailForANonExistentPhoto() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/5000?Authorization=" + user.getToken());
+
+        Assert.assertNotNull(this.result);
+    }
+
+    @When("^the user requests the thumbnail for a photo without their token$")
+    public void theUserRequestsTheThumbnailForAPhotoWithoutTheirToken() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/5000");
+
+        Assert.assertNotNull(this.result);
     }
 }
