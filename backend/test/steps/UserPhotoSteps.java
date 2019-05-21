@@ -290,17 +290,18 @@ public class UserPhotoSteps {
     }
 
     @When("The user changes the photo permission to private")
-    public void theUserChangesThePhotoPermissionToPrivate() {
+    public void theUserChangesThePhotoPermissionToPrivate() throws IOException {
         User user = TestState.getInstance().getUser(0);
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
 
         ObjectNode reqBody = Json.newObject();
         reqBody.put("isPublic", "false");
         reqBody.put("isPrimary", "false");
-        System.out.println(reqBody);
+        System.out.println("Request Body: " + reqBody);
 
         Result photosRes = fakeClient.makeRequestWithToken("PATCH",  reqBody, "/api/users/photos/" + this.newPhotoId, user.getToken());
-        System.out.println("PhotoRes: " + photosRes);
+        this.photos = utils.PlayResultToJson.convertResultToJson(photosRes);
+        System.out.println("PhotoRes: " + this.photos);
 
     }
 
@@ -311,7 +312,18 @@ public class UserPhotoSteps {
         Result photosRes = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", user.getToken());
         this.photos = utils.PlayResultToJson.convertResultToJson(photosRes);
 
-        System.out.println(this.photos);
+        for (JsonNode photo : photos) {
+            System.out.println("photo - " + photo);
+            int id = photo.get("photoId").asInt();
+            if (this.newPhotoId == id) {
+                boolean isPublic = photo.get("public").asBoolean();
+                System.out.println(isPublic);
+            }
+        }
+
+
+
+
 
 /*        for (JsonNode photo : this.photos) {
             int id = photo.get("photoId").asInt();
