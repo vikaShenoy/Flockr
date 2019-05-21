@@ -23,12 +23,16 @@ import javax.inject.Inject;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -185,7 +189,10 @@ public class PhotoController extends Controller {
         } else {
             return photoRepository.getPhotosById(userId)
                     .thenApplyAsync((photos) -> {
-                        JsonNode photosAsJSON = Json.toJson(photos);
+                        List<PersonalPhoto> userPhotos = photos.stream().filter((photo) -> !photo.isPrimary())
+                                .collect(Collectors.toList());
+
+                        JsonNode photosAsJSON = Json.toJson(userPhotos);
                         return ok(photosAsJSON);
                     });
         }
@@ -387,7 +394,29 @@ public class PhotoController extends Controller {
                                 User receivingUser = optionalReceivingUser.get();
                                 PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary, finalThumbFilename);
                                 return photoRepository.insert(personalPhoto)
-                                        .thenApplyAsync((insertedPhoto) -> created(Json.toJson(insertedPhoto)));
+                                        .thenApplyAsync((insertedPhoto) -> {
+                                            if (isPrimary) {
+                                                // If old profile photo exists, delete thumbnail and photo of old profile photo
+                                                if (receivingUser.getProfilePhoto() != null) {
+                                                    PersonalPhoto oldProfilePhoto = receivingUser.getProfilePhoto();
+                                                    String profilePicturePath = System.getProperty("user.dir") + "/storage/photos";
+                                                    File photoFile = new File(profilePicturePath, oldProfilePhoto.getFilenameHash());
+                                                    File thumbnailFile = new File(profilePicturePath, oldProfilePhoto.getThumbnailName());
+
+                                                    if (!photoFile.delete() || !thumbnailFile.delete()) {
+                                                        String photoErrorMessage = "Error deleting old profile photo and thumbnail";
+                                                        System.err.println(photoErrorMessage);
+                                                        throw new CompletionException(new FileNotFoundException(photoErrorMessage));
+                                                    }
+                                                }
+
+                                                receivingUser.setProfilePhoto(insertedPhoto);
+                                                receivingUser.save();
+                                            }
+
+
+                                            return created(Json.toJson(insertedPhoto));
+                                        });
                             });
                 }, httpExecutionContext.current())
                 .exceptionally(error -> {
