@@ -123,21 +123,27 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
         return photoRepository.getPhotoById(photoId)
-                .thenComposeAsync((optionalPhoto) -> {
+                .thenApplyAsync((optionalPhoto) -> {
                     if (!optionalPhoto.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     PersonalPhoto photo = optionalPhoto.get();
+                    if (user.getUserId() != photo.getUser().getUserId() && !user.isAdmin()) {
+                        return forbidden();
+                    }
                     File photoToDelete = new File("./storage/photos/" + photo.getFilenameHash());
-                    if (!photoToDelete.delete()) {
+                    File thumbnailToDelete = new File("./storage/photos/" + photo.getThumbnailName());
+                    if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     ObjectNode message = Json.newObject();
                     message.put("message", "Successfully deleted the photo");
-                    return this.photoRepository.deletePhoto(photo.getPhotoId());
+                    this.photoRepository.deletePhoto(photo.getPhotoId());
+                    return ok(message);
                 })
-                .thenApplyAsync(photo -> (Result) ok())
+                //.thenApplyAsync(photo -> (Result) ok())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();

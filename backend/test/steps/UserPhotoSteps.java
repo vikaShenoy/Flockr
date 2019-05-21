@@ -426,4 +426,10 @@ public class UserPhotoSteps {
     // End of GET single photo testing
 
 
+    @When("another user requests that the photo be deleted")
+    public void anotherUserRequestsThatThePhotoBeDeleted() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(1);
+        this.result = fakeClient.makeRequestWithToken("DELETE", "/api/users/photos/" + this.newPhotoId, user.getToken());
+    }
 }

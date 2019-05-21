@@ -125,3 +125,11 @@ Feature: As a registered user I want to have photos that display on my profile.
     And the photo is private
     When the admin user requests the photo
     Then the photo is returned in the response body with a status of 200
+    When the user requests that the photo be deleted
+    Then the photo is deleted
+
+  @UserPhotos
+  Scenario: A user wants to delete a photo that they do not have
+    Given a user has a photo called "cucumber.jpeg" already
+    When another user requests that the photo be deleted
+    Then they should receive a "Forbidden" error message with a 403 error code
