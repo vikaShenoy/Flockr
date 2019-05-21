@@ -88,7 +88,7 @@ Feature: As a registered user I want to have photos that display on my profile.
   @UserPhotos
   Scenario: A logged out user wants to get a photo
     Given a user has a photo called "cucumber.jpeg" already
-    When the user request the photo
+    When the user requests the photo
     Then they should receive a "Unauthorized" error message with a 401 error code
 
   @UserPhotos
@@ -119,7 +119,7 @@ Feature: As a registered user I want to have photos that display on my profile.
 
   @UserPhotos
   Scenario: An admin user wants to get a private photo of another user
-    Given a user has a photo called "cucumber.jpg" already
+    Given a user has a photo called "cucumber.jpeg" already
     And the photo is private
     When the admin user requests the photo
     Then the photo is returned in the response body with a status of 200

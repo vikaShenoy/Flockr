@@ -330,4 +330,46 @@ public class UserPhotoSteps {
         this.result = fakeClient.makeRequestWithToken("PATCH", "/api/users/photos/" + user.getUserId(), admin.getToken());
         Assert.assertNotNull(this.result);
     }
+
+    //Start of GET single photo testing
+
+    @When("the user requests the photo")
+    public void theUserRequestsThePhoto() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Then("the photo is returned in the response body with a status of {int}")
+    public void thePhotoIsReturnedInTheResponseBodyWithAStatusOf(Integer int1) {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Given("the photo is public")
+    public void thePhotoIsPublic() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Given("the photo is private")
+    public void thePhotoIsPrivate() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @Given("no user has a photo called {string}")
+    public void noUserHasAPhotoCalled(String string) {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    @When("the admin user requests the photo")
+    public void theAdminUserRequestsThePhoto() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new cucumber.api.PendingException();
+    }
+
+    // End of GET single photo testing
+
+
 }
