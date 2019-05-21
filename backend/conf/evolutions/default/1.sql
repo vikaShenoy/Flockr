@@ -118,6 +118,7 @@ create table personal_photo (
 create table role (
   role_id                       integer auto_increment not null,
   role_type                     varchar(255),
+  constraint uq_role_role_type unique (role_type),
   constraint pk_role primary key (role_id)
 );
 
@@ -169,6 +170,7 @@ create table user (
   password_hash                 varchar(255),
   token                         varchar(255),
   timestamp                     datetime(6) not null,
+  constraint uq_user_email unique (email),
   constraint uq_user_profile_photo_photo_id unique (profile_photo_photo_id),
   constraint pk_user primary key (user_id)
 );

@@ -215,6 +215,8 @@ public class PhotoController extends Controller {
                 if (!user.isAdmin() && !optionalPhoto.get().isPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
                     return forbidden();
                 } else {
+                    JsonNode photoAsJSON = Json.toJson(optionalPhoto);
+                    System.out.println(photoAsJSON);
                     return ok().sendFile(new File("./storage/photos/" + optionalPhoto.get().getFilenameHash()));
                 }
             }
