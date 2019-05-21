@@ -378,6 +378,15 @@ public class UserPhotoSteps {
 
     //Start of GET single photo testing
 
+
+
+    @When("the logged out user requests the photo")
+    public void theLoggedOutUserRequestsThePhoto() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken("GET", "/api/users/photos/" + this.newPhotoId);
+        Assert.assertNotNull(this.result);
+    }
+
     @When("the user requests the photo")
     public void theUserRequestsThePhoto() {
         // Write code here that turns the phrase above into concrete actions

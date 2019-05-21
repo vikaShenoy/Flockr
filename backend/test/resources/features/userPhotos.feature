@@ -87,11 +87,10 @@ Feature: As a registered user I want to have photos that display on my profile.
     When the user requests that the photo be deleted
     Then the photo is deleted
 
-
   @UserPhotos
   Scenario: A logged out user wants to get a photo
     Given a user has a photo called "cucumber.jpeg" already
-    When the user requests the photo
+    When the logged out user requests the photo
     Then they should receive a "Unauthorized" error message with a 401 error code
 
   @UserPhotos
