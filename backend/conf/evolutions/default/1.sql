@@ -121,7 +121,7 @@ create table user (
   profile_photo_photo_id        integer,
   password_hash                 varchar(255),
   token                         varchar(255),
-  timestamp                     datetime(6) not null,
+  timestamp                     timestamp not null,
   constraint uq_user_email unique (email),
   constraint uq_user_profile_photo_photo_id unique (profile_photo_photo_id),
   constraint pk_user primary key (user_id)
