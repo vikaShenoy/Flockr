@@ -79,26 +79,8 @@ public class PhotoController extends Controller {
             return supplyAsync(() -> badRequest(response), httpExecutionContext.current());
         }
 
-        boolean isPublic = false, isPrimary = false;
-        String isPublicStr = requestBody.get("isPublic").asText();
-        if (isPublicStr.toLowerCase().equals("true")) {
-            isPublic = true;
-        } else if (isPublicStr.toLowerCase().equals("false")) {
-            isPublic = false;
-        }
-
-        if (requestBody.has("isPrimary")) {
-            String isPrimaryStr = requestBody.get("isPrimary").asText();
-            if (isPrimaryStr.toLowerCase().equals("true")) {
-                isPrimary = true;
-            } else if (isPrimaryStr.toLowerCase().equals("false")) {
-                isPrimary = false;
-            }
-        }
-        final boolean isPublicFinal = isPublic;
-        final boolean isPrimaryFinal = isPrimary;
-        System.out.println(isPublic);
-        System.out.println(isPrimary);
+        boolean isPublic = requestBody.get("isPublic").asBoolean();
+        boolean isPrimary = requestBody.get("isPrimary").asBoolean();
         return photoRepository.getPhotoById(photoId)
                 .thenApplyAsync(optionalPhoto -> {
                     // If the photo with the given photo id does not exists
@@ -112,8 +94,8 @@ public class PhotoController extends Controller {
                     }
 
                     PersonalPhoto photo = optionalPhoto.get();
-                    photo.setPublic(isPublicFinal);
-                    photo.setPrimary(isPrimaryFinal);
+                    photo.setPublic(isPublic);
+                    photo.setPrimary(isPrimary);
                     return photoRepository.updatePhoto(photo);
                 }).thenApplyAsync(PersonalPhoto -> ok("Successfully updated permission groups"))
                 .exceptionally(e -> {
@@ -222,6 +204,8 @@ public class PhotoController extends Controller {
                 if (!user.isAdmin() && !optionalPhoto.get().isPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
                     return forbidden();
                 } else {
+                    JsonNode photoAsJSON = Json.toJson(optionalPhoto);
+                    System.out.println(photoAsJSON);
                     return ok().sendFile(new File("./storage/photos/" + optionalPhoto.get().getFilenameHash()));
                 }
             }
