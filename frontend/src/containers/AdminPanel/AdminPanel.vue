@@ -95,6 +95,7 @@ export default {
     },
     handleEditUserFormSubmission: async function(patchedUser) {
       // TODO: call the AdminPanelService and ask it to patch the user
+      console.log(patchedUser);
 
       let userId = patchedUser.userId;
       try {

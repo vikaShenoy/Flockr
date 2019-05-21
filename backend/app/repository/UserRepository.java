@@ -44,7 +44,7 @@ public class UserRepository {
      */
     public CompletionStage<User> updateUser(User user) {
         return supplyAsync(() -> {
-            user.update();
+            user.save();
             return user;
         }, executionContext);
     }
@@ -115,7 +115,8 @@ public class UserRepository {
     }
 
     /**
-     * Gets a nationality by it's ID
+     * Gets a nationality by it's ID                            System.out.println();(nationality);
+
      *
      * @param nationalityId The nationality to get
      * @return The list of nationalities
