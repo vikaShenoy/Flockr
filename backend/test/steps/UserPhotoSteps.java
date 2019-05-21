@@ -62,7 +62,7 @@ public class UserPhotoSteps {
         Assert.assertNotNull(user);
         List<PersonalPhoto> photos = new ArrayList<>();
         for (Map<String, String> row : list) {
-            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")));
+            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")), null);
             photo.save();
             photo = PersonalPhoto.find.byId(photo.getPhotoId());
             photos.add(photo);
@@ -339,5 +339,21 @@ public class UserPhotoSteps {
 
         this.result = fakeClient.makeRequestWithToken("PATCH", "/api/users/photos/" + this.newPhotoId, admin.getToken());
         Assert.assertNotNull(this.result);
+    }
+
+    @When("the user requests that the photo be deleted")
+    public void theUserRequestsThatThePhotoBeDeleted() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+        this.result = fakeClient.makeRequestWithToken("DELETE", "/api/users/photos/" + this.newPhotoId, user.getToken());
+        Assert.assertEquals(200, result.status());
+    }
+
+    @Then("the photo is deleted")
+    public void thePhotoIsDeleted() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/photos/" + this.newPhotoId, user.getToken());
+        Assert.assertEquals(404, this.result.status());
     }
 }

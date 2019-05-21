@@ -13,7 +13,13 @@
 
     <div class="row">
       <div class="col-lg-4">
-        <ProfilePic :photos="userProfile.personalPhotos" :userId="userProfile.userId" v-on:newProfilePic="changeProfilePic" v-on:showError="showError"/>
+        <ProfilePic
+          :profilePhoto="userProfile.profilePhoto"
+          :photos="userProfile.personalPhotos"
+          :userId="userProfile.userId"
+          v-on:newProfilePic="changeProfilePic"
+          v-on:showError="showError"
+        />
 
         <BasicInfo :userProfile.sync="userProfile" />
 

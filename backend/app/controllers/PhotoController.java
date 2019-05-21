@@ -131,13 +131,13 @@ public class PhotoController extends Controller {
     /**
      * This function is responsible for deleting the photo with the given ID
      *
-     * @param photoFilename the hashed filename of the photo to be deleted
+     * @param photoId       the id of the photo to be deleted
      * @param request       the Http request sent
-     * @return a Play result
+     * @return              a Play result
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> deletePhoto(String photoFilename, Http.Request request) {
-        return photoRepository.getPhotoByFilename(photoFilename)
+    public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
+        return photoRepository.getPhotoById(photoId)
                 .thenComposeAsync((optionalPhoto) -> {
                     if (!optionalPhoto.isPresent()) {
                         throw new CompletionException(new NotFoundException());
@@ -148,16 +148,16 @@ public class PhotoController extends Controller {
                         throw new CompletionException(new NotFoundException());
                     }
                     ObjectNode message = Json.newObject();
-                    message.put("message", "Successfully deleted the given filename photo");
+                    message.put("message", "Successfully deleted the photo");
                     return this.photoRepository.deletePhoto(photo.getPhotoId());
                 })
-                .thenApplyAsync(photoId -> (Result) ok())
+                .thenApplyAsync(photo -> (Result) ok())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
                     } catch (NotFoundException error) {
                         ObjectNode message = Json.newObject();
-                        message.put("message", "The photo with the given hashed filename is not found");
+                        message.put("message", "The photo with the given id is not found");
                         return notFound(message);
                     } catch (Throwable serverError) {
                         return internalServerError();
@@ -375,8 +375,10 @@ public class PhotoController extends Controller {
                         return supplyAsync(Results::internalServerError, httpExecutionContext.current());
                     }
 
+
                     // create photo model in database
                     final String usedFilename = filename;
+                    String finalThumbFilename = thumbFilename;
                     return userRepository.getUserById(userId)
                             .thenComposeAsync(optionalReceivingUser -> {
                                 if (!optionalReceivingUser.isPresent()) {
@@ -385,7 +387,7 @@ public class PhotoController extends Controller {
                                 }
 
                                 User receivingUser = optionalReceivingUser.get();
-                                PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary);
+                                PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary, finalThumbFilename);
                                 return photoRepository.insert(personalPhoto)
                                         .thenApplyAsync((insertedPhoto) -> created(Json.toJson(insertedPhoto)));
                             });

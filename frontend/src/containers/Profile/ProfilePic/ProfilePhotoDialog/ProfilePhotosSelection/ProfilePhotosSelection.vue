@@ -10,7 +10,7 @@
       v-bind:class="{'selected-photo': selectedPhoto && photo.photoId == selectedPhoto.photoId}"
       v-for="(photo, index) in photos"
       v-bind:key="photo.photoId"
-      :src="photoUrl(photo.photoId)"
+      :src="thumbnailPhotoUrl(photo.photoId)"
       @click="selectPhoto(index)"
     />
   </div>
@@ -37,10 +37,10 @@ export default {
     selectPhoto(photoIndex) {
       this.$emit("photoSelected", this.photos[photoIndex]);
     },
-    photoUrl(photoId) {
+    thumbnailPhotoUrl(photoId) {
       const authToken = localStorage.getItem("authToken");
       const queryAuthorization = `?Authorization=${authToken}`;
-      return endpoint(`/users/photos/${photoId}${queryAuthorization}`);
+      return endpoint(`/users/photos/${photoId}/thumbnail${queryAuthorization}`);
     }
   }
 }
