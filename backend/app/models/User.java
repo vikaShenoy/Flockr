@@ -48,7 +48,7 @@ public class User extends Model {
     @ManyToMany(mappedBy = "users")
     public List<Role> roles;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PersonalPhoto> personalPhotos;
 
     @OneToOne
