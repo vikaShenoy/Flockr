@@ -14,26 +14,30 @@
               @idChanged="changeIdOfDestination"
               @deleteNewDestination="deleteNewDestination"
       ></DestinationCard>
-      <v-btn fab id="addDestinationButton" v-on:click="addNewDestinationCard">
+      <v-btn fab id="addDestinationButton" v-on:click="openAddDestinationDialog">
         <v-icon>add</v-icon>
       </v-btn>
     </div>
+    <add-destination-dialog :dialog="showAddDestination" v-on:dialogChanged="changeShowAddDestinationDialog"/>
   </div>
 </template>
 
 <script>
   import DestinationCard from "./DestinationCard/DestinationCard";
   import {requestCountries, requestDestinations, requestDestinationTypes, sendDeleteDestination} from "./DestinationsService";
+  import AddDestinationDialog from "./AddDestinationDialog/AddDestinationDialog";
 
   export default {
     components: {
+      AddDestinationDialog,
       DestinationCard
     },
     data() {
       return {
         destinations: [],
         countries: [],
-        destinationTypes: []
+        destinationTypes: [],
+        showAddDestination: false
       }
     },
     /**
@@ -66,6 +70,20 @@
       }
     },
     methods: {
+      /**
+       * Called when the add button is selected.
+       * Opens the add destination dialog window.
+       */
+      openAddDestinationDialog() {
+        this.showAddDestination = true;
+      },
+      /**
+       * Called when the add destination dialog emits a dialogChanged event.
+       * Changes the showAddDestination variable to match the value in the add destination dialog component.
+       */
+      changeShowAddDestinationDialog(newValue) {
+        this.showAddDestination = newValue;
+      },
       /**
        * Add a new empty destination card.
        */
