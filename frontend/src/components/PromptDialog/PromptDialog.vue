@@ -1,8 +1,8 @@
 <template>
   <v-dialog
-    v-model="dialog"
-    width="500"
-    persistent
+          v-model="dialog"
+          width="500"
+          persistent
   >
     <v-card>
       <v-card-title class="warning headline">
@@ -57,7 +57,7 @@
        *
        * @param response the boolean response, true if confirm false if cancel.
        */
-      sendResponse: function(response) {
+      sendResponse: function (response) {
         if (response && this.onConfirm) {
           this.onConfirm();
         }
@@ -71,6 +71,12 @@
 <style lang="scss" scoped>
 
   pre {
+    white-space: pre-wrap;      /* Since CSS 2.1 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -o-pre-wrap;   /* Opera 7 */
+    word-wrap: break-word;      /* Internet Explorer 5.5+ */
+    font-family: 'Roboto', sans-serif;
+    font-size: 1em;
     text-align: center;
   }
 
