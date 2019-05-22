@@ -2,9 +2,11 @@
   <div class="admin-panel">
     <h2>Admin Panel</h2>
     <ManageUsers
-      :users="this.users"
+      v-bind:adminSearch.sync="adminSearch"
+      :users="getFilteredUsers"
       v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
+      v-on:logoutUsersByIds="handleLogoutUsersByIds"
     />
     <EditUserForm
       v-if="userBeingEdited"
@@ -41,6 +43,7 @@ export default {
 
   data() {
     return {
+      adminSearch: '',
       showEditUserForm: false,
       userBeingEdited: null,
       users: [], // single source of truth for children components relying on users so that info stays up to date
@@ -51,6 +54,14 @@ export default {
         color: '', // green, red, yellow, red, etc
         snackbarId: 0 // used to know which snackbar was manually dismissed
       }
+    }
+  },
+  computed:{
+    getFilteredUsers() {
+      return this.users.filter(user => {
+        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+        return fullName.includes(this.adminSearch.toLowerCase());
+      });
     }
   },
   methods: {
@@ -84,6 +95,7 @@ export default {
     },
     handleEditUserFormSubmission: async function(patchedUser) {
       // TODO: call the AdminPanelService and ask it to patch the user
+      console.log(patchedUser);
 
       let userId = patchedUser.userId;
       try {
@@ -119,6 +131,28 @@ export default {
         this.snackbarModel.color = 'red';
         this.snackbarModel.show = true;
         console.error(`Could not delete those users: ${err}`);
+      }
+    },
+
+    handleLogoutUsersByIds: async function(userIds) {
+      const promises = [];
+      console.log('userIds being logged out: ' + userIds)
+      userIds.forEach(userId => {
+        const promise = superagent
+          .post(endpoint(`/auth/users/${userId}/logout`)).set('Authorization', localStorage.getItem('authToken'));
+        promises.push(promise);
+      });
+      try {
+        await Promise.all(promises);
+        this.getAllUsers();
+        this.snackbarModel.text = 'Successfully logged out user(s)';
+        this.snackbarModel.color = 'green';
+        this.snackbarModel.show = true;
+      } catch(err) {
+        this.snackbarModel.text = 'Could not logout user(s)';
+        this.snackbarModel.color = 'red';
+        this.snackbarModel.show = true;
+        console.error(`Could not delete logout users: ${err}`);
       }
     }
   }

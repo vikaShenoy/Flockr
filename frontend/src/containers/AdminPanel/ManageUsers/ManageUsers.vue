@@ -6,6 +6,12 @@
           <div class="manage-users-text">
             <p>Manage users</p>
           </div>
+          <v-text-field label="Search User" color="secondary" @input="searchAdminChange">
+          </v-text-field>
+          <v-btn class="logout-user-button" v-on:click.stop="logoutUsersButtonClicked" :disabled="this.selectedUsers.length != 1"
+            @click="logoutUsersButtonClicked">
+            Log Out User
+          </v-btn>
 
           <v-btn class="new-user-button"
             @click="signupButtonClicked">
@@ -22,12 +28,12 @@
           </v-btn>
 
           <v-btn class="delete-users-button" :disabled="this.selectedUsers.length === 0"
-            @click="deleteUsersButtonClicked">
+            @click="showPrompt('Are you sure?', deleteUsersButtonClicked)">
             Delete users
           </v-btn>
 
         </v-subheader>
-
+        
         <!-- User tile -->
         <v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
           <v-list-tile-avatar>
@@ -54,7 +60,11 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
+    <prompt-dialog
+    :message=prompt.message
+    :onConfirm="prompt.onConfirm"
+    :dialog="prompt.show" 
+    v-on:promptEnded="prompt.show=false"></prompt-dialog>
   </div>
 
 </template>
@@ -64,9 +74,11 @@
 import {deleteUsers, getAllUsers} from "../AdminPanelService";
 import moment from "moment";
 import SignUp from "../../Signup/Signup";
+import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
 
 export default {
   components: {
+    PromptDialog,
     SignUp
   },
   mounted () {
@@ -76,6 +88,11 @@ export default {
     return {
       items: [],
       showSignup: false,
+      prompt: {
+        message: "",
+        onConfirm: null,
+        show: false
+      }
     };
   },
   computed: {
@@ -90,6 +107,16 @@ export default {
     }
   },
   methods: {
+    searchAdminChange(searchAdmin) 
+    {
+      this.$emit('update:adminSearch',searchAdmin);
+      console.log(searchAdmin);
+    },
+    showPrompt(message, onConfirm) {
+      this.prompt.message = message;
+      this.prompt.onConfirm = onConfirm;
+      this.prompt.show = true;
+    },
 
     /**
      * Close the modal containing the signup component.
@@ -115,11 +142,21 @@ export default {
       this.$emit('wantToEditUserById', userId);
     },
     /**
+     * Call the admin panel service to logout the given user ids.
+     */
+    logoutUsersButtonClicked: async function() {
+      const userIds = this.selectedUsers;
+      console.log(userIds);
+      
+      this.$emit("logoutUsersByIds", userIds);
+    },
+    /**
      * Call the admin panel service to delete the given user ids.
      */
     deleteUsersButtonClicked: async function() {
       const userIds = this.selectedUsers;
       console.log(userIds);
+      
       this.$emit("deleteUsersByIds", userIds);
     },
 

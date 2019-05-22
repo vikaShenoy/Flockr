@@ -1,25 +1,29 @@
 package controllers;
 
 import actions.ActionState;
+import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.ConflictingRequestException;
 import exceptions.UnauthorizedException;
+import play.api.http.Status;
 import play.libs.Json;
+import play.mvc.Http;
 import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
 import models.*;
+import play.mvc.Results;
 import play.mvc.With;
 import repository.AuthRepository;
 import repository.UserRepository;
 import repository.RoleRepository;
 import util.Security;
-
 import javax.inject.Inject;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-
 import util.Responses;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static play.mvc.Results.*;
@@ -93,7 +97,7 @@ public class AuthController {
             });
         }
 
-        String middleName = "";
+        String middleName = jsonRequest.has("middleName") ? jsonRequest.get("middleName").asText() : "";
         String firstName = jsonRequest.get("firstName").asText();
         String lastName = jsonRequest.get("lastName").asText();
         String email = jsonRequest.get("email").asText();
@@ -103,7 +107,6 @@ public class AuthController {
 
         // Middle name is optional and checks if the middle name is a valid name
         if (jsonRequest.has("middleName")) {
-            middleName = jsonRequest.get("middleName").asText();
             if (!(isAlpha(middleName)) || (middleName.length() < 2)) {
                 return supplyAsync(() -> {
                     ObjectNode message = Json.newObject();
@@ -140,9 +143,29 @@ public class AuthController {
             });
         }
 
-        User user = new User(firstName, middleName,lastName, email, hashedPassword, userToken);
-        return authRepository.insert(user)
-                .thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)), httpExecutionContext.current());
+        // check that a user with that email does not already exist, if so, return request forbidden
+        return authRepository.getUserByEmail(email).thenComposeAsync((optionalUser -> {
+            if (optionalUser.isPresent()) {
+                throw new CompletionException(new ConflictingRequestException("Sorry, that email is taken"));
+            }
+
+            User user = new User(firstName, middleName, lastName, email, hashedPassword, userToken);
+            return authRepository.insert(user).thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)),
+                httpExecutionContext.current());
+        }), httpExecutionContext.current())
+        .exceptionally(error -> {
+            try {
+                throw error.getCause();
+            } catch (ConflictingRequestException e) {
+                ObjectNode message = Json.newObject();
+                message.put(messageKey, e.getMessage());
+                return Results.status(Http.Status.CONFLICT, message);
+            } catch (Throwable throwable) {
+                ObjectNode message = Json.newObject();
+                message.put(messageKey, "Something went wrong trying to sign up");
+                return internalServerError(message);
+            }
+        });
     }
 
     /**
@@ -205,6 +228,38 @@ public class AuthController {
                 .thenApplyAsync((u) -> {
                     return ok();
                 }, httpExecutionContext.current());
+
+    }
+
+    /**
+     * Logs a user of a given id out by setting their auth token to null.
+     * @param userId User ID to Logout
+     * @param request incoming HTTP request.
+     * @return 200 status code.
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> logoutById( int userId, Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+
+        CompletionStage<Optional<User>> getUser;
+
+        getUser = userRepository.getUserById(userId);
+
+       return userRepository.getUserById(userId).thenApplyAsync(optionalUser -> {
+            if (!optionalUser.isPresent()) {
+                ObjectNode message = Json.newObject();
+                message.put("message", "User not found");
+                return notFound(message);
+            }
+
+            User userToLogut = optionalUser.get();
+            userToLogut.setToken(null);
+            userToLogut.save();
+           ObjectNode message = Json.newObject();
+           message.put("message", "User successfully logged out");
+           return ok(message);
+        });
 
     }
 

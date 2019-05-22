@@ -103,6 +103,18 @@ export default {
       }
       return this.firstNameErrors.length === 0;
     },
+    clearData() {
+      this.firstName =  "",
+      this.lastName =  "",
+      this.email =  "",
+      this.password =  "",
+      this.confirmPassword = "",
+      this.firstNameErrors = [],
+      this.lastNameErrors = [],
+      this.emailErrors = [],
+      this.passwordErrors = [],
+      this.confirmPasswordErrors = []
+    },
     /**
      * Checks if the last name field is empty and renders error if it is
      * @returns {boolean} True if there are no errors, false otherwise
@@ -194,7 +206,6 @@ export default {
       ];
 
       const fieldResults = await Promise.all(fieldPromises);
-
       return fieldResults.every(fieldResult => fieldResult);
     },
     /**
@@ -203,6 +214,7 @@ export default {
     async signup() {
       const validFields = await this.validate();
       if (!validFields) return;
+      console.log(10);
 
       try {
         const { token, userId } = await signup({
@@ -212,13 +224,18 @@ export default {
           password: this.password,
         });
 
+        console.log(5);
+
         // Only set fields and redirect if they are 
         // NOT currently logged in. (Useful for admin panel).
         if (!localStorage.getItem("authToken")) {
+          console.log(4);
           localStorage.setItem("authToken", token);
           localStorage.setItem("userId", userId);
           this.$router.push(`/profile/${userId}`);
         } else {
+          console.log(6);
+          this.clearData();
           this.$emit('exit', true);
         }
       } catch (e) {
