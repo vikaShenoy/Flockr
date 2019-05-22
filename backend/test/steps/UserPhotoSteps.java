@@ -389,14 +389,22 @@ public class UserPhotoSteps {
 
     @When("the user requests the photo")
     public void theUserRequestsThePhoto() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/" + this.newPhotoId + "?Authorization=" + user.getToken());
+
+        Assert.assertNotNull(this.result);
+
     }
 
     @Then("the photo is returned in the response body with a status of {int}")
     public void thePhotoIsReturnedInTheResponseBodyWithAStatusOf(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+        Assert.assertFalse(this.result.body().isKnownEmpty());
+        Assert.assertTrue(this.result.body().contentLength().get().intValue() > 2000);
+        Assert.assertEquals(200, this.result.status());
     }
 
     @Given("the photo is public")
