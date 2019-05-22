@@ -110,7 +110,6 @@ export default {
     searchAdminChange(searchAdmin) 
     {
       this.$emit('update:adminSearch',searchAdmin);
-      console.log(searchAdmin);
     },
     showPrompt(message, onConfirm) {
       this.prompt.message = message;
@@ -146,8 +145,6 @@ export default {
      */
     logoutUsersButtonClicked: async function() {
       const userIds = this.selectedUsers;
-      console.log(userIds);
-      
       this.$emit("logoutUsersByIds", userIds);
     },
     /**
@@ -155,8 +152,6 @@ export default {
      */
     deleteUsersButtonClicked: async function() {
       const userIds = this.selectedUsers;
-      console.log(userIds);
-      
       this.$emit("deleteUsersByIds", userIds);
     },
 

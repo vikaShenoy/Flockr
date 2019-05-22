@@ -214,8 +214,6 @@ export default {
     async signup() {
       const validFields = await this.validate();
       if (!validFields) return;
-      console.log(10);
-
       try {
         const { token, userId } = await signup({
           firstName: this.firstName,
@@ -224,17 +222,13 @@ export default {
           password: this.password,
         });
 
-        console.log(5);
-
-        // Only set fields and redirect if they are 
+        // Only set fields and redirect if they are
         // NOT currently logged in. (Useful for admin panel).
         if (!localStorage.getItem("authToken")) {
-          console.log(4);
           localStorage.setItem("authToken", token);
           localStorage.setItem("userId", userId);
           this.$router.push(`/profile/${userId}`);
         } else {
-          console.log(6);
           this.clearData();
           this.$emit('exit', true);
         }

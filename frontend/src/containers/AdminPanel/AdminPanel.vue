@@ -74,15 +74,11 @@ export default {
     async getAllUsers() {
       const allUsers = await getAllUsers();
       this.users = allUsers;
-      console.log(this.users);
     },
-
     // event handler for when a child component wants to edit a user by id
     handleWantToEditUserById: async function(userId) {
-      console.log(`Wanting to edit user ${userId} in admin panel`);
       const res = await superagent.get(endpoint(`/users/${userId}`)).set("Authorization", localStorage.getItem("authToken"));
       this.userBeingEdited = res.body;
-      console.log(this.userBeingEdited);
       this.showEditUserForm = true; // show the edit user dialog
     },
     handleEditUserFormDismissal: function() {
@@ -94,27 +90,22 @@ export default {
       this.snackbarModel.show = true;
     },
     handleEditUserFormSubmission: async function(patchedUser) {
-      // TODO: call the AdminPanelService and ask it to patch the user
-      console.log(patchedUser);
-
       let userId = patchedUser.userId;
       try {
         await patchUser(userId, patchedUser);
+        this.showEditUserForm = false;
+        this.getAllUsers();
+        this.snackbarModel.text = 'Successfully edited user';
+        this.snackbarModel.color = 'green';
+        this.snackbarModel.show = true;
       } catch (e) {
-        console.log(e);
         this.snackbarModel.text = 'Could not edit the user';
         this.snackbarModel.color = 'red';
         this.snackbarModel.show = true;
       }
-      this.showEditUserForm = false;
-      this.getAllUsers();
-      this.snackbarModel.text = 'Successfully edited user';
-      this.snackbarModel.color = 'green';
-      this.snackbarModel.show = true;
     },
     handleDeleteUsersByIds: async function(userIds) {
       const promises = [];
-      console.log('userIds being deleted: ' + userIds)
       userIds.forEach(userId => {
         const promise = superagent
           .delete(endpoint(`/users/${userId}`)).set('Authorization', localStorage.getItem('authToken'));
@@ -130,13 +121,11 @@ export default {
         this.snackbarModel.text = 'Could not delete user(s)';
         this.snackbarModel.color = 'red';
         this.snackbarModel.show = true;
-        console.error(`Could not delete those users: ${err}`);
       }
     },
 
     handleLogoutUsersByIds: async function(userIds) {
       const promises = [];
-      console.log('userIds being logged out: ' + userIds)
       userIds.forEach(userId => {
         const promise = superagent
           .post(endpoint(`/auth/users/${userId}/logout`)).set('Authorization', localStorage.getItem('authToken'));
@@ -152,7 +141,6 @@ export default {
         this.snackbarModel.text = 'Could not logout user(s)';
         this.snackbarModel.color = 'red';
         this.snackbarModel.show = true;
-        console.error(`Could not delete logout users: ${err}`);
       }
     }
   }
