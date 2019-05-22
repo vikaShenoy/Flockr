@@ -70,23 +70,35 @@ Feature: As a registered user I want to have photos that display on my profile.
     Then the thumbnail is returned in the response
 
   @UserPhoto
-  Scenario: An admin wants to change a user's photo permission from public to private.
+  Scenario: An admin wants to change a user's photo permission from public to private
     Given a user has a photo called "cucumber.jpeg" already
-    When The admin changes the photo permission to private
-    Then The photo permission is set to private
+    And one of the users is an admin
+    When the admin changes the photo permission to private
+    Then the photo permission is set to private
 
   @UserPhoto
-  Scenario: A user wants to change their photo permission from public to private.
+  Scenario: A user wants to change their photo permission from public to private
     Given a user has a photo called "cucumber.jpeg" already
-    When The user changes the photo permission to private
-    Then The photo permission is set to private
+    When the user changes the photo permission to private
+    Then the photo permission is set to private
+
+  @UserPhoto
+  Scenario: A user wants to change another user's photo permission from public to private
+    Given a user has a photo called "cucumber.jpeg" already
+    When another user changes the photo permission to private
+    Then that user is not allowed to change the photo permission
+
+  @UserPhoto
+  Scenario: A user wants to change a photo permission of a photo that does not exist from public to private
+    Given a user has no photo with the photo id 1000
+    When the user changes the photo permission of the non-existent photo to private
+    Then the photo cannot be found
 
   @UserPhotos
   Scenario: A user wants to delete a photo that they have
     Given a user has a photo called "cucumber.jpeg" already
     When the user requests that the photo be deleted
     Then the photo is deleted
-
 
   @UserPhotos
   Scenario: A logged out user wants to get a photo

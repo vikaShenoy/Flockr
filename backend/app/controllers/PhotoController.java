@@ -85,8 +85,8 @@ public class PhotoController extends Controller {
                     }
 
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
-                    if (!user.isAdmin() || user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
-                        throw new CompletionException(new UnauthorizedException());
+                    if (!user.isAdmin() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
+                        throw new CompletionException(new ForbiddenRequestException("You're not allowed to change the permission group."));
                     }
 
                     PersonalPhoto photo = optionalPhoto.get();
@@ -100,7 +100,7 @@ public class PhotoController extends Controller {
                     } catch (NotFoundException notFoundException) {
                         response.put("message", "Could not find a photo with the given photo ID");
                         return notFound(response);
-                    } catch (UnauthorizedException unauthorizedException) {
+                    } catch (ForbiddenRequestException forbiddenException) {
                         response.put("message", "You are unauthorised to change the photo permission of the photo");
                         return forbidden(response);
                     } catch (Throwable serverException) {
