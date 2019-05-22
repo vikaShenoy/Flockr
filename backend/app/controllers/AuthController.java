@@ -235,7 +235,9 @@ public class AuthController {
      * Logs a user of a given id out by setting their auth token to null.
      * @param userId User ID to Logout
      * @param request incoming HTTP request.
-     * @return 200 status code.
+     * @return
+     * - 200 status code if ok.
+     * - 404 status code if the user being logged out can't be found in db.
      */
     @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> logoutById( int userId, Request request) {
