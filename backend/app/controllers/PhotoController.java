@@ -23,12 +23,16 @@ import javax.inject.Inject;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -119,21 +123,27 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
         return photoRepository.getPhotoById(photoId)
-                .thenComposeAsync((optionalPhoto) -> {
+                .thenApplyAsync((optionalPhoto) -> {
                     if (!optionalPhoto.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     PersonalPhoto photo = optionalPhoto.get();
+                    if (user.getUserId() != photo.getUser().getUserId() && !user.isAdmin()) {
+                        return forbidden();
+                    }
                     File photoToDelete = new File("./storage/photos/" + photo.getFilenameHash());
-                    if (!photoToDelete.delete()) {
+                    File thumbnailToDelete = new File("./storage/photos/" + photo.getThumbnailName());
+                    if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     ObjectNode message = Json.newObject();
                     message.put("message", "Successfully deleted the photo");
-                    return this.photoRepository.deletePhoto(photo.getPhotoId());
+                    this.photoRepository.deletePhoto(photo.getPhotoId());
+                    return ok(message);
                 })
-                .thenApplyAsync(photo -> (Result) ok())
+                //.thenApplyAsync(photo -> (Result) ok())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
@@ -160,6 +170,7 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int userId, Http.Request request) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
         // Check user exists
         if (User.find.byId(userId) == null) {
             JsonNode response = Json.newObject().put("error", "Not Found");
@@ -167,7 +178,18 @@ public class PhotoController extends Controller {
         } else {
             return photoRepository.getPhotosById(userId)
                     .thenApplyAsync((photos) -> {
-                        JsonNode photosAsJSON = Json.toJson(photos);
+                        List<PersonalPhoto> userPhotos = photos.stream().filter((photo) -> {
+                            // Don't add primary photo to list of photos
+                            if (photo.isPrimary()) {
+                                return false;
+                            }
+
+                            // Don't add private photo's if user not the logged in user
+                            return !(userFromMiddleware.getUserId() != userId && !photo.isPublic());
+                        })
+                                .collect(Collectors.toList());
+
+                        JsonNode photosAsJSON = Json.toJson(userPhotos);
                         return ok(photosAsJSON);
                     });
         }
@@ -371,7 +393,29 @@ public class PhotoController extends Controller {
                                 User receivingUser = optionalReceivingUser.get();
                                 PersonalPhoto personalPhoto = new PersonalPhoto(usedFilename, isPublic, receivingUser, isPrimary, finalThumbFilename);
                                 return photoRepository.insert(personalPhoto)
-                                        .thenApplyAsync((insertedPhoto) -> created(Json.toJson(insertedPhoto)));
+                                        .thenApplyAsync((insertedPhoto) -> {
+                                            if (isPrimary) {
+                                                // If old profile photo exists, delete thumbnail and photo of old profile photo
+                                                if (receivingUser.getProfilePhoto() != null) {
+                                                    PersonalPhoto oldProfilePhoto = receivingUser.getProfilePhoto();
+                                                    String profilePicturePath = System.getProperty("user.dir") + "/storage/photos";
+                                                    File photoFile = new File(profilePicturePath, oldProfilePhoto.getFilenameHash());
+                                                    File thumbnailFile = new File(profilePicturePath, oldProfilePhoto.getThumbnailName());
+
+                                                    if (!photoFile.delete() || !thumbnailFile.delete()) {
+                                                        String photoErrorMessage = "Error deleting old profile photo and thumbnail";
+                                                        System.err.println(photoErrorMessage);
+                                                        throw new CompletionException(new FileNotFoundException(photoErrorMessage));
+                                                    }
+                                                }
+
+                                                receivingUser.setProfilePhoto(insertedPhoto);
+                                                receivingUser.save();
+                                            }
+
+
+                                            return created(Json.toJson(insertedPhoto));
+                                        });
                             });
                 }, httpExecutionContext.current())
                 .exceptionally(error -> {

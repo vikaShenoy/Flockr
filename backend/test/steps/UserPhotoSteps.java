@@ -251,6 +251,37 @@ public class UserPhotoSteps {
         Assert.assertEquals(201, this.result.status());
     }
 
+    @Given("a user has a private photo called {string} already")
+    public void aUserHasAPrivatePhotoCalledAlready(String filename) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+
+        Map<String, String> values = new HashMap<>();
+        values.put("isPrimary", Boolean.toString(false));
+        values.put("isPublic", Boolean.toString(false));
+
+        File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", filename);
+
+        if (!file.exists()) {
+            Assert.fail(String.format("File %s was not found", file));
+        }
+
+        this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
+                "POST",
+                "/api/users/" + user.getUserId() + "/photos",
+                user.getToken(),
+                file,
+                values);
+
+        Assert.assertNotNull(this.result);
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+        this.newPhotoId = resultAsJson.get("photoId").asInt();
+        this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+
+        Assert.assertNotEquals(0, this.newPhotoId);
+        Assert.assertEquals(201, this.result.status());
+    }
+
     @When("^the user requests the thumbnail for this photo$")
     public void theUserRequestsTheThumbnailForThisPhoto() {
         User user = TestState.getInstance().getUser(0);
@@ -401,34 +432,56 @@ public class UserPhotoSteps {
 
     //Start of GET single photo testing
 
+
+
+    @When("the logged out user requests the photo")
+    public void theLoggedOutUserRequestsThePhoto() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken("GET", "/api/users/photos/" + this.newPhotoId);
+        Assert.assertNotNull(this.result);
+    }
+
+    @When("the logged in user requests the photo")
+    public void theLoggedInUserRequestsThePhoto() {
+        // Write code here that turns the phrase above into concrete actions
+        User user = TestState.getInstance().getUser(1);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/" + this.newPhotoId + "?Authorization=" + user.getToken());
+
+        Assert.assertNotNull(this.result);
+    }
+
     @When("the user requests the photo")
     public void theUserRequestsThePhoto() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/" + this.newPhotoId + "?Authorization=" + user.getToken());
+
+        Assert.assertNotNull(this.result);
+
     }
 
     @Then("the photo is returned in the response body with a status of {int}")
-    public void thePhotoIsReturnedInTheResponseBodyWithAStatusOf(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    public void thePhotoIsReturnedInTheResponseBodyWithAStatusOf(Integer stat) {
+        Assert.assertFalse(this.result.body().isKnownEmpty());
+        Assert.assertTrue(this.result.body().contentLength().get().intValue() > 2000);
+        Assert.assertTrue(this.result.status() == 200);
     }
 
-    @Given("the photo is public")
-    public void thePhotoIsPublic() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
+    @When("no user has a photo with id {int}")
+    public void noUserHasAPhotoWithId(Integer id) {
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/" + id + "?Authorization=" + user.getToken());
 
-    @Given("the photo is private")
-    public void thePhotoIsPrivate() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @Given("no user has a photo called {string}")
-    public void noUserHasAPhotoCalled(String string) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+        Assert.assertNotNull(this.result);
     }
 
     @When("the admin user requests the photo")
@@ -440,4 +493,10 @@ public class UserPhotoSteps {
     // End of GET single photo testing
 
 
+    @When("another user requests that the photo be deleted")
+    public void anotherUserRequestsThatThePhotoBeDeleted() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(1);
+        this.result = fakeClient.makeRequestWithToken("DELETE", "/api/users/photos/" + this.newPhotoId, user.getToken());
+    }
 }

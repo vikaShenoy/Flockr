@@ -18,18 +18,9 @@ export default {
     ProfilePhotoDialog
   },
   props: {
-    userId: {
-      type: Number,
-      required: true
-    },
-    photos: {
-      type: Array,
-      required: true
-    },
-    profilePhoto: {
-      type: Object,
-      required: true
-    }
+    userId: Number,
+    photos: Array,
+    profilePhoto: Object
   },
   data() {
     return {
@@ -49,7 +40,7 @@ export default {
      */
     hideProfilePhotoDialog(imageObject) {
       this.dialog = false;
-      if (imageObject !== null) {
+      if (imageObject) {
         this.$emit("newProfilePic", imageObject);
       }
     },
