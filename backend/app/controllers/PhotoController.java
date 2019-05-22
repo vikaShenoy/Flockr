@@ -170,6 +170,7 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int userId, Http.Request request) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
         // Check user exists
         if (User.find.byId(userId) == null) {
             JsonNode response = Json.newObject().put("error", "Not Found");
@@ -177,7 +178,15 @@ public class PhotoController extends Controller {
         } else {
             return photoRepository.getPhotosById(userId)
                     .thenApplyAsync((photos) -> {
-                        List<PersonalPhoto> userPhotos = photos.stream().filter((photo) -> !photo.isPrimary())
+                        List<PersonalPhoto> userPhotos = photos.stream().filter((photo) -> {
+                            // Don't add primary photo to list of photos
+                            if (photo.isPrimary()) {
+                                return false;
+                            }
+
+                            // Don't add private photo's if user not the logged in user
+                            return !(userFromMiddleware.getUserId() != userId && !photo.isPublic());
+                        })
                                 .collect(Collectors.toList());
 
                         JsonNode photosAsJSON = Json.toJson(userPhotos);

@@ -36,11 +36,7 @@
     </div>
 
     <div class="switch">
-      <v-switch :disabled="isPrimary" switch v-model="isPublic" label="Set to public" id="is-public-switch" color="secondary"></v-switch>
-    </div>
-
-    <div class="switch">
-      <v-switch switch v-model="isPrimary" label="Set to primary" id="is-primary-switch" color="secondary"></v-switch>
+      <v-switch switch v-model="isPublic" label="Set to public" id="is-public-switch" color="secondary"></v-switch>
     </div>
 
     <v-btn id="upload-btn" :disabled="!uploadReady || imageUploading" :loading="imageUploading" color="secondary" @click="upload">Upload</v-btn>
@@ -59,7 +55,6 @@ export default {
       imageUrl: null,
       imageName: null,
       isPublic: false,
-      isPrimary: false,
       // Denotes if the user has selected a file that isn't a png or jpeg
       fileTypeError: false,
       imageUploading: false
@@ -119,30 +114,24 @@ export default {
       const {
         imageFile,
         isPublic,
-        isPrimary
       } = this;
 
       const userId = this.$route.params.id;
 
       try{
         this.imageUploading = true;
-        await uploadImage(imageFile, isPublic, isPrimary, userId);
+        const image = await uploadImage(imageFile, isPublic, userId);
+
+        // Reset values to initial state
+        this.imageFile = null;
+        this.imageUrl = null;
+        this.imageName = null;
+        this.isPublic = false;
         this.imageUploading = false;
-        this.$emit("imageUploaded");
+        this.$emit("imageUploaded", image);
       } catch (e) {
         this.imageUploading = false;
         // Handle errors later
-      }
-    }
-  },
-  watch: {
-    /**
-     * A photo can't be primary and public so verifying this here
-     * @param {boolean} isPrimary The new isPrimary value retrieved from the switch input
-     */
-    isPrimary(isPrimary) {
-      if (isPrimary) {
-        this.isPublic = false;
       }
     }
   },

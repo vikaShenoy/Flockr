@@ -8,7 +8,9 @@ export async function sendProfilePicture(userId, imageData) {
   formData.append("isPrimary", true);
   formData.append("image", imageData);
 
-  return await superAgent.post(endpoint(`/users/${userId}/photos`))
+  const res = await superAgent.post(endpoint(`/users/${userId}/photos`))
       .set("Authorization", localStorage.getItem("authToken"))
       .send(formData);
+
+  return res.body;
 }
