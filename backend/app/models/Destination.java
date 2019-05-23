@@ -33,6 +33,12 @@ public class Destination extends Model {
     @ManyToOne
     private Country destinationCountry;
 
+    @ManyToOne
+    private User destinationOwner;
+
+    private boolean isPublic;
+
+
     @Override
     public int hashCode() {
         return destinationId;
@@ -59,14 +65,18 @@ public class Destination extends Model {
      * @param destinationLat latitiude of the destination
      * @param destinationLon longitude of the destination
      * @param destinationCountry country the destination is in
+     * @param destinationOwner the owner of the destination
+     * @param isPublic whether or not the destination is public
      */
-    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry) {
+    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, User destinationOwner, boolean isPublic ) {
         this.destinationName = destinationName;
         this.destinationType = destinationType;
         this.destinationDistrict = destinationDistrict;
         this.destinationLat = destinationLat;
         this.destinationLon = destinationLon;
         this.destinationCountry = destinationCountry;
+        this.destinationOwner = destinationOwner;
+        this.isPublic = isPublic;
     }
 
     public int getDestinationId() {
@@ -124,6 +134,14 @@ public class Destination extends Model {
     public void setDestinationCountry(Country destinationCountry) {
         this.destinationCountry = destinationCountry;
     }
+
+    public void setDestinationOwner(User destinationOwner) { this.destinationOwner = destinationOwner; }
+
+    public User getDestinationOwner() { return this.destinationOwner; }
+
+    public void setIsPublic (boolean isPublic) { this.isPublic = isPublic; }
+
+    public boolean getIsPublic() { return this.isPublic; }
 
     /**
      * This is required by EBean to make queries on the database.

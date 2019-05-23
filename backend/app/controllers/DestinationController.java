@@ -1,13 +1,11 @@
 package controllers;
 
+import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.NotFoundException;
-import models.Country;
-import models.Destination;
-import models.DestinationType;
-import models.District;
+import models.*;
 import play.libs.Json;
 import play.mvc.*;
 import repository.DestinationRepository;
@@ -75,8 +73,11 @@ public class DestinationController  extends Controller{
      * @return a completion stage with a 200 status code and the new json object or a status code 400.
      */
 
+    @With(LoggedIn.class)
     public CompletionStage<Result> addDestination(Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
+
+        User user = request.attrs().get(ActionState.USER);
 
         // check that the request has a body
         if (jsonRequest == null) {
@@ -102,7 +103,7 @@ public class DestinationController  extends Controller{
             Country countryAdd = new Country(null);
             countryAdd.setCountryId(country);
             Destination destination = new Destination(destinationName,destinationTypeAdd,districtAdd,
-                    latitude,longitude,countryAdd);
+                    latitude,longitude,countryAdd, user, false);
 
             return destinationRepository.insert(destination)
                     .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)), httpExecutionContext.current());

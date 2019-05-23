@@ -10,6 +10,8 @@ public class DestinationTest {
     Double destinationLat;
     Double destinationLon;
     Country destinationCountry;
+    User destinationOwner;
+    boolean isPublic;
 
     @Before
     public void setUp() throws Exception {
@@ -23,9 +25,9 @@ public class DestinationTest {
     @Test
     public void twoDestinationsArePerfectlyEqual() {
         Destination destination1 = new Destination("England", destinationType,
-                destinationDistrict, destinationLat, destinationLat, destinationCountry);
+                destinationDistrict, destinationLat, destinationLat, destinationCountry, destinationOwner, isPublic);
         Destination destination2 = new Destination("England", destinationType,
-                destinationDistrict, destinationLat, destinationLat, destinationCountry);
+                destinationDistrict, destinationLat, destinationLat, destinationCountry, destinationOwner, isPublic);
 
         Assert.assertEquals(destination1, destination2);
     }
@@ -37,9 +39,9 @@ public class DestinationTest {
     public void twoDestinationsAreUnequal() {
         DestinationType type = new DestinationType("Attraction");
         Destination destination1 = new Destination("Colosseum", destinationType,
-                destinationDistrict, destinationLat, destinationLon, destinationCountry);
+                destinationDistrict, destinationLat, destinationLon, destinationCountry, destinationOwner, isPublic);
         Destination destination2 = new Destination("Colosseum", type,
-                destinationDistrict, destinationLat, destinationLon, destinationCountry);
+                destinationDistrict, destinationLat, destinationLon, destinationCountry, destinationOwner, isPublic);
 
         Assert.assertNotEquals(destination1, destination2);
     }
@@ -55,9 +57,9 @@ public class DestinationTest {
         Double lat2 = 20.0;
         Double lon2 = 20.0;
         Destination destination1 = new Destination("Big Ben", destinationType, destinationDistrict,
-                lat1, lon1, destinationCountry);
+                lat1, lon1, destinationCountry, destinationOwner, isPublic);
         Destination destination2 = new Destination("Big Ben", destinationType, destinationDistrict,
-                lat2, lon2, destinationCountry);
+                lat2, lon2, destinationCountry, destinationOwner, isPublic);
 
         Assert.assertEquals(destination1, destination2);
     }
@@ -72,9 +74,9 @@ public class DestinationTest {
         Country country1 = new Country("India");
         Country country2 = new Country("China");
         Destination destination1 = new Destination("Atlantis", destinationType, destinationDistrict,
-                destinationLat, destinationLon, country1);
+                destinationLat, destinationLon, country1, destinationOwner, isPublic);
         Destination destination2 = new Destination("Atlantis", destinationType, destinationDistrict,
-                destinationLat, destinationLon, country2);
+                destinationLat, destinationLon, country2, destinationOwner, isPublic);
 
         Assert.assertNotEquals(destination1, destination2);
     }
