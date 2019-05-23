@@ -89,8 +89,8 @@ public class PhotoController extends Controller {
                     }
 
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
-                    if (!user.isAdmin() || user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
-                        throw new CompletionException(new UnauthorizedException());
+                    if (!user.isAdmin() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
+                        throw new CompletionException(new ForbiddenRequestException("You're not allowed to change the permission group."));
                     }
 
                     PersonalPhoto photo = optionalPhoto.get();
@@ -104,7 +104,7 @@ public class PhotoController extends Controller {
                     } catch (NotFoundException notFoundException) {
                         response.put("message", "Could not find a photo with the given photo ID");
                         return notFound(response);
-                    } catch (UnauthorizedException unauthorizedException) {
+                    } catch (ForbiddenRequestException forbiddenException) {
                         response.put("message", "You are unauthorised to change the photo permission of the photo");
                         return forbidden(response);
                     } catch (Throwable serverException) {
@@ -170,6 +170,7 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int userId, Http.Request request) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
         // Check user exists
         if (User.find.byId(userId) == null) {
             JsonNode response = Json.newObject().put("error", "Not Found");
@@ -177,7 +178,15 @@ public class PhotoController extends Controller {
         } else {
             return photoRepository.getPhotosById(userId)
                     .thenApplyAsync((photos) -> {
-                        List<PersonalPhoto> userPhotos = photos.stream().filter((photo) -> !photo.isPrimary())
+                        List<PersonalPhoto> userPhotos = photos.stream().filter((photo) -> {
+                            // Don't add primary photo to list of photos
+                            if (photo.isPrimary()) {
+                                return false;
+                            }
+
+                            // Don't add private photo's if user not the logged in user
+                            return !(userFromMiddleware.getUserId() != userId && !photo.isPublic());
+                        })
                                 .collect(Collectors.toList());
 
                         JsonNode photosAsJSON = Json.toJson(userPhotos);

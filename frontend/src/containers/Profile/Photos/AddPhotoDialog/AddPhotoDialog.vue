@@ -45,8 +45,12 @@ export default {
   },
 
   methods: {
-   closeDialog: function() {
+    /**
+     * Called when image is created. Saves image to users photos
+     */
+   closeDialog: function(image) {
       this.imageDialog = false;
+      this.$emit("addImage", image);
     },
     showImageDialog() {
       this.imageDialog = true;

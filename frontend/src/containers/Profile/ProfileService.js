@@ -9,7 +9,16 @@ import {endpoint} from '../../utils/endpoint';
  */
 export async function getUser(userId) {
   const authToken = localStorage.getItem('authToken');
-  const res = await superagent(endpoint(`/users/${userId}`))
+
+  
+  const userPromise = superagent(endpoint(`/users/${userId}`))
                   .set('Authorization', authToken);
-  return res.body;
+
+  const photosPromise = superagent(endpoint(`/users/${userId}/photos`))
+                  .set('Authorization', authToken);
+
+  const [user, photos] = await Promise.all([userPromise, photosPromise]);
+
+  user.body.personalPhotos = photos.body;
+  return user.body;
 }

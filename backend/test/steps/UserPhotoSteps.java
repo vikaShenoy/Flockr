@@ -33,6 +33,7 @@ public class UserPhotoSteps {
     private DataTable photoList;
     private int newPhotoId;
     private List<String> photosToRemove = new ArrayList<>();
+    private int nonExistentPhotoId;
 
     @After("@UserPhotos")
     public void tearDown() {
@@ -321,7 +322,7 @@ public class UserPhotoSteps {
         Assert.assertNotNull(this.result);
     }
 
-    @When("The user changes the photo permission to private")
+    @When("the user changes the photo permission to private")
     public void theUserChangesThePhotoPermissionToPrivate() throws IOException {
         User user = TestState.getInstance().getUser(0);
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
@@ -329,67 +330,89 @@ public class UserPhotoSteps {
         ObjectNode reqBody = Json.newObject();
         reqBody.put("isPublic", "false");
         reqBody.put("isPrimary", "false");
-        System.out.println("Request Body: " + reqBody);
 
-        Result photosRes = fakeClient.makeRequestWithToken("PATCH",  reqBody, "/api/users/photos/" + this.newPhotoId, user.getToken());
-        this.photos = utils.PlayResultToJson.convertResultToJson(photosRes);
-        System.out.println("PhotoRes: " + this.photos);
+        this.result = fakeClient.makeRequestWithToken("PATCH", reqBody, "/api/users/photos/"
+                + this.newPhotoId, user.getToken());
+        Assert.assertEquals(200, this.result.status());
 
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", user.getToken());
+        this.photos = utils.PlayResultToJson.convertResultToJson(this.result);
     }
 
-    @Then("The photo permission is set to private")
-    public void thePhotoPermissionIsSetToPrivate() throws IOException {
-        User user = TestState.getInstance().getUser(0);
-        FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        Result photosRes = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", user.getToken());
-        this.photos = utils.PlayResultToJson.convertResultToJson(photosRes);
-
-        for (JsonNode photo : photos) {
-            System.out.println("photo - " + photo);
+    @Then("the photo permission is set to private")
+    public void thePhotoPermissionIsSetToPrivate() {
+        for (JsonNode photo : this.photos) {
             int id = photo.get("photoId").asInt();
             if (this.newPhotoId == id) {
                 boolean isPublic = photo.get("public").asBoolean();
-                System.out.println(isPublic);
+                Assert.assertFalse(isPublic);
+                boolean isPrimary = photo.get("primary").asBoolean();
+                Assert.assertFalse(isPrimary);
             }
         }
-
-
-
-
-
-/*        for (JsonNode photo : this.photos) {
-            int id = photo.get("photoId").asInt();
-            if (id == this.newPhotoId) {
-                String isPublicStr = photo.get("isPublic").asText();
-                String isPrimaryStr = photo.get("isPrimary").asText();
-                if (isPublicStr.toLowerCase().equals("true")) {
-                    isPublic = true;
-                } else if (isPublicStr.toLowerCase().equals("false")) {
-                    isPublic = false;
-                }
-
-                if (isPrimaryStr.toLowerCase().equals("true")) {
-
-                }
-                Assert.assertFalse(isPublic);
-            }*/
-/*        }*/
-
-/*        System.out.println(this.photos);*/
     }
 
-    @When("The admin changes the photo permission to private")
-    public void theAdminChangesThePhotoPermissionToPrivate() {
+    @When("the admin changes the photo permission to private")
+    public void theAdminChangesThePhotoPermissionToPrivate() throws IOException {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
         User admin = TestState.getInstance().getUser(1);
 
         ObjectNode reqBody = Json.newObject();
         reqBody.put("isPublic", "false");
         reqBody.put("isPrimary", "false");
-        System.out.println("Request Body: " + reqBody);
 
-        Result photosRes = fakeClient.makeRequestWithToken("PATCH",  reqBody, "/api/users/photos/" + this.newPhotoId, admin.getToken());
-        System.out.println("PhotoRes: " + photosRes);
+        this.result = fakeClient.makeRequestWithToken("PATCH",  reqBody, "/api/users/photos/"
+                + this.newPhotoId, admin.getToken());
+        Assert.assertNotNull(this.result);
+
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", user.getToken());
+        this.photos = utils.PlayResultToJson.convertResultToJson(this.result);
+    }
+
+    @When("another user changes the photo permission to private")
+    public void anotherUserChangesThePhotoPermissionToPrivate() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User anotherUser = TestState.getInstance().getUser(1);
+
+        ObjectNode reqBody = Json.newObject();
+        reqBody.put("isPublic", "false");
+        reqBody.put("isPrimary", "false");
+
+        this.result = fakeClient.makeRequestWithToken("PATCH",  reqBody, "/api/users/photos/"
+                + this.newPhotoId, anotherUser.getToken());
+    }
+
+    @Then("that user is not allowed to change the photo permission")
+    public void thatUserIsNotAllowedToChangeThePhotoPermission() {
+        Assert.assertEquals(this.result.status(), 403);
+    }
+
+    @Given("a user has no photo with the photo id {int}")
+    public void aUserHasNoPhotoWithThePhotoId(Integer photoId) {
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.nonExistentPhotoId = photoId;
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/photos/" + photoId, user.getToken());
+        Assert.assertEquals(404, this.result.status());
+    }
+
+    @When("the user changes the photo permission of the non-existent photo to private")
+    public void theUserChangesThePhotoPermissionOfTheNonExistentPhotoToPrivate() {
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        ObjectNode reqBody = Json.newObject();
+        reqBody.put("isPublic", "false");
+        reqBody.put("isPrimary", "false");
+
+        this.result = fakeClient.makeRequestWithToken("PATCH", reqBody, "/api/users/photos/"
+                + this.nonExistentPhotoId, user.getToken());
+    }
+
+    @Then("the photo cannot be found")
+    public void thePhotoCannotBeFound() {
+        Assert.assertEquals(404, this.result.status());
     }
 
     @When("the user requests that the photo be deleted")
