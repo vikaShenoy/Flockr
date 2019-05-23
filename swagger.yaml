@@ -1338,6 +1338,10 @@ components:
           type: number
         destinationCountry:
           $ref: '#/components/schemas/country'
+        destinationOwner:
+          type: number
+        isPublic:
+          type: boolean
     createDestination:
       type: object
       properties:
