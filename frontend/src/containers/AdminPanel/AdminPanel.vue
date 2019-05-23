@@ -57,6 +57,7 @@ export default {
     }
   },
   computed:{
+    //Filters the users in the search users feature on the admin panel.
     getFilteredUsers() {
       return this.users.filter(user => {
         const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
@@ -89,6 +90,8 @@ export default {
       this.snackbarModel.color = 'red';
       this.snackbarModel.show = true;
     },
+    //Submits the edited user data to the database and displays the
+    // success/failure message to the user
     handleEditUserFormSubmission: async function(patchedUser) {
       let userId = patchedUser.userId;
       try {
@@ -104,6 +107,8 @@ export default {
         this.snackbarModel.show = true;
       }
     },
+    //Functionality to allow admin users to remove users from the database.
+    //Displays a confirmation dialog for success/failure
     handleDeleteUsersByIds: async function(userIds) {
       const promises = [];
       userIds.forEach(userId => {
@@ -124,6 +129,8 @@ export default {
       }
     },
 
+    //Functionality for admin users to be able to log out signed in users.
+    //Shows a confirmation message for success/failure
     handleLogoutUsersByIds: async function(userIds) {
       const promises = [];
       userIds.forEach(userId => {

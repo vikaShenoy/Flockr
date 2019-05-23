@@ -10,7 +10,10 @@ export async function deleteUsers(userIds) {
     const authToken = localStorage.getItem("authToken");
     throw new Error('API call to delete give users to be implemented');
 }
-
+/**
+ * Get user data for users, with a complete profile.
+ * Allows admin to edit users.
+ */
 export async function getUsers() {
     const authToken = localStorage.getItem("authToken");
     const res = await superagent.get(endpoint("/users"))

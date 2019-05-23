@@ -107,8 +107,8 @@ export default {
     }
   },
   methods: {
-    searchAdminChange(searchAdmin) 
-    {
+    //Emit an event to update the admin search array in the parent
+    searchAdminChange(searchAdmin)  {
       this.$emit('update:adminSearch',searchAdmin);
     },
     showPrompt(message, onConfirm) {
