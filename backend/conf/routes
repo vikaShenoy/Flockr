@@ -26,6 +26,7 @@ PATCH        /api/users/:userId/roles                           controllers.User
 
 # Destination Routes
 GET         /api/destinations                                   controllers.DestinationController.getDestinations(request: Request)
+GET         /api/users/:userId/destinations                     controllers.DestinationController.getUserDestinations(userId: Int, request: Request)
 GET         /api/destinations/countries                         controllers.DestinationController.getCountries()
 GET         /api/destinations/countries/:countryId/districts    controllers.DestinationController.getDistricts(countryId: Int)
 GET         /api/destinations/types                             controllers.DestinationController.getDestinationTypes()
