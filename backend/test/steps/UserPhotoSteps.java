@@ -12,6 +12,7 @@ import models.PersonalPhoto;
 import models.Role;
 import models.User;
 import org.junit.Assert;
+import org.junit.Test;
 import play.libs.Json;
 import play.mvc.Result;
 import utils.FakeClient;
@@ -463,8 +464,17 @@ public class UserPhotoSteps {
 
     @When("the admin user requests the photo")
     public void theAdminUserRequestsThePhoto() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+
+        User admin = TestState.getInstance().getUser(1);
+        List<Role> roles = Role.find.query().where().eq("role_type", "ADMIN").findList();
+        Assert.assertEquals(1, roles.size());
+        admin.setRoles(roles);
+        admin.save();
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken("GET", "/api/users/photos/" + this.newPhotoId + "?Authorization=" + admin.getToken());
+        Assert.assertNotNull(this.result);
+
     }
 
     // End of GET single photo testing
