@@ -34,7 +34,7 @@ public class Destination extends Model {
     private Country destinationCountry;
 
     @ManyToOne
-    private int destinationOwner;
+    private Integer destinationOwner;
 
     private boolean isPublic;
 
@@ -68,7 +68,7 @@ public class Destination extends Model {
      * @param destinationOwner the owner of the destination
      * @param isPublic whether or not the destination is public
      */
-    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, int destinationOwner, boolean isPublic ) {
+    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, Integer destinationOwner, boolean isPublic ) {
         this.destinationName = destinationName;
         this.destinationType = destinationType;
         this.destinationDistrict = destinationDistrict;
@@ -135,7 +135,7 @@ public class Destination extends Model {
         this.destinationCountry = destinationCountry;
     }
 
-    public void setDestinationOwner(int destinationOwner) { this.destinationOwner = destinationOwner; }
+    public void setDestinationOwner(Integer destinationOwner) { this.destinationOwner = destinationOwner; }
 
     public int getDestinationOwner() { return this.destinationOwner; }
 

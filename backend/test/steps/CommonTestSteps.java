@@ -125,8 +125,8 @@ public class CommonTestSteps {
         newFarm.save();
 
 
-        Destination burningMan = new Destination("Burning Man",event, blackRockCity, 12.1234,12.1234, unitedStatesOfAmerica, -1, false);
-        Destination brisbaneCity = new Destination("Brisbane City", city, newFarm, 11.1234,11.1234, australia, -1, false);
+        Destination burningMan = new Destination("Burning Man",event, blackRockCity, 12.1234,12.1234, unitedStatesOfAmerica, null, false);
+        Destination brisbaneCity = new Destination("Brisbane City", city, newFarm, 11.1234,11.1234, australia, null, false);
 
         burningMan.save();
         brisbaneCity.save();
