@@ -83,26 +83,26 @@
 					hide-actions
 				>
 					<template v-slot:items="props">
-						<td class="text-xs-left" @click="$router.push(`/profile/${userId}`)">
-							<img v-if="profilePhoto" class="profile-pic" alt="Profile Photo" :src="photoUrl(this.photoId)">
+						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
+							<img v-if="props.item.profilePhoto" class="profile-pic" alt="Profile Photo" :src="photoUrl(props.item.profilePhoto.photoId)">
 							<img v-else class="profile-pic" alt="Profile Photo" src="../Profile/ProfilePic/defaultProfilePicture.png">
 						</td>
-						<td class="text-xs-left" @click="$router.push(`/profile/${userId}`)">{{ props.item.firstName
+						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">{{ props.item.firstName
 							}}
 						</td>
-						<td class="text-xs-left" @click="$router.push(`/profile/${userId}`)">{{ props.item.middleName }}</td>
-						<td class="text-xs-left" @click="$router.push(`/profile/${userId}`)">{{ props.item.lastName }}
+						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">{{ props.item.middleName }}</td>
+						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">{{ props.item.lastName }}
 						</td>
-						<td class="text-xs-left" @click="$router.push(`/profile/${userId}`)">{{ props.item.age }}</td>
-						<td class="text-xs-left" @click="$router.push(`/profile/${userId}`)">{{ props.item.gender }}
+						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">{{ props.item.age }}</td>
+						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">{{ props.item.gender }}
 						</td>
-						<td class="text-xs-left" @click="$router.push(`/profile/${userId}`)">
+						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
 							<v-chip class="table-chip" v-for="nationality in props.item.nationalities"
 											v-bind:key="nationality">{{
 								nationality }}
 							</v-chip>
 						</td>
-						<td class="text-xs-left" @click="$router.push(`/profile/${userId}`)">
+						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
 							<v-chip class="table-chip" v-for="type in props.item.travellerTypes" v-bind:key="type">{{
 								type }}
 							</v-chip>
@@ -139,9 +139,6 @@
 				nationality: "",
 				travellerType: "",
 				gender: "",
-				profilePhoto: null,
-				photoId: null,
-				userId: null,
 
 				headers: [
 					{text: 'Photo', align: 'left', sortable: false, value: 'profilePhoto'},
@@ -214,15 +211,6 @@
 					console.log(this.travellers);
 
 					for (let i = 0; i < this.travellers.length; i++) {
-						// Get the userId
-						this.userId = this.travellers[i].userId;
-						this.profilePhoto = this.travellers[i].profilePhoto;
-						if (this.profilePhoto != null) {
-							this.photoId = this.travellers[i].profilePhoto.photoId;
-							console.log(this.photoId);
-						}
-						console.log(this.profilePhoto);
-
 						// Calculate the age from the date of birth and set it in the traveller
 						this.travellers[i].age = moment().diff(moment(this.travellers[i].dateOfBirth), "years");
 
