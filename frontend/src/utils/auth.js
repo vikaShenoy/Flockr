@@ -103,9 +103,6 @@ export async function isAdmin(to, from, next) {
 
   UserStore.methods.setData(res.body);
 
-  console.log(UserStore.methods.isAdmin());
-  console.log(UserStore.methods.isDefaultAdmin());
-
   if (UserStore.methods.isAdmin()) {
     next();
   } else {

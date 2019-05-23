@@ -6,9 +6,20 @@
           <div class="manage-users-text">
             <p>Manage users</p>
           </div>
+          <v-text-field label="Search User" color="secondary" @input="searchAdminChange">
+          </v-text-field>
+          <v-btn class="logout-user-button" v-on:click.stop="logoutUsersButtonClicked" :disabled="this.selectedUsers.length != 1"
+            @click="logoutUsersButtonClicked">
+            Log Out User
+          </v-btn>
+
+          <v-btn class="new-user-button"
+            @click="signupButtonClicked">
+            Sign Up User
+          </v-btn>
 
           <v-btn class="edit-trips-button" :disabled="this.selectedUsers.length === 0"
-            @click="editTripsButtonClicked">
+            @click="viewTripsButtonClicked">
             View Trips
           </v-btn>
 
@@ -17,11 +28,12 @@
           </v-btn>
 
           <v-btn class="delete-users-button" :disabled="this.selectedUsers.length === 0"
-            @click="deleteUsersButtonClicked">
+            @click="showPrompt('Are you sure?', deleteUsersButtonClicked)">
             Delete users
           </v-btn>
-        </v-subheader>
 
+        </v-subheader>
+        
         <!-- User tile -->
         <v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
           <v-list-tile-avatar>
@@ -39,22 +51,48 @@
         </v-list-tile>
       </v-list>
     </v-card>
+
+      <v-dialog v-model="showSignup" max-width="800">
+      <v-card>
+        <SignUp @exit="closeSignupModal()"></SignUp>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <prompt-dialog
+    :message=prompt.message
+    :onConfirm="prompt.onConfirm"
+    :dialog="prompt.show" 
+    v-on:promptEnded="prompt.show=false"></prompt-dialog>
   </div>
+
 </template>
 
 
 <script>
-import {deleteUsers} from "../AdminPanelService";
+import {deleteUsers, getAllUsers} from "../AdminPanelService";
 import moment from "moment";
+import SignUp from "../../Signup/Signup";
+import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
 
 export default {
+  components: {
+    PromptDialog,
+    SignUp
+  },
   mounted () {
     this.items = this.mapUsers();
-    //console.log(mapUsers())
   },
   data() {
     return {
-      items: []
+      items: [],
+      showSignup: false,
+      prompt: {
+        message: "",
+        onConfirm: null,
+        show: false
+      }
     };
   },
   computed: {
@@ -69,22 +107,65 @@ export default {
     }
   },
   methods: {
-    // event handler for when the button to edit an user is clicked
-    // emit an event for the parent to handle editing users
+    //Emit an event to update the admin search array in the parent
+    searchAdminChange(searchAdmin)  {
+      this.$emit('update:adminSearch',searchAdmin);
+    },
+    showPrompt(message, onConfirm) {
+      this.prompt.message = message;
+      this.prompt.onConfirm = onConfirm;
+      this.prompt.show = true;
+    },
+
+    /**
+     * Close the modal containing the signup component.
+     */
+    closeSignupModal() {
+      this.showSignup = false;
+      this.$parent.getAllUsers();
+    },
+
+    /**
+     * Open the modal component containing the signup component.
+     */
+    signupButtonClicked: function() {
+      this.showSignup = true;
+    },
+
+    /**
+     * Event handler for when the button to edit an user is clicked.
+     * Emit an event for the parent to handle editing users.
+     */
     editUserButtonClicked: function() {
       const userId = this.selectedUsers[0];
       this.$emit('wantToEditUserById', userId);
     },
-    // call the admin panel service to delete the given user ids
+    /**
+     * Call the admin panel service to logout the given user ids.
+     */
+    logoutUsersButtonClicked: async function() {
+      const userIds = this.selectedUsers;
+      this.$emit("logoutUsersByIds", userIds);
+    },
+    /**
+     * Call the admin panel service to delete the given user ids.
+     */
     deleteUsersButtonClicked: async function() {
       const userIds = this.selectedUsers;
-      console.log(userIds);
       this.$emit("deleteUsersByIds", userIds);
     },
-    editTripsButtonClicked: function() {
+
+    /**
+     * Open the trips page for the selected user.
+     */
+    viewTripsButtonClicked: function() {
       const userId = this.selectedUsers[0];
       this.$router.push(`/travellers/${userId}/trips`);
     },
+    /**
+     * Format the user data to be displayed on the admin panel. 
+     * Use a generic avatar untill photos are implemented.
+     */
     mapUsers: function() {
       return this.users.map((user) => ({
           avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
@@ -100,7 +181,7 @@ export default {
     users(newUsers) {
       this.items = this.mapUsers();
     }
-  }
+  },
 }
 </script>
 

@@ -60,6 +60,7 @@ create table passport_user (
 create table role (
   role_id                       integer auto_increment not null,
   role_type                     varchar(255),
+  constraint uq_role_role_type unique (role_type),
   constraint pk_role primary key (role_id)
 );
 
@@ -110,6 +111,7 @@ create table user (
   password_hash                 varchar(255),
   token                         varchar(255),
   timestamp                     timestamp not null,
+  constraint uq_user_email unique (email),
   constraint pk_user primary key (user_id)
 );
 

@@ -2,9 +2,11 @@
   <div class="admin-panel">
     <h2>Admin Panel</h2>
     <ManageUsers
-      :users="this.users"
+      v-bind:adminSearch.sync="adminSearch"
+      :users="getFilteredUsers"
       v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
+      v-on:logoutUsersByIds="handleLogoutUsersByIds"
     />
     <EditUserForm
       v-if="userBeingEdited"
@@ -22,7 +24,7 @@
 <script>
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 import EditUserForm from "./EditUserForm/EditUserForm.vue";
-import { getUsers } from "./AdminPanelService.js";
+import { getUsers, getAllUsers } from "./AdminPanelService.js";
 import { patchUser } from "./AdminPanelService.js";
 import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
@@ -41,6 +43,7 @@ export default {
 
   data() {
     return {
+      adminSearch: '',
       showEditUserForm: false,
       userBeingEdited: null,
       users: [], // single source of truth for children components relying on users so that info stays up to date
@@ -53,20 +56,30 @@ export default {
       }
     }
   },
+  computed:{
+    //Filters the users in the search users feature on the admin panel.
+    getFilteredUsers() {
+      return this.users.filter(user => {
+        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+        return fullName.includes(this.adminSearch.toLowerCase());
+      });
+    }
+  },
   methods: {
 
+    /** 
+     * Call admin panel service method to retrieve 
+     * all users, including those with incomplete profiles.
+     * Set the users so they display on the panel.
+     */
     async getAllUsers() {
-      const allUsers = await getUsers();
+      const allUsers = await getAllUsers();
       this.users = allUsers;
-      console.log(this.users);
     },
-
     // event handler for when a child component wants to edit a user by id
     handleWantToEditUserById: async function(userId) {
-      console.log(`Wanting to edit user ${userId} in admin panel`);
       const res = await superagent.get(endpoint(`/users/${userId}`)).set("Authorization", localStorage.getItem("authToken"));
       this.userBeingEdited = res.body;
-      console.log(this.userBeingEdited);
       this.showEditUserForm = true; // show the edit user dialog
     },
     handleEditUserFormDismissal: function() {
@@ -77,27 +90,27 @@ export default {
       this.snackbarModel.color = 'red';
       this.snackbarModel.show = true;
     },
+    //Submits the edited user data to the database and displays the
+    // success/failure message to the user
     handleEditUserFormSubmission: async function(patchedUser) {
-      // TODO: call the AdminPanelService and ask it to patch the user
-
       let userId = patchedUser.userId;
       try {
         await patchUser(userId, patchedUser);
+        this.showEditUserForm = false;
+        this.getAllUsers();
+        this.snackbarModel.text = 'Successfully edited user';
+        this.snackbarModel.color = 'green';
+        this.snackbarModel.show = true;
       } catch (e) {
-        console.log(e);
         this.snackbarModel.text = 'Could not edit the user';
         this.snackbarModel.color = 'red';
         this.snackbarModel.show = true;
       }
-      this.showEditUserForm = false;
-      this.getAllUsers();
-      this.snackbarModel.text = 'Successfully edited user';
-      this.snackbarModel.color = 'green';
-      this.snackbarModel.show = true;
     },
+    //Functionality to allow admin users to remove users from the database.
+    //Displays a confirmation dialog for success/failure
     handleDeleteUsersByIds: async function(userIds) {
       const promises = [];
-      console.log('userIds being deleted: ' + userIds)
       userIds.forEach(userId => {
         const promise = superagent
           .delete(endpoint(`/users/${userId}`)).set('Authorization', localStorage.getItem('authToken'));
@@ -113,7 +126,28 @@ export default {
         this.snackbarModel.text = 'Could not delete user(s)';
         this.snackbarModel.color = 'red';
         this.snackbarModel.show = true;
-        console.error(`Could not delete those users: ${err}`);
+      }
+    },
+
+    //Functionality for admin users to be able to log out signed in users.
+    //Shows a confirmation message for success/failure
+    handleLogoutUsersByIds: async function(userIds) {
+      const promises = [];
+      userIds.forEach(userId => {
+        const promise = superagent
+          .post(endpoint(`/auth/users/${userId}/logout`)).set('Authorization', localStorage.getItem('authToken'));
+        promises.push(promise);
+      });
+      try {
+        await Promise.all(promises);
+        this.getAllUsers();
+        this.snackbarModel.text = 'Successfully logged out user(s)';
+        this.snackbarModel.color = 'green';
+        this.snackbarModel.show = true;
+      } catch(err) {
+        this.snackbarModel.text = 'Could not logout user(s)';
+        this.snackbarModel.color = 'red';
+        this.snackbarModel.show = true;
       }
     }
   }

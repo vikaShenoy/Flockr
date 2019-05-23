@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.ActionState;
+import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,6 +21,7 @@ import repository.UserRepository;
 import repository.RoleRepository;
 import util.Security;
 import javax.inject.Inject;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import util.Responses;
@@ -226,6 +228,40 @@ public class AuthController {
                 .thenApplyAsync((u) -> {
                     return ok();
                 }, httpExecutionContext.current());
+
+    }
+
+    /**
+     * Logs a user of a given id out by setting their auth token to null.
+     * @param userId User ID to Logout
+     * @param request incoming HTTP request.
+     * @return
+     * - 200 status code if ok.
+     * - 404 status code if the user being logged out can't be found in db.
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> logoutById( int userId, Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+
+        CompletionStage<Optional<User>> getUser;
+
+        getUser = userRepository.getUserById(userId);
+
+       return userRepository.getUserById(userId).thenApplyAsync(optionalUser -> {
+            if (!optionalUser.isPresent()) {
+                ObjectNode message = Json.newObject();
+                message.put("message", "User not found");
+                return notFound(message);
+            }
+
+            User userToLogut = optionalUser.get();
+            userToLogut.setToken(null);
+            userToLogut.save();
+           ObjectNode message = Json.newObject();
+           message.put("message", "User successfully logged out");
+           return ok(message);
+        });
 
     }
 
