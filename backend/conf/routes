@@ -3,14 +3,11 @@
 # Home page
 GET          /                                                  controllers.Assets.at(path="/public/vue-front-end-goes-here", file="index.html")
 
-#Interval routes
-POST         /api/internal/resample                             controllers.InternalController.resample
-
 # Auth routes
-POST         /api/auth/users/signup               controllers.AuthController.signup(request: Request)
-POST         /api/auth/users/login                controllers.AuthController.login(request: Request)
-POST         /api/auth/users/logout               controllers.AuthController.logout(request: Request)
-GET          /api/auth/users/:email/available     controllers.AuthController.checkEmailAvailable(email: String)
+POST         /api/auth/users/signup                             controllers.AuthController.signup(request: Request)
+POST         /api/auth/users/login                              controllers.AuthController.login(request: Request)
+POST         /api/auth/users/logout                             controllers.AuthController.logout(request: Request)
+GET          /api/auth/users/:email/available                   controllers.AuthController.checkEmailAvailable(email: String)
 
 # Traveller routes
 GET          /api/users                                         controllers.UserController.getTravellers()
@@ -25,8 +22,14 @@ PATCH        /api/users/:userId                                 controllers.User
 DELETE       /api/users/:userId                                 controllers.UserController.deleteUser(userId: Int, request: Request)
 PATCH        /api/users/:userId/roles                           controllers.UserController.updateTravellerRole(userId: Int, request: Request)
 
-# Photos
-POST        /api/users/:userId/photos                           controllers.PhotoController.uploadPhotoForUser(userId: Int, request: Request)
+# Traveller photos routes
+GET          /api/users/photos/:photoId                         controllers.PhotoController.getPhoto(photoId: Int, request: Request)
+DELETE       /api/users/photos/:photoId                   controllers.PhotoController.deletePhoto(photoId: Int, request: Request)
+GET          /api/users/:userId/photos                          controllers.PhotoController.getPhotos(userId: Int, request: Request)
+POST         /api/users/:userId/photos                          controllers.PhotoController.uploadPhotoForUser(userId: Int, request: Request)
+PATCH        /api/users/photos/:photoId                         controllers.PhotoController.updatePermission(photoId: Int, request: Request)
+GET          /api/users/photos/:photoId/thumbnail               controllers.PhotoController.getThumbnail(photoId: Int, request: Request)
+
 
 # Destination Routes
 GET         /api/destinations                                   controllers.DestinationController.getDestinations(request: Request)
@@ -40,11 +43,11 @@ POST        /api/destinations                                   controllers.Dest
 PUT         /api/destinations/:destinationId                    controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
 
 # Trip Routes
-GET         /api/users/:userId/trips                  controllers.TripController.getTrips(request: Request, userId: Int)
-POST        /api/users/:userId/trips                  controllers.TripController.addTrip(userId: Int, request: Request)
-DELETE      /api/users/:userId/trips/:tripId          controllers.TripController.deleteTrip(userId: Int, tripId : Int, request : Request)
-GET         /api/users/:userId/trips/:tripId          controllers.TripController.getTrip(userId: Int, tripId: Int, request: Request)
-PUT         /api/users/:userId/trips/:tripId          controllers.TripController.updateTrip(request: Request, userId: Int, tripId : Int)
+GET         /api/users/:userId/trips                            controllers.TripController.getTrips(request: Request, userId: Int)
+POST        /api/users/:userId/trips                            controllers.TripController.addTrip(userId: Int, request: Request)
+DELETE      /api/users/:userId/trips/:tripId                    controllers.TripController.deleteTrip(userId: Int, tripId : Int, request : Request)
+GET         /api/users/:userId/trips/:tripId                    controllers.TripController.getTrip(userId: Int, tripId: Int, request: Request)
+PUT         /api/users/:userId/trips/:tripId                    controllers.TripController.updateTrip(request: Request, userId: Int, tripId : Int)
 
 
 # Map static resources from the /public folder to the /assets URL path

@@ -57,11 +57,11 @@ public class Security {
         return false;
     }
 
-
+// TODO: this javadoc needs updating.
     /**
      * Checks if an user has permission to run certain functionality
-     * @param user The user object inferred by the middleware
-     * @param comparedUser The user retrieved from the url parameter
+     * @param userFromMiddleware The user object inferred by the middleware
+     * @param userId The user retrieved from the url parameter
      * @return True if the user
      */
     public boolean userHasPermission(User userFromMiddleware, int userIdFromUrl) {

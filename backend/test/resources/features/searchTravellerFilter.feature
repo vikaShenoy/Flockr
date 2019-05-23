@@ -1,58 +1,53 @@
 Feature: The user can search travellers
 
   Background:
-    Given the following user exists:
-      | firstName | middleName | lastName | email             | password      |
-      | Felipe    | Rogelio    | Sanchez  | rogelio@email.com | much-security |
+    Given users with the following information exist:
+      | firstName | lastName | email                    | password           |
+      | Sally     | Searcher | sally.searcher@email.com | me-gusta-encontrar |
+    And full users with the following information exist:
+      | firstName | middleName | lastName | password     | email                  | gender | nationality | passport    | travellerType | role        | dateOfBirth |
+      | Luis      | Sebastian  | Ruiz     | so-secure    | luis@gmail.com         | Male   | Peru        | Bolivia     | Backpacker    | SUPER_ADMIN | 637920534   |
+      | Peter     |            | Andre    | in-your-town | p.andre@hotmail.com    | Other  | Afghanistan | Peru        | Thrillseeker  | ADMIN       | 637920534   |
+      | Steven    | middle     | Austin   | stone-cold   | stoney.steve@gmail.com | Female | New Zealand | New Zealand | Groupies      |             | 637920534   |
 
-  @SearchTravellerSteps
   Scenario: I can get a list of available nationalities from the database
-    And I have logged in with email "rogelio@email.com" and password "much-security"
-    And I populate the database with test data
     When I want all types of nationalities from the database
     Then I get a list of all nationalities as follows:
       | nationalityId | nationalityName |
-      | 1             | New Zealand     |
-      | 2             | Australia       |
-      | 3             | Afghanistan     |
-      | 4             | Peru            |
+      | 1             | Chile           |
+      | 2             | Mexico          |
+      | 3             | New Zealand     |
+      | 4             | Australia       |
+      | 5             | Afghanistan     |
+      | 6             | Peru            |
 
-  @SearchTravellerSteps
   Scenario Outline: The user can search a traveller by nationality id
-    And I have logged in with email "rogelio@email.com" and password "much-security"
-    And I populate the database with test data
     When I search travellers with the <nationalityId> nationality id
     Then I get the following <emails> emails
 
     Examples:
       | nationalityId | emails                     |
-      | 1             | ["stoney-steve@gmail.com"] |
-      | 3             | ["p.andre@hotmail.com"]    |
-      | 4             | ["luis@gmail.com"]         |
+      | 3             | ["stoney.steve@gmail.com"] |
+      | 5             | ["p.andre@hotmail.com"]    |
+      | 6             | ["luis@gmail.com"]         |
 
-  @SearchTravellerSteps
   Scenario Outline: The user can search a traveller by gender
-    And I have logged in with email "rogelio@email.com" and password "much-security"
-    And I populate the database with test data
     When I search travellers with the gender <gender>
     Then I get the following <emails> emails
 
     Examples:
       | gender | emails                     |
       | Male   | ["luis@gmail.com"]         |
-      | Female | ["stoney-steve@gmail.com"] |
+      | Female | ["stoney.steve@gmail.com"] |
       | Other  | ["p.andre@hotmail.com"]    |
 
 
-  @SearchTravellerSteps
   Scenario Outline: The user can search a traveller by traveller type
-    And I have logged in with email "rogelio@email.com" and password "much-security"
-    And I populate the database with test data
     When I search travellers with the traveller type ID <travellerTypeId>
     Then I get the following <emails> emails
 
     Examples:
       | travellerTypeId | emails                     |
-      | 1               | ["stoney-steve@gmail.com"] |
+      | 1               | ["stoney.steve@gmail.com"] |
       | 2               | ["p.andre@hotmail.com"]    |
       | 7               | ["luis@gmail.com"]         |

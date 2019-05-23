@@ -1,6 +1,8 @@
 package actions;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.ebean.EbeanServer;
+import play.libs.Json;
 import play.libs.typedmap.TypedKey;
 import play.mvc.Action;
 import play.mvc.Http;
@@ -33,15 +35,19 @@ public class LoggedIn extends Action.Simple {
      */
     @Override
     public CompletionStage<Result> call(Http.Request request) {
-            Optional<String> token = request.getHeaders().get("Authorization");
+            Optional<String> optionalToken = request.getHeaders().get("Authorization");
+            String token = optionalToken.isPresent() ? optionalToken.get() : request.getQueryString("Authorization");
 
-            if (!token.isPresent()) {
-                return supplyAsync(() -> unauthorized("You are unauthorized"));
+
+            if (token == null) {
+                JsonNode response = Json.newObject().put("error", "Unauthorized");
+                return supplyAsync(() -> unauthorized(response));
             }
-            return authRepository.getByToken(token.get())
+            return authRepository.getByToken(token)
             .thenCompose((user) -> {
                if (!user.isPresent()) {
-                   return supplyAsync(() -> unauthorized("You are unauthorized"));
+                   JsonNode response = Json.newObject().put("error", "Unauthorized");
+                   return supplyAsync(() -> unauthorized(response));
                }
 
                return delegate.call(request.addAttr(ActionState.USER, user.get()));

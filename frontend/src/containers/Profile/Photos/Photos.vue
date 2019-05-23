@@ -3,28 +3,130 @@
     <h3 style="margin-bottom: 4px;margin-top: 4px;">Photos</h3>
 
     <v-card id="photos">
-      <div class="row">
-        <div class="col-lg-4 col-md-6 col-sm-12" v-for="photo in photos" v-bind:key="photo">
-          <img class="photo" :src="require(`${photo}`)" alt="Photo" />
-        </div>
-      </div>
+      <v-card-actions>
+        <v-spacer align="left">
+          <v-btn v-if="hasPhotos" color="secondary" outline v-on:click="openGallery">View Gallery</v-btn>
+        </v-spacer>
+      </v-card-actions>
+      <v-responsive>
+        <v-container grid-list-sm fluid>
+          <!-- users photos -->
+          <v-layout v-if="photos && photos.length" row wrap>
+            <v-flex sm12 md6 lg4 v-for="photo in photos" v-bind:key="photo.photoId">
+              <v-img class="photo clickable" v-on:click.stop="openViewPhotoDialog(photo)"
+                     :src="thumbnailUrl(photo.photoId)"></v-img>
+            </v-flex>
+          </v-layout>
 
-      <v-btn id="add-btn" outline color="secondary"><v-icon>add</v-icon></v-btn>
+          <!-- default photos -->
+          <v-layout v-else row wrap>
+            <v-spacer align="center">
+              <h3 class="font-weight-regular">This user has no photos.</h3>
+            </v-spacer>
+          </v-layout>
+
+        </v-container>
+      </v-responsive>
+
+      <v-card-actions>
+        <v-spacer align="center">
+          <add-photo-dialog
+                  :dialog="addPhotoDialog"
+                  v-on:closeDialog="closeAddPhotoDialog"
+                  v-on:addImage="addImage"
+          ></add-photo-dialog>
+        </v-spacer>
+      </v-card-actions>
     </v-card>
+
+    <view-photo-dialog
+            :dialog="viewPhotoDialog"
+            :photo="currentPhoto"
+            v-on:dialogChanged="closeViewPhotoDialog"
+    ></view-photo-dialog>
+
   </div>
 </template>
 
 <script>
-export default {
-  data() {
-    return {
-      photos: ["./beach-holiday.jpg", "./desert-holiday.jpeg", "./snow-holiday.jpg"]
-    };
-  } 
-}
+  import AddPhotoDialog from "./AddPhotoDialog/AddPhotoDialog";
+  import ViewPhotoDialog from "./ViewPhotoDialog/ViewPhotoDialog";
+  import { endpoint } from "../../../utils/endpoint";
+
+  export default {
+    props: {
+      photos: Array 
+    },
+    components: {
+      AddPhotoDialog,
+      ViewPhotoDialog
+    },
+
+    data() {
+      return {
+        addPhotoDialog: false,
+        userId: null,
+        currentPhoto: null,
+        viewPhotoDialog: false,
+        hasPhotos: false
+      };
+    },
+
+    methods: {
+
+      /**
+       * Called when a photo is clicked on.
+       * Sets the current photo as the one clicked on.
+       * Opens the view photo dialog by setting viewPhotoDialog to true
+       *
+       * @param photo the photo clicked on by the user
+       */
+      openViewPhotoDialog: function (photo) {
+        this.currentPhoto = photo;
+        this.viewPhotoDialog = true;
+      },
+
+      /**
+       * Called when the view photo dialog is closed by the user.
+       * Sets the current photo to null again.
+       * Closes the view photo dialog by setting viewPhotoDialog to false
+       */
+      closeViewPhotoDialog: function (newValue) {
+        this.currentPhoto = null;
+        this.viewPhotoDialog = newValue;
+      },
+
+      /**
+       * Called when the add photo dialog is closed by the user.
+       * Closes the add photo dialog by setting addPhotoDialog to false.
+       */
+      closeAddPhotoDialog: function () {
+        this.addPhotoDialog = false;
+      },
+      /**
+       * Called when the view gallery button is clicked.
+       * Directs user to the photos page for this user.
+       */
+      openGallery() {
+        this.$router.push(`/profile/${this.userId}/photos`);
+      },
+      thumbnailUrl(photoId) {
+        return endpoint(`/users/photos/${photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+      },
+      addImage(image) {
+        console.log("I am adding an image in photos");
+        this.$emit("addImage", image);
+      }
+    },
+
+    mounted: async function () {
+      this.userId = this.$route.params.id;
+    }
+  }
 </script>
 
 <style lang="scss" scoped>
+
   #photos {
     padding: 20px;
   }
@@ -34,10 +136,10 @@ export default {
     height: auto;
   }
 
-  #add-btn {
-    display: block;
-    margin: 0 auto;
+  .clickable :hover {
+    cursor: pointer;
   }
+
 </style>
 
 
