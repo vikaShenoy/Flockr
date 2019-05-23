@@ -3,14 +3,18 @@ package steps;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import cucumber.api.PendingException;
 import cucumber.api.java.After;
+import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import models.PersonalPhoto;
 import models.Role;
+import models.RoleType;
 import models.User;
+import org.checkerframework.checker.nullness.Opt;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,6 +41,10 @@ public class UserPhotoSteps {
     private List<String> photosToRemove = new ArrayList<>();
     private int nonExistentPhotoId;
     final Logger log = LoggerFactory.getLogger(this.getClass());
+    private User aliceAdmin;
+    private User bobAdmin;
+    private User tylerRegular;
+    private User karenRegular;
 
     @After("@UserPhotos")
     public void tearDown() {
@@ -115,6 +123,9 @@ public class UserPhotoSteps {
         this.photoName = photoName;
     }
 
+    @Given("^the admin has a photo called \"([^\"]*)\"$")
+    public void theAdminHasAPhotoCalled(String photoName) { this.photoName = photoName; }
+
     @Given("they want the photo to be public")
     public void theyWantThePhotoToBePublic() {
         isPublic = true;
@@ -128,6 +139,92 @@ public class UserPhotoSteps {
     @Given("they want the photo to be their profile photo")
     public void theyWantThePhotoToBeTheirProfilePhoto() {
         isPrimary = true;
+    }
+
+
+    @Given("^two admin users exist$")
+    public void thatTwoAdminUsersExist() throws Throwable {
+        List<Role> adminRole = Role.find.query().where().eq("role_type", RoleType.ADMIN.toString()).findList();
+
+        this.aliceAdmin = TestState.getInstance().getUser(2);
+        this.bobAdmin = TestState.getInstance().getUser(3);
+        this.aliceAdmin.setRoles(adminRole);
+        this.bobAdmin.setRoles(adminRole);
+        this.aliceAdmin.save();
+        this.bobAdmin.save();
+    }
+
+    @When("^the first admin adds the photo to the second admin$")
+    public void theFirstAdminAddsThePhotoToTheSecondAdmin() throws Throwable {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        Map<String, String> values = new HashMap<>();
+        values.put("isPrimary", Boolean.toString(false));
+        values.put("isPublic", Boolean.toString(true));
+        File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", photoName);
+
+        if (!file.exists()) {
+            Assert.fail(String.format("File %s was not found", file));
+        }
+
+        this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
+                "POST",
+                "/api/users/" + this.bobAdmin.getUserId() + "/photos",
+                this.aliceAdmin.getToken(),
+                file,
+                values);
+
+        Assert.assertNotNull(this.result);
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+        Assert.assertNotNull(resultAsJson.get("filenameHash").asText());
+        this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+    }
+
+    @Then("^the photo is not added$")
+    public void thePhotoIsNotAdded() throws Throwable {
+        int statusCode = this.result.status();
+        Assert.assertTrue(statusCode >= 400 && statusCode < 500);
+    }
+
+    @Given("^a regular user with first name Tyler exists$")
+    public void aRegularUserWithFirstNameTylerExists() throws Throwable {
+        this.tylerRegular = TestState.getInstance().getUser(4);
+        Assert.assertEquals("Tyler", this.tylerRegular.getFirstName());
+    }
+
+    @And("^a regular user with first name Karen exists$")
+    public void aRegularUserWithFirstNameKarenExists() throws Throwable {
+        this.karenRegular = TestState.getInstance().getUser(5);
+        Assert.assertEquals("Karen", this.karenRegular.getFirstName());
+    }
+
+    @When("^a regular user Tyler tries to upload a photo for a regular user Karen$")
+    public void aRegularUserTylerTriesToUploadAPhotoForARegularUserKaren() throws Throwable {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        Map<String, String> values = new HashMap<>();
+        values.put("isPrimary", Boolean.toString(false));
+        values.put("isPublic", Boolean.toString(true));
+        File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", "dog.jpg");
+
+        if (!file.exists()) {
+            Assert.fail(String.format("File %s was not found", file));
+        }
+
+        this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
+            "POST",
+            "/api/users/" + this.karenRegular.getUserId() + "/photos",
+            this.tylerRegular.getToken(),
+            file,
+            values);
+
+        if (this.result.status() == 200) {
+            Assert.assertNotNull(this.result);
+            JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+            Assert.assertNotNull(resultAsJson.get("filenameHash").asText());
+            this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+        }
+
     }
 
     @When("they add the photo")
@@ -152,9 +249,11 @@ public class UserPhotoSteps {
                 file,
                 values);
 
-        Assert.assertNotNull(this.result);
-        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
-        this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+        if (this.result.status() == 200) {
+            JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+            Assert.assertNotNull(resultAsJson.get("filenameHash").asText());
+            this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+        }
     }
 
     @Then("the photo is added")

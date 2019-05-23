@@ -1,4 +1,4 @@
-Feature: As a registered user I want to have photos that display on my profile.
+Feature: As a registered user I want to have photos that display on my profile
 
 # NOTE: please leave the @UserPhotos tags in here for tests that save photos to the hard drive as
 # this is used in the tear down to delete them.
@@ -8,6 +8,10 @@ Feature: As a registered user I want to have photos that display on my profile.
       | firstName | lastName   | email                  | password   |
       | Phillip   | Phototaker | ppt@phillipsphotos.com | say-cheese |
       | Angelo    | Admin      | aa@admin.com           | its-ya-boi |
+      | Alice     | Phillips   | alice@admin.com        | aliceRules |
+      | Bob       | Roberts    | bob@admin.com          | bobRules   |
+      | Tyler      | Regularuser | john@regular.com       | so-secure  |
+      | Karen      | Regularuser | mark@email.com         | so-secure  |
 
   @UserPhoto
   Scenario: a user wants to view all of their photos
@@ -61,16 +65,16 @@ Feature: As a registered user I want to have photos that display on my profile.
 
   @UserPhotos
   Scenario: An admin uploads a photo for another admin
-    Given that two admin users exist
+    Given two admin users exist
     And the admin has a photo called "dog.jpg"
-    When they add the photo
+    When the first admin adds the photo to the second admin
     Then the photo is added
 
   @UserPhotos
   Scenario: A user tries to upload a photo for another user
-    Given a regular user with first name Alice exists
-    And a regular user with first name Bob exists
-    When Alice tries to upload a photo for Bob
+    Given a regular user with first name Tyler exists
+    And a regular user with first name Karen exists
+    When a regular user Tyler tries to upload a photo for a regular user Karen
     Then the photo is not added
 
   @UserPhotos
@@ -81,6 +85,11 @@ Feature: As a registered user I want to have photos that display on my profile.
 
   @UserPhotos
   Scenario: A user tries to upload a photo as their primary photo but does not give it public permissions
+    Given a user has a photo called "cucumber.jpeg"
+    And they want the photo to be their profile photo
+    And they want the photo to be private
+    When they add the photo
+    Then the photo is not added
 
   @UserPhotos
   Scenario: A user wants to get a thumbnail of a photo they do not have

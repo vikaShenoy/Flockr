@@ -268,6 +268,8 @@ public class FakePlayClient implements FakeClient {
             return "image/jpeg";
         } else if (file.getName().contains(".png")) {
             return "image/png";
-        } else return null;
+        } else {
+            return "";
+        }
     }
 }
