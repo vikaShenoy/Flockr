@@ -122,18 +122,16 @@ public class DestinationController  extends Controller{
 
         try {
             String destinationName = jsonRequest.get("destinationName").asText();
-            int destinationType = jsonRequest.get("destinationTypeId").asInt();
-            int district = jsonRequest.get("districtId").asInt();
+            int destinationTypeId = jsonRequest.get("destinationTypeId").asInt();
+            int districtId = jsonRequest.get("districtId").asInt();
             Double latitude = jsonRequest.get("latitude").asDouble();
             Double longitude = jsonRequest.get("longitude").asDouble();
-            int country = jsonRequest.get("countryId").asInt();
+            int countryId = jsonRequest.get("countryId").asInt();
 
-            DestinationType destinationTypeAdd = new DestinationType(null);
-            destinationTypeAdd.setDestinationTypeId(destinationType);
-            District districtAdd = new District(null, null);
-            districtAdd.setDistrictId(district);
-            Country countryAdd = new Country(null);
-            countryAdd.setCountryId(country);
+            DestinationType destinationTypeAdd = DestinationType.find.byId(destinationTypeId);
+            District districtAdd = District.find.byId(districtId);
+            Country countryAdd = Country.find.byId(countryId);
+            countryAdd.setCountryId(countryId);
             Destination destination = new Destination(destinationName,destinationTypeAdd,districtAdd,
                     latitude,longitude,countryAdd, user, false);
 

@@ -11,14 +11,9 @@
             <DestinationCard
                   v-for="(destination, index) in destinations"
                   v-bind:key="index"
-                  :destination="destination.destinationObject"
-                  :editMode="destination.editMode"
-                  :deleteOnClick="deleteDestination"
-                  :destinationTypes="destinationTypes"
-                  :countries="countries"
-                  @editModeChanged="changeEditMode"
-                  @idChanged="changeIdOfDestination"
-                  @deleteNewDestination="deleteNewDestination"
+                  :destination="destination"
+                  @deleteDestination="displayPrompt(destination, index)"
+                  @editDestination="editDestination(index, destination)"
           ></DestinationCard>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -33,23 +28,46 @@
             <p>Add public destinations here when implemented.</p>
           </v-expansion-panel-content>
         </v-expansion-panel>
-        
+
         <v-btn fab id="addDestinationButton" v-on:click="openAddDestinationDialog">
           <v-icon>add</v-icon>
         </v-btn>
       </div>
-    <add-destination-dialog :dialog="showAddDestination" v-on:dialogChanged="changeShowAddDestinationDialog"/>
+    <modify-destination-dialog
+            :dialog="showModifyDestination"
+            :destinationTypes="destinationTypes"
+            :countries="countries"
+            :editedDestination="editedDestination"
+            :editMode="editMode"
+            :index="editIndex"
+            @dialogChanged="changeShowAddDestinationDialog"
+            @displayMessage="displayMessage"
+            @addNewDestination="addNewDestinationCard"
+            @updateDestination="updateDestination"/>
+    <snackbar
+      :snackbarModel="snackBar"
+      @displayMessage="displayMessage"
+      @dismissSnackbar="dismissSnackbar"/>
+    <prompt-dialog
+      :onConfirm="promptDialog.deleteFunction"
+      :dialog="promptDialog.show"
+      :message="promptDialog.message"
+      @promptEnded="promptEnded"/>
   </div>
 </template>
 
 <script>
   import DestinationCard from "./DestinationCard/DestinationCard";
   import {requestCountries, requestDestinations, requestDestinationTypes, sendDeleteDestination} from "./DestinationsService";
-  import AddDestinationDialog from "./AddDestinationDialog/AddDestinationDialog";
+  import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
+  import Snackbar from "../../components/Snackbars/Snackbar";
+  import PromptDialog from "../../components/PromptDialog/PromptDialog";
 
   export default {
     components: {
-      AddDestinationDialog,
+      PromptDialog,
+      Snackbar,
+      ModifyDestinationDialog: ModifyDestinationDialog,
       DestinationCard
     },
     data() {
@@ -59,123 +77,228 @@
         publicDestinations: [],
         countries: [],
         destinationTypes: [],
-        showAddDestination: false
+        showModifyDestination: false,
+        editedDestination: {
+          destinationId: null,
+          destinationName: null,
+          destinationType: {
+            destinationTypeId: null,
+            destinationTypeName: null
+          },
+          destinationDistrict: {
+            districtName: null,
+            districtId: null
+          },
+          destinationCountry: {
+            countryName: null,
+            countryId: null
+          },
+          destinationLat: null,
+          destinationLon: null,
+          isPublic: false,
+          index: null
+          // TODO: Add owner here when ready.
+        },
+        editMode: false,
+        editIndex: null,
+        promptDialog: {
+          show: false,
+          deleteFunction: null,
+          message: ""
+        },
+        snackBar: {
+          show: false,
+          timeout: 5000,
+          text: "",
+          color: "green",
+          snackbarId: 1
+        }
       }
     },
     /**
      * Load data.
      */
     mounted: async function () {
-      let currentDestinations;
       try {
-        currentDestinations = await requestDestinations();
-
-        for (let index in currentDestinations) {
-          this.destinations.push({
-            destinationObject: currentDestinations[index],
-            editMode: false
-          });
-        }
+        this.destinations = await requestDestinations();
       } catch(error) {
-        console.log(error);
+        this.displayMessage({
+          show: true,
+          text: error.message,
+          color: "red"
+        });
       }
       try {
         this.countries = await requestCountries();
       } catch (error) {
-        console.log(error);
+        this.displayMessage({
+          show: true,
+          text: error.message,
+          color: "red"
+        });
       }
 
       try {
         this.destinationTypes = await requestDestinationTypes();
       } catch (error) {
-        console.log(error);
+        this.displayMessage({
+          show: true,
+          text: error.message,
+          color: "red"
+        });
       }
     },
     methods: {
+      /**
+       * Displays a message using the snackbar.
+       */
+      displayMessage(snackBar) {
+        this.snackBar.text = snackBar.text;
+        this.snackBar.color = snackBar.color;
+        this.snackBar.show = true;
+      },
+      /**
+       * Dismisses the snackbar
+       */
+      dismissSnackbar() {
+        this.snackBar.show = false;
+      },
       /**
        * Called when the add button is selected.
        * Opens the add destination dialog window.
        */
       openAddDestinationDialog() {
-        this.showAddDestination = true;
+        this.editMode = false;
+        this.showModifyDestination = true;
       },
       /**
-       * Called when the add destination dialog emits a dialogChanged event.
-       * Changes the showAddDestination variable to match the value in the add destination dialog component.
+       * Called when the modify destination dialog emits a dialogChanged event.
+       * Changes the showModifyDestination variable to match the value in the add destination dialog component.
        */
       changeShowAddDestinationDialog(newValue) {
-        this.showAddDestination = newValue;
+        this.showModifyDestination = newValue;
       },
       /**
-       * Add a new empty destination card.
+       * Add a new destination to the list of destinations.
+       *
+       * @param newDestination {POJO} the new destination to add to the list of destinations.
        */
-      addNewDestinationCard: function () {
-        this.destinations.unshift({
-          destinationObject: {
-            destinationId: null,
-            destinationName: "",
-            destinationType: {
-              destinationTypeId: null,
-              destinationTypeName: null
-            },
-            destinationDistrict: {
-              districtId: null,
-              districtName: null
-            },
-            destinationLat: "",
-            destinationLon: "",
-            destinationCountry: {
-              countryId: null,
-              countryName: null
-            }
-          }, editMode: true
-        });
+      addNewDestinationCard: function (newDestination) {
+        // TODO: change this to take public/private into account
+        this.destinations.unshift(newDestination);
       },
-
       /**
-       * Delete a destination from frontend and send request to delete from backend.
+       * Update an existing destination after edit.
+       *
+       * @param destination {POJO} the updated destination.
+       * @param index {int} the index of the destination.
        */
-      deleteDestination: async function (event) {
-        let targetIndex = await this.getIndexOfDestinationFromTarget(event.target.parentNode);
-        try {
-          sendDeleteDestination(this.destinations[targetIndex].destinationObject.destinationId);
-          this.destinations.splice(targetIndex, 1);
-        } catch(error) {
-          console.log(error);
-        }
+      updateDestination(destination, index) {
+        this.destinations[index] = destination;
+        this.editedDestination = {
+          destinationId: null,
+          destinationName: null,
+          destinationType: {
+            destinationTypeId: null,
+            destinationTypeName: null
+          },
+          destinationDistrict: {
+            districtName: null,
+            districtId: null
+          },
+          destinationCountry: {
+            countryName: null,
+            countryId: null
+          },
+          destinationLat: null,
+          destinationLon: null,
+          isPublic: false
+        };
+        this.editIndex = null;
+        this.showModifyDestination = false;
       },
-
       /**
-       * Delete a new destination.
+       * Gets the delete function for a destination.
+       *
+       * @param destination {POJO} the destination to be deleted.
+       * @param index {Number} the index of the destination in the destinations list.
+       * @return {Function} the delete function for this destination.
        */
-      deleteNewDestination: async function (target) {
-        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
-        this.destinations.splice(targetIndex, 1);
-      },
-
-      changeEditMode: async function (value, target) {
-        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
-        this.destinations[targetIndex].editMode = value;
-      },
-
-      changeIdOfDestination: async function (value, target) {
-        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
-        this.destinations[targetIndex].destinationObject.destinationId = value;
-      },
-
-      getIndexOfDestinationFromTarget: function (target) {
-        let targetIndex = 0;
-        let destinationCards = target.parentNode.childNodes;
-
-        // Iterate through destination cards till the target card is found and save the index
-        for(let i = 0; i < destinationCards.length; i++) {
-          if (destinationCards[i] === target) {
-            targetIndex = i;
+      getDeleteFunction: function (destination, index) {
+        return async () => {
+          try {
+            await sendDeleteDestination(destination.destinationId);
+            this.destinations.splice(index, 1);
+            this.displayMessage({
+              text: `Destination ${destination.destinationName} successfully deleted.`,
+              color: "green"
+            });
+          } catch (error) {
+            this.displayMessage({
+              show: true,
+              text: error.message,
+              color: "red"
+            });
           }
         }
-        return targetIndex;
+      },
+      /**
+       * Called when the edit button is selected on a destination.
+       *
+       * @param {Number} index the index of the destination in the destinations list.
+       * @param {POJO} destination the destination Object
+       */
+      editDestination(index, destination) {
+        this.editedDestination = destination;
+        this.editIndex = index;
+        this.editMode = true;
+        this.showModifyDestination = true;
+      },
+      /**
+       * Calls a prompt dialog to be displayed to the user.
+       *
+       * @param destination {POJO} the destination to be deleted on confirmation.
+       * @param index {Number} the index of the destination in the destinations list.
+       */
+      displayPrompt(destination, index) {
+        this.promptDialog.message = "Are you sure you would like to delete this destination?";
+        this.promptDialog.deleteFunction = this.getDeleteFunction(destination, index);
+        this.promptDialog.show = true;
+      },
+      /**
+       * Called when the prompt dialog has finished.
+       * Closes the prompt dialog and resets the values to defaults.
+       */
+      promptEnded() {
+        this.promptDialog.message = "";
+        this.promptDialog.deleteFunction = null;
+        this.promptDialog.show = false;
+      },
+      /**
+       * Sets the district of the edited Destination to null values.
+       * If the destination country value does not match the districts country value.
+       */
+      onEditCountryChanged() {
+        if (![null, undefined].includes(this.editedDestination.destinationDistrict.country) &&
+            this.editedDestination.destinationCountry.countryId !==
+            this.editedDestination.destinationDistrict.country.countryId) {
+          this.editedDestination.destinationDistrict.districtId = null;
+          this.editedDestination.destinationDistrict.districtName = null;
+          this.editedDestination.destinationDistrict.country.countryId = null;
+        }
       }
     },
+    watch: {
+      editCountryValue : {
+        handler: "onEditCountryChanged",
+        immediate: true
+      }
+    },
+    computed: {
+      editCountryValue() {
+        return this.editedDestination.destinationCountry.countryId;
+      }
+    }
   }
 
 </script>

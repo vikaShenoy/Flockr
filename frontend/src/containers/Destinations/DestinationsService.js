@@ -14,6 +14,19 @@ export async function requestDestinations() {
 }
 
 /**
+ * Sends a request to get a specific destination.
+ *
+ * @param destinationId {Number} the id of the destination.
+ * @return {Promise<JSON>} the destination object.
+ */
+export async function requestDestination(destinationId) {
+  const res = await superagent.get(endpoint(`/destinations/${destinationId}`))
+      .set("Authorization", localStorage.getItem("authToken"));
+
+  return res.body;
+}
+
+/**
  * Get a list of all the countries currently in the database, must be logged in to succeed
  * @returns {Promise<Array>} of all countries
  */
@@ -74,7 +87,6 @@ export async function sendAddDestination(destinationInfo) {
   const res = await superagent.post(endpoint("/destinations"))
       .set("Authorization", localStorage.getItem("authToken"))
       .send(destinationInfo);
-
   return res.body;
 }
 
