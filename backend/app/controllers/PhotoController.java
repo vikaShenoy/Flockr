@@ -9,6 +9,8 @@ import exceptions.NotFoundException;
 import exceptions.UnauthorizedException;
 import models.PersonalPhoto;
 import models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Files;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
@@ -43,6 +45,7 @@ public class PhotoController extends Controller {
     private final UserRepository userRepository;
     private final PhotoUtil photoUtil;
     private final HttpExecutionContext httpExecutionContext;
+    final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
     public PhotoController(Security security, PhotoRepository photoRepository, UserRepository userRepository, PhotoUtil photoUtil, HttpExecutionContext httpExecutionContext) {
@@ -331,7 +334,7 @@ public class PhotoController extends Controller {
                         return supplyAsync(() -> forbidden(response), httpExecutionContext.current());
                     }
 
-                    System.out.println("Extracting photo from request");
+                    log.debug("Extracting photo from request");
 
                     // get the photo as a file from the request
                     Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
@@ -359,15 +362,15 @@ public class PhotoController extends Controller {
 
                     // save to filesystem
                     temporaryPhotoFile.moveFileTo(fileDestination);
-                    System.out.println("Saved file to filesystem");
+                    log.info("Saved file to filesystem: {}", temporaryPhotoFile);
 
                     // resize and save a thumbnail.
                     try {
-                        System.out.println("Saving thumbnail of photo");
+                        log.info("Saving thumbnail of photo {} as {}", fileDestination, thumbFileDestination);
                         saveThumbnail(fileDestination, thumbFileDestination, contentType);
-                        System.out.println("Thumbnail created successfully of photo");
+                        log.info("Thumbnail {} created successfully", thumbFileDestination);
                     } catch (IOException e) {
-                        System.err.println("Internal Server Error when generating a thumbnail: " + e);
+                        log.error("Internal Server Error when generating a thumbnail", e);
                         return supplyAsync(Results::internalServerError, httpExecutionContext.current());
                     }
                     // save to filesystem

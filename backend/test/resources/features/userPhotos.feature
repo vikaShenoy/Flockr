@@ -53,6 +53,36 @@ Feature: As a registered user I want to have photos that display on my profile.
     Then the photo is added
 
   @UserPhotos
+  Scenario: An admin uploads a photo for a regular user
+    Given An admin user and another user exists
+    And the admin has a photo called "whale.png"
+    When they add the photo
+    Then the photo is added
+
+  @UserPhotos
+  Scenario: An admin uploads a photo for another admin
+    Given that two admin users exist
+    And the admin has a photo called "dog.jpg"
+    When they add the photo
+    Then the photo is added
+
+  @UserPhotos
+  Scenario: A user tries to upload a photo for another user
+    Given a regular user with first name Alice exists
+    And a regular user with first name Bob exists
+    When Alice tries to upload a photo for Bob
+    Then the photo is not added
+
+  @UserPhotos
+  Scenario: A user tries to upload an unsupported file type as their photo
+    Given a user has a photo called "aWildScriptAppears.js"
+    When they add the photo
+    Then the photo is not added
+
+  @UserPhotos
+  Scenario: A user tries to upload a photo as their primary photo but does not give it public permissions
+
+  @UserPhotos
   Scenario: A user wants to get a thumbnail of a photo they do not have
     When the user requests the thumbnail for a non existent photo
     Then they should receive a "Not Found" error message with a 404 error code

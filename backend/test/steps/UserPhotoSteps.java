@@ -13,6 +13,8 @@ import models.Role;
 import models.User;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.Result;
 import utils.FakeClient;
@@ -34,11 +36,12 @@ public class UserPhotoSteps {
     private int newPhotoId;
     private List<String> photosToRemove = new ArrayList<>();
     private int nonExistentPhotoId;
+    final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @After("@UserPhotos")
     public void tearDown() {
         if (this.photosToRemove.size() > 0) {
-            System.out.println("Now deleting test photo files...");
+            log.info("Now deleting test photo files...");
             boolean deleted = false;
             for (String filename : this.photosToRemove) {
                 int indexOfPoint = filename.lastIndexOf('.');
@@ -47,10 +50,15 @@ public class UserPhotoSteps {
                 String thumbFilename = filenameBody + "_thumb" + fileType;
                 File file = new File(System.getProperty("user.dir") + "/storage/photos/", filename);
                 File thumbFile = new File(System.getProperty("user.dir") + "/storage/photos/", thumbFilename);
+
+                log.info("Going to delete photo and its thumbnail in clean up step");
                 deleted = file.delete() && thumbFile.delete();
             }
-            if (deleted) System.out.println("Deletion of test images successful");
-            else System.err.println("Deletion of test images failed");
+            if (deleted) {
+                log.info("Deletion of test images successful");
+            } else {
+                log.warn("Deletion of test images failed, maybe the images were deleted in endpoint calls ¯\\_(ツ)_/¯");
+            }
         }
     }
 
