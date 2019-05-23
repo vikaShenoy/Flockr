@@ -125,10 +125,8 @@ public class UserController extends Controller {
                         ArrayList<Nationality> nationalities = new ArrayList<>();
                         for (JsonNode id : arrNode) {
 
-                            Nationality nationality = new Nationality(null);
-                            nationality.setNationalityId(id.asInt());
+                            Nationality nationality = Nationality.find.byId(id.asInt());
                             nationalities.add(nationality);
-
                         }
                         user.get().setNationalities(nationalities);
                     }
@@ -138,8 +136,7 @@ public class UserController extends Controller {
                         ArrayList<Passport> passports = new ArrayList<>();
                         for (JsonNode id : arrNode) {
 
-                            Passport passport = new Passport(null);
-                            passport.setPassportId(id.asInt());
+                            Passport passport = Passport.find.byId(id.asInt());
                             passports.add(passport);
 
                         }
@@ -150,8 +147,7 @@ public class UserController extends Controller {
                         JsonNode arrNode = jsonBody.get("travellerTypes");
                         ArrayList<TravellerType> travellerTypes = new ArrayList<>();
                         for (JsonNode id : arrNode) {
-                            TravellerType travellerType = new TravellerType(null);
-                            travellerType.setTravellerTypeId(id.asInt());
+                            TravellerType travellerType = TravellerType.find.byId(id.asInt());
                             travellerTypes.add(travellerType);
                         }
                         user.get().setTravellerTypes(travellerTypes);
@@ -163,7 +159,6 @@ public class UserController extends Controller {
 
                     ObjectNode message = Json.newObject();
                     message.put("message", "Successfully updated the traveller's information");
-
                     userRepository.updateUser(user.get());
                     return ok(message);
 
@@ -198,6 +193,18 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
+    /**
+     * Get all users, including those who haven't filled in their complete profile.
+     * @return status code of 200 with all traveller details in json body.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getAllTravellers() {
+        return userRepository.getAllTravellers()
+                .thenApplyAsync(travellers -> {
+                    JsonNode travellersJson = Json.toJson(travellers);
+                    return ok(travellersJson);
+                }, httpExecutionContext.current());
+    }
 
     /**
      * Get all users.
@@ -212,7 +219,7 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
-    /**		    /**
+    /**
      * Retrieve user roles from request body and update the specified user so they
      * have these roles.
      * @param travellerId user to have roles updated
@@ -221,11 +228,10 @@ public class UserController extends Controller {
      */
     @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> updateTravellerRole(int travellerId, Http.Request request) {
+        System.out.println("Update traveller role called");
 
-        // Check travellerID isn't a super admin already
-        // Check the patch doesn't give someone a super admin role
         JsonNode jsonBody = request.body().asJson();
-        JsonNode roleArray = jsonBody.withArray("roleTypes");
+        JsonNode roleArray = jsonBody.withArray("roles");
         List<String> roleTypes = new ArrayList<>();
 
 
@@ -263,7 +269,7 @@ public class UserController extends Controller {
                         }
                     }
                     user.setRoles(userRoles);
-                    user.update();
+                    user.save();
                     return ok("Success");
                 });
     }
@@ -329,6 +335,7 @@ public class UserController extends Controller {
                             try {
                                 return completableFuture.get();
                             } catch (InterruptedException | ExecutionException e) {
+                                System.out.println(e);
                                 System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
                                 message.put("message", "Something went wrong deleting that user, try again");
                                 return internalServerError(message);
@@ -346,6 +353,7 @@ public class UserController extends Controller {
                             try {
                                 return completableFuture.get();
                             } catch (InterruptedException | ExecutionException e) {
+                                System.out.println(e);
                                 System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
                                 message.put("message", "Something went wrong deleting that user, try again");
                                 return internalServerError(message);
@@ -357,6 +365,7 @@ public class UserController extends Controller {
                             try {
                                 return completableFuture.get();
                             } catch (InterruptedException | ExecutionException e) {
+                                System.out.println(e);
                                 System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
                                 message.put("message", "Something went wrong deleting that user, try again");
                                 return internalServerError(message);

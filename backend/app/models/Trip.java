@@ -15,7 +15,7 @@ public class Trip extends Model {
     @Id
     private int tripId;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private User user;
 
     private String tripName;
