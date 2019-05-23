@@ -77,7 +77,7 @@ public class DestinationController  extends Controller{
     public CompletionStage<Result> addDestination(Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
 
-        User user = request.attrs().get(ActionState.USER);
+        int user = request.attrs().get(ActionState.USER).getUserId();
 
         // check that the request has a body
         if (jsonRequest == null) {

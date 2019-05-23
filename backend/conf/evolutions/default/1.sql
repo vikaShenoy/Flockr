@@ -66,7 +66,7 @@ create table destination (
   destination_lat               double,
   destination_lon               double,
   destination_country_country_id integer,
-  destination_owner_user_id     integer,
+  destination_owner             integer not null,
   is_public                     tinyint(1) default 0 not null,
   constraint pk_destination primary key (destination_id)
 );
@@ -182,9 +182,6 @@ alter table destination add constraint fk_destination_destination_district_distr
 create index ix_destination_destination_country_country_id on destination (destination_country_country_id);
 alter table destination add constraint fk_destination_destination_country_country_id foreign key (destination_country_country_id) references country (country_id) on delete restrict on update restrict;
 
-create index ix_destination_destination_owner_user_id on destination (destination_owner_user_id);
-alter table destination add constraint fk_destination_destination_owner_user_id foreign key (destination_owner_user_id) references user (user_id) on delete restrict on update restrict;
-
 create index ix_district_country_country_id on district (country_country_id);
 alter table district add constraint fk_district_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
 
@@ -232,9 +229,6 @@ drop index ix_destination_destination_district_district_id on destination;
 
 alter table destination drop foreign key fk_destination_destination_country_country_id;
 drop index ix_destination_destination_country_country_id on destination;
-
-alter table destination drop foreign key fk_destination_destination_owner_user_id;
-drop index ix_destination_destination_owner_user_id on destination;
 
 alter table district drop foreign key fk_district_country_country_id;
 drop index ix_district_country_country_id on district;

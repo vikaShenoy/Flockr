@@ -10,7 +10,7 @@ public class DestinationTest {
     Double destinationLat;
     Double destinationLon;
     Country destinationCountry;
-    User destinationOwner;
+    int destinationOwner;
     boolean isPublic;
 
     @Before
