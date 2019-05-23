@@ -1,23 +1,43 @@
 <template>
   <div style="width: 100%">
     <div class="page-title"><h1>Destinations</h1></div>
-    <div class="destinations-panel destinations-card">
-      <DestinationCard
-              v-for="(destination, index) in destinations"
-              v-bind:key="index"
-              :destination="destination.destinationObject"
-              :editMode="destination.editMode"
-              :deleteOnClick="deleteDestination"
-              :destinationTypes="destinationTypes"
-              :countries="countries"
-              @editModeChanged="changeEditMode"
-              @idChanged="changeIdOfDestination"
-              @deleteNewDestination="deleteNewDestination"
-      ></DestinationCard>
-      <v-btn fab id="addDestinationButton" v-on:click="openAddDestinationDialog">
-        <v-icon>add</v-icon>
-      </v-btn>
-    </div>
+      <div class="destinations-panel destinations-card">
+
+        <v-expansion-panel>
+          <v-expansion-panel-content>
+            <template v-slot:header>
+              <h2>My Destinations</h2>
+            </template>
+            <DestinationCard
+                  v-for="(destination, index) in destinations"
+                  v-bind:key="index"
+                  :destination="destination.destinationObject"
+                  :editMode="destination.editMode"
+                  :deleteOnClick="deleteDestination"
+                  :destinationTypes="destinationTypes"
+                  :countries="countries"
+                  @editModeChanged="changeEditMode"
+                  @idChanged="changeIdOfDestination"
+                  @deleteNewDestination="deleteNewDestination"
+          ></DestinationCard>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+
+        <br>
+
+        <v-expansion-panel>
+          <v-expansion-panel-content>
+            <template v-slot:header>
+              <h2>All Public Destinations</h2>
+            </template>
+            <p>Add public destinations here when implemented.</p>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        
+        <v-btn fab id="addDestinationButton" v-on:click="openAddDestinationDialog">
+          <v-icon>add</v-icon>
+        </v-btn>
+      </div>
     <add-destination-dialog :dialog="showAddDestination" v-on:dialogChanged="changeShowAddDestinationDialog"/>
   </div>
 </template>
@@ -34,7 +54,9 @@
     },
     data() {
       return {
+        // Rename to 'myDestinations' once that functionality has been implemented.
         destinations: [],
+        publicDestinations: [],
         countries: [],
         destinationTypes: [],
         showAddDestination: false

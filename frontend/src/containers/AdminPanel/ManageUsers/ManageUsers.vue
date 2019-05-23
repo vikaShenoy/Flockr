@@ -96,21 +96,36 @@ export default {
     };
   },
   computed: {
-    // get the user ids that are selected
+    
+    /**
+     * Get the user ids of selected users.
+     */
     selectedUsers: function() {
       return this.items.filter((item) => item.selected).map((user) => user.userId);
     },
-    // return whether the edit button is enabled
+    
+    /**
+     * Return whether the edit button is enabled.
+     */
     isEditButtonEnabled: function() {
       // only enable the button when one user is selected
       return this.selectedUsers.length == 0;
     }
   },
   methods: {
-    //Emit an event to update the admin search array in the parent
-    searchAdminChange(searchAdmin)  {
+
+    /**
+     * Emit a function call, indicates search admin 
+     * has changed.
+     */
+    searchAdminChange(searchAdmin) 
+    {
       this.$emit('update:adminSearch',searchAdmin);
     },
+
+    /**
+     * Show a prompt to the user.
+     */
     showPrompt(message, onConfirm) {
       this.prompt.message = message;
       this.prompt.onConfirm = onConfirm;
