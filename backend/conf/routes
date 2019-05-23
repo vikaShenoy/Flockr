@@ -11,11 +11,7 @@ POST        /api/auth/users/:userId/logout        controllers.AuthController.log
 GET          /api/auth/users/:email/available     controllers.AuthController.checkEmailAvailable(email: String)
 
 # Traveller routes
-
-# TODO - remove this
 GET          /api/users/all                                     controllers.UserController.getAllTravellers()
-
-
 GET          /api/users                                         controllers.UserController.getTravellers()
 GET          /api/users/search                                  controllers.UserController.searchTravellers(request: Request)
 GET          /api/users/nationalities                           controllers.UserController.getNationalities(request: Request)
