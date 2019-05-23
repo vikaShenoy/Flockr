@@ -11,8 +11,10 @@ import play.mvc.*;
 import repository.DestinationRepository;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -66,6 +68,36 @@ public class DestinationController  extends Controller{
 
                 }, httpExecutionContext.current());
     }
+
+    /**
+     * Get the destinations owned by a user.
+     * If the user is viewing their own destinations, return all their destinations.
+     * If the user is viewing someone elses destinations, return just the public destinations of the
+     * specified user.
+     * @param userId user to find destinations for.
+     * @param request HTTP request.
+     * @return 200 status code with the data for the user's destinations in body
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getUserDestinations(int userId, Http.Request request) {
+        User loggedInUser = request.attrs().get(ActionState.USER);
+        return destinationRepository.getDestinations()
+                .thenApplyAsync(destinations -> {
+                    if (loggedInUser.getUserId() == userId) {
+                        List<Destination> userDestinations = destinations.stream()
+                                .filter(destination -> destination.getDestinationOwner() == userId).
+                                        collect(Collectors.toList());
+                        return ok(Json.toJson(userDestinations));
+                    } else {
+                        List<Destination> userDestinations = destinations.stream()
+                                .filter(destination -> destination.getDestinationOwner() == userId
+                                        && destination.getIsPublic()).
+                                        collect(Collectors.toList());
+                        return ok(Json.toJson(userDestinations));
+                    }
+                }, httpExecutionContext.current());
+    }
+
 
     /**
      * Function to add destinations to the database
