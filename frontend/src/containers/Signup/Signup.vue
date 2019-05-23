@@ -73,6 +73,7 @@ import { signup, emailTaken } from "./SignupService.js";
 import { validate } from "email-validator";
 
 export default {
+  name: "sign-up",
   data() {
     return {
       firstName: "",
@@ -102,6 +103,18 @@ export default {
       }
       return this.firstNameErrors.length === 0;
     },
+    clearData() {
+      this.firstName =  "",
+      this.lastName =  "",
+      this.email =  "",
+      this.password =  "",
+      this.confirmPassword = "",
+      this.firstNameErrors = [],
+      this.lastNameErrors = [],
+      this.emailErrors = [],
+      this.passwordErrors = [],
+      this.confirmPasswordErrors = []
+    },
     /**
      * Checks if the last name field is empty and renders error if it is
      * @returns {boolean} True if there are no errors, false otherwise
@@ -117,7 +130,7 @@ export default {
       return this.lastNameErrors.length === 0;
     },
     /**
-     * Checks the following errors in order and renders if an error exists
+     * Checks the f ollowing errors in order and renders if an error exists
      * - Checks if the email is blank 
      * - Checks if the email is not valid
      * - Checks if the email is taken 
@@ -193,7 +206,6 @@ export default {
       ];
 
       const fieldResults = await Promise.all(fieldPromises);
-
       return fieldResults.every(fieldResult => fieldResult);
     },
     /**
@@ -201,9 +213,7 @@ export default {
      */
     async signup() {
       const validFields = await this.validate();
-
       if (!validFields) return;
-
       try {
         const { token, userId } = await signup({
           firstName: this.firstName,
@@ -212,14 +222,18 @@ export default {
           password: this.password,
         });
 
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("userId", userId);
-
-        this.$router.push(`/profile/${userId}`);
-        
+        // Only set fields and redirect if they are
+        // NOT currently logged in. (Useful for admin panel).
+        if (!localStorage.getItem("authToken")) {
+          localStorage.setItem("authToken", token);
+          localStorage.setItem("userId", userId);
+          this.$router.push(`/profile/${userId}`);
+        } else {
+          this.clearData();
+          this.$emit('exit', true);
+        }
       } catch (e) {
         console.log(e);
-        
       }
     }
   }

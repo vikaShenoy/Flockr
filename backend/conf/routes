@@ -7,9 +7,11 @@ GET          /                                                  controllers.Asse
 POST         /api/auth/users/signup               controllers.AuthController.signup(request: Request)
 POST         /api/auth/users/login                controllers.AuthController.login(request: Request)
 POST         /api/auth/users/logout               controllers.AuthController.logout(request: Request)
+POST        /api/auth/users/:userId/logout        controllers.AuthController.logoutById(userId: Int, request: Request)
 GET          /api/auth/users/:email/available     controllers.AuthController.checkEmailAvailable(email: String)
 
 # Traveller routes
+GET          /api/users/all                                     controllers.UserController.getAllTravellers()
 GET          /api/users                                         controllers.UserController.getTravellers()
 GET          /api/users/search                                  controllers.UserController.searchTravellers(request: Request)
 GET          /api/users/nationalities                           controllers.UserController.getNationalities(request: Request)

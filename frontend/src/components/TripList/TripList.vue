@@ -32,7 +32,6 @@ export default {
     try {
       const trips = await getTrips(this.userId);
       const sortedTrips = sortTrips(trips);
-      console.log(sortedTrips);
       this.trips = transformTrips(sortedTrips);
     } catch (e) {
       console.log(e);
