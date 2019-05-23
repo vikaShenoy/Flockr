@@ -97,7 +97,7 @@ public class UserRoleSteps {
         types.add("ADMIN");
         JsonNode typesJson = Json.toJson(types);
         ObjectNode data = Json.newObject();
-        data.set("roleTypes", typesJson);
+        data.set("roles", typesJson);
         Result roleResult = fakeClient.makeRequestWithToken("PATCH", data, "/api/users/" +
                 this.user.getUserId() + "/roles", this.currentAuthToken);
         Assert.assertEquals(200, roleResult.status());
@@ -110,7 +110,7 @@ public class UserRoleSteps {
         roles.add("ADMIN");
         JsonNode typesJson = Json.toJson(roles);
         ObjectNode data = Json.newObject();
-        data.set("roleTypes", typesJson);
+        data.set("roles", typesJson);
 
         Result roleResult = fakeClient.makeRequestWithToken("PATCH", data, "/api/users/" +
                 this.admin.getUserId() + "/roles", this.currentAuthToken);
