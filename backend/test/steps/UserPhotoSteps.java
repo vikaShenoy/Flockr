@@ -3,15 +3,22 @@ package steps;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import cucumber.api.PendingException;
 import cucumber.api.java.After;
+import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
 import models.PersonalPhoto;
 import models.Role;
+import models.RoleType;
 import models.User;
+import org.checkerframework.checker.nullness.Opt;
 import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.Result;
 import utils.FakeClient;
@@ -32,11 +39,17 @@ public class UserPhotoSteps {
     private DataTable photoList;
     private int newPhotoId;
     private List<String> photosToRemove = new ArrayList<>();
+    private int nonExistentPhotoId;
+    final Logger log = LoggerFactory.getLogger(this.getClass());
+    private User aliceAdmin;
+    private User bobAdmin;
+    private User tylerRegular;
+    private User karenRegular;
 
     @After("@UserPhotos")
     public void tearDown() {
         if (this.photosToRemove.size() > 0) {
-            System.out.println("Now deleting test photo files...");
+            log.info("Now deleting test photo files...");
             boolean deleted = false;
             for (String filename : this.photosToRemove) {
                 int indexOfPoint = filename.lastIndexOf('.');
@@ -45,10 +58,15 @@ public class UserPhotoSteps {
                 String thumbFilename = filenameBody + "_thumb" + fileType;
                 File file = new File(System.getProperty("user.dir") + "/storage/photos/", filename);
                 File thumbFile = new File(System.getProperty("user.dir") + "/storage/photos/", thumbFilename);
+
+                log.info("Going to delete photo and its thumbnail in clean up step");
                 deleted = file.delete() && thumbFile.delete();
             }
-            if (deleted) System.out.println("Deletion of test images successful");
-            else System.err.println("Deletion of test images failed");
+            if (deleted) {
+                log.info("Deletion of test images successful");
+            } else {
+                log.warn("Deletion of test images failed, maybe the images were deleted in endpoint calls ¯\\_(ツ)_/¯");
+            }
         }
     }
 
@@ -105,6 +123,9 @@ public class UserPhotoSteps {
         this.photoName = photoName;
     }
 
+    @Given("^the admin has a photo called \"([^\"]*)\"$")
+    public void theAdminHasAPhotoCalled(String photoName) { this.photoName = photoName; }
+
     @Given("they want the photo to be public")
     public void theyWantThePhotoToBePublic() {
         isPublic = true;
@@ -118,6 +139,92 @@ public class UserPhotoSteps {
     @Given("they want the photo to be their profile photo")
     public void theyWantThePhotoToBeTheirProfilePhoto() {
         isPrimary = true;
+    }
+
+
+    @Given("^two admin users exist$")
+    public void thatTwoAdminUsersExist() throws Throwable {
+        List<Role> adminRole = Role.find.query().where().eq("role_type", RoleType.ADMIN.toString()).findList();
+
+        this.aliceAdmin = TestState.getInstance().getUser(2);
+        this.bobAdmin = TestState.getInstance().getUser(3);
+        this.aliceAdmin.setRoles(adminRole);
+        this.bobAdmin.setRoles(adminRole);
+        this.aliceAdmin.save();
+        this.bobAdmin.save();
+    }
+
+    @When("^the first admin adds the photo to the second admin$")
+    public void theFirstAdminAddsThePhotoToTheSecondAdmin() throws Throwable {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        Map<String, String> values = new HashMap<>();
+        values.put("isPrimary", Boolean.toString(false));
+        values.put("isPublic", Boolean.toString(true));
+        File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", photoName);
+
+        if (!file.exists()) {
+            Assert.fail(String.format("File %s was not found", file));
+        }
+
+        this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
+                "POST",
+                "/api/users/" + this.bobAdmin.getUserId() + "/photos",
+                this.aliceAdmin.getToken(),
+                file,
+                values);
+
+        Assert.assertNotNull(this.result);
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+        Assert.assertNotNull(resultAsJson.get("filenameHash").asText());
+        this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+    }
+
+    @Then("^the photo is not added$")
+    public void thePhotoIsNotAdded() throws Throwable {
+        int statusCode = this.result.status();
+        Assert.assertTrue(statusCode >= 400 && statusCode < 500);
+    }
+
+    @Given("^a regular user with first name Tyler exists$")
+    public void aRegularUserWithFirstNameTylerExists() throws Throwable {
+        this.tylerRegular = TestState.getInstance().getUser(4);
+        Assert.assertEquals("Tyler", this.tylerRegular.getFirstName());
+    }
+
+    @And("^a regular user with first name Karen exists$")
+    public void aRegularUserWithFirstNameKarenExists() throws Throwable {
+        this.karenRegular = TestState.getInstance().getUser(5);
+        Assert.assertEquals("Karen", this.karenRegular.getFirstName());
+    }
+
+    @When("^a regular user Tyler tries to upload a photo for a regular user Karen$")
+    public void aRegularUserTylerTriesToUploadAPhotoForARegularUserKaren() throws Throwable {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        Map<String, String> values = new HashMap<>();
+        values.put("isPrimary", Boolean.toString(false));
+        values.put("isPublic", Boolean.toString(true));
+        File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", "dog.jpg");
+
+        if (!file.exists()) {
+            Assert.fail(String.format("File %s was not found", file));
+        }
+
+        this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
+            "POST",
+            "/api/users/" + this.karenRegular.getUserId() + "/photos",
+            this.tylerRegular.getToken(),
+            file,
+            values);
+
+        if (this.result.status() == 200) {
+            Assert.assertNotNull(this.result);
+            JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+            Assert.assertNotNull(resultAsJson.get("filenameHash").asText());
+            this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+        }
+
     }
 
     @When("they add the photo")
@@ -142,9 +249,11 @@ public class UserPhotoSteps {
                 file,
                 values);
 
-        Assert.assertNotNull(this.result);
-        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
-        this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+        if (this.result.status() == 200) {
+            JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+            Assert.assertNotNull(resultAsJson.get("filenameHash").asText());
+            this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+        }
     }
 
     @Then("the photo is added")
@@ -250,6 +359,37 @@ public class UserPhotoSteps {
         Assert.assertEquals(201, this.result.status());
     }
 
+    @Given("a user has a private photo called {string} already")
+    public void aUserHasAPrivatePhotoCalledAlready(String filename) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+
+        Map<String, String> values = new HashMap<>();
+        values.put("isPrimary", Boolean.toString(false));
+        values.put("isPublic", Boolean.toString(false));
+
+        File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", filename);
+
+        if (!file.exists()) {
+            Assert.fail(String.format("File %s was not found", file));
+        }
+
+        this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
+                "POST",
+                "/api/users/" + user.getUserId() + "/photos",
+                user.getToken(),
+                file,
+                values);
+
+        Assert.assertNotNull(this.result);
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+        this.newPhotoId = resultAsJson.get("photoId").asInt();
+        this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+
+        Assert.assertNotEquals(0, this.newPhotoId);
+        Assert.assertEquals(201, this.result.status());
+    }
+
     @When("^the user requests the thumbnail for this photo$")
     public void theUserRequestsTheThumbnailForThisPhoto() {
         User user = TestState.getInstance().getUser(0);
@@ -289,7 +429,7 @@ public class UserPhotoSteps {
         Assert.assertNotNull(this.result);
     }
 
-    @When("The user changes the photo permission to private")
+    @When("the user changes the photo permission to private")
     public void theUserChangesThePhotoPermissionToPrivate() throws IOException {
         User user = TestState.getInstance().getUser(0);
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
@@ -297,67 +437,89 @@ public class UserPhotoSteps {
         ObjectNode reqBody = Json.newObject();
         reqBody.put("isPublic", "false");
         reqBody.put("isPrimary", "false");
-        System.out.println("Request Body: " + reqBody);
 
-        Result photosRes = fakeClient.makeRequestWithToken("PATCH",  reqBody, "/api/users/photos/" + this.newPhotoId, user.getToken());
-        this.photos = utils.PlayResultToJson.convertResultToJson(photosRes);
-        System.out.println("PhotoRes: " + this.photos);
+        this.result = fakeClient.makeRequestWithToken("PATCH", reqBody, "/api/users/photos/"
+                + this.newPhotoId, user.getToken());
+        Assert.assertEquals(200, this.result.status());
 
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", user.getToken());
+        this.photos = utils.PlayResultToJson.convertResultToJson(this.result);
     }
 
-    @Then("The photo permission is set to private")
-    public void thePhotoPermissionIsSetToPrivate() throws IOException {
-        User user = TestState.getInstance().getUser(0);
-        FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        Result photosRes = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", user.getToken());
-        this.photos = utils.PlayResultToJson.convertResultToJson(photosRes);
-
-        for (JsonNode photo : photos) {
-            System.out.println("photo - " + photo);
+    @Then("the photo permission is set to private")
+    public void thePhotoPermissionIsSetToPrivate() {
+        for (JsonNode photo : this.photos) {
             int id = photo.get("photoId").asInt();
             if (this.newPhotoId == id) {
                 boolean isPublic = photo.get("public").asBoolean();
-                System.out.println(isPublic);
+                Assert.assertFalse(isPublic);
+                boolean isPrimary = photo.get("primary").asBoolean();
+                Assert.assertFalse(isPrimary);
             }
         }
-
-
-
-
-
-/*        for (JsonNode photo : this.photos) {
-            int id = photo.get("photoId").asInt();
-            if (id == this.newPhotoId) {
-                String isPublicStr = photo.get("isPublic").asText();
-                String isPrimaryStr = photo.get("isPrimary").asText();
-                if (isPublicStr.toLowerCase().equals("true")) {
-                    isPublic = true;
-                } else if (isPublicStr.toLowerCase().equals("false")) {
-                    isPublic = false;
-                }
-
-                if (isPrimaryStr.toLowerCase().equals("true")) {
-
-                }
-                Assert.assertFalse(isPublic);
-            }*/
-/*        }*/
-
-/*        System.out.println(this.photos);*/
     }
 
-    @When("The admin changes the photo permission to private")
-    public void theAdminChangesThePhotoPermissionToPrivate() {
+    @When("the admin changes the photo permission to private")
+    public void theAdminChangesThePhotoPermissionToPrivate() throws IOException {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
         User admin = TestState.getInstance().getUser(1);
 
         ObjectNode reqBody = Json.newObject();
         reqBody.put("isPublic", "false");
         reqBody.put("isPrimary", "false");
-        System.out.println("Request Body: " + reqBody);
 
-        Result photosRes = fakeClient.makeRequestWithToken("PATCH",  reqBody, "/api/users/photos/" + this.newPhotoId, admin.getToken());
-        System.out.println("PhotoRes: " + photosRes);
+        this.result = fakeClient.makeRequestWithToken("PATCH",  reqBody, "/api/users/photos/"
+                + this.newPhotoId, admin.getToken());
+        Assert.assertNotNull(this.result);
+
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", user.getToken());
+        this.photos = utils.PlayResultToJson.convertResultToJson(this.result);
+    }
+
+    @When("another user changes the photo permission to private")
+    public void anotherUserChangesThePhotoPermissionToPrivate() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User anotherUser = TestState.getInstance().getUser(1);
+
+        ObjectNode reqBody = Json.newObject();
+        reqBody.put("isPublic", "false");
+        reqBody.put("isPrimary", "false");
+
+        this.result = fakeClient.makeRequestWithToken("PATCH",  reqBody, "/api/users/photos/"
+                + this.newPhotoId, anotherUser.getToken());
+    }
+
+    @Then("that user is not allowed to change the photo permission")
+    public void thatUserIsNotAllowedToChangeThePhotoPermission() {
+        Assert.assertEquals(this.result.status(), 403);
+    }
+
+    @Given("a user has no photo with the photo id {int}")
+    public void aUserHasNoPhotoWithThePhotoId(Integer photoId) {
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.nonExistentPhotoId = photoId;
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/users/photos/" + photoId, user.getToken());
+        Assert.assertEquals(404, this.result.status());
+    }
+
+    @When("the user changes the photo permission of the non-existent photo to private")
+    public void theUserChangesThePhotoPermissionOfTheNonExistentPhotoToPrivate() {
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        ObjectNode reqBody = Json.newObject();
+        reqBody.put("isPublic", "false");
+        reqBody.put("isPrimary", "false");
+
+        this.result = fakeClient.makeRequestWithToken("PATCH", reqBody, "/api/users/photos/"
+                + this.nonExistentPhotoId, user.getToken());
+    }
+
+    @Then("the photo cannot be found")
+    public void thePhotoCannotBeFound() {
+        Assert.assertEquals(404, this.result.status());
     }
 
     @When("the user requests that the photo be deleted")
@@ -387,40 +549,62 @@ public class UserPhotoSteps {
         Assert.assertNotNull(this.result);
     }
 
+    @When("the logged in user requests the photo")
+    public void theLoggedInUserRequestsThePhoto() {
+        // Write code here that turns the phrase above into concrete actions
+        User user = TestState.getInstance().getUser(1);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/" + this.newPhotoId + "?Authorization=" + user.getToken());
+
+        Assert.assertNotNull(this.result);
+    }
+
     @When("the user requests the photo")
     public void theUserRequestsThePhoto() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/" + this.newPhotoId + "?Authorization=" + user.getToken());
+
+        Assert.assertNotNull(this.result);
+
     }
 
     @Then("the photo is returned in the response body with a status of {int}")
-    public void thePhotoIsReturnedInTheResponseBodyWithAStatusOf(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    public void thePhotoIsReturnedInTheResponseBodyWithAStatusOf(Integer stat) {
+        Assert.assertFalse(this.result.body().isKnownEmpty());
+        Assert.assertTrue(this.result.body().contentLength().get().intValue() > 2000);
+        Assert.assertTrue(this.result.status() == 200);
     }
 
-    @Given("the photo is public")
-    public void thePhotoIsPublic() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
+    @When("no user has a photo with id {int}")
+    public void noUserHasAPhotoWithId(Integer id) {
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken(
+                "GET",
+                "/api/users/photos/" + id + "?Authorization=" + user.getToken());
 
-    @Given("the photo is private")
-    public void thePhotoIsPrivate() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @Given("no user has a photo called {string}")
-    public void noUserHasAPhotoCalled(String string) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+        Assert.assertNotNull(this.result);
     }
 
     @When("the admin user requests the photo")
     public void theAdminUserRequestsThePhoto() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+
+        User admin = TestState.getInstance().getUser(1);
+        List<Role> roles = Role.find.query().where().eq("role_type", "ADMIN").findList();
+        Assert.assertEquals(1, roles.size());
+        admin.setRoles(roles);
+        admin.save();
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        this.result = fakeClient.makeRequestWithNoToken("GET", "/api/users/photos/" + this.newPhotoId + "?Authorization=" + admin.getToken());
+        Assert.assertNotNull(this.result);
+
     }
 
     // End of GET single photo testing

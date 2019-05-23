@@ -17,13 +17,16 @@
           :profilePhoto="userProfile.profilePhoto"
           :photos="userProfile.personalPhotos"
           :userId="userProfile.userId"
-          v-on:newProfilePic="changeProfilePic"
+          v-on:newProfilePic="newProfilePic"
           v-on:showError="showError"
         />
 
         <BasicInfo :userProfile.sync="userProfile" />
 
-        <Photos :photos="userProfile.personalPhotos" />
+        <Photos
+          :photos="userProfile.personalPhotos"
+          v-on:addImage="addImage"
+           />
       </div>
 
       <div class="col-lg-8">
@@ -78,6 +81,7 @@ export default {
   data() {
     return {
       userProfile: null,
+      photos: null,
       errorSnackbar: {
         show: false,
         text: "",
@@ -98,6 +102,7 @@ export default {
       const userId = this.$route.params.id;
 
       const user = await getUser(userId);
+      console.log(user);
 
       // Change date format so that it displays on the basic info component.
       const formattedDate = user.dateOfBirth
@@ -125,7 +130,7 @@ export default {
      *
      * @param imageObject the new profile picture.
      */
-    changeProfilePic(imageObject) {
+    newProfilePic(imageObject) {
       this.userProfile.profilePhoto = imageObject;
     },
     /**
@@ -135,6 +140,10 @@ export default {
     showError(text) {
       this.errorSnackbar.text = text;
       this.errorSnackbar.show = true;
+    },
+    addImage(image) {
+      console.log("I am ");
+      this.userProfile.personalPhotos.push(image);
     }
   }
 };

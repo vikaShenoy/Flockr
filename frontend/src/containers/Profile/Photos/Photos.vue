@@ -10,12 +10,11 @@
       </v-card-actions>
       <v-responsive>
         <v-container grid-list-sm fluid>
-
           <!-- users photos -->
-          <v-layout v-if="hasPhotos" row wrap>
+          <v-layout v-if="photos && photos.length" row wrap>
             <v-flex sm12 md6 lg4 v-for="photo in photos" v-bind:key="photo.photoId">
               <v-img class="photo clickable" v-on:click.stop="openViewPhotoDialog(photo)"
-                     :src="photo.thumbEndpoint"></v-img>
+                     :src="thumbnailUrl(photo.photoId)"></v-img>
             </v-flex>
           </v-layout>
 
@@ -34,6 +33,7 @@
           <add-photo-dialog
                   :dialog="addPhotoDialog"
                   v-on:closeDialog="closeAddPhotoDialog"
+                  v-on:addImage="addImage"
           ></add-photo-dialog>
         </v-spacer>
       </v-card-actions>
@@ -51,10 +51,12 @@
 <script>
   import AddPhotoDialog from "./AddPhotoDialog/AddPhotoDialog";
   import ViewPhotoDialog from "./ViewPhotoDialog/ViewPhotoDialog";
-  import {getPhotos} from "./PhotosService";
+  import { endpoint } from "../../../utils/endpoint";
 
   export default {
-
+    props: {
+      photos: Array 
+    },
     components: {
       AddPhotoDialog,
       ViewPhotoDialog
@@ -66,7 +68,6 @@
         userId: null,
         currentPhoto: null,
         viewPhotoDialog: false,
-        photos: [],
         hasPhotos: false
       };
     },
@@ -102,21 +103,24 @@
       closeAddPhotoDialog: function () {
         this.addPhotoDialog = false;
       },
-
       /**
        * Called when the view gallery button is clicked.
        * Directs user to the photos page for this user.
        */
       openGallery() {
         this.$router.push(`/profile/${this.userId}/photos`);
+      },
+      thumbnailUrl(photoId) {
+        return endpoint(`/users/photos/${photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+      },
+      addImage(image) {
+        console.log("I am adding an image in photos");
+        this.$emit("addImage", image);
       }
-
     },
 
     mounted: async function () {
       this.userId = this.$route.params.id;
-      this.photos = await getPhotos(this.userId, 6);
-      this.hasPhotos = this.photos.length > 0;
     }
   }
 </script>

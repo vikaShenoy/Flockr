@@ -44,7 +44,7 @@ public class UserRepository {
      */
     public CompletionStage<User> updateUser(User user) {
         return supplyAsync(() -> {
-            user.update();
+            user.save();
             return user;
         }, executionContext);
     }
@@ -115,7 +115,8 @@ public class UserRepository {
     }
 
     /**
-     * Gets a nationality by it's ID
+     * Gets a nationality by it's ID                            System.out.println();(nationality);
+
      *
      * @param nationalityId The nationality to get
      * @return The list of nationalities
@@ -141,9 +142,25 @@ public class UserRepository {
         }, executionContext);
     }
 
+    /**
+     * Get a list of travellers, including those without a complete profile.
+     * @return a list of travellers.
+     */
+    public CompletionStage<List<User>> getAllTravellers() {
+        return supplyAsync(() -> {
+            List<User> user = User.find.query()
+                    .fetch("passports")              // contacts is a OneToMany path
+                    .fetch("travellerTypes")
+                    .fetch("nationalities")
+                    .findList();
+            return user;
+        }, executionContext);
+    }
+
 
     /**
-     * Gets a list of travellers
+     * Get a list of travellers. Only those with a complete profile.
+     * @return a list of travellers.
      */
     public CompletionStage<List<User>> getTravellers() {
         return supplyAsync(() -> {

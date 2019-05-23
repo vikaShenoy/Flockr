@@ -17,6 +17,9 @@ import play.test.Helpers;
 import utils.FakePlayClient;
 import utils.TestState;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CommonTestSteps {
 
     @Inject
@@ -31,18 +34,19 @@ public class CommonTestSteps {
 
     @Before
     public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
+        Map<String,String> testSettings = new HashMap<>();
+        testSettings.put("db.default.driver", "org.h2.Driver");
+        testSettings.put("db.default.url", "jdbc:h2:mem:testdb;MODE=MySQL;");
+        testSettings.put("play.evolutions.db.default.enabled", "true");
+        testSettings.put("play.evolutions.db.default.autoApply", "true");
+        testSettings.put("play.evolutions.db.default.autoApplyDowns", "true");
+
+        application = Helpers.fakeApplication(testSettings);
         Helpers.start(application);
+
         TestState.getInstance().setApplication(application);
         TestState.getInstance().setFakeClient(new FakePlayClient(application));
+
         this.createRoles();
         this.createNationalities();
         this.createPassports();

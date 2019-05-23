@@ -47,6 +47,8 @@
             depressed
             id="set-profile-pic-btn"
             @click="saveProfilePicture"
+            :disabled="uploadingProfilePic" 
+            :loading="uploadingProfilePic"
           >
           Set Profile Picture
           <v-icon id="profile-pic-icon">face</v-icon>
@@ -86,6 +88,7 @@ export default {
   data() {
     return {
       selectedPhoto: null,
+      uploadingProfilePic: false,
       // Describe the type of cropping (either "self" or "auto")
       cropOption: "self"
     };
@@ -113,9 +116,13 @@ export default {
       const cropper = this.cropOption === "self" ? this.$refs.cropper : this.$refs.autoCropper;
       cropper.getCroppedCanvas().toBlob(async blob => {
         try {
-          const response = await sendProfilePicture(this.$route.params.id, blob);
-          this.$emit("closeDialog", response.body);
+          this.uploadingProfilePic = true;
+          const profilePhoto = await sendProfilePicture(this.$route.params.id, blob);
+          this.uploadingProfilePic = false;
+          this.$emit("closeDialog", profilePhoto);
+          this.selectedPhoto = null;
         } catch (error) {
+          this.uploadingProfilePic = false;
           this.$emit("showError", "Could not upload profile picture");
         }
       });

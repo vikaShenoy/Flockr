@@ -9,6 +9,8 @@ import exceptions.NotFoundException;
 import exceptions.UnauthorizedException;
 import models.PersonalPhoto;
 import models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Files;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
@@ -43,6 +45,7 @@ public class PhotoController extends Controller {
     private final UserRepository userRepository;
     private final PhotoUtil photoUtil;
     private final HttpExecutionContext httpExecutionContext;
+    final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
     public PhotoController(Security security, PhotoRepository photoRepository, UserRepository userRepository, PhotoUtil photoUtil, HttpExecutionContext httpExecutionContext) {
@@ -89,8 +92,8 @@ public class PhotoController extends Controller {
                     }
 
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
-                    if (!user.isAdmin() || user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
-                        throw new CompletionException(new UnauthorizedException());
+                    if (!user.isAdmin() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
+                        throw new CompletionException(new ForbiddenRequestException("You're not allowed to change the permission group."));
                     }
 
                     PersonalPhoto photo = optionalPhoto.get();
@@ -104,7 +107,7 @@ public class PhotoController extends Controller {
                     } catch (NotFoundException notFoundException) {
                         response.put("message", "Could not find a photo with the given photo ID");
                         return notFound(response);
-                    } catch (UnauthorizedException unauthorizedException) {
+                    } catch (ForbiddenRequestException forbiddenException) {
                         response.put("message", "You are unauthorised to change the photo permission of the photo");
                         return forbidden(response);
                     } catch (Throwable serverException) {
@@ -125,13 +128,13 @@ public class PhotoController extends Controller {
     public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         return photoRepository.getPhotoById(photoId)
-                .thenApplyAsync((optionalPhoto) -> {
+                .thenComposeAsync((optionalPhoto) -> {
                     if (!optionalPhoto.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     PersonalPhoto photo = optionalPhoto.get();
                     if (user.getUserId() != photo.getUser().getUserId() && !user.isAdmin()) {
-                        return forbidden();
+                        throw new CompletionException(new ForbiddenRequestException("You are not permitted to do that"));
                     }
                     File photoToDelete = new File("./storage/photos/" + photo.getFilenameHash());
                     File thumbnailToDelete = new File("./storage/photos/" + photo.getThumbnailName());
@@ -140,10 +143,9 @@ public class PhotoController extends Controller {
                     }
                     ObjectNode message = Json.newObject();
                     message.put("message", "Successfully deleted the photo");
-                    this.photoRepository.deletePhoto(photo.getPhotoId());
-                    return ok(message);
+                    return this.photoRepository.deletePhoto(photo.getPhotoId());
                 })
-                //.thenApplyAsync(photo -> (Result) ok())
+                .thenApplyAsync(photo -> (Result) ok())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
@@ -151,6 +153,10 @@ public class PhotoController extends Controller {
                         ObjectNode message = Json.newObject();
                         message.put("message", "The photo with the given id is not found");
                         return notFound(message);
+                    } catch (ForbiddenRequestException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", error.getMessage());
+                        return forbidden(message);
                     } catch (Throwable serverError) {
                         return internalServerError();
                     }
@@ -170,6 +176,7 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int userId, Http.Request request) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
         // Check user exists
         if (User.find.byId(userId) == null) {
             JsonNode response = Json.newObject().put("error", "Not Found");
@@ -177,7 +184,15 @@ public class PhotoController extends Controller {
         } else {
             return photoRepository.getPhotosById(userId)
                     .thenApplyAsync((photos) -> {
-                        List<PersonalPhoto> userPhotos = photos.stream().filter((photo) -> !photo.isPrimary())
+                        List<PersonalPhoto> userPhotos = photos.stream().filter((photo) -> {
+                            // Don't add primary photo to list of photos
+                            if (photo.isPrimary()) {
+                                return false;
+                            }
+
+                            // Don't add private photo's if user not the logged in user
+                            return !(userFromMiddleware.getUserId() != userId && !photo.isPublic());
+                        })
                                 .collect(Collectors.toList());
 
                         JsonNode photosAsJSON = Json.toJson(userPhotos);
@@ -322,7 +337,7 @@ public class PhotoController extends Controller {
                         return supplyAsync(() -> forbidden(response), httpExecutionContext.current());
                     }
 
-                    System.out.println("Extracting photo from request");
+                    log.debug("Extracting photo from request");
 
                     // get the photo as a file from the request
                     Files.TemporaryFile temporaryPhotoFile = (Files.TemporaryFile) photo.getRef();
@@ -350,15 +365,15 @@ public class PhotoController extends Controller {
 
                     // save to filesystem
                     temporaryPhotoFile.moveFileTo(fileDestination);
-                    System.out.println("Saved file to filesystem");
+                    log.info("Saved file to filesystem: {}", temporaryPhotoFile);
 
                     // resize and save a thumbnail.
                     try {
-                        System.out.println("Saving thumbnail of photo");
+                        log.info("Saving thumbnail of photo {} as {}", fileDestination, thumbFileDestination);
                         saveThumbnail(fileDestination, thumbFileDestination, contentType);
-                        System.out.println("Thumbnail created successfully of photo");
+                        log.info("Thumbnail {} created successfully", thumbFileDestination);
                     } catch (IOException e) {
-                        System.err.println("Internal Server Error when generating a thumbnail: " + e);
+                        log.error("Internal Server Error when generating a thumbnail", e);
                         return supplyAsync(Results::internalServerError, httpExecutionContext.current());
                     }
                     // save to filesystem
