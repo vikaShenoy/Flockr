@@ -90,6 +90,8 @@
             <v-img v-else class="image"
                    src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
         </div>
+
+        <v-switch switch v-if="editMode" v-model="destination.isPublic" label="Set to public" id="is-public-switch" color="secondary"></v-switch>
         <v-btn v-if="editMode" fab id="save-destination-button" @click="saveDestination">
             <v-icon>check_circle</v-icon>
         </v-btn>
