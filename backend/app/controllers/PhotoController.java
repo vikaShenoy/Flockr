@@ -128,13 +128,13 @@ public class PhotoController extends Controller {
     public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         return photoRepository.getPhotoById(photoId)
-                .thenApplyAsync((optionalPhoto) -> {
+                .thenComposeAsync((optionalPhoto) -> {
                     if (!optionalPhoto.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     PersonalPhoto photo = optionalPhoto.get();
                     if (user.getUserId() != photo.getUser().getUserId() && !user.isAdmin()) {
-                        return forbidden();
+                        throw new CompletionException(new ForbiddenRequestException("You are not permitted to do that"));
                     }
                     File photoToDelete = new File("./storage/photos/" + photo.getFilenameHash());
                     File thumbnailToDelete = new File("./storage/photos/" + photo.getThumbnailName());
@@ -143,10 +143,9 @@ public class PhotoController extends Controller {
                     }
                     ObjectNode message = Json.newObject();
                     message.put("message", "Successfully deleted the photo");
-                    this.photoRepository.deletePhoto(photo.getPhotoId());
-                    return ok(message);
+                    return this.photoRepository.deletePhoto(photo.getPhotoId());
                 })
-                //.thenApplyAsync(photo -> (Result) ok())
+                .thenApplyAsync(photo -> (Result) ok())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
@@ -154,6 +153,10 @@ public class PhotoController extends Controller {
                         ObjectNode message = Json.newObject();
                         message.put("message", "The photo with the given id is not found");
                         return notFound(message);
+                    } catch (ForbiddenRequestException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", error.getMessage());
+                        return forbidden(message);
                     } catch (Throwable serverError) {
                         return internalServerError();
                     }
