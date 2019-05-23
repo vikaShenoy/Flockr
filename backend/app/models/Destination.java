@@ -33,6 +33,24 @@ public class Destination extends Model {
     @ManyToOne
     private Country destinationCountry;
 
+    @Override
+    public int hashCode() {
+        return destinationId;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Destination)) {
+            return false;
+        }
+        Destination destinationToCompare = (Destination) obj;
+        boolean sameName = this.destinationName.toLowerCase().equals(destinationToCompare.getDestinationName().toLowerCase());
+        boolean sameDistrict = this.destinationDistrict.equals(destinationToCompare.getDestinationDistrict());
+        boolean sameType = this.destinationType.equals(destinationToCompare.getDestinationType());
+        boolean sameCountry = this.destinationCountry.equals(destinationToCompare.getDestinationCountry());
+        return (sameName && sameDistrict && sameType && sameCountry);
+    }
+
     /**
      * Constructor.
      * @param destinationName name of the destination

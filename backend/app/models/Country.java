@@ -43,4 +43,13 @@ public class Country extends Model {
      * This is required by EBean to make queries on the database.
      */
     public static final Finder<Integer, Country> find = new Finder<>(Country.class);
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Country)) {
+            return false;
+        }
+        Country countryToCompare = (Country) obj;
+        return this.countryName.equals(countryToCompare.getCountryName());
+    }
 }
