@@ -128,6 +128,12 @@ public class DestinationController  extends Controller{
             Double longitude = jsonRequest.get("longitude").asDouble();
             int countryId = jsonRequest.get("countryId").asInt();
 
+            boolean checkDuplicate = destinationRepository.CheckDestinations(countryId,
+                    destinationName, destinationTypeId, districtId);
+
+            System.out.println("duplicateCheck:" + checkDuplicate);
+
+
             DestinationType destinationTypeAdd = DestinationType.find.byId(destinationTypeId);
             District districtAdd = District.find.byId(districtId);
             Country countryAdd = Country.find.byId(countryId);
@@ -138,6 +144,7 @@ public class DestinationController  extends Controller{
             return destinationRepository.insert(destination)
                     .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)), httpExecutionContext.current());
         } catch (Exception e) {
+            e.printStackTrace();
             ObjectNode message = Json.newObject();
             message.put("message", "Please provide a valid Destination with complete data");
             return supplyAsync(() -> badRequest(message));
