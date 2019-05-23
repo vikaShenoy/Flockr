@@ -17,7 +17,7 @@ create table destination (
   destination_lat               double,
   destination_lon               double,
   destination_country_country_id integer,
-  destination_owner             integer not null,
+  destination_owner             integer,
   is_public                     boolean default false not null,
   constraint pk_destination primary key (destination_id)
 );

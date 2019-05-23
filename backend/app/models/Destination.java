@@ -137,7 +137,7 @@ public class Destination extends Model {
 
     public void setDestinationOwner(Integer destinationOwner) { this.destinationOwner = destinationOwner; }
 
-    public int getDestinationOwner() { return this.destinationOwner; }
+    public Integer getDestinationOwner() { return this.destinationOwner; }
 
     public void setIsPublic (boolean isPublic) { this.isPublic = isPublic; }
 
