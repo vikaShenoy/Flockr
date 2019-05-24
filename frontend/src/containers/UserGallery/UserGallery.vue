@@ -48,19 +48,20 @@
         :currentPhotoIndex="currentPhotoIndex"
         @displayErrorMessage="displayErrorMessage"
         @changedPermission="changedPermission"/>
-      <snackbar :snackbarModel="this.snackbarModel"/>
+      <snackbar :snackbarModel="this.snackbarModel" @dismissSnackbar="snackbarModel.show=false"/>
       <prompt-dialog
         :dialog="promptDialog.show"
         :message="promptDialog.message"
         :onConfirm="promptDialog.onConfirm"
-        @promptEnded="promptDialog.show=false"/>
+        @promptEnded="promptDialog.show=false"
+        @displayError="displayErrorMessage"/>
     </v-card>
 </template>
 
 <script>
 
   import PhotoPanel from "./PhotoPanel/PhotoPanel";
-  import {getPhotosForUser} from "./UserGalleryService";
+  import {getPhotosForUser, deleteUserPhoto} from "./UserGalleryService";
   import Snackbar from "../../components/Snackbars/Snackbar";
   import PromptDialog from "../../components/PromptDialog/PromptDialog";
   export default {
@@ -172,7 +173,18 @@
       async getUsersPhotos() {
         try {
           this.allPhotos = await getPhotosForUser(this.userId);
+          this.allPhotos.map(photo => {
+            const displayErrorMessage = this.displayErrorMessage;
+            photo.deleteFunction = async function () {
+              try {
+                await deleteUserPhoto(photo);
+              } catch (error) {
+                displayErrorMessage(error.message);
+              }
+            };
+          })
         } catch (error) {
+          console.log(error);
           this.displayErrorMessage(error.message);
         }
       }
