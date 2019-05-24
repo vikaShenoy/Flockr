@@ -21,7 +21,9 @@ import repository.TripRepository;
 import util.Security;
 import util.TripUtil;
 import javax.inject.Inject;
+import java.io.Console;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -83,13 +85,19 @@ public class TripController extends Controller {
 
                     User user = optionalUser.get();
 
-                    for (TripDestination tripDestination : tripDestinations) {
-                        Destination destination = tripDestination.getDestination();
-                        if (destination.getIsPublic() && destination.getDestinationOwner() != null) {
-                            //TODO Check that this code actually workss
-                            destination.setDestinationOwner(null);
-                            destinationRepository.update(destination);
+                    //TODO Rewrite this so that it isn't blocking and doesn't take ages to create a trip
+                    try {
+                        for (TripDestination tripDestination : tripDestinations) {
+                            Optional<Destination> destination = destinationRepository.getDestinationById(tripDestination.getDestination().getDestinationId()).toCompletableFuture().get();
+
+                            if (destination.get().getIsPublic() && destination.get().getDestinationOwner() != null) {
+                                destination.get().setDestinationOwner(null);
+                                destinationRepository.update(destination.get());
+                            }
                         }
+                    } catch (Exception e) {
+                        System.out.println("Error");
+
                     }
 
                     Trip trip = new Trip(tripDestinations, user, tripName);
@@ -202,13 +210,18 @@ public class TripController extends Controller {
                         throw new CompletionException(new BadRequestException());
                     }
 
-                    for (TripDestination tripDestination : tripDestinations) {
-                        Destination destination = tripDestination.getDestination();
-                        if (destination.getIsPublic() && destination.getDestinationOwner() != null) {
-                            //TODO Check that this code actually works
-                            destination.setDestinationOwner(null);
-                            destinationRepository.update(destination);
+                    //TODO Rewrite this so that it isn't blocking and doesn't take ages to create a trip
+                    try {
+                        for (TripDestination tripDestination : tripDestinations) {
+                            Optional<Destination> destination = destinationRepository.getDestinationById(tripDestination.getDestination().getDestinationId()).toCompletableFuture().get();
+                            if (destination.get().getIsPublic() && destination.get().getDestinationOwner() != null) {
+                                destination.get().setDestinationOwner(null);
+                                destinationRepository.update(destination.get());
+                            }
                         }
+                    } catch (Exception e) {
+                        System.out.println("Error");
+
                     }
 
                     Trip trip = optionalTrip.get();
