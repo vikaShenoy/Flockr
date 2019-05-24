@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.*;
 import io.ebean.annotation.CreatedTimestamp;
 import play.data.validation.Constraints;
@@ -50,6 +51,12 @@ public class User extends Model {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Trip> trips;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<PersonalPhoto> personalPhotos;
+
+    @OneToOne
+    private PersonalPhoto profilePhoto;
+
     @Constraints.Required
     @CreatedTimestamp
     @Column(updatable=false)
@@ -81,6 +88,19 @@ public class User extends Model {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof User)) {
+            return false;
+        }
+        User otherUser = (User) o;
+        return this.getUserId() == otherUser.getUserId();
+    }
+
+    @Override
+    public int hashCode() {
+        return ((Integer) this.getUserId()).hashCode();
+    }
 
     /**
      * Create a new traveller
@@ -242,6 +262,21 @@ public class User extends Model {
         this.timestamp = timestamp;
     }
 
+    public List<PersonalPhoto> getPersonalPhotos() {
+        return personalPhotos;
+    }
+
+    public void setPersonalPhotos(List<PersonalPhoto> personalPhotos) {
+        this.personalPhotos = personalPhotos;
+    }
+
+    public PersonalPhoto getProfilePhoto() {
+        return profilePhoto;
+    }
+
+    public void setProfilePhoto(PersonalPhoto profilePhoto) {
+        this.profilePhoto = profilePhoto;
+    }
 
     public String getPasswordHash() {
         return passwordHash;

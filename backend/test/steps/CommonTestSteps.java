@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Module;
+import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import models.*;
@@ -23,6 +24,13 @@ public class CommonTestSteps {
 
     @Inject
     private Application application;
+
+    @Before
+    public void before(Scenario scenario) {
+        System.out.println("-----------------------------------------------------------------------------------------");
+        System.out.println("Starting - " + scenario.getName());
+        System.out.println("-----------------------------------------------------------------------------------------");
+    }
 
     @Before
     public void setUp() {
@@ -160,5 +168,11 @@ public class CommonTestSteps {
         TestState.clear();
     }
 
+    @After
+    public void after(Scenario scenario) {
+        System.out.println("-----------------------------------------------------------------------------------------");
+        System.out.println("Ending - " + scenario.getName() + ": Status – " + scenario.getStatus());
+        System.out.println("-----------------------------------------------------------------------------------------");
+    }
 
 }

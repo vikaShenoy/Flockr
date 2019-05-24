@@ -20,7 +20,6 @@ public class TestState {
     private Role travellerRole;
     private List<Destination> destinations;
     private List<User> users;
-    private User user;
     Map<String, String> userData;
 
     /**
@@ -49,14 +48,6 @@ public class TestState {
     public static void clear() {
         testState = null;
 
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public Map<String, String> getUserData() {

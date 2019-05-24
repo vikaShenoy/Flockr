@@ -3,8 +3,7 @@ import VueRouter from "vue-router";
 import Home from "./containers/Home/Home.vue";
 import Signup from "./containers/Signup/Signup.vue";
 import Login from "./containers/Login/Login.vue";
-import Profile from "./containers/Profile/Profile.vue"
-import Travellers from "./containers/Travellers/Travellers.vue";
+import Profile from "./containers/Profile/Profile.vue";
 import Destinations from "./containers/Destinations/Destinations.vue";
 import SearchTravellers from "./containers/SearchTravellers/SearchTravellers.vue";
 import Trips from "./containers/Trips/Trips.vue";
@@ -14,6 +13,7 @@ import EditTrip from "./containers/EditTrip/EditTrip.vue";
 import AdminPanel from "./containers/AdminPanel/AdminPanel.vue";
 
 import { loggedIn, loggedInOrOut, isAdmin } from "./utils/auth";
+import UserGallery from "./containers/UserGallery/UserGallery";
 
 // All routes need to be annotated with loggedIn or loggedInOrOut
 const routes = [
@@ -25,11 +25,6 @@ const routes = [
   {
     path: "/profile/:id",
     component: Profile,
-    beforeEnter: loggedIn
-  },
-  {
-    path: "/travellers",
-    component: Travellers,
     beforeEnter: loggedIn
   },
   {
@@ -61,7 +56,7 @@ const routes = [
     // Allows an admin to view other traveller's trips
     path: "/travellers/:travellerId/trips",
     component: Trips,
-    beforeEnter: isAdmin 
+    beforeEnter: isAdmin
   },
   {
     path: "/trips/add",
@@ -82,7 +77,7 @@ const routes = [
   {
     path: "/travellers/:travellerId/trips/:id",
     component: Trip,
-    beforeEnter: isAdmin 
+    beforeEnter: isAdmin
   },
   {
     path: "/trips/:id/edit",
@@ -92,12 +87,17 @@ const routes = [
   {
     path: "/travellers/:travellerId/trips/:id/edit",
     component: EditTrip,
-    beforeEnter: isAdmin 
+    beforeEnter: isAdmin
   },
   {
     path: "/admin",
     component: AdminPanel,
     beforeEnter: isAdmin
+  },
+  {
+    path: "/profile/:id/photos",
+    component: UserGallery,
+    beforeEnter: loggedIn
   }
 ];
 
