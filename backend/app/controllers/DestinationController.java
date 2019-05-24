@@ -4,6 +4,7 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.BadRequestException;
 import exceptions.NotFoundException;
 import models.*;
 import play.libs.Json;
@@ -24,7 +25,7 @@ import play.libs.concurrent.HttpExecutionContext;
 /**
  * Controller to manage endpoints related to destinations.
  */
-public class DestinationController  extends Controller{
+public class DestinationController extends Controller {
     private final DestinationRepository destinationRepository;
     private HttpExecutionContext httpExecutionContext;
 
@@ -36,6 +37,7 @@ public class DestinationController  extends Controller{
 
     /**
      * A function that gets a list of all the destinations and returns it with a 200 ok code to the HTTP client
+     *
      * @param request Http.Request the http request
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
@@ -46,8 +48,9 @@ public class DestinationController  extends Controller{
 
     /**
      * A function that retrieves a destination details based on the destination ID given
+     *
      * @param destinationId the destination Id of the destination to retrieve
-     * @param request request Object
+     * @param request       request Object
      * @return a completion stage and a Status code of 200 and destination details as a Json object if successful,
      * otherwise returns status code 404 if the destination can't be found in the db.
      */
@@ -74,7 +77,8 @@ public class DestinationController  extends Controller{
      * If the user is viewing their own destinations, return all their destinations.
      * If the user is viewing someone elses destinations, return just the public destinations of the
      * specified user.
-     * @param userId user to find destinations for.
+     *
+     * @param userId  user to find destinations for.
      * @param request HTTP request.
      * @return 200 status code with the data for the user's destinations in body
      */
@@ -101,6 +105,7 @@ public class DestinationController  extends Controller{
 
     /**
      * Function to add destinations to the database
+     *
      * @param request the HTTP post request.
      * @return a completion stage with a 200 status code and the new json object or a status code 400.
      */
@@ -111,16 +116,12 @@ public class DestinationController  extends Controller{
 
         int user = request.attrs().get(ActionState.USER).getUserId();
 
-        // check that the request has a body
-        if (jsonRequest == null) {
-            return supplyAsync(() -> {
-                ObjectNode message = Json.newObject();
-                message.put("message", "Please provide a valid request body according to the API spec");
-                return badRequest(message);
-            });
-        }
-
         try {
+            // check that the request has a body
+            if (jsonRequest == null) {
+                throw new BadRequestException("Please provide valid details.");
+            }
+
             String destinationName = jsonRequest.get("destinationName").asText();
             int destinationTypeId = jsonRequest.get("destinationTypeId").asInt();
             int districtId = jsonRequest.get("districtId").asInt();
@@ -128,25 +129,25 @@ public class DestinationController  extends Controller{
             Double longitude = jsonRequest.get("longitude").asDouble();
             int countryId = jsonRequest.get("countryId").asInt();
 
-            boolean checkDuplicate = destinationRepository.CheckDestinations(countryId,
-                    destinationName, destinationTypeId, districtId);
-
-            System.out.println("duplicateCheck:" + checkDuplicate);
+            if (destinationRepository.CheckDestinations(countryId,
+                    destinationName, destinationTypeId, districtId)) {
+                throw new BadRequestException("Duplicate destination already exists");
+            }
 
 
             DestinationType destinationTypeAdd = DestinationType.find.byId(destinationTypeId);
             District districtAdd = District.find.byId(districtId);
             Country countryAdd = Country.find.byId(countryId);
             countryAdd.setCountryId(countryId);
-            Destination destination = new Destination(destinationName,destinationTypeAdd,districtAdd,
-                    latitude,longitude,countryAdd, user, false);
+            Destination destination = new Destination(destinationName, destinationTypeAdd, districtAdd,
+                    latitude, longitude, countryAdd, user, false);
 
             return destinationRepository.insert(destination)
                     .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)), httpExecutionContext.current());
-        } catch (Exception e) {
+        } catch (BadRequestException e) {
             e.printStackTrace();
             ObjectNode message = Json.newObject();
-            message.put("message", "Please provide a valid Destination with complete data");
+            message.put("message", e.getMessage());
             return supplyAsync(() -> badRequest(message));
         }
 
@@ -154,70 +155,71 @@ public class DestinationController  extends Controller{
 
     /**
      * Endpoint to update a destination's details
-     * @param request Request body to get json body from
+     *
+     * @param request       Request body to get json body from
      * @param destinationId The destination ID to update
      * @return Returns status code 200 if successful, 404 if the destination isn't found, 500 for other errors.
-     *
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> updateDestination(Http.Request request, int destinationId) {
-       return destinationRepository.getDestinationById(destinationId)
-       .thenComposeAsync(optionalDest -> {
-        if (!optionalDest.isPresent()) {
-            throw new CompletionException(new NotFoundException());
-        }
-        JsonNode jsonBody = request.body().asJson();
+        return destinationRepository.getDestinationById(destinationId)
+                .thenComposeAsync(optionalDest -> {
+                    if (!optionalDest.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
+                    JsonNode jsonBody = request.body().asJson();
 
-        String destinationName =  jsonBody.get("destinationName").asText();
-        int destinationTypeId = jsonBody.get("destinationTypeId").asInt();
-        int countryId = jsonBody.get("countryId").asInt();
-        int districtId = jsonBody.get("districtId").asInt();
-        double latitude = jsonBody.get("latitude").asDouble();
-        double longitude = jsonBody.get("longitude").asDouble();
+                    String destinationName = jsonBody.get("destinationName").asText();
+                    int destinationTypeId = jsonBody.get("destinationTypeId").asInt();
+                    int countryId = jsonBody.get("countryId").asInt();
+                    int districtId = jsonBody.get("districtId").asInt();
+                    double latitude = jsonBody.get("latitude").asDouble();
+                    double longitude = jsonBody.get("longitude").asDouble();
 
-        Destination destination = optionalDest.get();
+                    Destination destination = optionalDest.get();
 
-        DestinationType destType = new DestinationType(null);
-        destType.setDestinationTypeId(destinationTypeId);
+                    DestinationType destType = new DestinationType(null);
+                    destType.setDestinationTypeId(destinationTypeId);
 
-        Country country = new Country(null);
-        country.setCountryId(countryId);
+                    Country country = new Country(null);
+                    country.setCountryId(countryId);
 
-        District district = new District(null, null);
-        district.setDistrictId(districtId);
+                    District district = new District(null, null);
+                    district.setDistrictId(districtId);
 
-        destination.setDestinationName(destinationName);
-        destination.setDestinationType(destType);
-        destination.setDestinationCountry(country);
-        destination.setDestinationDistrict(district);
-        destination.setDestinationLat(latitude);
-        destination.setDestinationLon(longitude);
+                    destination.setDestinationName(destinationName);
+                    destination.setDestinationType(destType);
+                    destination.setDestinationCountry(country);
+                    destination.setDestinationDistrict(district);
+                    destination.setDestinationLat(latitude);
+                    destination.setDestinationLon(longitude);
 
-        return destinationRepository.update(destination);
-        }, httpExecutionContext.current())
-       .thenApplyAsync(destination -> (Result) ok(), httpExecutionContext.current())
-       .exceptionally(error -> {
-            try {
-                throw error.getCause();
-            } catch (NotFoundException notFoundE) {
-                return notFound();
-            } catch (Throwable ee) {
-                return internalServerError();
-            }
-       });
+                    return destinationRepository.update(destination);
+                }, httpExecutionContext.current())
+                .thenApplyAsync(destination -> (Result) ok(), httpExecutionContext.current())
+                .exceptionally(error -> {
+                    try {
+                        throw error.getCause();
+                    } catch (NotFoundException notFoundE) {
+                        return notFound();
+                    } catch (Throwable ee) {
+                        return internalServerError();
+                    }
+                });
     }
 
     /**
      * Endpoint to delete a destination given its id
+     *
      * @param destinationId the id of the destination that we want to delete
-     * @param request the request sent by the routes file
+     * @param request       the request sent by the routes file
      * @return Status code 200 if successful, 404 if not found, 500 otherwise.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteDestination(int destinationId, Http.Request request) {
         return destinationRepository.getDestinationById(destinationId)
                 .thenComposeAsync(optionalDestination -> {
-                    if(!optionalDestination.isPresent()) {
+                    if (!optionalDestination.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     Destination destination = optionalDestination.get();
@@ -241,6 +243,7 @@ public class DestinationController  extends Controller{
 
     /**
      * Endpoint to get all countries.
+     *
      * @return A completion stage and status code 200 with countries in JSON body if successful, 500 for errors.
      */
     @With(LoggedIn.class)
@@ -255,6 +258,7 @@ public class DestinationController  extends Controller{
 
     /**
      * Endpoint to get destination types.
+     *
      * @return A completion stage and status code 200 with destination types in body if successful, 500 for errors.
      */
     @With(LoggedIn.class)
@@ -269,6 +273,7 @@ public class DestinationController  extends Controller{
 
     /**
      * Endpoint to get all districts for a country.
+     *
      * @param countryId country to get districts for.
      * @return A completion stage and status code of 200 with districts in the json body if successful.
      */

@@ -153,7 +153,6 @@ public class DestinationRepository {
                     .eq("destination_type_destination_type_id", destinationTypeId)
                     .eq("destination_district_district_id", districtId)
                     .findList();
-            System.out.println(destinations.size());
             return !destinations.isEmpty();
 
     }
