@@ -32,7 +32,7 @@
           type: String,
           required: true
         },
-        isPrimary: {
+        primary: {
           type: Boolean,
           required: true
         }
