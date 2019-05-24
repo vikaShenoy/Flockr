@@ -156,6 +156,7 @@
                         @click="getUserLocation">Use My Current Location
                 </v-btn>
               </v-spacer>
+              <v-switch color="secondary" label="Set to public" v-if="editMode" v-model="editedDestination.isPublic"></v-switch>
             </v-flex>
 
           </v-flex>
@@ -397,6 +398,7 @@
               "districtId": this.editedDestination.destinationDistrict.districtId,
               "latitude": this.editedDestination.destinationLat,
               "longitude": this.editedDestination.destinationLon,
+              "isPublic": this.editedDestination.isPublic
             };
           }
           if (!this.editMode) {
