@@ -5,6 +5,7 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import exceptions.BadRequestException;
 import exceptions.NotFoundException;
+import models.Destination;
 import models.Trip;
 import models.TripDestination;
 import models.User;
@@ -14,12 +15,15 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
+import repository.DestinationRepository;
 import repository.UserRepository;
 import repository.TripRepository;
 import util.Security;
 import util.TripUtil;
 import javax.inject.Inject;
+import java.io.Console;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -32,17 +36,19 @@ public class TripController extends Controller {
 
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
+    private final DestinationRepository destinationRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final TripUtil tripUtil;
     private final Security security;
 
     @Inject
-    public TripController(TripRepository tripRepository, Security security, UserRepository userRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil) {
+    public TripController(TripRepository tripRepository, Security security, UserRepository userRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil, DestinationRepository destinationRepository) {
         this.tripRepository = tripRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.tripUtil = tripUtil;
         this.security = security;
         this.userRepository = userRepository;
+        this.destinationRepository = destinationRepository;
     }
 
     /**
@@ -66,6 +72,7 @@ public class TripController extends Controller {
         List<TripDestination> tripDestinations;
         try {
             tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+
         } catch (BadRequestException e) {
            return supplyAsync(() -> badRequest());
         }
@@ -78,6 +85,20 @@ public class TripController extends Controller {
 
                     User user = optionalUser.get();
 
+                    //TODO Rewrite this so that it isn't blocking and doesn't take ages to create a trip
+                    try {
+                        for (TripDestination tripDestination : tripDestinations) {
+                            Optional<Destination> destination = destinationRepository.getDestinationById(tripDestination.getDestination().getDestinationId()).toCompletableFuture().get();
+
+                            if (destination.get().getIsPublic() && destination.get().getDestinationOwner() != null) {
+                                destination.get().setDestinationOwner(null);
+                                destinationRepository.update(destination.get());
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error");
+
+                    }
 
                     Trip trip = new Trip(tripDestinations, user, tripName);
 
@@ -187,6 +208,20 @@ public class TripController extends Controller {
                          tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
                     } catch (BadRequestException e) {
                         throw new CompletionException(new BadRequestException());
+                    }
+
+                    //TODO Rewrite this so that it isn't blocking and doesn't take ages to create a trip
+                    try {
+                        for (TripDestination tripDestination : tripDestinations) {
+                            Optional<Destination> destination = destinationRepository.getDestinationById(tripDestination.getDestination().getDestinationId()).toCompletableFuture().get();
+                            if (destination.get().getIsPublic() && destination.get().getDestinationOwner() != null) {
+                                destination.get().setDestinationOwner(null);
+                                destinationRepository.update(destination.get());
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error");
+
                     }
 
                     Trip trip = optionalTrip.get();
