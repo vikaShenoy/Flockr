@@ -47,7 +47,7 @@ public class DestinationType extends Model {
             return false;
         }
         DestinationType destinationTypeToCompare = (DestinationType) obj;
-        return this.destinationTypeName.equals(((DestinationType) obj).getDestinationTypeName());
+        return this.destinationTypeId == destinationTypeToCompare.destinationTypeId;
     }
 }
 

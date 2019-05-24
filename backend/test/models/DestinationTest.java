@@ -16,8 +16,11 @@ public class DestinationTest {
     @Before
     public void setUp() throws Exception {
         destinationCountry = new Country("New Zealand");
+        destinationCountry.setCountryId(1);
         destinationType = new DestinationType("Backpacker");
+        destinationType.setDestinationTypeId(2);
         destinationDistrict = new District("Ilam", destinationCountry);
+        destinationDistrict.setDistrictId(1);
         destinationLat = 3.0;
         destinationLon = 45.0;
     }
@@ -73,6 +76,7 @@ public class DestinationTest {
     public void twoDestinationsHaveDifferentCountries() {
         Country country1 = new Country("India");
         Country country2 = new Country("China");
+        country2.setCountryId(5);
         Destination destination1 = new Destination("Atlantis", destinationType, destinationDistrict,
                 destinationLat, destinationLon, country1, destinationOwner, isPublic);
         Destination destination2 = new Destination("Atlantis", destinationType, destinationDistrict,

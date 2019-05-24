@@ -50,6 +50,6 @@ public class Country extends Model {
             return false;
         }
         Country countryToCompare = (Country) obj;
-        return this.countryName.equals(countryToCompare.getCountryName());
+        return this.countryId == countryToCompare.getCountryId();
     }
 }

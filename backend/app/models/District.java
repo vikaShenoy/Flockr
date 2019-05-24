@@ -26,9 +26,7 @@ public class District extends Model {
             return false;
         }
         District districtToCompare = (District) obj;
-        boolean sameName = this.districtName.equals(districtToCompare.getDistrictName());
-        boolean sameCountry = this.country.equals(districtToCompare.getCountry());
-        return (sameName && sameCountry);
+        return this.districtId == districtToCompare.districtId;
     }
 
     /**

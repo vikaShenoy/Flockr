@@ -11,7 +11,9 @@ import play.mvc.*;
 import repository.DestinationRepository;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -167,8 +169,12 @@ public class DestinationController  extends Controller{
         int districtId = jsonBody.get("districtId").asInt();
         double latitude = jsonBody.get("latitude").asDouble();
         double longitude = jsonBody.get("longitude").asDouble();
+        boolean isPublic = jsonBody.get("isPublic").asBoolean();
 
         Destination destination = optionalDest.get();
+
+        System.out.println(destination.getDestinationCountry().getCountryName());
+        System.out.println(destination.getDestinationDistrict().getDistrictName());
 
         DestinationType destType = new DestinationType(null);
         destType.setDestinationTypeId(destinationTypeId);
@@ -185,6 +191,55 @@ public class DestinationController  extends Controller{
         destination.setDestinationDistrict(district);
         destination.setDestinationLat(latitude);
         destination.setDestinationLon(longitude);
+        destination.setIsPublic(isPublic);
+
+
+
+        // Checks if destination is a duplicate destination
+        boolean valid = true;
+        List<Integer> duplicatedDestinationIds = new ArrayList<>();
+        boolean exists = false;
+        List<Destination> destinations = Destination.find.query().findList();
+        for (Destination dest : destinations) {
+            if (dest.getDestinationId() != destinationId) {
+                System.out.println("--------------------------------");
+                System.out.println(destination.getDestinationName());
+                System.out.println(destination.getDestinationDistrict().getDistrictName());
+                System.out.println(destination.getDestinationType().getDestinationTypeName());
+                System.out.println(destination.getDestinationCountry().getCountryName());
+
+                System.out.println();
+                System.out.println(dest.getDestinationName());
+                System.out.println(dest.getDestinationDistrict().getDistrictName());
+                System.out.println(dest.getDestinationType().getDestinationTypeName());
+                System.out.println(dest.getDestinationCountry().getCountryName());
+                System.out.println();
+                exists = destination.equals(dest);
+                System.out.println(exists);
+            }
+
+
+            System.out.println(exists);
+            System.out.println();
+/*            if (exists) {
+                duplicatedDestinationIds.add(dest.getDestinationId());
+            } else {
+                exists = false;
+            }*/
+        }
+
+        if (!duplicatedDestinationIds.isEmpty()) {
+            for (int destId : duplicatedDestinationIds) {
+                Optional<Destination> optDest = Destination.find.query().
+                        where().eq("destination_id", destId).findOneOrEmpty();
+                System.out.println(optDest.get());
+            }
+        }
+
+
+
+
+
 
         return destinationRepository.update(destination);
         }, httpExecutionContext.current())
