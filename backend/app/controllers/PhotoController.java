@@ -184,10 +184,15 @@ public class PhotoController extends Controller {
         } else {
             return photoRepository.getPhotosById(userId)
                     .thenApplyAsync((photos) -> {
-                        List<PersonalPhoto> userPhotos = photos.stream().filter((photo) -> {
+                        List<PersonalPhoto> userPhotos = photos.stream().filter(photo -> {
                             // Don't add primary photo to list of photos
                             if (photo.isPrimary()) {
                                 return false;
+                            }
+
+                            // If user is admin, then display even private photos
+                            if (userFromMiddleware.isAdmin()) {
+                                return true;
                             }
 
                             // Don't add private photo's if user not the logged in user

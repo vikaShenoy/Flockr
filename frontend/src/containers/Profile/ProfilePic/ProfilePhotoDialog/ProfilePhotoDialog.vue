@@ -14,7 +14,7 @@
           class="profile-picture-preview"
           alt="Profile Picture"
         />
-
+        <!--key is used to make sure that if the photoID updates, the component updates-->
         <vue-cropper
           ref="cropper"
           :aspectRatio="1"
@@ -22,8 +22,10 @@
           :src="photoUrl(selectedPhoto.photoId)"
           class="profile-picture-preview"
           alt="Profile Picture"
+          :key="selectedPhoto.photoId"
         />
 
+        <!--Cropper for auto crop that doesn't actually show but crops the image in the background-->
         <vue-cropper
           ref="autoCropper"
           :aspectRatio="1"

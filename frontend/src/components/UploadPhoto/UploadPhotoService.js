@@ -7,12 +7,13 @@ import { endpoint } from "../../utils/endpoint";
  * @param {boolean} isPublic Identifies if the photo should be public
  * @param {boolean} isPrimary Identifies if the photo should be primary
  * @param {number} userId The user ID that the photo belongs to
+ * @returns {Object} the image that has been uploaded
  */
 export async function uploadImage(imageFile, isPublic, userId) {
   const res = await superagent.post(endpoint(`/users/${userId}/photos`))
     .set("Authorization", localStorage.getItem("authToken"))
-    .field("public", isPublic)
-    .field("primary", false)
+    .field("isPublic", isPublic)
+    .field("isPrimary", false)
     .attach("image", imageFile);
 
   return res.body;
