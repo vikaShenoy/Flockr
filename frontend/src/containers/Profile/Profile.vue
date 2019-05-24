@@ -102,7 +102,6 @@ export default {
       const userId = this.$route.params.id;
 
       const user = await getUser(userId);
-      console.log(user);
 
       // Change date format so that it displays on the basic info component.
       const formattedDate = user.dateOfBirth
@@ -117,7 +116,6 @@ export default {
       return !(
         this.userProfile.firstName &&
         this.userProfile.lastName &&
-        this.userProfile.middleName &&
         this.userProfile.gender &&
         this.userProfile.dateOfBirth &&
         this.userProfile.nationalities.length &&

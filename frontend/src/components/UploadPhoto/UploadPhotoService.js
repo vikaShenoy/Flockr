@@ -11,8 +11,8 @@ import { endpoint } from "../../utils/endpoint";
 export async function uploadImage(imageFile, isPublic, userId) {
   const res = await superagent.post(endpoint(`/users/${userId}/photos`))
     .set("Authorization", localStorage.getItem("authToken"))
-    .field("isPublic", isPublic)
-    .field("isPrimary", false)
+    .field("public", isPublic)
+    .field("primary", false)
     .attach("image", imageFile);
 
   return res.body;

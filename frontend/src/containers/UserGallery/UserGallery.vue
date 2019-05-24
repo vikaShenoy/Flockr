@@ -9,7 +9,7 @@
         <v-container grid-list fluid >
         <v-layout row wrap>
           <v-flex
-            v-for="photo in photos"
+            v-for="(photo, index) in photos"
             :key="photo.filename"
             d-flex
             lg3
@@ -17,7 +17,7 @@
             sm6
             xs12
             class="photo-tile"
-            v-on:click="openPhotoDialog(photo)"
+            v-on:click="openPhotoDialog(photo, index)"
           >
             <v-img
               :src="photo.thumbEndpoint"
@@ -43,8 +43,17 @@
       <photo-panel
         :photo="currentPhoto"
         :showDialog="showPhotoDialog"
-        v-on:closeDialog="closePhotoDialog"/>
+        v-on:closeDialog="closePhotoDialog"
+        @deletePhoto="showPromptDialog"
+        :currentPhotoIndex="currentPhotoIndex"
+        @displayErrorMessage="displayErrorMessage"
+        @changedPermission="changedPermission"/>
       <snackbar :snackbarModel="this.snackbarModel"/>
+      <prompt-dialog
+        :dialog="promptDialog.show"
+        :message="promptDialog.message"
+        :onConfirm="promptDialog.onConfirm"
+        @promptEnded="promptDialog.show=false"/>
     </v-card>
 </template>
 
@@ -53,10 +62,11 @@
   import PhotoPanel from "./PhotoPanel/PhotoPanel";
   import {getPhotosForUser} from "./UserGalleryService";
   import Snackbar from "../../components/Snackbars/Snackbar";
+  import PromptDialog from "../../components/PromptDialog/PromptDialog";
   export default {
 
     name: "UserGallery",
-    components: {Snackbar, PhotoPanel},
+    components: {PromptDialog, Snackbar, PhotoPanel},
     data() {
       return {
         userId: null,
@@ -65,9 +75,11 @@
         currentPhoto: {
           thumbEndpoint: null,
           endpoint: null,
-          isPrimary: false,
-          isPublic: false
+          primary: false,
+          public: false,
+          deleteFunction: null
         },
+        currentPhotoIndex: null,
         showPhotoDialog: false,
         snackbarModel: {
           show: false, // whether the snackbar is currently shown or not
@@ -75,6 +87,11 @@
           text: '', // the text to show in the snackbar
           color: '', // green, red, yellow, red, etc
           snackbarId: 0 // used to know which snackbar was manually dismissed
+        },
+        promptDialog: {
+          show: false,
+          message: "Are you sure you would like to delete this photo?",
+          onConfirm: null
         }
       }
     },
@@ -85,11 +102,17 @@
        */
       closePhotoDialog(newValue) {
         this.showPhotoDialog = newValue;
-        this.currentPhoto = {
-          endpoint: null,
-          isPrimary: false,
-          isPublic: false
-        };
+        if (!newValue) {
+          this.currentPhoto = {
+            endpoint: null,
+            primary: false,
+            public: false
+          };
+        }
+      },
+
+      changedPermission(newValue, index) {
+        this.photos[index].public = newValue;
       },
 
       /**
@@ -97,9 +120,19 @@
        *
        * @param photo the object containing the photo data
        */
-      openPhotoDialog(photo) {
+      openPhotoDialog(photo, index) {
         this.currentPhoto = photo;
         this.showPhotoDialog = true;
+        this.currentPhotoIndex = index;
+      },
+
+      /**
+       * Called when the user selects the delete button on a photo.
+       * Shows the prompt dialog and passes in the photo's delete function.
+       */
+      showPromptDialog(deleteFunction) {
+        this.promptDialog.show = true;
+        this.promptDialog.onConfirm = deleteFunction;
       },
 
       /**

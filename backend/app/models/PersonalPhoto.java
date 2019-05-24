@@ -38,6 +38,7 @@ public class PersonalPhoto extends Model {
      * @param isPublic true if the photo is public, otherwise photo is private
      * @param user the user that the photo is associated to
      * @param isPrimary true if the photo is the primary photo of the user, otherwise false
+     * @param thumbnailName the filename of the thumbnail
      */
     public PersonalPhoto(String filenameHash, boolean isPublic, User user, boolean isPrimary, String thumbnailName) {
         this.filenameHash = filenameHash;
