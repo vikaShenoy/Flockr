@@ -3,7 +3,7 @@
     <img v-if="profilePhoto" id="profile-pic" :src="photoUrl(profilePhoto.photoId)" alt="Profile Picture" />
     <img v-else src="./defaultProfilePicture.png" id="profile-pic" alt="Default Profile Picture" />
 
-    <v-btn @click="showProfilePhotoDialog" id="edit-btn" v-if="userStore.userId === userId" outline  color="secondary">Edit</v-btn>
+    <v-btn @click="showProfilePhotoDialog" id="edit-btn" v-if="hasPermissionToView()" outline  color="secondary">Edit</v-btn>
     <ProfilePhotoDialog :dialog="dialog" :photos="photos" v-on:closeDialog="hideProfilePhotoDialog" v-on:showError="showError"/>
   </div>
 </template>
@@ -50,6 +50,13 @@ export default {
      */
     showError(text) {
       this.$emit("showError", text);
+    },
+    /**
+     * Checks if the logged in user has permission to view the edit button
+     * @returns {boolean} If the user has permission to view the edit button
+     */
+    hasPermissionToView() {
+      return UserStore.methods.hasPermission(this.$route.params.id);
     },
     /**
      * Gets the URL of a photo for a user
