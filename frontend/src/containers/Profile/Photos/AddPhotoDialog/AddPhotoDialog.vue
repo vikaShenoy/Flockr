@@ -11,6 +11,7 @@
       color="secondary"
       @click="showImageDialog"
       outline
+      v-if="hasPermissionToView()"
     >
       <v-icon>add</v-icon>
     </v-btn>
@@ -19,6 +20,7 @@
 
 <script>
 import UploadPhoto from "../../../../components/UploadPhoto/UploadPhoto";
+import UserStore from "../../../../stores/UserStore";
 
 export default {
   components: {
@@ -61,6 +63,14 @@ export default {
      */
     onDialogChanged: function() {
       this.dataDialog = this.dialog;
+    },
+    /**
+     * Checks that the user has permission to see the add photo button
+     * @returns {boolean} If the user has permission or not
+     */
+    hasPermissionToView() {
+      const userIdFromUrl = this.$route.params.id;
+      return UserStore.methods.hasPermission(userIdFromUrl);
     }
   }
 };
