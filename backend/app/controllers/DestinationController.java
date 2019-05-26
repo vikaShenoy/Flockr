@@ -144,8 +144,8 @@ public class DestinationController extends Controller {
                 throw new BadRequestException("One or more fields are missing.");
             }
 
-            if (destinationRepository.CheckDestinations(countryId,
-                    destinationName, destinationTypeId, districtId)) {
+            if (!destinationRepository.CheckDestinations(countryId,
+                    destinationName, destinationTypeId, districtId).isEmpty()) {
                 throw new BadRequestException("Duplicate destination already exists");
             }
 
@@ -190,7 +190,7 @@ public class DestinationController extends Controller {
 
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
                     if (!user.isAdmin() && user.getUserId() != optionalDest.get().getDestinationOwner()) {
-                        throw new CompletionException(new ForbiddenRequestException("You're not allowed to change the permission group."));
+                        throw new CompletionException(new ForbiddenRequestException("You are unauthorised to update this destination"));
                     }
 
                     JsonNode jsonBody = request.body().asJson();
@@ -224,23 +224,31 @@ public class DestinationController extends Controller {
 
                     List<Integer> duplicatedDestinationIds = new ArrayList<>();
                     // Checks if destination is a duplicate destination
-                    boolean exists = false;
+                    boolean exists, duplicate = false;
                     List<Destination> destinations = Destination.find.query().findList();
                     for (Destination dest : destinations) {
                         if (dest.getDestinationId() != destinationId && destination.getIsPublic()) {
                             exists = destination.equals(dest);
+                            // Checks if the destination found is private
                             if (exists && !dest.getIsPublic()) {
                                 duplicatedDestinationIds.add(dest.getDestinationId());
+                            } // Checks if the destination is a duplicate (both public)
+                            else if (exists && (dest.getIsPublic() && optionalDest.get().getIsPublic())) {
+                                duplicate = true;
                             }
                         }
+                    }
+
+                    if (duplicate) {
+                        throw new CompletionException(new BadRequestException("There is already a Destination with the following information"));
                     }
 
                     for (int destId : duplicatedDestinationIds) {
                         Optional<Destination> optDest = Destination.find.query().
                                 where().eq("destination_id", destId).findOneOrEmpty();
-                        System.out.println(destId);
+                        destinationRepository.deleteDestination(optDest.get().getDestinationId());
 
-                        // TODO: Delete the private dest and then...
+                        // TODO: Transfer the destinationId to the public destinationId
                     }
                     
                     return destinationRepository.update(destination);
@@ -253,8 +261,11 @@ public class DestinationController extends Controller {
                         ((ObjectNode) response).put("message", "There is no destination with the given ID found");
                         return notFound(response);
                     } catch (ForbiddenRequestException forbiddenRequest) {
-                        ((ObjectNode) response).put("message", "You are unathorised to update this destination");
+                        ((ObjectNode) response).put("message", forbiddenRequest.getMessage());
                         return forbidden(response);
+                    } catch (BadRequestException badRequestE) {
+                        ((ObjectNode) response).put("message", badRequestE.getMessage());
+                        return badRequest(response);
                     } catch (Throwable ee) {
                         ((ObjectNode) response).put("message", "Endpoint under development");
                         return internalServerError(response);

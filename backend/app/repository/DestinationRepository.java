@@ -143,9 +143,9 @@ public class DestinationRepository {
      * @param destinationName The name of the destination being added
      * @param destinationTypeId The Id of the destination type being added
      * @param districtId The Id of the district being added
-     * @return 1 if destination exists or 0 if no duplicates are found
+     * @return all the duplicated destinations
      */
-    public boolean CheckDestinations(int countryId, String destinationName, int destinationTypeId,
+    public List<Destination> CheckDestinations(int countryId, String destinationName, int destinationTypeId,
                                                       int districtId)   {
             List<Destination> destinations = Destination.find.query().where()
                     .eq("destination_country_country_id", countryId)
@@ -153,7 +153,7 @@ public class DestinationRepository {
                     .eq("destination_type_destination_type_id", destinationTypeId)
                     .eq("destination_district_district_id", districtId)
                     .findList();
-            return !destinations.isEmpty();
+            return destinations;
 
     }
 }
