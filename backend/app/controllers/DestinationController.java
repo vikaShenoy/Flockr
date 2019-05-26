@@ -5,6 +5,7 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
+import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.*;
 import play.libs.Json;
@@ -164,11 +165,19 @@ public class DestinationController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> updateDestination(Http.Request request, int destinationId) {
+        JsonNode response = Json.newObject();
+        User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinationById(destinationId)
                 .thenComposeAsync(optionalDest -> {
                     if (!optionalDest.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
+
+                    // Checks that the user is either the admin or the owner of the photo to change permission groups
+                    if (!user.isAdmin() && user.getUserId() != optionalDest.get().getDestinationOwner()) {
+                        throw new CompletionException(new ForbiddenRequestException("You're not allowed to change the permission group."));
+                    }
+
                     JsonNode jsonBody = request.body().asJson();
 
                     String destinationName = jsonBody.get("destinationName").asText();
@@ -183,7 +192,7 @@ public class DestinationController extends Controller {
 
                     DestinationType destType = new DestinationType(null);
                     destType.setDestinationTypeId(destinationTypeId);
-                    
+
                     Country country = new Country(null);
                     country.setCountryId(countryId);
 
@@ -198,46 +207,27 @@ public class DestinationController extends Controller {
                     destination.setDestinationLon(longitude);
                     destination.setIsPublic(isPublic);
 
-
-                    // Checks if destination is a duplicate destination
-                    boolean valid = true;
                     List<Integer> duplicatedDestinationIds = new ArrayList<>();
+                    // Checks if destination is a duplicate destination
                     boolean exists = false;
                     List<Destination> destinations = Destination.find.query().findList();
                     for (Destination dest : destinations) {
-                        if (dest.getDestinationId() != destinationId) {
-                            System.out.println("--------------------------------");
-                            System.out.println(destination.getDestinationName());
-                            System.out.println(destination.getDestinationDistrict().getDistrictName());
-                            System.out.println(destination.getDestinationType().getDestinationTypeName());
-                            System.out.println(destination.getDestinationCountry().getCountryName());
-
-                            System.out.println();
-                            System.out.println(dest.getDestinationName());
-                            System.out.println(dest.getDestinationDistrict().getDistrictName());
-                            System.out.println(dest.getDestinationType().getDestinationTypeName());
-                            System.out.println(dest.getDestinationCountry().getCountryName());
-                            System.out.println();
+                        if (dest.getDestinationId() != destinationId && destination.getIsPublic()) {
                             exists = destination.equals(dest);
-                            System.out.println(exists);
-                        }
-
-/*            if (exists) {
-                duplicatedDestinationIds.add(dest.getDestinationId());
-            } else {
-                exists = false;
-            }*/
-                    }
-
-                    if (!duplicatedDestinationIds.isEmpty()) {
-                        for (int destId : duplicatedDestinationIds) {
-                            Optional<Destination> optDest = Destination.find.query().
-                                    where().eq("destination_id", destId).findOneOrEmpty();
-                            System.out.println(optDest.get());
+                            if (exists && !dest.getIsPublic()) {
+                                duplicatedDestinationIds.add(dest.getDestinationId());
+                            }
                         }
                     }
 
+                    for (int destId : duplicatedDestinationIds) {
+                        Optional<Destination> optDest = Destination.find.query().
+                                where().eq("destination_id", destId).findOneOrEmpty();
+                        System.out.println(destId);
 
+                        // TODO: Delete the private dest and then...
+                    }
+                    
                     return destinationRepository.update(destination);
                 }, httpExecutionContext.current())
                 .thenApplyAsync(destination -> (Result) ok(), httpExecutionContext.current())
@@ -245,9 +235,14 @@ public class DestinationController extends Controller {
                     try {
                         throw error.getCause();
                     } catch (NotFoundException notFoundE) {
-                        return notFound();
+                        ((ObjectNode) response).put("message", "There is no destination with the given ID found");
+                        return notFound(response);
+                    } catch (ForbiddenRequestException forbiddenRequest) {
+                        ((ObjectNode) response).put("message", "You are unathorised to update this destination");
+                        return forbidden(response);
                     } catch (Throwable ee) {
-                        return internalServerError();
+                        ((ObjectNode) response).put("message", "Endpoint under development");
+                        return internalServerError(response);
                     }
                 });
     }
