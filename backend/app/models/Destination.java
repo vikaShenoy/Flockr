@@ -25,6 +25,9 @@ public class Destination extends Model {
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
     private List<TripDestination> tripDestinations;
 
+    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
+    private List<DestinationPhoto> destinationPhotos;
+
     @ManyToOne
     private District destinationDistrict;
     private Double destinationLat;
