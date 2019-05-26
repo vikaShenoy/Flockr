@@ -1,7 +1,7 @@
 <template>
     <v-card elevation="10"
             class="destination-card row col-md-12">
-        <div class="title-card col-md-3">
+        <div class="title-card">
             <div v-if="editMode" class="name-header">
                 <v-text-field
                         label="Destination Name"
@@ -13,82 +13,89 @@
             </div>
             <h2 v-else class="name-header">{{ destination.destinationName }}</h2>
             <div class="body-card col-md-12">
-                <v-img class="image" src="https://picsum.photos/510/300?random"></v-img>
-            </div>
+              <Carousel
+                :photos="photos"
+                v-if="photos"
+              />
+           </div>
         </div>
-        <div class="col-md-5">
-            <div class="row">
-                <div class="basic-info-label"><p><b>Type</b></p></div>
-                <div v-if="editMode" class="basic-info">
-                    <v-select
-                            label="Destination Type"
-                            :items="destinationTypes"
-                            item-value="destinationTypeId"
-                            item-text="destinationTypeName"
-                            :value="destination.destinationType.destinationTypeName"
-                            v-model="destination.destinationType.destinationTypeName"
-                            @blur="validateType"
-                            :error-messages="typeErrors"
-                    ></v-select>
-                </div>
-                <div v-else class="basic-info-label">{{ destination.destinationType.destinationTypeName }}</div>
-            </div>
-            <hr class="divider"/>
-            <div class="row">
-                <div class="basic-info-label"><p><b>District</b></p></div>
-                <div v-if="editMode" class="basic-info">
-                    <v-select
-                            label="District"
-                            :items="districts"
-                            item-value="districtId"
-                            item-text="districtName"
-                            :disabled="districtDisabled"
-                            :value="destination.destinationDistrict.districtName"
-                            v-model="destination.destinationDistrict.districtName"
-                            @blur="validateDistrict"
-                            :error-messages="districtErrors"
-                    ></v-select>
-                </div>
-                <div v-else class="basic-info-label">{{ destination.destinationDistrict.districtName }}</div>
-            </div>
-            <hr class="divider"/>
-        </div>
-        <div class="col-md-4">
-            <div v-if="editMode" class="name-header">
-                <v-select
-                        label="Destination Country"
-                        :items="countries"
-                        item-value="countryId"
-                        item-text="countryName"
-                        :value="destination.destinationCountry.countryName"
-                        v-model="destination.destinationCountry.countryName"
-                        @blur="validateCountry"
-                        :error-messages="countryErrors"
-                ></v-select>
-            </div>
-            <h2 v-else class="name-header">{{ destination.destinationCountry.countryName }}</h2>
-            <div v-if="editMode" class="name-header">
-                <v-text-field
-                        label="Destination Latitude"
-                        :value="destination.destinationLat"
-                        v-model="destination.destinationLat"
-                        v-on:keypress="isValidLatitude"
-                        @blur="validateLatitude"
-                        :error-messages="latitudeErrors"
-                ></v-text-field>
-            </div>
-            <div v-if="editMode" class="name-header">
-                <v-text-field
-                        label="Destination Longitude"
-                        :value="destination.destinationLon"
-                        v-model="destination.destinationLon"
-                        v-on:keypress="isValidLongitude"
-                        @blur="validateLongitude"
-                        :error-messages="longitudeErrors"
-                ></v-text-field>
-            </div>
-            <v-img v-else class="image"
-                   src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
+        <div class="destination-content">
+          <div class="row">
+          <div class="col-md-6">
+              <div class="row">
+                  <div class="basic-info-label"><p><b>Type</b></p></div>
+                  <div v-if="editMode" class="basic-info">
+                      <v-select
+                              label="Destination Type"
+                              :items="destinationTypes"
+                              item-value="destinationTypeId"
+                              item-text="destinationTypeName"
+                              :value="destination.destinationType.destinationTypeName"
+                              v-model="destination.destinationType.destinationTypeName"
+                              @blur="validateType"
+                              :error-messages="typeErrors"
+                      ></v-select>
+                  </div>
+                  <div v-else class="basic-info-label">{{ destination.destinationType.destinationTypeName }}</div>
+              </div>
+              <hr class="divider"/>
+              <div class="row">
+                  <div class="basic-info-label"><p><b>District</b></p></div>
+                  <div v-if="editMode" class="basic-info">
+                      <v-select
+                              label="District"
+                              :items="districts"
+                              item-value="districtId"
+                              item-text="districtName"
+                              :disabled="districtDisabled"
+                              :value="destination.destinationDistrict.districtName"
+                              v-model="destination.destinationDistrict.districtName"
+                              @blur="validateDistrict"
+                              :error-messages="districtErrors"
+                      ></v-select>
+                  </div>
+                  <div v-else class="basic-info-label">{{ destination.destinationDistrict.districtName }}</div>
+              </div>
+              <hr class="divider"/>
+          </div>
+          <div class="col-md-6">
+              <div v-if="editMode" class="name-header">
+                  <v-select
+                          label="Destination Country"
+                          :items="countries"
+                          item-value="countryId"
+                          item-text="countryName"
+                          :value="destination.destinationCountry.countryName"
+                          v-model="destination.destinationCountry.countryName"
+                          @blur="validateCountry"
+                          :error-messages="countryErrors"
+                  ></v-select>
+              </div>
+              <h2 v-else class="name-header">{{ destination.destinationCountry.countryName }}</h2>
+              <div v-if="editMode" class="name-header">
+                  <v-text-field
+                          label="Destination Latitude"
+                          :value="destination.destinationLat"
+                          v-model="destination.destinationLat"
+                          v-on:keypress="isValidLatitude"
+                          @blur="validateLatitude"
+                          :error-messages="latitudeErrors"
+                  ></v-text-field>
+              </div>
+              <div v-if="editMode" class="name-header">
+                  <v-text-field
+                          label="Destination Longitude"
+                          :value="destination.destinationLon"
+                          v-model="destination.destinationLon"
+                          v-on:keypress="isValidLongitude"
+                          @blur="validateLongitude"
+                          :error-messages="longitudeErrors"
+                  ></v-text-field>
+              </div>
+              <v-img v-else class="image"
+                    src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
+          </div>
+          </div>
         </div>
         <v-btn v-if="editMode" fab id="save-destination-button" @click="saveDestination">
             <v-icon>check_circle</v-icon>
@@ -107,11 +114,15 @@
 
 <script>
 
+  import Carousel from "./Carousel/Carousel";
+  import { getDestinationPhotos } from "./DestinationCardService";
   import {sendUpdateDestination, sendAddDestination, requestDistricts} from "../DestinationsService.js";
 
   export default {
     name: "DestinationCard",
-
+    components: {
+      Carousel
+    },
     props: {
       destination: {
         id: {
@@ -272,7 +283,8 @@
           latitude: null,
           longitude: null,
           type: null
-        }
+        },
+        photos: null
       }
     },
 
@@ -474,6 +486,13 @@
     },
 
     mounted: async function () {
+      try {
+        const photos = await getDestinationPhotos(this.destination.destinationId);
+        this.photos = photos;
+      } catch (e) {
+        console.error(e);; 
+      }
+
       if (this.destination.destinationCountry.countryName !== null) {
         try {
           this.districts = await requestDistricts(this.destination.destinationCountry.countryId);
@@ -520,7 +539,14 @@
     .destination-card {
         width: 100%;
         margin: 10px 0 0;
+        padding: 10px;
     }
+
+    .title-card {
+      width: 300px;
+    }
+
+  
 
     .destinations-panel :hover #save-destination-button {
         visibility: visible;
@@ -554,5 +580,14 @@
         right: 30px;
         visibility: hidden;
     }
+
+.carousel {
+  max-height: 200px;
+}
+
+.destination-content {
+  width: calc(100% - 300px);
+  border: 1px solid black;
+}
 
 </style>
