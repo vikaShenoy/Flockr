@@ -103,15 +103,6 @@ export default {
           requiresAdminRole: false
         },
         {
-          title: "Travellers",
-          icon: "supervisor_account",
-          url: "/travellers",
-          profileCompleted: true,
-          loggedIn: true,
-          loggedOut: false,
-          requiresAdminRole: false
-        },
-        {
           title: "Log out",
           url: "/logout",
           icon: "power_settings_new",

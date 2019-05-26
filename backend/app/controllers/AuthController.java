@@ -8,22 +8,27 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.ConflictingRequestException;
 import exceptions.UnauthorizedException;
 import play.api.http.Status;
+import models.User;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
+import play.mvc.Http.Request;
 import play.mvc.Result;
+import play.mvc.Results;
 import models.*;
 import play.mvc.Results;
 import play.mvc.With;
 import repository.AuthRepository;
-import repository.UserRepository;
 import repository.RoleRepository;
+import repository.UserRepository;
+import util.Responses;
 import util.Security;
 import javax.inject.Inject;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+
 import util.Responses;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static play.mvc.Results.*;
@@ -209,6 +214,7 @@ public class AuthController {
                     } catch (UnauthorizedException noAuthError) {
                         return unauthorized();
                     } catch (Throwable genericError) {
+                        genericError.printStackTrace();
                         return internalServerError();
                     }
                 });
@@ -271,9 +277,7 @@ public class AuthController {
      * @return 400 if the email is empty. 409 if the email is taken. 200 if the email is available.
      */
     public CompletionStage<Result> checkEmailAvailable(String email) {
-        if (email.isEmpty()) {
-            return supplyAsync(() -> badRequest());
-        }
+        if (email.isEmpty()) return supplyAsync(Results::badRequest);
         return authRepository.getUserByEmail(email)
                 .thenApplyAsync((user) -> {
                     if (user.isPresent()) {

@@ -1,7 +1,7 @@
 Feature: The user can manage destinations
 
   Background:
-    Given a user with the following information exists:
+    Given users with the following information exist:
       | firstName | lastName     | email        | password    |
       | Danny     | Destinations | dd@email.com | where-to-go |
 

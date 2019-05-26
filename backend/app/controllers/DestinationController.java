@@ -15,6 +15,7 @@ import repository.DestinationRepository;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -121,16 +122,27 @@ public class DestinationController extends Controller {
 
         try {
             // check that the request has a body
-            if (jsonRequest == null) {
-                throw new BadRequestException("Please provide valid details.");
+            if (jsonRequest.isNull()) {
+                throw new BadRequestException("No details received, please send a valid request.");
             }
 
-            String destinationName = jsonRequest.get("destinationName").asText();
-            int destinationTypeId = jsonRequest.get("destinationTypeId").asInt();
-            int districtId = jsonRequest.get("districtId").asInt();
-            Double latitude = jsonRequest.get("latitude").asDouble();
-            Double longitude = jsonRequest.get("longitude").asDouble();
-            int countryId = jsonRequest.get("countryId").asInt();
+            String destinationName;
+            int destinationTypeId;
+            int districtId;
+            Double latitude;
+            Double longitude;
+            int countryId;
+
+            try {
+                destinationName = jsonRequest.get("destinationName").asText();
+                destinationTypeId = jsonRequest.get("destinationTypeId").asInt();
+                districtId = jsonRequest.get("districtId").asInt();
+                latitude = jsonRequest.get("latitude").asDouble();
+                longitude = jsonRequest.get("longitude").asDouble();
+                countryId = jsonRequest.get("countryId").asInt();
+            } catch (NullPointerException exception) {
+                throw new BadRequestException("One or more fields are missing.");
+            }
 
             if (destinationRepository.CheckDestinations(countryId,
                     destinationName, destinationTypeId, districtId)) {
@@ -141,14 +153,16 @@ public class DestinationController extends Controller {
             DestinationType destinationTypeAdd = DestinationType.find.byId(destinationTypeId);
             District districtAdd = District.find.byId(districtId);
             Country countryAdd = Country.find.byId(countryId);
-            countryAdd.setCountryId(countryId);
+            if (destinationTypeAdd == null || districtAdd == null || countryAdd == null) {
+                throw new BadRequestException("One of the fields you have selected does not exist.");
+            }
+
             Destination destination = new Destination(destinationName, destinationTypeAdd, districtAdd,
                     latitude, longitude, countryAdd, user, false);
 
             return destinationRepository.insert(destination)
                     .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)), httpExecutionContext.current());
         } catch (BadRequestException e) {
-            e.printStackTrace();
             ObjectNode message = Json.newObject();
             message.put("message", e.getMessage());
             return supplyAsync(() -> badRequest(message));
@@ -162,6 +176,7 @@ public class DestinationController extends Controller {
      * @param request       Request body to get json body from
      * @param destinationId The destination ID to update
      * @return Returns status code 200 if successful, 404 if the destination isn't found, 500 for other errors.
+     *
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> updateDestination(Http.Request request, int destinationId) {
