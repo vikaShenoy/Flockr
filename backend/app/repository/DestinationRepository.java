@@ -135,25 +135,4 @@ public class DestinationRepository {
             return destinationId;
         }, executionContext);
     }
-
-    /**
-     * Checks for a duplicate destination when a destination is being added or updated.
-     *
-     * @param countryId The country Id of  the destination being added
-     * @param destinationName The name of the destination being added
-     * @param destinationTypeId The Id of the destination type being added
-     * @param districtId The Id of the district being added
-     * @return all the duplicated destinations
-     */
-    public List<Destination> CheckDestinations(int countryId, String destinationName, int destinationTypeId,
-                                                      int districtId)   {
-            List<Destination> destinations = Destination.find.query().where()
-                    .eq("destination_country_country_id", countryId)
-                    .eq("destination_name", destinationName)
-                    .eq("destination_type_destination_type_id", destinationTypeId)
-                    .eq("destination_district_district_id", districtId)
-                    .findList();
-            return destinations;
-
-    }
 }

@@ -144,12 +144,6 @@ public class DestinationController extends Controller {
                 throw new BadRequestException("One or more fields are missing.");
             }
 
-            if (!destinationRepository.CheckDestinations(countryId,
-                    destinationName, destinationTypeId, districtId).isEmpty()) {
-                throw new BadRequestException("Duplicate destination already exists");
-            }
-
-
             DestinationType destinationTypeAdd = DestinationType.find.byId(destinationTypeId);
             District districtAdd = District.find.byId(districtId);
             Country countryAdd = Country.find.byId(countryId);
