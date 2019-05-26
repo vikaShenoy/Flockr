@@ -1,5 +1,5 @@
 <template>
-  <v-carousel class="carousel">
+  <v-carousel class="carousel" :cycle="false">
     <v-carousel-item
       v-for="photo in photos"
       :key="photo.photoId"
