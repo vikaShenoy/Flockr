@@ -1,9 +1,11 @@
 package models;
 
+import io.ebean.Model;
+
 import javax.persistence.*;
 
 @Entity
-public class DestinationPhoto {
+public class DestinationPhoto extends Model {
     @Id
     public int destinationPhotoId;
 
@@ -12,4 +14,9 @@ public class DestinationPhoto {
 
     @ManyToOne
     private PersonalPhoto personalPhoto;
+
+    public DestinationPhoto(Destination destination, PersonalPhoto personalPhoto)  {
+        this.destination = destination;
+        this.personalPhoto = personalPhoto;
+    }
 }

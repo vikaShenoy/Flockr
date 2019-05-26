@@ -1,24 +1,25 @@
 package controllers;
 
+import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.NotFoundException;
-import models.Country;
-import models.Destination;
-import models.DestinationType;
-import models.District;
+import models.*;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import play.libs.Json;
 import play.mvc.*;
 import repository.DestinationRepository;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import play.libs.concurrent.HttpExecutionContext;
+import repository.PhotoRepository;
 
 
 /**
@@ -26,10 +27,12 @@ import play.libs.concurrent.HttpExecutionContext;
  */
 public class DestinationController  extends Controller{
     private final DestinationRepository destinationRepository;
+    private final PhotoRepository photoRepository;
     private HttpExecutionContext httpExecutionContext;
 
     @Inject
-    public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext) {
+    public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext, PhotoRepository photoRepository) {
+        this.photoRepository = photoRepository;
         this.destinationRepository = destinationRepository;
         this.httpExecutionContext = httpExecutionContext;
     }
@@ -241,6 +244,56 @@ public class DestinationController  extends Controller{
                     JsonNode districtsJson = Json.toJson(districts);
                     return ok(districtsJson);
                 }, httpExecutionContext.current());
+    }
+
+    @With(LoggedIn.class)
+    public CompletionStage<Result> addPhoto(int destinationId, Http.Request request) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
+        System.out.println("destination id is: " + destinationId);
+        JsonNode requestJson = request.body().asJson();
+        int photoId;
+        try {
+            photoId = requestJson.get("photoId").asInt(0);
+        } catch (NullPointerException e) {
+            return supplyAsync(() -> badRequest("Please make sure to add the photoId"));
+        }
+
+        return destinationRepository.getDestinationById(destinationId)
+                .thenComposeAsync(optionalDestination -> {
+
+                    if (!optionalDestination.isPresent()) {
+                        throw new CompletionException(new NotFoundException("Could not found destination"));
+                    }
+                    // TODO: Add check that user owns destination when destination types get merged in
+                    return photoRepository.getPhotoByIdAndUser(photoId, userFromMiddleware.getUserId())
+                            .thenComposeAsync(optionalPhoto -> {
+                                if (!optionalPhoto.isPresent()) {
+                                    throw new CompletionException(new NotFoundException("Could not find photo"));
+                                }
+
+                                Destination destination = optionalDestination.get();
+                                PersonalPhoto personalPhoto = optionalPhoto.get();
+
+                                DestinationPhoto destinationPhoto = new DestinationPhoto(destination, personalPhoto);
+
+
+                                return destinationRepository.savePhoto(destinationPhoto);
+                            })
+                            .thenApplyAsync(destinationPhoto -> {
+                                JsonNode destinationPhotoJson = Json.toJson(destinationPhoto);
+                                return ok(destinationPhotoJson);
+                            });
+                })
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (NotFoundException badReqException) {
+                        return notFound(badReqException.getMessage());
+                    } catch (Throwable throwableException) {
+                        throwableException.printStackTrace();
+                        return internalServerError("dfd");
+                    }
+                });
     }
 
 }

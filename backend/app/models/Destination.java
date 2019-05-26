@@ -110,6 +110,10 @@ public class Destination extends Model {
         this.destinationCountry = destinationCountry;
     }
 
+    public void setDestinationPhotos(List<DestinationPhoto> destinationPhotos) {
+        this.destinationPhotos = destinationPhotos;
+    }
+
     /**
      * This is required by EBean to make queries on the database.
      */

@@ -135,5 +135,12 @@ public class DestinationRepository {
         }, executionContext);
     }
 
+    public CompletionStage<DestinationPhoto> savePhoto(DestinationPhoto destinationPhoto) {
+        return supplyAsync(() -> {
+            destinationPhoto.save();
+            return destinationPhoto;
+        });
+    }
+
 
 }
