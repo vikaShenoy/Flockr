@@ -1,6 +1,7 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -132,5 +133,43 @@ public class DestinationTestingSteps {
     public void iShouldReceiveAStatusCodeWhenGettingTheDeletedDestinationWithId() {
         Optional<Destination> destination = Destination.find.query().where().eq("destination_id", 1).findOneOrEmpty();
         Assert.assertFalse(destination.isPresent());
+    }
+
+    @When("the user adds {string} to the destination {string}")
+    public void theUserAddsStringToTheDestinationString(String photoName, String destinationName) {
+        User user = TestState.getInstance().getUser(0);
+        List<Destination> destinations = TestState.getInstance().getDestinations();
+        Destination destination = null;
+        for (Destination currentDestination : destinations) {
+           if (currentDestination.getDestinationName().equals(destinationName)) {
+               destination = currentDestination;
+           }
+        }
+        Assert.assertNotNull(destination);
+
+        List<PersonalPhoto> personalPhotos = user.getPersonalPhotos();
+        PersonalPhoto personalPhoto = null;
+        for (PersonalPhoto currentPersonalPhoto : personalPhotos) {
+           if (currentPersonalPhoto.getFilenameHash().equals(photoName)) {
+               personalPhoto = currentPersonalPhoto;
+           }
+        }
+
+        Assert.assertNotNull(personalPhoto);
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        ObjectNode requestBody = Json.newObject();
+        requestBody.put("photoId", personalPhoto.getPhotoId());
+
+        Result result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
+        Assert.assertEquals(201, result.status());
+    }
+
+    @Then("then the photo gets added to the destination")
+    public void thenThePhotoGetAddedToTheDestination() {
+         List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
+
+         Assert.assertTrue(destinationPhotos.size() > 0);
     }
 }

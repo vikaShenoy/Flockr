@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.*;
@@ -19,4 +20,7 @@ public class DestinationPhoto extends Model {
         this.destination = destination;
         this.personalPhoto = personalPhoto;
     }
+
+    public static final Finder<Integer, DestinationPhoto> find = new Finder<>(DestinationPhoto.class);
+
 }

@@ -121,4 +121,10 @@ public class TestState {
     public Destination removeDestination(int index) {
         return this.destinations.remove(index);
     }
+
+    public List<Destination> getDestinations() {
+        return destinations;
+    }
+
+
 }

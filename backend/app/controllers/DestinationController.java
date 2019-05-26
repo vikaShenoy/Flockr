@@ -281,7 +281,7 @@ public class DestinationController  extends Controller{
                             })
                             .thenApplyAsync(destinationPhoto -> {
                                 JsonNode destinationPhotoJson = Json.toJson(destinationPhoto);
-                                return ok(destinationPhotoJson);
+                                return created(destinationPhotoJson);
                             });
                 })
                 .exceptionally(e -> {

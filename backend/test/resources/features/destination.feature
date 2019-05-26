@@ -44,6 +44,27 @@ Feature: The user can manage destinations
     When I click the Delete Destination button
     Then I should receive an error indicating that the Destination is not found
 
+  Scenario: A user can add a photo to a destination
+    Given that I am logged in
+    And the database has been populated with the following countries, districts and destination types:
+      | destinationType | country                  | district        |
+      | Event           | United States of America | Black Rock City |
+      | City            | Australia                | New Farm        |
+    And that I have the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+    And the user has the following photos in the system:
+      | filename      | isPrimary | isPublic |
+      | monkey.png    | false     | false    |
+      | dog.jpg       | false     | false    |
+      | cat.jpeg      | false     | false    |
+      | cucumber.jpeg | false     | false    |
+      | whale.png     | false     | false    |
+    When the user adds "monkey.png" to the destination "The Dairy Down The Street"
+    Then then the photo gets added to the destination
+
+
+
 
 
 
