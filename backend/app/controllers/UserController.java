@@ -8,29 +8,27 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import play.libs.Json;
+import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
 import repository.UserRepository;
+import util.Security;
 
 import javax.inject.Inject;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.Date;
-import java.text.SimpleDateFormat;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-
-import play.libs.concurrent.HttpExecutionContext;
-import util.Security;
 
 /**
  * Contains all endpoints associated with users.
@@ -58,25 +56,14 @@ public class UserController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTraveller(int userId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-
-        CompletionStage<Optional<User>> getUser;
-
-        if (user.getUserId() == userId || user.isAdmin()) {
-            getUser = userRepository.getUserById(userId);
-        } else {
-            getUser = userRepository.getUserById(userId);
-        }
-
-        return getUser
+        return userRepository.getUserById(userId)
                 .thenApplyAsync((optUser) -> {
                     if (!optUser.isPresent()) {
                         ObjectNode message = Json.newObject().put("message", "User with id " + userId + " was not found");
                         return notFound(message);
                     }
-
-                    JsonNode userAsJson = Json.toJson(optUser.get());
-
+                    User user = optUser.get();
+                    JsonNode userAsJson = Json.toJson(user);
                     return ok(userAsJson);
                 }, httpExecutionContext.current());
     }
@@ -125,7 +112,7 @@ public class UserController extends Controller {
                             System.out.println("Date stored in db for user is: " + date);
                             user.get().setDateOfBirth(date);
                         } catch (ParseException e) {
-                            System.out.println(e);
+                            System.out.println(Arrays.toString(e.getStackTrace()));
                         }
                     }
 
@@ -508,6 +495,9 @@ public class UserController extends Controller {
         long ageMax;
         ageMax = -1;
         String gender = "";
+
+        // TODO: do not catch generic Exceptions, if this is a query method, not specifying all query parameters should not be logged as an error, it can be an info level log e.g. "no parameter nationality, omitting from search"
+
         try {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())

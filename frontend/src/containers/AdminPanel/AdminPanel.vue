@@ -16,7 +16,7 @@
       v-on:submitForm="handleEditUserFormSubmission"
       v-on:incorrectData="handleEditUserFormError"
     />
-    <Snackbar :snackbarModel="this.snackbarModel" />
+    <Snackbar :snackbarModel="this.snackbarModel" v-on:dismissSnackbar="errorSnackbar.show=false"/>
   </div>
 </template>
 

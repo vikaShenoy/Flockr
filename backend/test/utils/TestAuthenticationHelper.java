@@ -31,23 +31,25 @@ public class TestAuthenticationHelper {
      * @param dataTable a DataTable with the users details
      * @param application a play Application
      */
-    public static void theFollowingUserExists(DataTable dataTable, Application application) {
+    public static void theFollowingUsersExists(DataTable dataTable, Application application) {
         TestState testState = TestState.getInstance();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
-        Map<String, String> firstRow = list.get(0);
-        String plainTextPassword = firstRow.get("password");
+        for (int i = 0; i < list.size(); i++) {
+            Map<String, String> row = list.get(i);
+            String plainTextPassword = row.get("password");
 
-        // sign up a user
-        JsonNode signUpReqBody = Json.toJson(firstRow);
-        try {
-            User user = testState.getFakeClient().signUpUser(signUpReqBody);
-            Assert.assertNotEquals(0, user.getUserId());
+            // sign up a user
+            JsonNode signUpReqBody = Json.toJson(row);
+            try {
+                User user = testState.getFakeClient().signUpUser(signUpReqBody);
+                Assert.assertNotEquals(0, user.getUserId());
 
-            user = testState.getFakeClient().loginMadeUpUser(user, plainTextPassword);
-            Assert.assertNotEquals("", user.getToken());
-            testState.addUser(user);
-        } catch (IOException | FailedToSignUpException | ServerErrorException | FailedToLoginException e) {
-            Assert.fail(Arrays.toString(e.getStackTrace()));
+                user = testState.getFakeClient().loginMadeUpUser(user, plainTextPassword);
+                Assert.assertNotEquals("", user.getToken());
+                testState.addUser(user);
+            } catch (IOException | FailedToSignUpException | ServerErrorException | FailedToLoginException e) {
+                Assert.fail(Arrays.toString(e.getStackTrace()));
+            }
         }
     }
 

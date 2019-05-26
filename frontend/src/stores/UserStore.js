@@ -60,6 +60,15 @@ const UserStore = {
         return false;
       }
     },
+    /**
+     * Checks that a user can do something for themselves or an admin can something
+     * in place of other users
+     * @param {number} userId The user ID to compare to the logged in user
+     * @returns {boolean} True if the user has permission, false otherwise
+     */
+    hasPermission(userId) {
+      return userId == UserStore.data.userId || UserStore.methods.isAdmin();
+    },
     loggedIn() {
       return UserStore.data.userId;
     },

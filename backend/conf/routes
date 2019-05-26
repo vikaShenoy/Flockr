@@ -24,6 +24,15 @@ PATCH        /api/users/:userId                                 controllers.User
 DELETE       /api/users/:userId                                 controllers.UserController.deleteUser(userId: Int, request: Request)
 PATCH        /api/users/:userId/roles                           controllers.UserController.updateTravellerRole(userId: Int, request: Request)
 
+# Traveller photos routes
+GET          /api/users/photos/:photoId                         controllers.PhotoController.getPhoto(photoId: Int, request: Request)
+DELETE       /api/users/photos/:photoId                   controllers.PhotoController.deletePhoto(photoId: Int, request: Request)
+GET          /api/users/:userId/photos                          controllers.PhotoController.getPhotos(userId: Int, request: Request)
+POST         /api/users/:userId/photos                          controllers.PhotoController.uploadPhotoForUser(userId: Int, request: Request)
+PATCH        /api/users/photos/:photoId                         controllers.PhotoController.updatePermission(photoId: Int, request: Request)
+GET          /api/users/photos/:photoId/thumbnail               controllers.PhotoController.getThumbnail(photoId: Int, request: Request)
+
+
 # Destination Routes
 GET         /api/destinations                                   controllers.DestinationController.getDestinations(request: Request)
 GET         /api/destinations/countries                         controllers.DestinationController.getCountries()

@@ -1,7 +1,7 @@
 Feature: The user can manage trips
 
   Background:
-    Given a user with the following information exists:
+    Given users with the following information exist:
       | firstName | lastName  | email         | password   |
       | Terry     | Triptaker | ttt@email.com | triptastic |
 

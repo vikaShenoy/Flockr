@@ -15,7 +15,7 @@
 			<v-btn
 				:color="snackbarModel.color"
 				flat
-				@click="$emit('dismissSnackbar', snackbarId)"
+				@click="$emit('dismissSnackbar', snackbarModel.snackbarId)"
 			>
 			Dismiss
 			</v-btn>
