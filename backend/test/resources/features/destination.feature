@@ -44,6 +44,23 @@ Feature: The user can manage destinations
     When I click the Delete Destination button
     Then I should receive an error indicating that the Destination is not found
 
+  # Test PATCH endpoint to modify a users destination photo permissions
+  Scenario: A user tries to modify the permissions for a specific destination photo
+    Given that I am logged in
+    Given the database has been populated with the following countries, districts and destination types:
+      | destinationType | country                  | district        |
+      | Event           | United States of America | Black Rock City |
+      | City            | Australia                | New Farm        |
+    And that I have the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          | =41.2    | 174.9     | 1         |
+    And that I have the following private destination photos
+      | destination_id   | photo_id |
+      | 1                | 1        |
+    When I change the photo permissions to public
+    Then the permission changes should be reflected in the database
+
+
 
 
 
