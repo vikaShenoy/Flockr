@@ -1,11 +1,7 @@
 <template>
   <v-dialog width="80%" v-model="showPhotoDialog">
     <v-card>
-      <img
-          v-if="photo"
-          :src="getPhotoUrl(photo.photoId)"
-          style="height:60vh"
-          alt="Some Image"/>
+      <destination-photo :photo="photo" @displayError="displayError" @permissionUpdated="permissionUpdated"/>
       <v-card-actions>
         <v-btn flat color="error" @click="showPhotoDialog=false">
           Close
@@ -16,9 +12,10 @@
 </template>
 
 <script>
+  import DestinationPhoto from "../../../../../components/DestinationPhoto/DestinationPhoto";
   export default {
     name: "destination-photo-panel",
-
+    components: {DestinationPhoto},
     props: {
       photo: {
         type: Object,
@@ -27,10 +24,6 @@
       showDialog: {
         type: Boolean,
         required: true
-      },
-      index: {
-        type: Number,
-        required: false
       }
     },
     data() {
@@ -63,8 +56,22 @@
       onShowPhotoDialogUpdated() {
         this.$emit('closeDialog', this.showPhotoDialog);
       },
-      getPhotoUrl() {
-        return "https://i2.wp.com/digital-photography-school.com/wp-content/uploads/2012/10/image1.jpg?fit=500%2C500&ssl=1";
+      /**
+       * Called when the destination photo emits an error to display.
+       * Emits the given error to it's parent to display.
+       *
+       * @param message {String} the error message
+       */
+      displayError(message) {
+        this.$emit("displayError", message);
+      },
+      /**
+       * Called when the permission of a photo is updated.
+       *
+       * @param newValue {Boolean} the new value of isPublic in the photo
+       */
+      permissionUpdated(newValue) {
+        this.$emit("permissionUpdated", newValue);
       }
     }
   }

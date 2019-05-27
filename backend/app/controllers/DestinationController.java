@@ -252,11 +252,14 @@ public class DestinationController extends Controller {
                     }
 
                     for (int destId : duplicatedDestinationIds) {
-                        Optional<Destination> optDest = Destination.find.query().
-                                where().eq("destination_id", destId).findOneOrEmpty();
-                        destinationRepository.deleteDestination(optDest.get().getDestinationId());
+                        List<DestinationPhoto> photoDest = DestinationPhoto.find.query()
+                                .where().eq("destination_destination_id", destId).findList();
+                        destinationRepository.deleteDestination(destId);
 
-                        // TODO: Transfer the destinationId to the public destinationId
+                        for (DestinationPhoto photo : photoDest) {
+                            photo.setDestination(destination);
+                            destinationRepository.insertDestinationPhoto(photo);
+                        }
                     }
 
                     return destinationRepository.update(destination);

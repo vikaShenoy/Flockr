@@ -146,12 +146,31 @@ public class DestinationRepository {
             return destinationId;
         }, executionContext);
     }
-    // TODO: Add javadoc
+
+    /**
+     * Saves the destination photo into the database
+     *
+     * @param destinationPhoto the destination photo to be saved in the database
+     * @return the photo object
+     */
     public CompletionStage<DestinationPhoto> savePhoto(DestinationPhoto destinationPhoto) {
         return supplyAsync(() -> {
             destinationPhoto.save();
             return destinationPhoto;
         });
+    }
+
+    /**
+     * Insert a destination photo into the database
+     *
+     * @param photo the destination photo to be inserted in the database
+     * @return the photo object
+     */
+    public CompletionStage<DestinationPhoto> insertDestinationPhoto(DestinationPhoto photo) {
+        return supplyAsync(() -> {
+            photo.insert();
+            return photo;
+        }, executionContext);
     }
 
 
