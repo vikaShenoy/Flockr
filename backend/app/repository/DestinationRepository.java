@@ -80,7 +80,7 @@ public class DestinationRepository {
      */
     public CompletionStage<Destination> update(Destination destination) {
         return supplyAsync(() -> {
-            destination.update();
+            destination.save();
             return destination;
         }, executionContext);
     }
