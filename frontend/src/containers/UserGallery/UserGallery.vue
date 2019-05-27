@@ -178,16 +178,31 @@
         this.snackbarModel.show = true;
       },
       /**
+       * Called after a photo is successfully deleted.
+       * Displays a success message, removes the photo from the photo list and closes the photo dialog.
+       *
+       * @param index {Number} the index of the photo to be removed.
+       */
+      afterDelete(index) {
+        this.photos.splice(index, 1);
+        this.updatePhotoDialog(false);
+        this.snackbarModel.text = "Photo Successfully Deleted.";
+        this.snackbarModel.color = "green";
+        this.snackbarModel.show = true;
+      },
+      /**
        * Gets a list of photos for the user from the server.
        */
       async getUsersPhotos() {
         try {
           this.allPhotos = await getPhotosForUser(this.userId);
-          this.allPhotos.map(photo => {
+          this.allPhotos.map((photo, index) => {
             const displayErrorMessage = this.displayErrorMessage;
+            const afterDelete = this.afterDelete;
             photo.deleteFunction = async function () {
               try {
                 await deleteUserPhoto(photo);
+                afterDelete(index);
               } catch (error) {
                 displayErrorMessage(error.message);
               }
