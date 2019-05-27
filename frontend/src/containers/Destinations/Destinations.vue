@@ -14,7 +14,7 @@
                   :destination="destination"
                   @deleteDestination="displayPrompt(destination, index)"
                   @editDestination="editDestination(index, destination)"
-          ></DestinationCard>
+                  @displayMessage="displayMessage"/>
           </v-expansion-panel-content>
         </v-expansion-panel>
 

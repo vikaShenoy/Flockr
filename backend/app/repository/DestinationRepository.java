@@ -91,7 +91,7 @@ public class DestinationRepository {
      */
     public CompletionStage<Destination> update(Destination destination) {
         return supplyAsync(() -> {
-            destination.update();
+            destination.save();
             return destination;
         }, executionContext);
     }
@@ -146,4 +146,13 @@ public class DestinationRepository {
             return destinationId;
         }, executionContext);
     }
+    // TODO: Add javadoc
+    public CompletionStage<DestinationPhoto> savePhoto(DestinationPhoto destinationPhoto) {
+        return supplyAsync(() -> {
+            destinationPhoto.save();
+            return destinationPhoto;
+        });
+    }
+
+
 }

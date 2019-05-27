@@ -22,6 +22,13 @@ create table destination (
   constraint pk_destination primary key (destination_id)
 );
 
+create table destination_photo (
+  destination_photo_id          integer auto_increment not null,
+  destination_destination_id    integer,
+  personal_photo_photo_id       integer,
+  constraint pk_destination_photo primary key (destination_photo_id)
+);
+
 create table destination_type (
   destination_type_id           integer auto_increment not null,
   destination_type_name         varchar(255),
@@ -145,6 +152,12 @@ alter table destination add constraint fk_destination_destination_district_distr
 create index ix_destination_destination_country_country_id on destination (destination_country_country_id);
 alter table destination add constraint fk_destination_destination_country_country_id foreign key (destination_country_country_id) references country (country_id) on delete restrict on update restrict;
 
+create index ix_destination_photo_destination_destination_id on destination_photo (destination_destination_id);
+alter table destination_photo add constraint fk_destination_photo_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
+
+create index ix_destination_photo_personal_photo_photo_id on destination_photo (personal_photo_photo_id);
+alter table destination_photo add constraint fk_destination_photo_personal_photo_photo_id foreign key (personal_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
+
 create index ix_district_country_country_id on district (country_country_id);
 alter table district add constraint fk_district_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
 
@@ -198,6 +211,12 @@ drop index if exists ix_destination_destination_district_district_id;
 alter table destination drop constraint if exists fk_destination_destination_country_country_id;
 drop index if exists ix_destination_destination_country_country_id;
 
+alter table destination_photo drop constraint if exists fk_destination_photo_destination_destination_id;
+drop index if exists ix_destination_photo_destination_destination_id;
+
+alter table destination_photo drop constraint if exists fk_destination_photo_personal_photo_photo_id;
+drop index if exists ix_destination_photo_personal_photo_photo_id;
+
 alter table district drop constraint if exists fk_district_country_country_id;
 drop index if exists ix_district_country_country_id;
 
@@ -242,6 +261,8 @@ alter table user drop constraint if exists fk_user_profile_photo_photo_id;
 drop table if exists country;
 
 drop table if exists destination;
+
+drop table if exists destination_photo;
 
 drop table if exists destination_type;
 

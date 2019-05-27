@@ -1,43 +1,62 @@
 <template>
-  <v-card elevation="10"
-          class="destination-card row col-md-12">
-    <div class="title-card col-md-3">
-      <h2 class="name-header">{{ destination.destinationName }}</h2>
-      <div class="body-card col-md-12">
-        <v-img class="image" src="https://picsum.photos/510/300?random"></v-img>
-      </div>
-    </div>
-    <div class="col-md-5">
-      <div class="row">
-        <div class="basic-info-label"><p><b>Type</b></p></div>
-        <div class="basic-info-label">{{ destination.destinationType.destinationTypeName }}</div>
-      </div>
-      <hr class="divider"/>
-      <div class="row">
-        <div class="basic-info-label"><p><b>District</b></p></div>
-        <div class="basic-info-label">{{ destination.destinationDistrict.districtName }}</div>
-      </div>
-      <hr class="divider"/>
-    </div>
-    <div class="col-md-4">
-      <h2 class="name-header">{{ destination.destinationCountry.countryName }}</h2>
-      <v-img class="image"
-             src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
-    </div>
-    <v-btn fab class="edit-button" id="edit-destination-button" @click="editDestination">
-      <v-icon>edit</v-icon>
-    </v-btn>
-    <v-btn fab class="delete-button" id="delete-destination-button" @click="deleteDestination">
-      <v-icon>remove</v-icon>
-    </v-btn>
-  </v-card>
+    <v-card elevation="10"
+            class="destination-card row col-md-12">
+        <div class="title-card">
+           <h2 class="name-header">{{ destination.destinationName }}</h2>
+            <div class="body-card col-md-12">
+              <Carousel
+                :photos="photos"
+                v-if="photos"
+              />
+           </div>
+        </div>
+        <div class="destination-content">
+          <div class="row">
+          <div class="col-md-6">
+              <div class="row">
+                  <div class="basic-info-label"><p><b>Type</b></p></div>
+                 <div class="basic-info-label">{{ destination.destinationType.destinationTypeName }}</div>
+              </div>
+              <hr class="divider"/>
+              <div class="row">
+                  <div class="basic-info-label"><p><b>District</b></p></div>
+                 <div class="basic-info-label">{{ destination.destinationDistrict.districtName }}</div>
+              </div>
+              <hr class="divider"/>
+          </div>
+          <div class="col-md-6">
+             <h2 class="name-header">{{ destination.destinationCountry.countryName }}</h2>
+             <v-img class="image"
+                    src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
+          </div>
+          </div>
+        </div>
+        <v-btn v-if="hasOwnerRights" fab class="edit-button" id="edit-destination-button" @click="editDestination">
+            <v-icon>edit</v-icon>
+        </v-btn>
+        <v-btn v-if="hasOwnerRights" fab class="delete-button" id="delete-destination-button" @click="deleteDestination">
+            <v-icon>remove</v-icon>
+        </v-btn>
+    </v-card>
 </template>
 
 <script>
 
+  import Carousel from "./Carousel/Carousel";
+  import { getDestinationPhotos } from "./DestinationCardService";
+  import UserStore from "../../../stores/UserStore";
+
   export default {
     name: "destination-card",
-
+    components: {
+      Carousel
+    },
+    data() {
+      return {
+        photos: null,
+        hasOwnerRights: false
+      };
+    },
     props: {
       destination: {
         id: {
@@ -88,7 +107,18 @@
         }
       }
     },
-
+    async mounted() {
+      try {
+        const photos = await getDestinationPhotos(this.destination.destinationId);
+        this.photos = photos;
+        this.hasOwnerRights = UserStore.methods.isAdmin() || this.destination.destinationOwner === localStorage.getItem("userId");
+      } catch (error) {
+        this.$emit("displayMessage", {
+          text: error.message,
+          color: "red"
+        })
+      }
+    },
     methods: {
       /**
        * Called when the edit button is selected.
@@ -110,7 +140,7 @@
 </script>
 
 <style lang="scss" scoped>
-  @import "../../../styles/_variables.scss";
+    @import "../../../styles/_variables.scss";
 
   .divider {
     margin: 0 0 20px;
@@ -140,7 +170,14 @@
   .destination-card {
     width: 100%;
     margin: 10px 0 0;
-  }
+    padding: 10px;
+   }
+
+   .title-card {
+      width: 300px;
+   }
+
+
 
   .destinations-panel :hover #save-destination-button {
     visibility: visible;
@@ -174,5 +211,13 @@
     right: 30px;
     visibility: hidden;
   }
+
+.carousel {
+  max-height: 200px;
+}
+
+.destination-content {
+  width: calc(100% - 300px);
+}
 
 </style>

@@ -25,6 +25,9 @@ public class Destination extends Model {
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
     private List<TripDestination> tripDestinations;
 
+    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
+    private List<DestinationPhoto> destinationPhotos;
+
     @ManyToOne
     private District destinationDistrict;
     private Double destinationLat;
@@ -142,6 +145,10 @@ public class Destination extends Model {
     public void setIsPublic (boolean isPublic) { this.isPublic = isPublic; }
 
     public boolean getIsPublic() { return this.isPublic; }
+
+    public void setDestinationPhotos(List<DestinationPhoto> destinationPhotos) {
+        this.destinationPhotos = destinationPhotos;
+    }
 
     /**
      * This is required by EBean to make queries on the database.

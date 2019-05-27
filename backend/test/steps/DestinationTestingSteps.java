@@ -1,6 +1,7 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -131,28 +132,54 @@ public class DestinationTestingSteps {
         Assert.assertFalse(destination.isPresent());
     }
 
-    @Given("that I have the following private destination photos")
-    public void thatIHaveTheFollowingPrivateDestinationPhotos(io.cucumber.datatable.DataTable dataTable) {
-        // Write code here that turns the phrase above into concrete actions
-        // For automatic transformation, change DataTable to one of
-        // E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
-        // Map<K, List<V>>. E,K,V must be a String, Integer, Float,
-        // Double, Byte, Short, Long, BigInteger or BigDecimal.
-        //
-        // For other transformations you can register a DataTableType.
-        throw new cucumber.api.PendingException();
+    @When("the user adds {string} to the destination {string}")
+    public void theUserAddsStringToTheDestinationString(String photoName, String destinationName) {
+        User user = TestState.getInstance().getUser(0);
+        List<Destination> destinations = TestState.getInstance().getDestinations();
+        Destination destination = null;
+        for (Destination currentDestination : destinations) {
+           if (currentDestination.getDestinationName().equals(destinationName)) {
+               destination = currentDestination;
+           }
+        }
+
+        List<PersonalPhoto> personalPhotos = user.getPersonalPhotos();
+        PersonalPhoto personalPhoto = null;
+        for (PersonalPhoto currentPersonalPhoto : personalPhotos) {
+           if (currentPersonalPhoto.getFilenameHash().equals(photoName)) {
+               personalPhoto = currentPersonalPhoto;
+           }
+        }
+
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        ObjectNode requestBody = Json.newObject();
+
+        if (personalPhoto != null) {
+            requestBody.put("photoId", personalPhoto.getPhotoId());
+        }
+
+        int destinationId = destination != null ? destination.getDestinationId() : 0;
+
+        result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destinationId + "/photos", user.getToken());
     }
 
-    @When("I change the photo permissions to public")
-    public void iChangeThePhotoPermissionsToPublic() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    @Then("then the photo gets added to the destination")
+    public void thenThePhotoGetAddedToTheDestination() {
+         Assert.assertEquals(201, result.status());
+
+         List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
+
+         Assert.assertTrue(destinationPhotos.size() > 0);
     }
 
-    @Then("the permission changes should be reflected in the database")
-    public void thePermissionChangesShouldBeReflectedInTheDatabase() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    @Then("the photo does not get added to the destination")
+    public void thePhotoDoesNotGetAdded() {
+        Assert.assertNotEquals(201, result.status());
+        List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
+        Assert.assertEquals(0, destinationPhotos.size());
     }
+
 
 }
