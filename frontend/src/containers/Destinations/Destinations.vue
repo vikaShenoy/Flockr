@@ -2,33 +2,53 @@
   <div style="width: 100%">
     <div class="page-title"><h1>Destinations</h1></div>
       <div class="destinations-panel destinations-card">
+        <div v-if="!publicDestinations || !userDestinations" id="loading">
+           <v-progress-circular
+            indeterminate
+            color="secondary"
+          ></v-progress-circular>
+        </div>
 
-        <v-expansion-panel>
-          <v-expansion-panel-content>
-            <template v-slot:header>
-              <h2>My Destinations</h2>
-            </template>
-            <DestinationCard
-                  v-for="(destination, index) in destinations"
-                  v-bind:key="index"
-                  :destination="destination"
-                  @deleteDestination="displayPrompt(destination, index)"
-                  @editDestination="editDestination(index, destination)"
-                  @displayMessage="displayMessage"/>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
+        <div v-else>
+          <v-expansion-panel>
+            <v-expansion-panel-content>
+              <template v-slot:header>
+                <h2>My Destinations</h2>
+              </template>
+              <!--
+                Need this div to appear when no destinations are there or
+                the expansion panel will dissapear
+               -->
+              <div v-if="userDestinations.length === 0"></div> 
+              <DestinationCard
 
-        <br>
+                    v-for="(destination, index) in userDestinations"
+                    v-bind:key="index"
+                    :destination="destination"
+                    @deleteDestination="displayPrompt(destination, index)"
+                    @editDestination="editDestination(index, destination)"
+                    @displayMessage="displayMessage"/>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
 
-        <v-expansion-panel>
-          <v-expansion-panel-content>
-            <template v-slot:header>
-              <h2>All Public Destinations</h2>
-            </template>
-            <p>Add public destinations here when implemented.</p>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
+          <br>
 
+          <v-expansion-panel>
+            <v-expansion-panel-content>
+              <template v-slot:header>
+                <h2>All Public Destinations</h2>
+              </template>
+              <div v-if="publicDestinations.length === 0"></div> 
+              <DestinationCard
+                    v-for="(destination, index) in publicDestinations"
+                    v-bind:key="index"
+                    :destination="destination"
+                    @deleteDestination="displayPrompt(destination, index)"
+                    @editDestination="editDestination(index, destination)"
+                    @displayMessage="displayMessage"/>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </div>
         <v-btn fab id="addDestinationButton" v-on:click="openAddDestinationDialog">
           <v-icon>add</v-icon>
         </v-btn>
@@ -58,7 +78,7 @@
 
 <script>
   import DestinationCard from "./DestinationCard/DestinationCard";
-  import {requestCountries, requestDestinations, requestDestinationTypes, sendDeleteDestination} from "./DestinationsService";
+  import {requestCountries, getUserDestinations, getPublicDestinations, requestDestinationTypes, sendDeleteDestination} from "./DestinationsService";
   import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
   import Snackbar from "../../components/Snackbars/Snackbar";
   import PromptDialog from "../../components/PromptDialog/PromptDialog";
@@ -72,9 +92,8 @@
     },
     data() {
       return {
-        // Rename to 'myDestinations' once that functionality has been implemented.
-        destinations: [],
-        publicDestinations: [],
+        userDestinations: null,
+        publicDestinations: null,
         countries: [],
         destinationTypes: [],
         showModifyDestination: false,
@@ -120,7 +139,10 @@
      */
     mounted: async function () {
       try {
-        this.destinations = await requestDestinations();
+        const userId = localStorage.getItem("userId");
+        this.userDestinations = await getUserDestinations(userId);
+        this.publicDestinations = await getPublicDestinations();
+
       } catch(error) {
         this.displayMessage({
           show: true,
@@ -185,7 +207,7 @@
        */
       addNewDestinationCard: function (newDestination) {
         // TODO: change this to take public/private into account
-        this.destinations.unshift(newDestination);
+        this.userDestinations.unshift(newDestination);
       },
       /**
        * Update an existing destination after edit.
@@ -339,7 +361,7 @@
   padding: 110px 50px 50px;
 }
 
-#addDestinationButton {
+#add-destinations-button {
   position: fixed;
   bottom: 30px;
   right: 30px;
@@ -347,6 +369,14 @@
   .v-icon {
     color: $darker-white;
   }
+}
+
+#loading {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center; 
 }
 
 </style>
