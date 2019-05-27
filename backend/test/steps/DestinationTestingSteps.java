@@ -1,6 +1,7 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -157,5 +158,56 @@ public class DestinationTestingSteps {
         // Write code here that turns the phrase above into concrete actions
         throw new cucumber.api.PendingException();
     }
+
+
+    @When("the user adds {string} to the destination {string}")
+    public void theUserAddsStringToTheDestinationString(String photoName, String destinationName) {
+        User user = TestState.getInstance().getUser(0);
+        List<Destination> destinations = TestState.getInstance().getDestinations();
+        Destination destination = null;
+        for (Destination currentDestination : destinations) {
+           if (currentDestination.getDestinationName().equals(destinationName)) {
+               destination = currentDestination;
+           }
+        }
+
+        List<PersonalPhoto> personalPhotos = user.getPersonalPhotos();
+        PersonalPhoto personalPhoto = null;
+        for (PersonalPhoto currentPersonalPhoto : personalPhotos) {
+           if (currentPersonalPhoto.getFilenameHash().equals(photoName)) {
+               personalPhoto = currentPersonalPhoto;
+           }
+        }
+
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        ObjectNode requestBody = Json.newObject();
+
+        if (personalPhoto != null) {
+            requestBody.put("photoId", personalPhoto.getPhotoId());
+        }
+
+        int destinationId = destination != null ? destination.getDestinationId() : 0;
+
+        result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destinationId + "/photos", user.getToken());
+    }
+
+    @Then("then the photo gets added to the destination")
+    public void thenThePhotoGetAddedToTheDestination() {
+         Assert.assertEquals(201, result.status());
+
+         List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
+
+         Assert.assertTrue(destinationPhotos.size() > 0);
+    }
+
+    @Then("the photo does not get added to the destination")
+    public void thePhotoDoesNotGetAdded() {
+        Assert.assertNotEquals(201, result.status());
+        List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
+        Assert.assertEquals(0, destinationPhotos.size());
+    }
+
 
 }

@@ -135,4 +135,13 @@ public class DestinationRepository {
             return destinationId;
         }, executionContext);
     }
+    // TODO: Add javadoc
+    public CompletionStage<DestinationPhoto> savePhoto(DestinationPhoto destinationPhoto) {
+        return supplyAsync(() -> {
+            destinationPhoto.save();
+            return destinationPhoto;
+        });
+    }
+
+
 }
