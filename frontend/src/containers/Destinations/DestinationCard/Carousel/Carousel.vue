@@ -4,12 +4,30 @@
       v-for="(photo, index) in photos"
       :key="photo.photoId"
     >
-      <img
+      
+        
+      <v-img
         :src="getThumbnailUrl(photo.photoId)"
         style="width:300px;height:300px"
         alt="Some Image"
         @click="openPhotoDialog(photo, index)"
-      />
+        v-on:mouseenter="addPhotoButton = !addPhotoButton"
+        v-on:mouseleave="addPhotoButton = !addPhotoButton"
+      >
+        <v-btn 
+          color="blue-grey darken-3" 
+          v-on:mouseenter="inButton = !inButton"
+          v-on:mouseleave="inButton = !inButton"
+          fab
+          @click="showAddPhotoDialog"
+          v-if="addPhotoButton"
+          >
+            <v-icon>add</v-icon>
+        </v-btn>
+
+      </v-img>
+      
+      
     </v-carousel-item>
     <destination-photo-panel
             :photo="currentPhoto"
@@ -34,7 +52,9 @@ export default {
     return {
       showPhotoDialog: false,
       currentPhoto: null,
-      currentPhotoIndex: null
+      currentPhotoIndex: null,
+      addPhotoButton: false,
+      inButton: false
 
     }
   },
@@ -43,10 +63,12 @@ export default {
       console.log(message);
     },
     openPhotoDialog(photo, index) {
-
+      if (!this.inButton) {
       this.showPhotoDialog = true;
       this.currentPhoto = photo;
       this.currentPhotoIndex = index;
+      }
+      
     },
     /**
      * Gets a thumbnail for a URL based on it's photo ID
@@ -61,6 +83,9 @@ export default {
     },
     closePhotoPanel(newVal) {
       this.showPhotoDialog = newVal;
+    },
+    showAddPhotoDialog: function (event) {
+      console.log("Clicked");
     }
   }
 };
