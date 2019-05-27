@@ -54,8 +54,14 @@ public class DestinationController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> getDestinations(Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
-        return destinationRepository.getDestinationsbyUserId(user.getUserId())
-                .thenApplyAsync(destinations -> ok(Json.toJson(destinations)), httpExecutionContext.current());
+        return destinationRepository.getDestinations()
+                .thenApplyAsync(destinations -> {
+                    List<Destination> publicDestinations = destinations
+                                                            .stream()
+                                                            .filter(Destination::getIsPublic)
+                                                            .collect(Collectors.toList());
+                    return ok(Json.toJson(publicDestinations));
+                }, httpExecutionContext.current());
     }
 
     /**
