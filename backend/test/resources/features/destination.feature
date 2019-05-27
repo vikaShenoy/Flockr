@@ -35,10 +35,6 @@ Feature: The user can manage destinations
   # Test deleting a destination
   Scenario: A user tries to delete a destination
     Given that I am logged in
-#    And the database has been populated with the following countries, districts and destination types:
-#      | destinationType | country                  | district        |
-#      | Event           | United States of America | Black Rock City |
-#      | City            | Australia                | New Farm        |
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         |
@@ -47,10 +43,6 @@ Feature: The user can manage destinations
 
   Scenario: A user can add a photo to a destination
     Given that I am logged in
-#    Given the database has been populated with the following countries, districts and destination types:
-#      | destinationType | country                  | district        |
-#      | Event           | United States of America | Black Rock City |
-#      | City            | Australia                | New Farm        |
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          | 41.2    | 174.9     | 1         |
@@ -78,10 +70,6 @@ Feature: The user can manage destinations
 
   Scenario: A user tries to update a destination with new information
     Given that I am logged in
-    And the database has been populated with the following countries, districts and destination types:
-      | destinationType | country                  | district        |
-      | Event           | United States of America | Black Rock City |
-      | City            | Australia                | New Farm        |
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
@@ -136,15 +124,11 @@ Feature: The user can manage destinations
     When the user adds "monkey.png" to the destination "Some destination I don't have"
     Then the photo does not get added to the destination
 
-  Scenario: A user tries to add a photo to a destination that isn't theres
+  Scenario: A user tries to add a photo to a destination that isn't theirs
     Given that I am logged in
     And that another user has the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
-    And the database has been populated with the following countries, districts and destination types:
-      | destinationType | country                  | district        |
-      | Event           | United States of America | Black Rock City |
-      | City            | Australia                | New Farm        |
     And the user has the following photos in the system:
       | filename      | isPrimary | isPublic |
       | monkey.png    | false     | false    |
