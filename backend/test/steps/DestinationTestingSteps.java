@@ -110,23 +110,6 @@ public class DestinationTestingSteps {
         this.destinationData = Json.toJson(firstRow);
     }
 
-    @Given("the database has been populated with the following countries, districts and destination types:")
-    public void theDatabaseHasBeenPopulatedWithCountriesDistrictsAndDestinationTypes(DataTable dataTable) {
-        List<Map<String, String>> rows = dataTable.asMaps();
-
-        for (Map<String, String> row : rows) {
-            DestinationType destinationType = new DestinationType(row.get("destinationType"));
-            Country country = new Country(row.get("country"));
-            District district = new District(row.get("district"), country);
-            destinationType.save();
-            country.save();
-            district.save();
-            Assert.assertNotEquals(0, destinationType.getDestinationTypeId());
-            Assert.assertNotEquals(0, country.getCountryId());
-            Assert.assertNotEquals(0, district.getDistrictId());
-        }
-    }
-
     @When("I click the Add Destination button")
     public void IClickTheAddDestination() {
         User user = TestState.getInstance().removeUser(0);
@@ -170,18 +153,18 @@ public class DestinationTestingSteps {
         List<Destination> destinations = TestState.getInstance().getDestinations();
         Destination destination = null;
         for (Destination currentDestination : destinations) {
-           if (currentDestination.getDestinationName().equals(destinationName)) {
-               destination = currentDestination;
-           }
+            if (currentDestination.getDestinationName().equals(destinationName)) {
+                destination = currentDestination;
+            }
         }
 
         List<PersonalPhoto> personalPhotos = user.getPersonalPhotos();
         PersonalPhoto personalPhoto = null;
         System.out.println("personalPhotos size is: " + personalPhotos.size());
         for (PersonalPhoto currentPersonalPhoto : personalPhotos) {
-           if (currentPersonalPhoto.getFilenameHash().equals(photoName)) {
-               personalPhoto = currentPersonalPhoto;
-           }
+            if (currentPersonalPhoto.getFilenameHash().equals(photoName)) {
+                personalPhoto = currentPersonalPhoto;
+            }
         }
 
 
@@ -200,11 +183,11 @@ public class DestinationTestingSteps {
 
     @Then("then the photo gets added to the destination")
     public void thenThePhotoGetAddedToTheDestination() {
-         Assert.assertEquals(201, result.status());
+        Assert.assertEquals(201, result.status());
 
-         List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
+        List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
 
-         Assert.assertTrue(destinationPhotos.size() > 0);
+        Assert.assertTrue(destinationPhotos.size() > 0);
     }
 
     @Then("the photo does not get added to the destination")
