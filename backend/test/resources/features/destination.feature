@@ -41,7 +41,7 @@ Feature: The user can manage destinations
       | City            | Australia                | New Farm        |
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          | =41.2    | 174.9     | 1         |
+      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
     When I click the Delete Destination button
     Then I should receive an error indicating that the Destination is not found
 
@@ -64,6 +64,43 @@ Feature: The user can manage destinations
     When the user adds "monkey.png" to the destination "The Dairy Down The Street"
     Then then the photo gets added to the destination
 
+  # Test updating a destination
+  Scenario: A user tries to update a destination with no change in the information
+    Given that I am logged in
+    And the database has been populated with the following countries, districts and destination types:
+      | destinationType | country                  | district        |
+      | Event           | United States of America | Black Rock City |
+      | City            | Australia                | New Farm        |
+    And that I have the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
+    When I update the Destination with the following information:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | false    |
+    Then I should be allowed to update the Destination
+
+  Scenario: A user tries to update a destination with new information
+    Given that I am logged in
+    And the database has been populated with the following countries, districts and destination types:
+      | destinationType | country                  | district        |
+      | Event           | United States of America | Black Rock City |
+      | City            | Australia                | New Farm        |
+    And that I have the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
+    When I update the Destination with the following information:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | 1          | 40.0     | 184.9     | 1         | true     |
+    Then the Destination information is updated
+
+  Scenario: A user tries to update a non-existent destination with the given ID
+    Given that I am logged in
+    When I try to update the Destination with the following information:
+      | destinationId | destinationName | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+      | 10000         | America         | 1000              | 111        | 40.0     | 184.9     | 1         | true     |
+    Then I get an error indicating that the Destination is not found
+
+  # Test adding a photo to a destination
   Scenario: A user tries to add a photo to a destination with a photo that doesn't exist
     Given that I am logged in
     And the database has been populated with the following countries, districts and destination types:
