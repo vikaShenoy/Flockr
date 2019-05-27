@@ -63,6 +63,29 @@ public class DestinationTestingSteps {
         }
     }
 
+    @Given("that another user has the following destinations:")
+    public void thatAnotherUserHasTheFollowingDestinations(DataTable dataTable) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(1);
+        List<Map<String, String>> destinationList = dataTable.asMaps();
+        for (int i = 0; i < destinationList.size(); i++) {
+            try {
+                Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
+                TestState.getInstance().addDestination(destination);
+
+                Result result = fakeClient.makeRequestWithNoToken("GET", "/api/destinations/" + destination.getDestinationId());
+
+                // check that the destination's name has some text in it
+                JsonNode res = utils.PlayResultToJson.convertResultToJson(result);
+                String destinationName = res.get("destinationName").asText();
+                Assert.assertTrue(destinationName.length() > 0);
+            } catch (UnauthorizedException | ServerErrorException e) {
+                Assert.fail(Arrays.toString(e.getStackTrace()));
+            }
+        }
+    }
+
+
     @Given("that I want to create a Destination with the following valid data:")
     public void thatIWantToCreateADestinationWithTheFollowingValidData(DataTable dataTable) {
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
