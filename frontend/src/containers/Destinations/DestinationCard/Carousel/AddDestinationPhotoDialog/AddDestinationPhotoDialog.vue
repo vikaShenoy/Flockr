@@ -51,6 +51,9 @@
 </template>
 
 <script>
+
+    //TODO Make way nicer
+
     import superagent from 'superagent';
     import {endpoint} from '../../../../../utils/endpoint';
     export default {
@@ -99,6 +102,7 @@
                 try {
                     const response  = await superagent(endpoint(`/users/${userId}/photos`))
                         .set('Authorization', authToken);
+                    //TODO filter out photos that are already linked to the venue
                     this.userPhotos = response.body;
                     console.log(this.userPhotos)
                 } catch (e) {
