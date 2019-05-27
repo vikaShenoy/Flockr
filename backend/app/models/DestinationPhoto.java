@@ -21,6 +21,29 @@ public class DestinationPhoto extends Model {
         this.personalPhoto = personalPhoto;
     }
 
-    public static final Finder<Integer, DestinationPhoto> find = new Finder<>(DestinationPhoto.class);
+    public void setDestination(Destination destination) {
+        this.destination = destination;
+    }
 
+    public Destination getDestination() {
+        return destination;
+    }
+
+    public void setDestinationPhotoId(int destinationPhotoId) {
+        this.destinationPhotoId = destinationPhotoId;
+    }
+
+    public int getDestinationPhotoId() {
+        return destinationPhotoId;
+    }
+
+    public void setPersonalPhoto(PersonalPhoto personalPhoto) {
+        this.personalPhoto = personalPhoto;
+    }
+
+    public PersonalPhoto getPersonalPhoto() {
+        return personalPhoto;
+    }
+
+    public static final Finder<Integer, DestinationPhoto> find = new Finder<>(DestinationPhoto.class);
 }

@@ -4,11 +4,28 @@
       v-for="(photo, index) in photos"
       :key="photo.photoId"
     >
-      <img
+      <v-img
         :src="photo.thumbEndpoint"
         style="width:300px; height:300px"
         alt="Some Image"
-        @click="openPhotoDialog(photo, index)"/>
+        @click="openPhotoDialog(photo, index)"
+        v-on:mouseenter="addPhotoButton = !addPhotoButton"
+        v-on:mouseleave="addPhotoButton = !addPhotoButton"
+      >
+        <v-btn
+          color="blue-grey darken-3"
+          v-on:mouseenter="inButton = !inButton"
+          v-on:mouseleave="inButton = !inButton"
+          fab
+          @click="openAddPhotoDialog()"
+          v-if="addPhotoButton"
+          >
+            <v-icon>add</v-icon>
+        </v-btn>
+
+      </v-img>
+
+
     </v-carousel-item>
     <destination-photo-panel
             :photo="currentPhoto"
@@ -17,16 +34,20 @@
             @displayError="displayError"
             @permissionUpdated="permissionUpdated"
     />
+    <AddPhotoDialog
+            :showDialog="showAddPhotoDialog"
+            @closeAddPhotoDialog="closeAddPhotoDialogHandler"
+    />
   </v-carousel>
 
 </template>
 
 <script>
-import { getThumbnailUrl } from "../../../../utils/photos";
 import DestinationPhotoPanel from "./DestinationPhotoPanel/DestinationPhotoPanel";
+import AddPhotoDialog from "./AddDestinationPhotoDialog/AddDestinationPhotoDialog";
 
 export default {
-  components: {DestinationPhotoPanel},
+  components: {AddPhotoDialog, DestinationPhotoPanel},
   props: {
     photos: Array
   },
@@ -34,16 +55,21 @@ export default {
     return {
       showPhotoDialog: false,
       currentPhoto: null,
-      currentPhotoIndex: null
+      currentPhotoIndex: null,
+      addPhotoButton: false,
+      inButton: false,
+      showAddPhotoDialog: false
 
     }
   },
   methods: {
     openPhotoDialog(photo, index) {
+      if (!this.inButton) {
+        this.showPhotoDialog = true;
+        this.currentPhoto = photo;
+        this.currentPhotoIndex = index;
+      }
 
-      this.showPhotoDialog = true;
-      this.currentPhoto = photo;
-      this.currentPhotoIndex = index;
     },
     closePhotoPanel(newVal) {
       this.showPhotoDialog = newVal;
@@ -70,6 +96,12 @@ export default {
      */
     permissionUpdated(newValue) {
       this.$emit("permissionUpdated", newValue, this.currentPhotoIndex);
+    },
+    openAddPhotoDialog: function () {
+      this.showAddPhotoDialog = true;
+    },
+    closeAddPhotoDialogHandler(newVal) {
+      this.showAddPhotoDialog = newVal
     }
   }
 };

@@ -4,14 +4,15 @@ Feature: The user can manage destinations
     Given users with the following information exist:
       | firstName | lastName     | email        | password    |
       | Danny     | Destinations | dd@email.com | where-to-go |
+      | Alice     | Brockham     | ab@gmail.com | something   |
 
   # Test that a 201 code is returned when creating a Destinations with valid data
   Scenario: A user tries to create a destination with complete valid data
     Given that I am logged in
-    Given the database has been populated with the following countries, districts and destination types:
-      | destinationType | country                  | district        |
-      | Event           | United States of America | Black Rock City |
-      | City            | Australia                | New Farm        |
+#    Given the database has been populated with the following countries, districts and destination types:
+#      | destinationType | country                  | district        |
+#      | Event           | United States of America | Black Rock City |
+#      | City            | Australia                | New Farm        |
     Given that I want to create a Destination with the following valid data:
       | destinationName | destinationTypeId | districtId | latitude | longitude | countryId |
       | Lower Hutt      | 1                 | 1          | -41.2    | 174.9     | 1         |
@@ -21,10 +22,10 @@ Feature: The user can manage destinations
     # Test that a 400 status code is returned when a user creates a Destination with incomplete data
   Scenario: A user tries to create a destination with no country
     Given that I am logged in
-    Given the database has been populated with the following countries, districts and destination types:
-      | destinationType | country                  | district        |
-      | Event           | United States of America | Black Rock City |
-      | City            | Australia                | New Farm        |
+#    Given the database has been populated with the following countries, districts and destination types:
+#      | destinationType | country                  | district        |
+#      | Event           | United States of America | Black Rock City |
+#      | City            | Australia                | New Farm        |
     Given that I want to create a Destination with the following incomplete data:
       | destinationName | destinationTypeId | districtId | latitude | longitude    |
       | Lower Hutt      | 1                 | 1          | -41.2    | latitudeTest |
@@ -34,17 +35,26 @@ Feature: The user can manage destinations
   # Test deleting a destination
   Scenario: A user tries to delete a destination
     Given that I am logged in
-    And the database has been populated with the following countries, districts and destination types:
-      | destinationType | country                  | district        |
-      | Event           | United States of America | Black Rock City |
-      | City            | Australia                | New Farm        |
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          | =41.2    | 174.9     | 1         |
+      | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         |
     When I click the Delete Destination button
     Then I should receive an error indicating that the Destination is not found
 
   Scenario: A user can add a photo to a destination
+    Given that I am logged in
+    And that I have the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          | 41.2    | 174.9     | 1         |
+    And that I have the following private destination photos
+      | destination_id   | photo_id |
+      | 1                | 1        |
+    When I change the photo permissions to public
+    Then the permission changes should be reflected in the database
+
+
+  # Test updating a destination
+  Scenario: A user tries to update a destination with no change in the information
     Given that I am logged in
     And the database has been populated with the following countries, districts and destination types:
       | destinationType | country                  | district        |
@@ -52,17 +62,30 @@ Feature: The user can manage destinations
       | City            | Australia                | New Farm        |
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
-    And the user has the following photos in the system:
-      | filename      | isPrimary | isPublic |
-      | monkey.png    | false     | false    |
-      | dog.jpg       | false     | false    |
-      | cat.jpeg      | false     | false    |
-      | cucumber.jpeg | false     | false    |
-      | whale.png     | false     | false    |
-    When the user adds "monkey.png" to the destination "The Dairy Down The Street"
-    Then then the photo gets added to the destination
+      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
+    When I update the Destination with the following information:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | false    |
+    Then I should be allowed to update the Destination
 
+  Scenario: A user tries to update a destination with new information
+    Given that I am logged in
+    And that I have the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
+    When I update the Destination with the following information:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | 1          | 40.0     | 184.9     | 1         | true     |
+    Then the Destination information is updated
+
+  Scenario: A user tries to update a non-existent destination with the given ID
+    Given that I am logged in
+    When I try to update the Destination with the following information:
+      | destinationId | destinationName | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+      | 10000         | America         | 1000              | 111        | 40.0     | 184.9     | 1         | true     |
+    Then I get an error indicating that the Destination is not found
+
+  # Test adding a photo to a destination
   Scenario: A user tries to add a photo to a destination with a photo that doesn't exist
     Given that I am logged in
     And the database has been populated with the following countries, districts and destination types:
@@ -101,4 +124,18 @@ Feature: The user can manage destinations
     When the user adds "monkey.png" to the destination "Some destination I don't have"
     Then the photo does not get added to the destination
 
+  Scenario: A user tries to add a photo to a destination that isn't theirs
+    Given that I am logged in
+    And that another user has the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+    And the user has the following photos in the system:
+      | filename      | isPrimary | isPublic |
+      | monkey.png    | false     | false    |
+      | dog.jpg       | false     | false    |
+      | cat.jpeg      | false     | false    |
+      | cucumber.jpeg | false     | false    |
+      | whale.png     | false     | false    |
+    When the user adds "monkey.png" to the destination "Some destination I don't have"
+    Then the photo does not get added to the destination
 

@@ -58,6 +58,17 @@ public class DestinationRepository {
         }, executionContext);
     }
 
+    /**
+     * Gets a list of all destinations that a user has created
+     * @return List of destinations
+     */
+    public CompletionStage<List<Destination>> getDestinationsbyUserId(int userId) {
+        return supplyAsync(() -> {
+            List<Destination> destinations = Destination.find.query().where().eq("destination_owner", userId).findList();
+            return destinations;
+        }, executionContext);
+    }
+
 
     /**
      * Inserts a destination into the database
@@ -135,12 +146,31 @@ public class DestinationRepository {
             return destinationId;
         }, executionContext);
     }
-    // TODO: Add javadoc
+
+    /**
+     * Saves the destination photo into the database
+     *
+     * @param destinationPhoto the destination photo to be saved in the database
+     * @return the photo object
+     */
     public CompletionStage<DestinationPhoto> savePhoto(DestinationPhoto destinationPhoto) {
         return supplyAsync(() -> {
             destinationPhoto.save();
             return destinationPhoto;
         });
+    }
+
+    /**
+     * Insert a destination photo into the database
+     *
+     * @param photo the destination photo to be inserted in the database
+     * @return the photo object
+     */
+    public CompletionStage<DestinationPhoto> insertDestinationPhoto(DestinationPhoto photo) {
+        return supplyAsync(() -> {
+            photo.insert();
+            return photo;
+        }, executionContext);
     }
 
 
