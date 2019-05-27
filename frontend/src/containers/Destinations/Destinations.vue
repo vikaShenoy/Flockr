@@ -17,17 +17,19 @@
               </template>
               <!--
                 Need this div to appear when no destinations are there or
-                the expansion panel will dissapear
+                the expansion panel will disappear
                -->
-              <div v-if="userDestinations.length === 0"></div> 
-              <DestinationCard
+              <div v-if="userDestinations.length === 0"></div>
+              <destination-card
 
                     v-for="(destination, index) in userDestinations"
                     v-bind:key="index"
                     :destination="destination"
-                    @deleteDestination="displayPrompt(destination, index)"
+                    @deleteDestination="displayDeletePrompt(destination, index)"
                     @editDestination="editDestination(index, destination)"
-                    @displayMessage="displayMessage"/>
+                    @displayMessage="displayMessage"
+                    @displayRemovePrompt="displayRemovePrompt"
+                    />
             </v-expansion-panel-content>
           </v-expansion-panel>
 
@@ -38,7 +40,7 @@
               <template v-slot:header>
                 <h2>All Public Destinations</h2>
               </template>
-              <div v-if="publicDestinations.length === 0"></div> 
+              <div v-if="publicDestinations.length === 0"></div>
               <DestinationCard
                     v-for="(destination, index) in publicDestinations"
                     v-bind:key="index"
@@ -282,9 +284,19 @@
        * @param destination {POJO} the destination to be deleted on confirmation.
        * @param index {Number} the index of the destination in the destinations list.
        */
-      displayPrompt(destination, index) {
+      displayDeletePrompt(destination, index) {
         this.promptDialog.message = "Are you sure you would like to delete this destination?";
         this.promptDialog.deleteFunction = this.getDeleteFunction(destination, index);
+        this.promptDialog.show = true;
+      },
+      /**
+       * Calls a prompt dialog to be displayed to the user.
+       *
+       * @param removePhotoFunction {Function} the function to call on confirmation.
+       */
+      displayRemovePrompt(removePhotoFunction) {
+        this.promptDialog.message = "Are you sure you would like to remove this photo from the destination?";
+        this.promptDialog.deleteFunction = removePhotoFunction;
         this.promptDialog.show = true;
       },
       /**
@@ -376,7 +388,7 @@
   height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center; 
+  justify-content: center;
 }
 
 </style>

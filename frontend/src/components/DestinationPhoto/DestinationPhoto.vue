@@ -42,7 +42,6 @@
 
 <script>
   import {updatePhotoPermissions} from "../../containers/UserGallery/UserGalleryService";
-  import UserStore from "../../stores/UserStore";
 
   export default {
     props: {
@@ -67,32 +66,28 @@
           type: Number,
           required: false
         }
+      },
+      hasModifyRights: {
+        type: Boolean,
+        required: false
       }
     },
     data() {
       return {
-        fab: false,
-        hasModifyRights: false
-      }
-    },
-    watch: {
-      photo: {
-        handler: "onPhotoUpdated",
-        immediate: true
+        fab: false
       }
     },
     methods: {
+      /**
+       * Called when the permission button is selected.
+       * Updates the permission of a photo and emits the new value to be updated in the parent.
+       */
       async updatePhotoPermissions() {
         try {
           await updatePhotoPermissions(!this.photo.isPublic, this.photo.photoId);
           this.$emit("permissionUpdated", !this.photo.isPublic);
         } catch (error) {
           this.$emit("displayError", error.message);
-        }
-      },
-      onPhotoUpdated() {
-        if (![null, undefined].includes(this.photo)) {
-          this.hasModifyRights = this.photo.ownerId === localStorage.getItem("userId") || UserStore.methods.isAdmin();
         }
       }
     }

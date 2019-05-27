@@ -62,6 +62,10 @@ public class PersonalPhoto extends Model {
         return this.user;
     }
 
+    public int getOwnerId() {
+        return user.getUserId();
+    }
+
     public void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }

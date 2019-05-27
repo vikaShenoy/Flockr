@@ -1,51 +1,54 @@
 <template>
-    <v-card elevation="10"
-            class="destination-card row col-md-12">
-        <div class="title-card">
-           <h2 class="name-header">{{ destination.destinationName }}</h2>
-            <div class="body-card col-md-12">
-              <Carousel
+  <v-card elevation="10"
+          class="destination-card row col-md-12">
+    <div class="title-card">
+      <h2 class="name-header">{{ destination.destinationName }}</h2>
+      <div class="body-card col-md-12">
+        <Carousel
                 :photos="photos"
+                :destinationId="destination.destinationId"
                 v-if="photos"
-                @displayError="displayError"
+                @displayError="displayMessage"
                 @permissionUpdated="permissionUpdated"
-              />
-           </div>
-        </div>
-        <div class="destination-content">
+                :hasOwnerRights="hasOwnerRights"
+                @displayRemovePrompt="displayRemovePrompt"
+        />
+      </div>
+    </div>
+    <div class="destination-content">
+      <div class="row">
+        <div class="col-md-6">
           <div class="row">
-          <div class="col-md-6">
-              <div class="row">
-                  <div class="basic-info-label"><p><b>Type</b></p></div>
-                 <div class="basic-info-label">{{ destination.destinationType.destinationTypeName }}</div>
-              </div>
-              <hr class="divider"/>
-              <div class="row">
-                  <div class="basic-info-label"><p><b>District</b></p></div>
-                 <div class="basic-info-label">{{ destination.destinationDistrict.districtName }}</div>
-              </div>
-              <hr class="divider"/>
+            <div class="basic-info-label"><p><b>Type</b></p></div>
+            <div class="basic-info-label">{{ destination.destinationType.destinationTypeName }}</div>
           </div>
-          <div class="col-md-6">
-             <h2 class="name-header">{{ destination.destinationCountry.countryName }}</h2>
-             <v-img class="image"
-                    src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
+          <hr class="divider"/>
+          <div class="row">
+            <div class="basic-info-label"><p><b>District</b></p></div>
+            <div class="basic-info-label">{{ destination.destinationDistrict.districtName }}</div>
           </div>
-          </div>
+          <hr class="divider"/>
         </div>
-        <v-btn v-if="hasOwnerRights" fab class="edit-button" id="edit-destination-button" @click="editDestination">
-            <v-icon>edit</v-icon>
-        </v-btn>
-        <v-btn v-if="hasOwnerRights" fab class="delete-button" id="delete-destination-button" @click="deleteDestination">
-            <v-icon>remove</v-icon>
-        </v-btn>
-    </v-card>
+        <div class="col-md-6">
+          <h2 class="name-header">{{ destination.destinationCountry.countryName }}</h2>
+          <v-img class="image"
+                 src="https://cdn.mapsinternational.co.uk/pub/media/catalog/product/cache/afad95d7734d2fa6d0a8ba78597182b7/w/o/world-wall-map-political-without-flags_wm00001_h.jpg"></v-img>
+        </div>
+      </div>
+    </div>
+    <v-btn v-if="hasOwnerRights" fab class="edit-button" id="edit-destination-button" @click="editDestination">
+      <v-icon>edit</v-icon>
+    </v-btn>
+    <v-btn v-if="hasOwnerRights" fab class="delete-button" id="delete-destination-button" @click="deleteDestination">
+      <v-icon>remove</v-icon>
+    </v-btn>
+  </v-card>
 </template>
 
 <script>
 
   import Carousel from "./Carousel/Carousel";
-  import { getDestinationPhotos } from "./DestinationCardService";
+  import {getDestinationPhotos, removePhotoFromDestination} from "./DestinationCardService";
   import UserStore from "../../../stores/UserStore";
 
   export default {
@@ -61,7 +64,7 @@
     },
     props: {
       destination: {
-        id: {
+        destinationId: {
           type: Number,
           required: true
         },
@@ -111,8 +114,7 @@
     },
     async mounted() {
       try {
-        const photos = await getDestinationPhotos(this.destination.destinationId);
-        this.photos = photos;
+        this.photos = await getDestinationPhotos(this.destination.destinationId);
         this.hasOwnerRights = UserStore.methods.isAdmin() || this.destination.destinationOwner === localStorage.getItem("userId");
       } catch (error) {
         this.$emit("displayMessage", {
@@ -122,6 +124,43 @@
       }
     },
     methods: {
+      /**
+       * Removes a photo at the given index from the photos array.
+       *
+       * @param index {Number} the index of the photo.
+       */
+      removePhoto(index) {
+        this.photos.splice(index, 1);
+      },
+      /**
+       * Called when the remove photo button is selected in the destination photo panel.
+       * Compiles a callback function to do the following:
+       *    - Send a request to the back end to remove the photo from the destination.
+       *    - Remove the photo from the list of photos.
+       *    - Close the photo panel.
+       *    - Display any error or confirmation messages.
+       * Then emits an event to display a confirmation message to the user and call the function on confirm.
+       *
+       * @param closeDialog {Function} closes the photo panel.
+       * @param photoId {Number} the id of the photo to be removed.
+       * @param index {Number} the index of the photo to be removed.
+       */
+      displayRemovePrompt(closeDialog, photoId, index) {
+        const destinationId = this.destination.destinationId;
+        const removePhoto = this.removePhoto;
+        const displayMessage = this.displayMessage;
+        const removeFunction = async function () {
+          try {
+            await removePhotoFromDestination(destinationId, photoId);
+            removePhoto(index);
+            closeDialog(false);
+            displayMessage("The photo has been successfully removed.", "green");
+          } catch (error) {
+            displayMessage(error.message, "red");
+          }
+        };
+        this.$emit("displayRemovePrompt", removeFunction);
+      },
       /**
        * Called when the edit button is selected.
        * Emits an editDestination event.
@@ -141,16 +180,29 @@
        * Emits the given error to it's parent to display.
        *
        * @param message {String} the error message
+       * @param color {String} the color the message will be displayed as.
        */
-      displayError(message) {
+      displayMessage(message, color) {
         this.$emit("displayMessage", {
           text: message,
-          color: "red"
+          color: color
         });
       },
+      /**
+       * Called when the permission is updated for a photo.
+       * Updates the isPublic field of the photo.
+       * Displays a notification to the user.
+       *
+       * @param newValue {Boolean} the new value of isPrimary for the photo.
+       * @param index {Number} the index of the photo.
+       */
       permissionUpdated(newValue, index) {
-        console.log(index);
         this.photos[index].isPublic = newValue;
+        if (newValue) {
+          this.displayMessage("This photo is now public", "green");
+        } else {
+          this.displayMessage("This photo is now private", "green");
+        }
       }
     }
   }
@@ -158,7 +210,7 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../styles/_variables.scss";
+  @import "../../../styles/_variables.scss";
 
   .divider {
     margin: 0 0 20px;
@@ -189,12 +241,11 @@
     width: 100%;
     margin: 10px 0 0;
     padding: 10px;
-   }
+  }
 
-   .title-card {
-      width: 300px;
-   }
-
+  .title-card {
+    width: 300px;
+  }
 
 
   .destinations-panel :hover #save-destination-button {
@@ -230,12 +281,12 @@
     visibility: hidden;
   }
 
-.carousel {
-  max-height: 200px;
-}
+  .carousel {
+    max-height: 200px;
+  }
 
-.destination-content {
-  width: calc(100% - 300px);
-}
+  .destination-content {
+    width: calc(100% - 300px);
+  }
 
 </style>
