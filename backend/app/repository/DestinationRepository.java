@@ -64,7 +64,7 @@ public class DestinationRepository {
      */
     public CompletionStage<List<Destination>> getDestinationsbyUserId(int userId) {
         return supplyAsync(() -> {
-            List<Destination> destinations = Destination.find.query().where().eq("user_user_id", userId).findList();
+            List<Destination> destinations = Destination.find.query().where().eq("destination_owner", userId).findList();
             return destinations;
         }, executionContext);
     }
