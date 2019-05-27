@@ -211,11 +211,11 @@ public class UserPhotoSteps {
         }
 
         this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
-            "POST",
-            "/api/users/" + this.karenRegular.getUserId() + "/photos",
-            this.tylerRegular.getToken(),
-            file,
-            values);
+                "POST",
+                "/api/users/" + this.karenRegular.getUserId() + "/photos",
+                this.tylerRegular.getToken(),
+                file,
+                values);
 
         if (this.result.status() == 200) {
             Assert.assertNotNull(this.result);
