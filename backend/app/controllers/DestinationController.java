@@ -370,18 +370,33 @@ public class DestinationController extends Controller {
                     if (!optionalDestination.isPresent()) {
                         throw new CompletionException(new NotFoundException("Could not found destination"));
                     }
-                    // TODO: Add check that user owns destination when destination types get merged in
+
+                    if (
+                            !optionalDestination.get().getIsPublic() &&
+                            !optionalDestination.get().getDestinationOwner().equals(userFromMiddleware.getUserId()) &&
+                            !userFromMiddleware.isAdmin()
+                    ) {
+                        throw new CompletionException(new ForbiddenRequestException("Forbidden"));
+                    }
+
                     return photoRepository.getPhotoByIdAndUser(photoId, userFromMiddleware.getUserId())
                             .thenComposeAsync(optionalPhoto -> {
                                 if (!optionalPhoto.isPresent()) {
                                     throw new CompletionException(new NotFoundException("Could not find photo"));
                                 }
 
+                                //TODO test this
+
+                                if (    optionalDestination.get().getIsPublic() &&                          // The destination is public
+                                        optionalDestination.get().getDestinationOwner() != null &&          // The owner is not already null
+                                        !optionalDestination.get().getDestinationOwner().equals(userFromMiddleware.getUserId())) {  // The user doesn't own the destination
+                                    optionalDestination.get().setDestinationOwner(null);
+                                    destinationRepository.update(optionalDestination.get());
+                                }
+
                                 Destination destination = optionalDestination.get();
                                 PersonalPhoto personalPhoto = optionalPhoto.get();
-
                                 DestinationPhoto destinationPhoto = new DestinationPhoto(destination, personalPhoto);
-
 
                                 return destinationRepository.savePhoto(destinationPhoto);
                             })
