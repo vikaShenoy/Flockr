@@ -11,6 +11,7 @@ import cucumber.api.java.en.When;
 import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import io.cucumber.datatable.DataTable;
+import io.ebean.Ebean;
 import models.*;
 import org.junit.Assert;
 import play.Application;
@@ -203,7 +204,7 @@ public class DestinationTestingSteps {
     @When("^the user gets all the photos for the destination$")
     public void theUserGetsAllThePhotosForTheDestination() {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId() + "photos", user.getToken());
+        result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
         Assert.assertEquals(200, result.status());
     }
 
@@ -212,10 +213,15 @@ public class DestinationTestingSteps {
         JsonNode resultAsJson = PlayResultToJson.convertResultToJson(result);
         Assert.assertTrue(resultAsJson.isArray());
         ArrayNode destinationPhotos = (ArrayNode) resultAsJson;
+        System.out.println(destinationPhotos);
+
+        List<DestinationPhoto> publicDestinationPhotos = destination.getPublicDestinationPhotos();
+        System.out.println(publicDestinationPhotos);
 
         int publicPhotosFound = 0;
-        for (JsonNode node : destinationPhotos) {
-            if (node.get("isPublic").asText().equals("true")) {
+        for (JsonNode destinationPhoto : destinationPhotos) {
+            JsonNode personalPhoto = destinationPhoto.get("personalPhoto");
+            if (personalPhoto.get("isPublic").asText().equals("true")) {
                 publicPhotosFound += 1;
             }
         }
@@ -230,7 +236,8 @@ public class DestinationTestingSteps {
 
         int privatePhotosFound = 0;
         for (JsonNode node : destinationPhotos) {
-            if (node.get("isPublic").asText().equals("false")) {
+            JsonNode personalPhoto = node.get("personalPhoto");
+            if (personalPhoto.get("isPublic").asText().equals("false")) {
                 privatePhotosFound += 1;
             }
         }
@@ -242,13 +249,7 @@ public class DestinationTestingSteps {
         List<DestinationPhoto> destinationPhotos = destination.getDestinationPhotos();
 
         // get number of private photos for venue in database
-        int numberOfPrivatePhotosInDatabase = 0;
-
-        for (DestinationPhoto d : destinationPhotos) {
-            if (!d.getPersonalPhoto().isPublic()) {
-                numberOfPrivatePhotosInDatabase += 1;
-            }
-        }
+        int numberOfPrivatePhotosInDatabase = destinationPhotos.stream().mapToInt(destinationPhoto -> !destinationPhoto.getPersonalPhoto().isPublic() ? 1 : 0).sum();
 
         int numberOfPrivatePhotosInResponse = 0;
 
@@ -256,8 +257,9 @@ public class DestinationTestingSteps {
         Assert.assertTrue(resultAsJson.isArray());
         ArrayNode venuePhotos = (ArrayNode) resultAsJson;
 
-        for (JsonNode node : venuePhotos) {
-            if (node.get("isPublic").asText().equals("false")) {
+        for (JsonNode venuePhoto : venuePhotos) {
+            JsonNode personalPhoto = venuePhoto.get("personalPhoto");
+            if (personalPhoto.get("isPublic").asText().equals("false")) {
                 numberOfPrivatePhotosInResponse += 1;
             }
         }
@@ -287,17 +289,22 @@ public class DestinationTestingSteps {
     @Given("the photo {string} is linked to the destination {string}")
     public void thePhotoIsLinkedToTheDestination(String photoFilename, String destinationName) {
         this.theUserAddsStringToTheDestinationString(photoFilename, destinationName);
+        Assert.assertEquals(201, this.result.status());
     }
 
     @Given("the destination {string} has public photos linked to it")
     public void theDestinationHasPublicPhotosLinkedToIt(String destinationName) {
+        this.theUserAddsStringToTheDestinationString("monkey.png", destinationName);
+
         List<Destination> destinations = TestState.getInstance().getDestinations();
-        Destination destination = null;
+        destination = null;
         for (Destination currentDestination : destinations) {
             if (currentDestination.getDestinationName().equals(destinationName)) {
                 destination = currentDestination;
             }
         }
+
+        List<DestinationPhoto> publicDestinationPhotos = this.destination.getPublicDestinationPhotos();
 
         Assert.assertTrue(destination.getPublicDestinationPhotos().size() > 0);
     }

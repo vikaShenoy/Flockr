@@ -132,7 +132,10 @@ public class Destination extends Model {
      * @return the private photos for the given user that are linked with the destination
      */
     public List<DestinationPhoto> getPrivatePhotosForUserWithId(int userId) {
-        return destinationPhotos.parallelStream().filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().getUser().getUserId() == userId)).collect(Collectors.toList());
+        return destinationPhotos.parallelStream()
+            .filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().getUser().getUserId() == userId))
+            .filter(destinationPhoto -> !destinationPhoto.getPersonalPhoto().isPublic())
+            .collect(Collectors.toList());
     }
 
     /**

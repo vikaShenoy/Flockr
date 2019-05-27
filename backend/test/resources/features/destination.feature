@@ -125,18 +125,6 @@ Feature: The user can manage destinations
     Then the user can see all the public photos for the destination
     And the user can see only their private photos linked to the destination
 
-  Scenario: An admin user tries to get all the photos for a destination
-    Given that the user 1 is an admin
-    Given that user 1 logged in
-    Given that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
-    Given the destination "The Dairy Down The Street" has public photos linked to it
-    Given the destination "The Dairy Down The Street" has private photos linked to it
-    When the user gets all the photos for the destination
-    Then the user can see all the public photos for the destination
-    And the admin can see all the user's private photos linked to the destination
-
   Scenario: A regular user tries to get all the photos for a destination that does not exist
     Given that the user 0 is a regular user
     Given that user 0 logged in

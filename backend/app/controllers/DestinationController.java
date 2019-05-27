@@ -330,6 +330,9 @@ public class DestinationController  extends Controller{
             photosToReturn.addAll(publicDestinationPhotos);
             photosToReturn.addAll(privatePhotosForUser);
 
+            JsonNode photos = Json.toJson(photosToReturn);
+            System.out.println(photos);
+
             return ok(Json.toJson(photosToReturn));
         }), httpExecutionContext.current());
     }
