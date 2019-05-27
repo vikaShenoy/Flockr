@@ -7,6 +7,8 @@
               <Carousel
                 :photos="photos"
                 v-if="photos"
+                @displayError="displayError"
+                @permissionUpdated="permissionUpdated"
               />
            </div>
         </div>
@@ -133,6 +135,22 @@
        */
       deleteDestination() {
         this.$emit("deleteDestination");
+      },
+      /**
+       * Called when the destination photo emits an error to display.
+       * Emits the given error to it's parent to display.
+       *
+       * @param message {String} the error message
+       */
+      displayError(message) {
+        this.$emit("displayMessage", {
+          text: message,
+          color: "red"
+        });
+      },
+      permissionUpdated(newValue, index) {
+        console.log(index);
+        this.photos[index].isPublic = newValue;
       }
     }
   }

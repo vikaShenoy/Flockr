@@ -107,6 +107,7 @@
        * Called when the dialog variable changes state.
        */
       showDialogChanged() {
+        console.log(this.photo);
         this.showModify = (localStorage.getItem("userId") === this.$route.params.id || UserStore.methods.isAdmin());
         this.isPublicData = this.photo.public;
         this.dialog = this.showDialog;
