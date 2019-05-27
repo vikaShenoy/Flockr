@@ -15,7 +15,6 @@ import repository.DestinationRepository;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -45,8 +44,10 @@ public class DestinationController extends Controller {
      * @param request Http.Request the http request
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
+    @With(LoggedIn.class)
     public CompletionStage<Result> getDestinations(Http.Request request) {
-        return destinationRepository.getDestinations()
+        User user = request.attrs().get(ActionState.USER);
+        return destinationRepository.getDestinationsbyUserId(user.getUserId())
                 .thenApplyAsync(destinations -> ok(Json.toJson(destinations)), httpExecutionContext.current());
     }
 
@@ -58,15 +59,21 @@ public class DestinationController extends Controller {
      * @return a completion stage and a Status code of 200 and destination details as a Json object if successful,
      * otherwise returns status code 404 if the destination can't be found in the db.
      */
-
+    @With(LoggedIn.class)
     public CompletionStage<Result> getDestination(int destinationId, Http.Request request) {
-
+        User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinationById(destinationId)
                 .thenApplyAsync((destination) -> {
                     if (!destination.isPresent()) {
                         ObjectNode message = Json.newObject();
                         message.put("message", "No destination exists with the specified ID");
                         return notFound(message);
+                    }
+
+                    if (destination.get().getDestinationOwner() != user.getUserId()) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "You are not authorised to get this destination");
+                        return forbidden(message);
                     }
 
                     JsonNode destAsJson = Json.toJson(destination);
@@ -276,12 +283,18 @@ public class DestinationController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteDestination(int destinationId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinationById(destinationId)
                 .thenComposeAsync(optionalDestination -> {
                     if (!optionalDestination.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
                     Destination destination = optionalDestination.get();
+                    System.out.println(destination.getDestinationOwner());
+                    System.out.println(user.toString());
+                    if (destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
+                        throw new CompletionException(new ForbiddenRequestException("You are not permitted to delete this destination"));
+                    }
                     ObjectNode success = Json.newObject();
                     success.put("message", "Successfully deleted the given destination id");
                     return this.destinationRepository.deleteDestination(destination.getDestinationId());
@@ -294,7 +307,12 @@ public class DestinationController extends Controller {
                         ObjectNode message = Json.newObject();
                         message.put("message", "The given destination id is not found");
                         return notFound(message);
+                    } catch (ForbiddenRequestException forbiddenReqE) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", forbiddenReqE.getMessage());
+                        return forbidden(message);
                     } catch (Throwable serverError) {
+                        serverError.printStackTrace();
                         return internalServerError();
                     }
                 });
