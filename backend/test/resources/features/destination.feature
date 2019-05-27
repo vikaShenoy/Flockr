@@ -41,6 +41,27 @@ Feature: The user can manage destinations
     When I click the Delete Destination button
     Then I should receive an error indicating that the Destination is not found
 
+   Scenario: A user tries to get their own destination photos
+     Given that I am logged in
+     And that I have the following destinations:
+       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+       | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         | true     |
+       | Some Name                 | 1                 | 1          | -41.2    | 174.9     | 1         | false    |
+     When the user gets their own destinations
+     Then 2 destinations should be returned
+
+
+   Scenario: A user tries to access another user's destinations
+     Given that I am logged in
+     And that I have the following destinations:
+       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+       | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         | true     |
+       | Some Name                 | 1                 | 1          | -41.2    | 174.9     | 1         | false    |
+     When another user gets the user's destinations
+     Then 1 destinations should be returned
+
+
+
   Scenario: A user can add a photo to a destination
     Given that I am logged in
     And that I have the following destinations:
