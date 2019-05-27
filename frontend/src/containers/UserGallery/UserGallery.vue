@@ -17,27 +17,24 @@
                   sm6
                   xs12
                   class="photo-tile"
-                  v-on:click="openPhotoDialog(photo, index)"
-          >
+                  v-on:click="openPhotoDialog(photo, index)">
             <v-img
                     :src="photo.thumbEndpoint"
                     aspect-ratio="1"
-                    class="grey lighten-2"
-            >
+                    class="grey lighten-2">
               <template v-slot:placeholder>
                 <v-layout
                         fill-height
                         align-center
-                        justify-center
-                >
-                  <v-progress-circular indeterminate color="grey lighten-5"></v-progress-circular>
+                        justify-center>
+                  <v-progress-circular
+                          indeterminate
+                          color="grey lighten-5"/>
                 </v-layout>
               </template>
             </v-img>
           </v-flex>
-
         </v-layout>
-
       </v-container>
     </v-responsive>
     <photo-panel
