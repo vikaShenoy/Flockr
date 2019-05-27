@@ -2,6 +2,7 @@ package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -20,16 +21,16 @@ import utils.TestAuthenticationHelper;
 import utils.TestState;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
 
 import static play.test.Helpers.route;
 
 public class DestinationTestingSteps {
 
     private JsonNode destinationData;
+    private Result existingDestination;
+    private ObjectNode destinationNode;
     private Result result;
 
     @Given("users with the following information exist:")
@@ -54,12 +55,11 @@ public class DestinationTestingSteps {
                 Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
                 TestState.getInstance().addDestination(destination);
 
-                Result result = fakeClient.makeRequestWithNoToken("GET", "/api/destinations/" + destination.getDestinationId());
-
-                // check that the destination's name has some text in it
-                JsonNode res = utils.PlayResultToJson.convertResultToJson(result);
-                String destinationName = res.get("destinationName").asText();
-                Assert.assertTrue(destinationName.length() > 0);
+                Destination destination1 = Destination.find.byId(destination.getDestinationId());
+                Assert.assertNotNull(destination1);
+                Assert.assertTrue(destination1.getDestinationName().length() > 0);
+                this.result = fakeClient.makeRequestWithNoToken("GET", "/api/destinations/" + destination.getDestinationId());
+                existingDestination = this.result;
             } catch (UnauthorizedException | ServerErrorException e) {
                 Assert.fail(Arrays.toString(e.getStackTrace()));
             }
@@ -208,5 +208,96 @@ public class DestinationTestingSteps {
         Assert.assertEquals(0, destinationPhotos.size());
     }
 
+
+
+    @When("I update the Destination with the following information:")
+    public void iUpdateTheDestinationWithTheFollowingInformation(DataTable dataTable) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+        List<Map<String, String>> destinationList = dataTable.asMaps();
+        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
+        Map<String, String> firstRow = list.get(0);
+
+        this.destinationNode = Json.newObject();
+        this.destinationNode.put("destinationName", firstRow.get("destinationName"));
+        this.destinationNode.put("destinationTypeId", firstRow.get("destinationTypeId"));
+        this.destinationNode.put("districtId", firstRow.get("districtId"));
+        this.destinationNode.put("latitude", firstRow.get("latitude"));
+        this.destinationNode.put("longitude", firstRow.get("longitude"));
+        this.destinationNode.put("countryId", firstRow.get("countryId"));
+        this.destinationNode.put("isPublic", firstRow.get("isPublic"));
+
+        for (int i = 0; i < destinationList.size(); i++) {
+            try {
+                Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
+                TestState.getInstance().addDestination(destination);
+
+
+                this.result = fakeClient.makeRequestWithToken("PUT", this.destinationNode, "/api/destinations/" + destination.getDestinationId(), user.getToken());
+
+                Result getDestination = fakeClient.makeRequestWithNoToken("GET", "/api/destinations/" + destination.getDestinationId());
+                JsonNode destinationData = utils.PlayResultToJson.convertResultToJson(getDestination);
+
+                Assert.assertEquals(destinationData.get("destinationName").asText(), firstRow.get("destinationName"));
+                Assert.assertEquals(destinationData.get("destinationType").get("destinationTypeId").asText(), firstRow.get("destinationTypeId"));
+                Assert.assertEquals(destinationData.get("destinationDistrict").get("districtId").asText(), firstRow.get("districtId"));
+                Assert.assertEquals(destinationData.get("destinationLat").asText(), firstRow.get("latitude"));
+                Assert.assertEquals(destinationData.get("destinationLon").asText(), firstRow.get("longitude"));
+                Assert.assertEquals(destinationData.get("destinationCountry").get("countryId").asText(), firstRow.get("countryId"));
+                Assert.assertEquals(destinationData.get("isPublic").asText(), firstRow.get("isPublic"));
+
+            } catch (UnauthorizedException unauthorisedExceptionE) {
+                Assert.fail(Arrays.toString(unauthorisedExceptionE.getStackTrace()));
+            } catch (ServerErrorException serverErrorE) {
+                Assert.fail(Arrays.toString(serverErrorE.getStackTrace()));
+            }
+        }
+    }
+
+    @Then("I should be allowed to update the Destination")
+    public void iShouldBeAllowedToUpdateTheDestination() {
+        Assert.assertEquals(200, this.result.status());
+    }
+
+    @Then("the Destination information is updated")
+    public void theDestinationInformationIsUpdated() throws IOException {
+        Assert.assertEquals(200, this.result.status());
+        JsonNode originalDestination = utils.PlayResultToJson.convertResultToJson(existingDestination);
+
+        Assert.assertEquals(destinationNode.get("destinationName").asText(), originalDestination.get("destinationName").asText());
+        Assert.assertEquals(destinationNode.get("destinationTypeId").asText(), originalDestination.get("destinationType").get("destinationTypeId").asText());
+        Assert.assertEquals(destinationNode.get("districtId").asText(), originalDestination.get("destinationDistrict").get("districtId").asText());
+        Assert.assertNotEquals(destinationNode.get("latitude").asInt(), originalDestination.get("destinationLat").asInt());
+        Assert.assertNotEquals(destinationNode.get("longitude").asInt(), originalDestination.get("destinationLon").asInt());
+        Assert.assertEquals(destinationNode.get("countryId").asInt(), originalDestination.get("destinationCountry").get("countryId").asInt());
+        Assert.assertNotEquals(destinationNode.get("isPublic").asBoolean(), originalDestination.get("isPublic").asBoolean());
+    }
+
+    @When("I try to update the Destination with the following information:")
+    public void iTryToUpdateTheDestinationWithTheFollowingInformation(DataTable dataTable) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+        List<Map<String, String>> destinationList = dataTable.asMaps();
+        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
+        Map<String, String> firstRow = list.get(0);
+
+        this.destinationNode = Json.newObject();
+        this.destinationNode.put("destinationName", firstRow.get("destinationName"));
+        this.destinationNode.put("destinationTypeId", firstRow.get("destinationTypeId"));
+        this.destinationNode.put("districtId", firstRow.get("districtId"));
+        this.destinationNode.put("latitude", firstRow.get("latitude"));
+        this.destinationNode.put("longitude", firstRow.get("longitude"));
+        this.destinationNode.put("countryId", firstRow.get("countryId"));
+        this.destinationNode.put("isPublic", firstRow.get("isPublic"));
+
+        for (int i = 0; i < destinationList.size(); i++) {
+            this.result = fakeClient.makeRequestWithToken("PUT", this.destinationNode, "/api/destinations/" + 10000, user.getToken());
+        }
+    }
+
+    @Then("I get an error indicating that the Destination is not found")
+    public void iGetAnErrorIndicatingThatTheDestinationIsNotFound() {
+        Assert.assertEquals(404, this.result.status());
+    }
 
 }

@@ -58,6 +58,17 @@ public class DestinationRepository {
         }, executionContext);
     }
 
+    /**
+     * Gets a list of all destinations that a user has created
+     * @return List of destinations
+     */
+    public CompletionStage<List<Destination>> getDestinationsbyUserId(int userId) {
+        return supplyAsync(() -> {
+            List<Destination> destinations = Destination.find.query().where().eq("user_user_id", userId).findList();
+            return destinations;
+        }, executionContext);
+    }
+
 
     /**
      * Inserts a destination into the database
