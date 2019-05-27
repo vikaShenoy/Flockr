@@ -21,6 +21,10 @@ public class DestinationPhoto extends Model {
         this.personalPhoto = personalPhoto;
     }
 
+    public PersonalPhoto getPersonalPhoto() {
+        return personalPhoto;
+    }
+
     public static final Finder<Integer, DestinationPhoto> find = new Finder<>(DestinationPhoto.class);
 
 }

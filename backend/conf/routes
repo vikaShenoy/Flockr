@@ -40,10 +40,13 @@ GET         /api/destinations/countries/:countryId/districts    controllers.Dest
 GET         /api/destinations/types                             controllers.DestinationController.getDestinationTypes()
 GET         /api/destinations/:destinationId                    controllers.DestinationController.getDestination(destinationId: Int, request: Request)
 DELETE      /api/destinations/:destinationId                    controllers.DestinationController.deleteDestination(destinationId: Int, request: Request)
-
 POST        /api/destinations                                   controllers.DestinationController.addDestination(request: Request)
 PUT         /api/destinations/:destinationId                    controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
+
+# Destination photos routes
 POST        /api/destinations/:destinationId/photos             controllers.DestinationController.addPhoto(destinationId: Int, request: Request)
+GET         /api/destinations/:destinationId/photos             controllers.DestinationController.getPhotos(destinationId: Int, request: Request)
+
 
 # Trip Routes
 GET         /api/users/:userId/trips                  controllers.TripController.getTrips(request: Request, userId: Int)

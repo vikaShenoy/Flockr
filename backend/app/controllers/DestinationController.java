@@ -12,7 +12,9 @@ import play.mvc.*;
 import repository.DestinationRepository;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
@@ -295,6 +297,44 @@ public class DestinationController  extends Controller{
                     }
                 });
     }
+
+    /**
+     * Get all the photos linked to this destination
+     * @param destinationId the id of the destination
+     * @param request the HTTP request trying to get the destination photos
+     * @return a response according to the API spec
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getPhotos(int destinationId, Http.Request request) {
+        // TODO: check that the destination is not private once Story 13 is done
+        // TODO: if destination is private, check that the user has permission once Story 13 is done
+
+        ObjectNode res = Json.newObject();
+        String messageKey = "message";
+        User user = request.attrs().get(ActionState.USER);
+        return destinationRepository.getDestinationById(destinationId).thenApplyAsync((optionalDestination -> {
+            if (!optionalDestination.isPresent()) {
+                res.put(messageKey, "Destination " + destinationId + " does not exist");
+                return notFound(res);
+            }
+            Destination destination = optionalDestination.get();
+            List<DestinationPhoto> destinationPhotos = destination.getDestinationPhotos();
+
+            if (user.isAdmin() || user.isDefaultAdmin()) {
+                return ok(Json.toJson(destinationPhotos)); // TODO: find out why "isPrimary" is serialised as "primary" in JSON
+            }
+
+            List<DestinationPhoto> photosToReturn = new ArrayList<>();
+            List<DestinationPhoto> publicDestinationPhotos = destination.getPublicDestinationPhotos();
+            List<DestinationPhoto> privatePhotosForUser = destination.getPrivatePhotosForUserWithId(user.getUserId());
+            photosToReturn.addAll(publicDestinationPhotos);
+            photosToReturn.addAll(privatePhotosForUser);
+
+            return ok(Json.toJson(photosToReturn));
+        }), httpExecutionContext.current());
+    }
+
+
 
 }
 
