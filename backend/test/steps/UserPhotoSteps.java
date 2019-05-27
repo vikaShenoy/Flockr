@@ -72,7 +72,7 @@ public class UserPhotoSteps {
 
     @Given("^the user has the following photos in the system:$")
     public void theUserHasTheFollowingPhotosInTheSystem(DataTable dataTable) {
-        User testUser = TestState.getInstance().removeUser(0);
+        User testUser = TestState.getInstance().getUser(0);
         this.photoList = dataTable;
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
 
@@ -91,7 +91,6 @@ public class UserPhotoSteps {
 
         Assert.assertNotNull(user);
         Assert.assertEquals(list.size(), user.getPersonalPhotos().size());
-        TestState.getInstance().addUser(user);
     }
 
     @When("^the user tries to retrieve their photos$")
@@ -271,7 +270,7 @@ public class UserPhotoSteps {
         Assert.assertEquals(200, this.result.status());
     }
 
-    @Then("^the user gets the same list$")
+    @Then("^the list does not contain the primary photo$")
     public void theUserGetsTheSameList() throws IOException {
         JsonNode jsonNode = PlayResultToJson.convertResultToJson(this.result);
         Assert.assertTrue(jsonNode.isArray());
@@ -282,10 +281,7 @@ public class UserPhotoSteps {
         while (iterator.hasNext()) {
             JsonNode nextPhoto = iterator.next();
             PersonalPhoto personalPhoto = objectMapper.treeToValue(nextPhoto, PersonalPhoto.class);
-            Map<String, String> row = rowsIterator.next();
-            Assert.assertEquals(row.get("filename"), personalPhoto.getFilenameHash());
-            Assert.assertEquals(Boolean.valueOf(row.get("isPrimary")), personalPhoto.isPrimary());
-            Assert.assertEquals(Boolean.valueOf(row.get("isPublic")), personalPhoto.isPublic());
+            Assert.assertFalse(personalPhoto.isPrimary());
         }
     }
 
