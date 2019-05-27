@@ -19,7 +19,7 @@
           v-on:mouseenter="inButton = !inButton"
           v-on:mouseleave="inButton = !inButton"
           fab
-          @click="showAddPhotoDialog"
+          @click="openAddPhotoDialog()"
           v-if="addPhotoButton"
           >
             <v-icon>add</v-icon>
@@ -35,6 +35,10 @@
             @closeDialog="closePhotoPanel"
             :photoIndex="currentPhotoIndex"
     />
+    <AddPhotoDialog
+            :showDialog="showAddPhotoDialog"
+            @closeAddPhotoDialog="closeAddPhotoDialogHandler"
+    />
   </v-carousel>
 
 </template>
@@ -42,9 +46,10 @@
 <script>
 import { getThumbnailUrl } from "../../../../utils/photos";
 import DestinationPhotoPanel from "./DestinationPhotoPanel/DestinationPhotoPanel";
+import AddPhotoDialog from "./AddDestinationPhotoDialog/AddDestinationPhotoDialog";
 
 export default {
-  components: {DestinationPhotoPanel},
+  components: {AddPhotoDialog, DestinationPhotoPanel},
   props: {
     photos: Array
   },
@@ -54,7 +59,8 @@ export default {
       currentPhoto: null,
       currentPhotoIndex: null,
       addPhotoButton: false,
-      inButton: false
+      inButton: false,
+      showAddPhotoDialog: false
 
     }
   },
@@ -84,8 +90,11 @@ export default {
     closePhotoPanel(newVal) {
       this.showPhotoDialog = newVal;
     },
-    showAddPhotoDialog: function (event) {
-      console.log("Clicked");
+    openAddPhotoDialog: function () {
+      this.showAddPhotoDialog = true;
+    },
+    closeAddPhotoDialogHandler(newVal) {
+      this.showAddPhotoDialog = newVal
     }
   }
 };
