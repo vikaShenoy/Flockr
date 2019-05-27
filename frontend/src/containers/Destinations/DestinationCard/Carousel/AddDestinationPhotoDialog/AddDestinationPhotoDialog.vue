@@ -43,19 +43,6 @@
                             </v-img>
                         </v-flex>
                     </v-layout>
-
-                   <!-- <div id="profile-photos-selection">
-                        <span>Photos</span>
-                        <v-divider></v-divider>
-
-                        <v-img
-                                class="profile-photo"
-                                v-for="photo in userPhotos"
-                                v-bind:key="photo.photoId"
-                                :src="thumbnailPhotoUrl(photo.photoId)"
-                        ></v-img>
-
-                    </div> -->
                 </v-card-text>
             </v-card>
         </v-dialog>
@@ -72,7 +59,8 @@
             showDialog: {
                 type: Boolean,
                 required: true
-            }
+            },
+            destinationId: Number
         },
         mounted() {
             this.getUserPhotos();
@@ -80,7 +68,8 @@
         data() {
             return {
                 showAddPhotoDialog: false,
-                userPhotos: []
+                userPhotos: [],
+                id: null
             }
         },
         watch: {
@@ -90,6 +79,10 @@
             },
             showAddPhotoDialog: {
                 handler: 'onShowPhotoDialogUpdated',
+                immediate: true
+            },
+            destinationId: {
+                handler: "onDestinationIdUpdated",
                 immediate: true
             }
         },
@@ -103,7 +96,6 @@
             getUserPhotos: async function () {
                 let authToken = localStorage.getItem('authToken');
                 let userId = localStorage.getItem('userId');
-                console.log("here");
                 try {
                     const response  = await superagent(endpoint(`/users/${userId}/photos`))
                         .set('Authorization', authToken);
@@ -123,10 +115,23 @@
                     photoId: photoId
                 };
                 let authToken = localStorage.getItem('authToken');
-                const res = await superagent.post(endpoint(`/destinations/${destinationId}/photos`))
 
-                    .set('Authorization', authToken)
-                    .send(data);
+                try {
+                    const res = await superagent.post(endpoint(`/destinations/${this.id}/photos`))
+
+                        .set('Authorization', authToken)
+                        .send(data);
+                    this.showAddPhotoDialog = false;
+
+                    //TODO Tell destination card component to update its carousel
+
+                } catch (e) {
+                    console.log(e);
+                }
+
+            },
+            onDestinationIdUpdated() {
+                this.id = this.destinationId;
             }
         }
     }

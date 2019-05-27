@@ -35,6 +35,7 @@
             @permissionUpdated="permissionUpdated"
     />
     <AddPhotoDialog
+            :destinationId="destinationId"
             :showDialog="showAddPhotoDialog"
             @closeAddPhotoDialog="closeAddPhotoDialogHandler"
     />
@@ -49,7 +50,8 @@ import AddPhotoDialog from "./AddDestinationPhotoDialog/AddDestinationPhotoDialo
 export default {
   components: {AddPhotoDialog, DestinationPhotoPanel},
   props: {
-    photos: Array
+    photos: Array,
+    destinationId: Number
   },
   data() {
     return {

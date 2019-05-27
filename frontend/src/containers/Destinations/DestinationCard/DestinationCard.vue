@@ -6,6 +6,7 @@
             <div class="body-card col-md-12">
               <Carousel
                 :photos="photos"
+                :destinationId="destination.destinationId"
                 v-if="photos"
                 @displayError="displayError"
                 @permissionUpdated="permissionUpdated"
@@ -61,7 +62,7 @@
     },
     props: {
       destination: {
-        id: {
+        destinationId: {
           type: Number,
           required: true
         },
