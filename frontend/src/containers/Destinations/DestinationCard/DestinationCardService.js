@@ -16,7 +16,7 @@ export async function getDestinationPhotos(destinationId) {
   // Returning mock data while endpoint is being developed
   return [
     {
-      photoId: 246,
+      photoId: 378,
       isPrimary: true,
       isPublic: false,
       filenameHash: "something.jpg",
@@ -26,7 +26,7 @@ export async function getDestinationPhotos(destinationId) {
       ownerId: 108
     },
     {
-      photoId: 248,
+      photoId: 226,
       isPrimary: true,
       isPublic: true,
       filenameHash: "something.jpg",
