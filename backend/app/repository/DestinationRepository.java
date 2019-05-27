@@ -59,6 +59,23 @@ public class DestinationRepository {
 
 
     /**
+     * Get a destination photo associated with a destination given both ids
+     *
+     * @param destinationId the id of the destination
+     * @param photoId the id of the photo
+     * @return an optional destination photo if such link exists
+     */
+    public CompletionStage<Optional<DestinationPhoto>> getDestinationPhotoById(int destinationId, int photoId) {
+        return supplyAsync(() -> {
+            Optional<DestinationPhoto> destinationPhoto = DestinationPhoto.find.query()
+                    .where().eq("destination_destination_id", destinationId)
+                    .and().eq("personal_photo_photo_id", photoId).findOneOrEmpty();
+            return destinationPhoto;
+        }, executionContext);
+    }
+
+
+    /**
      * Inserts a destination into the database
      *
      * @param destination the destination to be inserted

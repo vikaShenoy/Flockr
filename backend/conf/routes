@@ -46,6 +46,7 @@ PUT         /api/destinations/:destinationId                    controllers.Dest
 # Destination photos routes
 POST        /api/destinations/:destinationId/photos             controllers.DestinationController.addPhoto(destinationId: Int, request: Request)
 GET         /api/destinations/:destinationId/photos             controllers.DestinationController.getPhotos(destinationId: Int, request: Request)
+DELETE      /api/destinations/:destinationId/photos/:photoId    controllers.DestinationController.unlinkPhoto(destinationId: Int, photoId: Int, request: Request)
 
 
 # Trip Routes

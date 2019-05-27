@@ -337,7 +337,46 @@ public class DestinationController  extends Controller{
         }), httpExecutionContext.current());
     }
 
+    /**
+     * Remove the association between a personal photo and a destination
+     * @param photoId the id of the photo
+     * @param request the HTTP request
+     * @return a response that complies with the API spec
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> unlinkPhoto(int destinationId, int photoId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        ObjectNode res = Json.newObject();
+        String messageKey = "message";
 
+        return destinationRepository.getDestinationPhotoById(destinationId, photoId).thenApplyAsync(optionalDestinationPhoto -> {
+            // return 404 if destination photo is not found
+            if (!optionalDestinationPhoto.isPresent()) {
+                res.put(messageKey, String.format("Photo %d is not linked to destination %d",photoId, destinationId));
+                return notFound(res);
+            }
+
+            // allow deletion of the destination photo to any admin
+            DestinationPhoto destinationPhoto  = optionalDestinationPhoto.get();
+            if (user.isDefaultAdmin() || user.isAdmin()) {
+                destinationPhoto.delete();
+                res.put(messageKey, "The destination photo link was deleted");
+                return ok(res);
+            }
+
+            // allow the photo's owner to delete the destination photo
+            PersonalPhoto personalPhoto = destinationPhoto.getPersonalPhoto();
+            if (personalPhoto.getUser().equals(user)) {
+                destinationPhoto.delete();
+                res.put(messageKey, "The destination photo link was deleted");
+                return ok(res);
+            }
+
+            // else tell the user they are not allowed :P
+            res.put(messageKey, String.format("User %d is not allowed to delete destination photo %d",user.getUserId(), photoId));
+            return forbidden(res);
+        }, httpExecutionContext.current());
+    }
 
 }
 
