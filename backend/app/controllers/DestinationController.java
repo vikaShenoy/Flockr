@@ -385,7 +385,6 @@ public class DestinationController extends Controller {
                                     throw new CompletionException(new NotFoundException("Could not find photo"));
                                 }
 
-                                //TODO test this
 
                                 if (    optionalDestination.get().getIsPublic() &&                          // The destination is public
                                         optionalDestination.get().getDestinationOwner() != null &&          // The owner is not already null
