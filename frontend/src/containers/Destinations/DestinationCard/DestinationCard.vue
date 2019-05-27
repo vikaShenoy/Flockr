@@ -31,10 +31,10 @@
           </div>
           </div>
         </div>
-        <v-btn fab class="edit-button" id="edit-destination-button" @click="editDestination">
+        <v-btn v-if="hasOwnerRights" fab class="edit-button" id="edit-destination-button" @click="editDestination">
             <v-icon>edit</v-icon>
         </v-btn>
-        <v-btn fab class="delete-button" id="delete-destination-button" @click="deleteDestination">
+        <v-btn v-if="hasOwnerRights" fab class="delete-button" id="delete-destination-button" @click="deleteDestination">
             <v-icon>remove</v-icon>
         </v-btn>
     </v-card>
@@ -44,7 +44,7 @@
 
   import Carousel from "./Carousel/Carousel";
   import { getDestinationPhotos } from "./DestinationCardService";
-  import {sendUpdateDestination, sendAddDestination, requestDistricts} from "../DestinationsService.js";
+  import UserStore from "../../../stores/UserStore";
 
   export default {
     name: "destination-card",
@@ -53,7 +53,8 @@
     },
     data() {
       return {
-        photos: null
+        photos: null,
+        hasOwnerRights: false
       };
     },
     props: {
@@ -110,8 +111,12 @@
       try {
         const photos = await getDestinationPhotos(this.destination.destinationId);
         this.photos = photos;
-      } catch (e) {
-        console.error(e);
+        this.hasOwnerRights = UserStore.methods.isAdmin() || this.destination.destinationOwner === localStorage.getItem("userId");
+      } catch (error) {
+        this.$emit("displayMessage", {
+          text: error.message,
+          color: "red"
+        })
       }
     },
     methods: {

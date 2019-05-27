@@ -2,6 +2,7 @@
   <v-dialog width="80%" v-model="showPhotoDialog">
     <v-card>
       <img
+          v-if="photo"
           :src="getPhotoUrl(photo.photoId)"
           style="height:60vh"
           alt="Some Image"/>
