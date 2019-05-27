@@ -55,13 +55,12 @@ public class DestinationTestingSteps {
             try {
                 Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
                 TestState.getInstance().addDestination(destination);
+
+                Destination destination1 = Destination.find.byId(destination.getDestinationId());
+                Assert.assertNotNull(destination1);
+                Assert.assertTrue(destination1.getDestinationName().length() > 0);
                 this.result = fakeClient.makeRequestWithNoToken("GET", "/api/destinations/" + destination.getDestinationId());
                 existingDestination = this.result;
-
-                // check that the destination's name has some text in it
-                JsonNode res = utils.PlayResultToJson.convertResultToJson(this.result);
-                String destinationName = res.get("destinationName").asText();
-                Assert.assertTrue(destinationName.length() > 0);
             } catch (UnauthorizedException | ServerErrorException e) {
                 Assert.fail(Arrays.toString(e.getStackTrace()));
             }
