@@ -171,6 +171,7 @@ public class DestinationTestingSteps {
 
         List<PersonalPhoto> personalPhotos = user.getPersonalPhotos();
         PersonalPhoto personalPhoto = null;
+        System.out.println("personalPhotos size is: " + personalPhotos.size());
         for (PersonalPhoto currentPersonalPhoto : personalPhotos) {
            if (currentPersonalPhoto.getFilenameHash().equals(photoName)) {
                personalPhoto = currentPersonalPhoto;
@@ -187,7 +188,7 @@ public class DestinationTestingSteps {
         }
 
         int destinationId = destination != null ? destination.getDestinationId() : 0;
-
+        System.out.println("destinationId is: " + destinationId);
         result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destinationId + "/photos", user.getToken());
     }
 
