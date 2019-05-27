@@ -115,7 +115,7 @@
     async mounted() {
       try {
         this.photos = await getDestinationPhotos(this.destination.destinationId);
-        this.hasOwnerRights = UserStore.methods.isAdmin() || this.destination.destinationOwner === localStorage.getItem("userId");
+        this.hasOwnerRights = UserStore.methods.isAdmin() || this.destination.destinationOwner === Number(localStorage.getItem("userId"));
       } catch (error) {
         this.$emit("displayMessage", {
           text: error.message,

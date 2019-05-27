@@ -11,6 +11,8 @@ import exceptions.NotFoundException;
 import models.*;
 import models.*;
 import org.omg.CosNaming.NamingContextPackage.NotFound;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.*;
 import repository.DestinationRepository;
@@ -37,6 +39,7 @@ public class DestinationController extends Controller {
     private final DestinationRepository destinationRepository;
     private final PhotoRepository photoRepository;
     private HttpExecutionContext httpExecutionContext;
+    final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
     public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext, PhotoRepository photoRepository) {
@@ -76,17 +79,24 @@ public class DestinationController extends Controller {
     public CompletionStage<Result> getDestination(int destinationId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinationById(destinationId)
-                .thenApplyAsync((destination) -> {
-                    if (!destination.isPresent()) {
+                .thenApplyAsync((optionalDestination) -> {
+                    if (!optionalDestination.isPresent()) {
                         ObjectNode message = Json.newObject();
                         message.put("message", "No destination exists with the specified ID");
                         return notFound(message);
                     }
 
-                    if (destination.get().getDestinationOwner() != user.getUserId()) {
-                        ObjectNode message = Json.newObject();
-                        message.put("message", "You are not authorised to get this destination");
-                        return forbidden(message);
+                    Destination destination = optionalDestination.get();
+                    System.out.println(destination);
+
+                    try {
+                        if (destination.getDestinationOwner() != user.getUserId()) {
+                            ObjectNode message = Json.newObject();
+                            message.put("message", "You are not authorised to get this destination");
+                            return forbidden(message);
+                        }
+                    } catch (NullPointerException e) {
+                        log.error(e.getMessage());
                     }
 
                     JsonNode destAsJson = Json.toJson(destination);

@@ -405,7 +405,7 @@
             try {
               this.destination = await sendAddDestination(destinationInfo);
               this.$emit("addNewDestination", this.destination);
-              this.closeDialog();
+              this.$emit("update:dialog", false)
             } catch (error) {
               this.$emit("displayMessage", {
                 text: error.message,

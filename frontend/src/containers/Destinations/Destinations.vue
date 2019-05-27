@@ -21,7 +21,6 @@
                -->
               <div v-if="userDestinations.length === 0"></div>
               <destination-card
-
                     v-for="(destination, index) in userDestinations"
                     v-bind:key="index"
                     :destination="destination"
@@ -56,7 +55,7 @@
         </v-btn>
       </div>
     <modify-destination-dialog
-            :dialog="showModifyDestination"
+            :dialog.sync="showModifyDestination"
             :destinationTypes="destinationTypes"
             :countries="countries"
             :editedDestination="editedDestination"
@@ -218,7 +217,7 @@
        * @param index {int} the index of the destination.
        */
       updateDestination(destination, index) {
-        this.destinations[index] = destination;
+        window.location.reload();
         this.editedDestination = {
           destinationId: null,
           destinationName: null,
@@ -239,6 +238,7 @@
           isPublic: false
         };
         this.editIndex = null;
+
         this.showModifyDestination = false;
       },
       /**
@@ -252,7 +252,7 @@
         return async () => {
           try {
             await sendDeleteDestination(destination.destinationId);
-            this.destinations.splice(index, 1);
+            window.location.reload();
             this.displayMessage({
               text: `Destination ${destination.destinationName} successfully deleted.`,
               color: "green"
