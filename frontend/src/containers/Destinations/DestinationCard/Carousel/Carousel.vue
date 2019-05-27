@@ -10,8 +10,7 @@
         alt="Some Image"
         @click="openPhotoDialog(photo, index)"
         v-on:mouseenter="addPhotoButton = !addPhotoButton"
-        v-on:mouseleave="addPhotoButton = !addPhotoButton"
-      >
+        v-on:mouseleave="addPhotoButton = !addPhotoButton">
         <v-btn
           color="blue-grey darken-3"
           v-on:mouseenter="inButton = !inButton"
@@ -22,7 +21,6 @@
           >
             <v-icon>add</v-icon>
         </v-btn>
-
       </v-img>
 
 
@@ -30,9 +28,11 @@
     <destination-photo-panel
             :photo="currentPhoto"
             :showDialog="showPhotoDialog"
+            :hasOwnerRights="hasOwnerRights"
             @closeDialog="closePhotoPanel"
             @displayError="displayError"
             @permissionUpdated="permissionUpdated"
+            @displayRemovePrompt="displayRemovePrompt"
     />
     <AddPhotoDialog
             :destinationId="destinationId"
@@ -51,7 +51,11 @@ export default {
   components: {AddPhotoDialog, DestinationPhotoPanel},
   props: {
     photos: Array,
-    destinationId: Number
+    destinationId: Number,
+    hasOwnerRights: {
+      type: Boolean,
+      required: false
+    }
   },
   data() {
     return {
@@ -61,18 +65,29 @@ export default {
       addPhotoButton: false,
       inButton: false,
       showAddPhotoDialog: false
-
     }
   },
   methods: {
+    /**
+     * Called when the photo is selected.
+     * Opens the photo dialog and sets the current photo values.
+     *
+     * @param photo {POJO} the photo object to be displayed in the dialog.
+     * @param index {Number} the index of the photo.
+     */
     openPhotoDialog(photo, index) {
       if (!this.inButton) {
         this.showPhotoDialog = true;
         this.currentPhoto = photo;
         this.currentPhotoIndex = index;
       }
-
     },
+    /**
+     * Called when the photo dialog emits a closeDialog event.
+     * Updates the value of showPhotoDialog to match the child.
+     *
+     * @param newVal {Boolean} the new value of showPhotoDialog.
+     */
     closePhotoPanel(newVal) {
       this.showPhotoDialog = newVal;
       if (!newVal) {
@@ -81,20 +96,28 @@ export default {
       }
     },
     /**
+     * Called when the remove photo button is selected in the photo panel.
+     * Emits a displayRemovePrompt event with a closePhotoPanel function the photoId and index of the current photo.
+     *
+     * @param photoId {Number} the id of the current photo.
+     */
+    displayRemovePrompt(photoId) {
+      this.$emit("displayRemovePrompt", this.closePhotoPanel, photoId, this.currentPhotoIndex);
+    },
+    /**
      * Called when the destination photo emits an error to display.
      * Emits the given error to it's parent to display.
      *
      * @param message {String} the error message
      */
     displayError(message) {
-      this.$emit("displayError", message);
+      this.$emit("displayError", message, "red");
     },
     /**
      * Called when the permission of a photo has been updated.
      * Emits an event to notify the parent to update its value.
      *
      * @param newValue {Boolean} the new value of isPrimary.
-     * @param index {Number} the index of the photo.
      */
     permissionUpdated(newValue) {
       this.$emit("permissionUpdated", newValue, this.currentPhotoIndex);

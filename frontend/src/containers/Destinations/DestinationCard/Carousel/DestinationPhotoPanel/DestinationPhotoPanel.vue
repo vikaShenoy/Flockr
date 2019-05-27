@@ -1,11 +1,22 @@
 <template>
   <v-dialog width="80%" v-model="showPhotoDialog">
     <v-card>
-      <destination-photo :photo="photo" @displayError="displayError" @permissionUpdated="permissionUpdated"/>
+      <destination-photo
+              :photo="photo"
+              @displayError="displayError"
+              @permissionUpdated="permissionUpdated"
+              :hasModifyRights="hasPhotoModifyRights"/>
       <v-card-actions>
-        <v-btn flat color="error" @click="showPhotoDialog=false">
-          Close
-        </v-btn>
+        <v-spacer align="left">
+          <v-btn flat color="error" @click="removePhoto">
+            Remove This Photo From Destination
+          </v-btn>
+        </v-spacer>
+        <v-spacer align="right">
+          <v-btn v-if="hasPhotoModifyRights || hasOwnerRights" flat color="secondary" @click="showPhotoDialog=false">
+            Close
+          </v-btn>
+        </v-spacer>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -13,6 +24,7 @@
 
 <script>
   import DestinationPhoto from "../../../../../components/DestinationPhoto/DestinationPhoto";
+  import UserStore from "../../../../../stores/UserStore";
   export default {
     name: "destination-photo-panel",
     components: {DestinationPhoto},
@@ -24,11 +36,16 @@
       showDialog: {
         type: Boolean,
         required: true
+      },
+      hasOwnerRights: {
+        type: Boolean,
+        required: false
       }
     },
     data() {
       return {
-        showPhotoDialog: false
+        showPhotoDialog: false,
+        hasPhotoModifyRights: false
       }
     },
     watch: {
@@ -38,6 +55,10 @@
       },
       showPhotoDialog: {
         handler: 'onShowPhotoDialogUpdated',
+        immediate: true
+      },
+      photo: {
+        handler: "onPhotoChanged",
         immediate: true
       }
     },
@@ -72,6 +93,22 @@
        */
       permissionUpdated(newValue) {
         this.$emit("permissionUpdated", newValue);
+      },
+      /**
+       * Called when the photos prop is set.
+       * Calculates if the user has admin rights.
+       */
+      onPhotoChanged() {
+        if (![null,undefined].includes(this.photo)) {
+          this.hasPhotoModifyRights = localStorage.getItem("userId") === this.photo.ownerId || UserStore.methods.isAdmin();
+        }
+      },
+      /**
+       * Called when the remove button is selected.
+       * Removes this photos association with the destination.
+       */
+      removePhoto() {
+        this.$emit("displayRemovePrompt", this.photo.photoId);
       }
     }
   }

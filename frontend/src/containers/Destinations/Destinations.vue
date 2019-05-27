@@ -8,13 +8,14 @@
             <template v-slot:header>
               <h2>My Destinations</h2>
             </template>
-            <DestinationCard
+            <destination-card
                   v-for="(destination, index) in destinations"
                   v-bind:key="index"
                   :destination="destination"
-                  @deleteDestination="displayPrompt(destination, index)"
+                  @deleteDestination="displayDeletePrompt(destination, index)"
                   @editDestination="editDestination(index, destination)"
-                  @displayMessage="displayMessage"/>
+                  @displayMessage="displayMessage"
+                  @displayRemovePrompt="displayRemovePrompt"/>
           </v-expansion-panel-content>
         </v-expansion-panel>
 
@@ -260,9 +261,19 @@
        * @param destination {POJO} the destination to be deleted on confirmation.
        * @param index {Number} the index of the destination in the destinations list.
        */
-      displayPrompt(destination, index) {
+      displayDeletePrompt(destination, index) {
         this.promptDialog.message = "Are you sure you would like to delete this destination?";
         this.promptDialog.deleteFunction = this.getDeleteFunction(destination, index);
+        this.promptDialog.show = true;
+      },
+      /**
+       * Calls a prompt dialog to be displayed to the user.
+       *
+       * @param removePhotoFunction {Function} the function to call on confirmation.
+       */
+      displayRemovePrompt(removePhotoFunction) {
+        this.promptDialog.message = "Are you sure you would like to remove this photo from the destination?";
+        this.promptDialog.deleteFunction = removePhotoFunction;
         this.promptDialog.show = true;
       },
       /**

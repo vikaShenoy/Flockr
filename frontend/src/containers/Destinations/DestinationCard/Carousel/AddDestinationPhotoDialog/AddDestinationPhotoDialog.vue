@@ -104,7 +104,6 @@
                         .set('Authorization', authToken);
                     //TODO filter out photos that are already linked to the venue
                     this.userPhotos = response.body;
-                    console.log(this.userPhotos)
                 } catch (e) {
                     console.log(e);
                 }
