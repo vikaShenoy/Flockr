@@ -145,7 +145,6 @@ public class DestinationTestingSteps {
                destination = currentDestination;
            }
         }
-        Assert.assertNotNull(destination);
 
         List<PersonalPhoto> personalPhotos = user.getPersonalPhotos();
         PersonalPhoto personalPhoto = null;
@@ -155,14 +154,18 @@ public class DestinationTestingSteps {
            }
         }
 
-        Assert.assertNotNull(personalPhoto);
 
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
 
         ObjectNode requestBody = Json.newObject();
-        requestBody.put("photoId", personalPhoto.getPhotoId());
 
-        result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
+        if (personalPhoto != null) {
+            requestBody.put("photoId", personalPhoto.getPhotoId());
+        }
+
+        int destinationId = destination != null ? destination.getDestinationId() : 0;
+
+        result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destinationId + "/photos", user.getToken());
     }
 
     @Then("then the photo gets added to the destination")
