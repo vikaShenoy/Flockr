@@ -52,6 +52,5 @@ export async function updatePhotoPermissions(newValue, photoId) {
         "isPublic": newValue,
         "isPrimary": false
       });
-
   return response.body;
 }
