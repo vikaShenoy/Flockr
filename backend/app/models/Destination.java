@@ -30,9 +30,9 @@ public class Destination extends Model {
 
     @ManyToOne
     private District destinationDistrict;
+
     private Double destinationLat;
     private Double destinationLon;
-
     @ManyToOne
     private Country destinationCountry;
 
@@ -45,6 +45,23 @@ public class Destination extends Model {
     @Override
     public int hashCode() {
         return destinationId;
+    }
+
+    @Override
+    public String toString() {
+        return "Destination{" +
+                "destinationId=" + destinationId +
+                ", destinationName='" + destinationName + '\'' +
+                ", destinationType=" + destinationType +
+                ", tripDestinations=" + tripDestinations +
+                ", destinationPhotos=" + destinationPhotos +
+                ", destinationDistrict=" + destinationDistrict +
+                ", destinationLat=" + destinationLat +
+                ", destinationLon=" + destinationLon +
+                ", destinationCountry=" + destinationCountry +
+                ", destinationOwner=" + destinationOwner +
+                ", isPublic=" + isPublic +
+                '}';
     }
 
     @Override
