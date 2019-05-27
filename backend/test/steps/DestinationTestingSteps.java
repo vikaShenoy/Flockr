@@ -162,14 +162,24 @@ public class DestinationTestingSteps {
         ObjectNode requestBody = Json.newObject();
         requestBody.put("photoId", personalPhoto.getPhotoId());
 
-        Result result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
-        Assert.assertEquals(201, result.status());
+        result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
     }
 
     @Then("then the photo gets added to the destination")
     public void thenThePhotoGetAddedToTheDestination() {
+         Assert.assertEquals(201, result.status());
+
          List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
 
          Assert.assertTrue(destinationPhotos.size() > 0);
     }
+
+    @Then("the photo does not get added to the destination")
+    public void thePhotoDoesNotGetAdded() {
+        Assert.assertNotEquals(201, result.status());
+        List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
+        Assert.assertEquals(0, destinationPhotos.size());
+    }
+
+
 }
