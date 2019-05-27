@@ -106,14 +106,19 @@ public class DestinationController extends Controller {
         return destinationRepository.getDestinations()
                 .thenApplyAsync(destinations -> {
                     if (loggedInUser.getUserId() == userId) {
+                        System.out.println(destinations);
                         List<Destination> userDestinations = destinations.stream()
-                                .filter(destination -> destination.getDestinationOwner() == userId).
+                                .filter(destination -> {
+                                    Integer ownerId = destination.getDestinationOwner();
+                                    return ownerId != null && ownerId == userId;
+                                }).
                                         collect(Collectors.toList());
                         return ok(Json.toJson(userDestinations));
                     } else {
+                        System.out.println("Is the first one public" + destinations.get(0).getIsPublic());
+                        System.out.println("Is the second one public" + destinations.get(1).getIsPublic());
                         List<Destination> userDestinations = destinations.stream()
-                                .filter(destination -> destination.getDestinationOwner() == userId
-                                        && destination.getIsPublic()).
+                                .filter(Destination::getIsPublic).
                                         collect(Collectors.toList());
                         return ok(Json.toJson(userDestinations));
                     }
@@ -370,10 +375,18 @@ public class DestinationController extends Controller {
                 }, httpExecutionContext.current());
     }
 
+    /**
+     * Adds a photo to a destination
+     * @param destinationId the destination to add a photo to
+     * @param request the request object
+     * @return - 400 If request body fields don't exist
+     *         - 404 If the destination or photo could not be found
+     *         - 403 If the user is not the owner of the destination
+     *         - 201 Photo has been added successfully
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> addPhoto(int destinationId, Http.Request request) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
-        System.out.println("destination id is: " + destinationId);
         JsonNode requestJson = request.body().asJson();
         int photoId;
         try {

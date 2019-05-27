@@ -8,6 +8,7 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
+import gherkin.deps.com.google.gson.JsonObject;
 import io.cucumber.datatable.DataTable;
 import models.*;
 import org.junit.Assert;
@@ -27,11 +28,12 @@ import java.util.*;
 import static play.test.Helpers.route;
 
 public class DestinationTestingSteps {
-
     private JsonNode destinationData;
     private Result existingDestination;
     private ObjectNode destinationNode;
     private Result result;
+    private JsonNode destinations;
+
 
     @Given("users with the following information exist:")
     public void usersWithTheFollowingInformationExists(DataTable dataTable) {
@@ -52,7 +54,17 @@ public class DestinationTestingSteps {
         List<Map<String, String>> destinationList = dataTable.asMaps();
         for (int i = 0; i < destinationList.size(); i++) {
             try {
-                Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
+                ObjectNode currentDestination = (ObjectNode) Json.toJson(destinationList.get(i));
+                Destination destination = fakeClient.makeTestDestination(currentDestination, user.getToken());
+
+                destination.setDestinationOwner(user.getUserId());
+
+                if (currentDestination.has("isPublic")) {
+                    destination.setIsPublic(Boolean.parseBoolean(currentDestination.get("isPublic").asText()));
+                }
+
+                // Save to set permission as post endpoint doesn't do it
+                destination.update();
                 TestState.getInstance().addDestination(destination);
 
                 Destination destination1 = Destination.find.byId(destination.getDestinationId());
@@ -294,5 +306,34 @@ public class DestinationTestingSteps {
     public void iGetAnErrorIndicatingThatTheDestinationIsNotFound() {
         Assert.assertEquals(404, this.result.status());
     }
+
+
+    @When("the user gets their own destinations")
+    public void theUserRetrievesTheirOwnPhotos() throws IOException {
+        User user = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Destination destination = TestState.getInstance().getDestination(0);
+
+        Result destinationResult = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/destinations", user.getToken());
+        destinations = utils.PlayResultToJson.convertResultToJson(destinationResult);
+    }
+
+    @When("another user gets the user's destinations")
+    public void anotherUserGetsTheUsersDestinations() throws IOException {
+        TestState testState = TestState.getInstance();
+        User user = testState.getUser(0);
+        User anotherUser = testState.getUser(1);
+        FakeClient fakeClient = testState.getFakeClient();
+        Result destinationResult = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/destinations", anotherUser.getToken());
+        destinations = utils.PlayResultToJson.convertResultToJson(destinationResult);
+    }
+
+
+    @Then("{int} destinations should be returned")
+    public void theListShouldBeTheSame(int numberOfDestinations) {
+        Assert.assertEquals(numberOfDestinations, destinations.size());
+    }
+
+
 
 }
