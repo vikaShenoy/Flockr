@@ -101,18 +101,22 @@
                 let authToken = localStorage.getItem('authToken');
                 let userId = localStorage.getItem('userId');
                 try {
+                    this.userPhotos = [];
                     const response  = await superagent(endpoint(`/users/${userId}/photos`))
                         .set('Authorization', authToken);
-                    const userPhotos = response.body;
-
-                    const photosToShow = userPhotos.filter(userPhoto => {
+                    let userPhotos = response.body;
+                    // console.log("User Photos: ");
+                    // conosle.log(userPhotos);
+                    let photosToShow = userPhotos.filter(userPhoto => {
                         for (const destinationPhoto of this.destinationPhotos) {
-                            if (userPhoto.photoId === destinationPhoto.photoId) {
+                            if (userPhoto.photoId === destinationPhoto.personalPhoto.photoId) {
                                 return false;
                             }
                         }
                         return true;
                     });
+                    // console.log("Photos to show");
+                    // console.log(photosToShow);
                     this.userPhotos = photosToShow;
                 } catch (e) {
                     this.$emit("displayError", e.message);
@@ -135,10 +139,11 @@
                         .send(data);
                     this.showAddPhotoDialog = false;
                     let photo = res.body;
+                    console.log(photo);
                     photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
                     photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
                     this.$emit("addPhoto", photo);
-                    //TODO Tell destination card component to update its carousel
+                    this.getUserPhotos();
 
                 } catch (e) {
                     this.$emit("displayError", e.message);

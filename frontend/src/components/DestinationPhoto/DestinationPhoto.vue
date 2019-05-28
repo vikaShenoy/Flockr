@@ -1,23 +1,24 @@
 <template>
   <div id="destination-photo" v-if="photo">
     <v-speed-dial
-            v-model="fab"
-            bottom
-            right
-            direction="top"
-            :open-on-hover="false"
-            transition="slide-y-reverse-transition"
-            id="permissions-button">
+      v-model="fab"
+      bottom
+      right
+      direction="top"
+      :open-on-hover="false"
+      transition="slide-y-reverse-transition"
+      id="permissions-button"
+    >
       <template v-slot:activator>
         <v-btn v-if="hasModifyRights" v-model="fab" color="blue darken-2" dark fab>
-          <v-icon>{{photo.isPublic ? 'public' : 'lock'}}</v-icon>
+          <v-icon>{{photo.personalPhoto.isPublic ? 'public' : 'lock'}}</v-icon>
           <v-icon>close</v-icon>
         </v-btn>
       </template>
-      <v-btn v-if="!photo.isPublic" fab dark small @click="updatePhotoPermissions" color="green">
+      <v-btn v-if="!photo.personalPhoto.isPublic" fab dark small @click="updatePhotoPermissions" color="green">
         <v-icon>public</v-icon>
       </v-btn>
-      <v-btn v-if="photo.isPublic" fab dark small @click="updatePhotoPermissions" color="indigo">
+      <v-btn v-if="photo.personalPhoto.isPublic" fab dark small @click="updatePhotoPermissions" color="indigo">
         <v-icon>lock</v-icon>
       </v-btn>
     </v-speed-dial>
@@ -84,8 +85,8 @@
        */
       async updatePhotoPermissions() {
         try {
-          await updatePhotoPermissions(!this.photo.isPublic, this.photo.photoId);
-          this.$emit("permissionUpdated", !this.photo.isPublic);
+          await updatePhotoPermissions(!this.photo.personalPhoto.isPublic, this.photo.personalPhoto.photoId);
+          this.$emit("permissionUpdated", !this.photo.personalPhoto.isPublic);
         } catch (error) {
           this.$emit("displayError", error.message);
         }
