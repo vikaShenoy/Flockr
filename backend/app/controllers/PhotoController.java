@@ -206,37 +206,66 @@ public class PhotoController extends Controller {
         }
     }
 
-    /**
-     * Gets a specific photo
-     *
-     * @param photoId the id of the photo to retrieve
-     * @param request HTTP request object
-     * @return binary photo data with status 200 if found
-     * unauthorized with 401 if not authorized
-     * notFound with 404 if photo not found //TODO Add this to the API spec!
-     * forbidden 403 if trying to get a photo that you do not have permission to
-     * 500 server error for any other server related error
-     */
+//    /**
+//     * Gets a specific photo
+//     *
+//     * @param photoId the id of the photo to retrieve
+//     * @param request HTTP request object
+//     * @return binary photo data with status 200 if found
+//     * unauthorized with 401 if not authorized
+//     * notFound with 404 if photo not found //TODO Add this to the API spec!
+//     * forbidden 403 if trying to get a photo that you do not have permission to
+//     * 500 server error for any other server related error
+//     */
+//    @With(LoggedIn.class)
+//    public CompletionStage<Result> getPhoto(int photoId, Http.Request request) {
+//
+//        User user = request.attrs().get(ActionState.USER);
+//
+//        return photoRepository.getPhotoById(photoId).thenApplyAsync(optionalPhoto -> {
+//            if (!optionalPhoto.isPresent()) {
+//                return notFound();
+//            } else {
+//
+//                if (!user.isAdmin() && !optionalPhoto.get().isPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
+//                    return forbidden();
+//                } else {
+//                    JsonNode photoAsJSON = Json.toJson(optionalPhoto);
+//                    System.out.println(photoAsJSON);
+//                    return ok().sendFile(new File("./storage/photos/" + optionalPhoto.get().getFilenameHash()));
+//                }
+//            }
+//        });
+//
+//    }
+
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhoto(int photoId, Http.Request request) {
-
-        User user = request.attrs().get(ActionState.USER);
-
-        return photoRepository.getPhotoById(photoId).thenApplyAsync(optionalPhoto -> {
-            if (!optionalPhoto.isPresent()) {
-                return notFound();
-            } else {
-
-                if (!user.isAdmin() && !optionalPhoto.get().isPublic() && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
-                    return forbidden();
-                } else {
-                    JsonNode photoAsJSON = Json.toJson(optionalPhoto);
-                    System.out.println(photoAsJSON);
-                    return ok().sendFile(new File("./storage/photos/" + optionalPhoto.get().getFilenameHash()));
-                }
-            }
-        });
-
+        return photoRepository.getPhotoById(photoId)
+                .thenApplyAsync(photo -> {
+                    if (!photo.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    } else {
+                        int índiceDePunto = photo.get().getFilenameHash().lastIndexOf('.');
+                        String fileType = photo.get().getFilenameHash().substring(índiceDePunto);
+                        String filename = photo.get().getFilenameHash().substring(0, índiceDePunto);
+                        String path = System.getProperty("user.dir") + "/storage/photos";
+                        filename += fileType;
+                        return ok().sendFile(new File(path, filename));
+                    }
+                }).exceptionally(error -> {
+                    try {
+                        throw error.getCause();
+                    } catch (NotFoundException notFoundException) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "Please provide a valid request body according to the API spec");
+                        return notFound(message);
+                    } catch (Throwable throwable) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "Something went wrong while retrieving your image.");
+                        return internalServerError(message);
+                    }
+                });
     }
 
     /**
