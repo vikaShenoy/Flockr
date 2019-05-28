@@ -208,8 +208,29 @@
        * @param newDestination {POJO} the new destination to add to the list of destinations.
        */
       addNewDestinationCard: function (newDestination) {
+        console.log("I made it here");
         // TODO: change this to take public/private into account
-        this.userDestinations.unshift(newDestination);
+        this.editedDestination = {
+          destinationId: null,
+          destinationName: null,
+          destinationType: {
+            destinationTypeId: null,
+            destinationTypeName: null
+          },
+          destinationDistrict: {
+            districtName: null,
+            districtId: null
+          },
+          destinationCountry: {
+            countryName: null,
+            countryId: null
+          },
+          destinationLat: null,
+          destinationLon: null,
+          isPublic: false,
+          index: null
+        };
+        this.userDestinations.push(newDestination);
       },
       /**
        * Update an existing destination after edit.

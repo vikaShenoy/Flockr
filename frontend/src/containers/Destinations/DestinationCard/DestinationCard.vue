@@ -60,7 +60,7 @@
     data() {
       return {
         photos: null,
-        hasOwnerRights: false
+        hasOwnerRights: false,
       };
     },
     props: {

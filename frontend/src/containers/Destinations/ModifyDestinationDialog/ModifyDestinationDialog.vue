@@ -405,8 +405,11 @@
             try {
               this.destination = await sendAddDestination(destinationInfo);
               this.$emit("addNewDestination", this.destination);
-              this.$emit("update:dialog", false)
+              this.closeDialog();
             } catch (error) {
+              if (error.message === "Conflict") {
+                error.message = "Destination already exists";
+              }
               this.$emit("displayMessage", {
                 text: error.message,
                 color: "red"
