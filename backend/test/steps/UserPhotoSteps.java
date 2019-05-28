@@ -93,6 +93,30 @@ public class UserPhotoSteps {
         Assert.assertEquals(list.size(), user.getPersonalPhotos().size());
     }
 
+    @Given("^the admin user has the following photos in the system:$")
+    public void theAdminUserHasTheFollowingPhotosInTheSystem(DataTable dataTable) {
+        User testUser = TestState.getInstance().getUser(1);
+        this.photoList = dataTable;
+        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
+
+        User user = User.find.byId(testUser.getUserId());
+        Assert.assertNotNull(user);
+        List<PersonalPhoto> photos = new ArrayList<>();
+        for (Map<String, String> row : list) {
+            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")), null);
+            photo.save();
+            photo = PersonalPhoto.find.byId(photo.getPhotoId());
+            photos.add(photo);
+        }
+        user.setPersonalPhotos(photos);
+        user.save();
+        user = User.find.byId(testUser.getUserId());
+
+        Assert.assertNotNull(user);
+        Assert.assertEquals(list.size(), user.getPersonalPhotos().size());
+        TestState.getInstance().addUser(user);
+    }
+
     @When("^the user tries to retrieve their photos$")
     public void theUserTriesToRetrieveTheirPhotos() throws IOException {
         User testUser = TestState.getInstance().getUser(0);
