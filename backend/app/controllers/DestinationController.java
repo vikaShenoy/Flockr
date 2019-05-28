@@ -153,7 +153,7 @@ public class DestinationController extends Controller {
     public CompletionStage<Result> addDestination(Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
 
-        int user = request.attrs().get(ActionState.USER).getUserId();
+        int userId = request.attrs().get(ActionState.USER).getUserId();
 
         try {
             // check that the request has a body
@@ -187,12 +187,15 @@ public class DestinationController extends Controller {
             }
 
             Destination destinationToAdd = new Destination(destinationName, destinationTypeAdd, districtAdd,
-                    latitude, longitude, countryAdd, user, false);
+                    latitude, longitude, countryAdd, userId, false);
 
             return destinationRepository.getDestinations()
                     .thenComposeAsync(destinations -> {
                         for (Destination dest : destinations) {
-                            if (dest.equals(destinationToAdd)) {
+                            boolean ownsDestination = dest.getDestinationOwner() != null
+                                    && dest.getDestinationOwner() == userId;
+                            if (dest.equals(destinationToAdd) &&
+                                    (dest.getIsPublic() || ownsDestination)) {
                                 throw new CompletionException(new ConflictingRequestException(
                                         "Destination already exists."));
                             }
