@@ -485,10 +485,13 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getThumbnail(int photoId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
         return photoRepository.getPhotoById(photoId)
                 .thenApplyAsync(photo -> {
                     if (!photo.isPresent()) {
                         throw new CompletionException(new NotFoundException());
+                    } else if (!user.isAdmin() && !photo.get().isPublic() && user.getUserId() != photo.get().getUser().getUserId()) {
+                        return forbidden();
                     } else {
                         int índiceDePunto = photo.get().getFilenameHash().lastIndexOf('.');
                         String fileType = photo.get().getFilenameHash().substring(índiceDePunto);
