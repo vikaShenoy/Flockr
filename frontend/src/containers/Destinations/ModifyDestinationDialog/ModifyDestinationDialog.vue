@@ -434,7 +434,7 @@
             } catch (error) {
               let message;
               if (error.status === 400) {
-                message = error.response.body.message
+                message = error.response.body.message;
               } else {
                 message = 'Something went wrong';
               }

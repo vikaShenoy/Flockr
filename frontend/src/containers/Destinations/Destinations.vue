@@ -213,7 +213,7 @@
        */
       displayRemovePrompt(photoRemoveCallback) {
         this.promptDialog.deleteFunction = photoRemoveCallback;
-        this.promptDialog = 'Are you sure that you would like to delete this photos?';
+        this.promptDialog.message = 'Are you sure that you would like to delete this photos?';
         this.promptDialog.show = true;
       },
       /**
