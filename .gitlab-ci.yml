@@ -70,13 +70,11 @@ production-run:
   script: 
     - "cd backend/target/universal"
     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-    - sudo ./opt/startserver -p stop
+    - sudo bash /opt/startserver -p stop
     - sudo rm -rf /var/www/prod/*
-    - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT/ /var/www/prod/
-    - cd /var/www/prod/conf
-    - sudo mv application.prod.conf application.conf
-    - cd /opt
-    - sudo ./startserver -p start
+    - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT/* /var/www/prod/
+    - sudo mv /var/www/prod/conf/application.prod.conf /var/www/prod/conf/application.conf
+    - sudo bash /opt/startserver -p start
   only:
     - master
   stage: deploy
