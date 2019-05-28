@@ -46,7 +46,8 @@
                     :destination="destination"
                     @deleteDestination="displayPrompt(destination, index)"
                     @editDestination="editDestination(index, destination)"
-                    @displayMessage="displayMessage"/>
+                    @displayMessage="displayMessage"
+                    @displayRemovePrompt="displayRemovePrompt"/>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </div>
