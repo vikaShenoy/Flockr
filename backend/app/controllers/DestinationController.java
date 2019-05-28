@@ -61,7 +61,7 @@ public class DestinationController extends Controller {
                 .thenApplyAsync(destinations -> {
                     List<Destination> publicDestinations = destinations
                                                             .stream()
-                                                            .filter(Destination::getIsPublic)
+                                                            .filter(destination -> user.isAdmin() || destination.getIsPublic())
                                                             .collect(Collectors.toList());
                     return ok(Json.toJson(publicDestinations));
                 }, httpExecutionContext.current());
@@ -87,10 +87,9 @@ public class DestinationController extends Controller {
                     }
 
                     Destination destination = optionalDestination.get();
-                    System.out.println(destination);
 
                     try {
-                        if (destination.getDestinationOwner() != user.getUserId()) {
+                        if (!user.isAdmin() && destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
                             ObjectNode message = Json.newObject();
                             message.put("message", "You are not authorised to get this destination");
                             return forbidden(message);
@@ -152,10 +151,12 @@ public class DestinationController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> addDestination(Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
-
-        int userId = request.attrs().get(ActionState.USER).getUserId();
+        User user = request.attrs().get(ActionState.USER);
+        boolean createDestForUser = user.isAdmin() && jsonRequest.has("userId");
 
         try {
+            int userId = createDestForUser ? jsonRequest.get("userId").asInt() : user.getUserId();
+
             // check that the request has a body
             if (jsonRequest.isNull()) {
                 throw new BadRequestException("No details received, please send a valid request.");
@@ -239,9 +240,10 @@ public class DestinationController extends Controller {
                     if (!optionalDest.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
-
+                    System.out.println(user.isAdmin());
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
                     if (!user.isAdmin() && user.getUserId() != optionalDest.get().getDestinationOwner()) {
+                        System.out.println("I made it here");
                         throw new CompletionException(new ForbiddenRequestException("You are unauthorised to update " +
                                 "this destination"));
                     }
@@ -347,7 +349,7 @@ public class DestinationController extends Controller {
                     Destination destination = optionalDestination.get();
                     System.out.println(destination.getDestinationOwner());
                     System.out.println(user.toString());
-                    if (destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
+                    if (!user.isAdmin() && destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
                         throw new CompletionException(new ForbiddenRequestException("You are not permitted to delete this destination"));
                     }
                     ObjectNode success = Json.newObject();

@@ -146,6 +146,18 @@
                         id="longitude"
                         @click="checkSubmission"/>
               </v-flex>
+
+              <v-flex xs12 sm12 md6 lg6 xl6>
+               <v-text-field
+                  v-if="!editMode && userIsAdmin()"
+                  type="number"
+                  v-model="destination.userId"
+                  :value="destination.userId"
+                  label="User ID"
+                  :rules="requiredRule"
+                />
+              </v-flex>
+ 
             </v-flex>
 
             <v-flex xl4 lg6 md8 sm10 xs12 offset-xl4 offset-lg3 offset-md2 offset-sm1 offset-xs0>
@@ -181,6 +193,8 @@
     sendAddDestination,
     sendUpdateDestination
   } from "../DestinationsService";
+
+  import UserStore from "../../../stores/UserStore";
 
   export default {
     name: "add-destination-dialog",
@@ -390,6 +404,13 @@
               "latitude": this.destination.destinationLat,
               "longitude": this.destination.destinationLon,
             };
+
+            if (this.destination.userId) {
+              this.destination.userId = Number(this.destination.userId);
+              destinationInfo.userId = this.destination.userId;
+            }
+
+
           } else {
             destinationInfo = {
               "destinationName": this.editedDestination.destinationName,
@@ -428,6 +449,9 @@
             }
           }
         }
+      },
+      userIsAdmin() {
+        return UserStore.methods.isAdmin();
       }
     },
 

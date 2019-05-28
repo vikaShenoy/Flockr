@@ -37,14 +37,16 @@
           <v-expansion-panel>
             <v-expansion-panel-content>
               <template v-slot:header>
-                <h2>All Public Destinations</h2>
+                <h2 v-if="userStore.methods.isAdmin()">All Destinations</h2>
+                <h2 v-else>All Public Destinations</h2>
+
               </template>
               <div v-if="publicDestinations.length === 0"></div>
               <DestinationCard
                     v-for="(destination, index) in publicDestinations"
                     v-bind:key="index"
                     :destination="destination"
-                    @deleteDestination="displayPrompt(destination, index)"
+                    @deleteDestination="displayDeletePrompt(destination, index)"
                     @editDestination="editDestination(index, destination)"
                     @displayMessage="displayMessage"
                     @displayRemovePrompt="displayRemovePrompt"/>
@@ -84,6 +86,7 @@
   import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
   import Snackbar from "../../components/Snackbars/Snackbar";
   import PromptDialog from "../../components/PromptDialog/PromptDialog";
+  import UserStore from "../../stores/UserStore";
 
   export default {
     components: {
@@ -94,6 +97,7 @@
     },
     data() {
       return {
+        userStore: UserStore,
         userDestinations: null,
         publicDestinations: null,
         countries: [],
@@ -144,6 +148,8 @@
         const userId = localStorage.getItem("userId");
         this.userDestinations = await getUserDestinations(userId);
         this.publicDestinations = await getPublicDestinations();
+
+
 
       } catch(error) {
         this.displayMessage({
@@ -208,7 +214,6 @@
        * @param newDestination {POJO} the new destination to add to the list of destinations.
        */
       addNewDestinationCard: function (newDestination) {
-        console.log("I made it here");
         // TODO: change this to take public/private into account
         this.editedDestination = {
           destinationId: null,
@@ -230,7 +235,11 @@
           isPublic: false,
           index: null
         };
-        this.userDestinations.push(newDestination);
+        
+        if (UserStore.methods.isAdmin()) {
+          // Current hack where if user is admin, reload the page
+          window.location.reload();
+        }
       },
       /**
        * Update an existing destination after edit.
