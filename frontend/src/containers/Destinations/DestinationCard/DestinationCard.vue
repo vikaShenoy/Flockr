@@ -5,14 +5,14 @@
       <h2 class="name-header">{{ destination.destinationName }}</h2>
       <div class="body-card col-md-12">
         <Carousel
-                :photos="photos"
-                :destinationId="destination.destinationId"
-                v-if="photos"
-                @displayError="displayMessage"
-                @permissionUpdated="permissionUpdated"
-                :hasOwnerRights="hasOwnerRights"
-                @displayRemovePrompt="displayRemovePrompt"
-                @addPhoto="addPhoto"
+          :destinationPhotos="destinationPhotos"
+          :destinationId="destination.destinationId"
+          v-if="destinationPhotos"
+          @displayError="displayMessage"
+          @permissionUpdated="permissionUpdated"
+          :hasOwnerRights="hasOwnerRights"
+          @displayRemovePrompt="displayRemovePrompt"
+          @addPhoto="addPhoto"
         />
       </div>
     </div>
@@ -29,6 +29,12 @@
             <div class="basic-info-label">{{ destination.destinationDistrict.districtName }}</div>
           </div>
           <hr class="divider"/>
+          <div class="row">
+            <div class="basic-info-label"><p><b>Public</b></p></div>
+            <div class="basic-info-label">{{ destination.isPublic ? "Yes" : "No" }}</div>
+          </div>
+          <hr class="divider"/>
+
         </div>
         <div class="col-md-6">
           <h2 class="name-header">{{ destination.destinationCountry.countryName }}</h2>
@@ -59,8 +65,8 @@
     },
     data() {
       return {
-        photos: null,
-        hasOwnerRights: false
+        destinationPhotos: null,
+        hasOwnerRights: false,
       };
     },
     props: {
@@ -115,7 +121,7 @@
     },
     async mounted() {
       try {
-        this.photos = await getDestinationPhotos(this.destination.destinationId);
+        this.destinationPhotos = await getDestinationPhotos(this.destination.destinationId);
         this.hasOwnerRights = UserStore.methods.isAdmin() || this.destination.destinationOwner === Number(localStorage.getItem("userId"));
       } catch (error) {
         this.$emit("displayMessage", {
@@ -130,7 +136,7 @@
        * Adds the photo to the photos list.
        */
       addPhoto(photo) {
-        this.photos.push(photo);
+        this.destinationPhotos.push(photo);
       },
       /**
        * Removes a photo at the given index from the photos array.
@@ -138,7 +144,7 @@
        * @param index {Number} the index of the photo.
        */
       removePhoto(index) {
-        this.photos.splice(index, 1);
+        this.destinationPhotos.splice(index, 1);
       },
       /**
        * Called when the remove photo button is selected in the destination photo panel.
@@ -185,7 +191,7 @@
       },
       /**
        * Called when the destination photo emits an error to display.
-       * Emits the given error to it's parent to display.
+       * Emits the given error to its parent to display.
        *
        * @param message {String} the error message
        * @param color {String} the color the message will be displayed as.
@@ -205,7 +211,7 @@
        * @param index {Number} the index of the photo.
        */
       permissionUpdated(newValue, index) {
-        this.photos[index].isPublic = newValue;
+        this.destinationPhotos[index].personalPhoto.isPublic = newValue;
         if (newValue) {
           this.displayMessage("This photo is now public", "green");
         } else {

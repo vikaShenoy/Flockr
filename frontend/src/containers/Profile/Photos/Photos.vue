@@ -14,7 +14,8 @@
           <v-layout v-if="photos && photos.length" row wrap>
             <v-flex sm12 md6 lg4 v-for="(photo, index) in photos" v-bind:key="photo.photoId">
               <v-img v-if="index < 6" class="photo clickable"
-                     :src="thumbnailUrl(photo.photoId)"></v-img>
+                     :src="thumbnailUrl(photo.photoId)"
+                      @click="openViewPhotoDialog(photo, index)"/>
             </v-flex>
           </v-layout>
 
@@ -39,27 +40,42 @@
       </v-card-actions>
     </v-card>
 
-    <!--<view-photo-dialog-->
-            <!--:dialog="viewPhotoDialog"-->
-            <!--:photo="currentPhoto"-->
-            <!--v-on:dialogChanged="closeViewPhotoDialog"-->
-    <!--&gt;</view-photo-dialog>-->
+    <photo-panel
+            :photo="currentPhoto"
+            :showDialog="viewPhotoDialog"
+            :currentPhotoIndex="currentPhotoIndex"
+            :deleteFunction="currentPhotoDeleteFunction"
+            v-on:closeDialog="updatePhotoDialog"
+            @deletePhoto="showPromptDialog"
+            @displayErrorMessage="displayErrorMessage"
+            @changedPermission="changedPermission"/>
+    <snackbar :snackbarModel="this.snackbarModel" @dismissSnackbar="snackbarModel.show=false"/>
+    <prompt-dialog
+            :onConfirm="promptDialog.deleteFunction"
+            :dialog="promptDialog.show"
+            :message="promptDialog.message"
+            @promptEnded="promptEnded"/>
 
   </div>
 </template>
 
 <script>
   import AddPhotoDialog from "./AddPhotoDialog/AddPhotoDialog";
-  // import ViewPhotoDialog from "./ViewPhotoDialog/ViewPhotoDialog";
   import { endpoint } from "../../../utils/endpoint";
+  import PhotoPanel from "../../UserGallery/PhotoPanel/PhotoPanel";
+  import PromptDialog from "../../../components/PromptDialog/PromptDialog";
+  import Snackbar from "../../../components/Snackbars/Snackbar";
+  import {deleteUserPhoto} from "../../UserGallery/UserGalleryService";
 
   export default {
     props: {
       photos: Array 
     },
     components: {
-      AddPhotoDialog,
-      // ViewPhotoDialog
+      Snackbar,
+      PromptDialog,
+      PhotoPanel,
+      AddPhotoDialog
     },
 
     data() {
@@ -67,35 +83,113 @@
         addPhotoDialog: false,
         userId: null,
         currentPhoto: null,
+        currentPhotoIndex: null,
+        currentPhotoDeleteFunction: null,
         viewPhotoDialog: false,
-        hasPhotos: false
+        hasPhotos: false,
+        promptDialog: {
+          show: false,
+          deleteFunction: null,
+          message: "Are you sure you would like to delete this photo?"
+        },
+        snackbarModel: {
+          show: false,
+          timeout: 5000,
+          text: "",
+          color: "green",
+          snackbarId: 1
+        }
       };
     },
 
     methods: {
-
-      // /**
-      //  * Called when a photo is clicked on.
-      //  * Sets the current photo as the one clicked on.
-      //  * Opens the view photo dialog by setting viewPhotoDialog to true
-      //  *
-      //  * @param photo the photo clicked on by the user
-      //  */
-      // openViewPhotoDialog: function (photo) {
-      //   this.currentPhoto = photo;
-      //   this.viewPhotoDialog = true;
-      // },
-      //
-      // /**
-      //  * Called when the view photo dialog is closed by the user.
-      //  * Sets the current photo to null again.
-      //  * Closes the view photo dialog by setting viewPhotoDialog to false
-      //  */
-      // closeViewPhotoDialog: function (newValue) {
-      //   this.currentPhoto = null;
-      //   this.viewPhotoDialog = newValue;
-      // },
-
+      /**
+       * Called when the show value in the photo dialog is changed.
+       * Updates the showPhotoDialog boolean to match the photo dialog.
+       * Sets the current photo data to default values if the dialog is being closed.
+       *
+       * @param newValue {Boolean} the new value of showPhotoDialog.
+       */
+      updatePhotoDialog(newValue) {
+        this.viewPhotoDialog = newValue;
+        if (!newValue) {
+          this.currentPhoto = {
+            endpoint: null,
+            primary: false,
+            public: false
+          };
+        }
+      },
+      /**
+       * Called when the prompt dialog has finished.
+       * Closes the prompt dialog and resets the values to defaults.
+       */
+      promptEnded() {
+        this.promptDialog.deleteFunction = null;
+        this.promptDialog.show = false;
+      },
+      /**
+       * Displays an error message using the snack bar component.
+       *
+       * @param message {String} the text to be displayed.
+       */
+      displayErrorMessage(message) {
+        this.snackbarModel.text = message;
+        this.snackbarModel.color = "red";
+        this.snackbarModel.show = true;
+      },
+      /**
+       * Called when the permission of a photo is updated in the photo panel.
+       * Updates the permission of the photo in the photos list to match.
+       *
+       * @param newValue {Boolean} the new value of public for this photo.
+       * @param index {Number} the index of the photo in the photos list.
+       */
+      changedPermission(newValue, index) {
+        this.photos[index].public = newValue;
+      },
+      /**
+       * Creates and retruns a delete function for the given photo and index.
+       *
+       * @param photo {Object} the photo to be deleted.
+       * @param index {Number} the index of the photo in the photos list.
+       */
+      getDeleteFunction(photo, index) {
+        const deleteCall = deleteUserPhoto;
+        return async () => {
+          try {
+            await deleteCall(photo);
+            this.updatePhotoDialog(false);
+            this.$emit("deletePhoto", index);
+          } catch (error) {
+            this.$emit("showError", error.message);
+          }
+        };
+      },
+      /**
+       * Called when the user selects the delete button on a photo.
+       * Shows the prompt dialog and passes in the photo's delete function.
+       *
+       * @param onConfirm {Function} the function to call on confirmation
+       */
+      showPromptDialog(onConfirm) {
+        this.promptDialog.show = true;
+        this.promptDialog.deleteFunction = onConfirm;
+      },
+      /**
+       * Called when a photo is clicked on.
+       * Sets the current photo as the one clicked on.
+       * Opens the view photo dialog by setting viewPhotoDialog to true
+       *
+       * @param photo {Object} the photo clicked on by the user
+       * @param index {Number} the index of the photo
+       */
+      openViewPhotoDialog: function (photo, index) {
+        this.currentPhoto = photo;
+        this.currentPhotoIndex = index;
+        this.currentPhotoDeleteFunction = this.getDeleteFunction(photo, index);
+        this.viewPhotoDialog = true;
+      },
       /**
        * Called when the add photo dialog is closed by the user.
        * Closes the add photo dialog by setting addPhotoDialog to false.
@@ -135,9 +229,9 @@
     height: auto;
   }
 
-  /*.clickable :hover {*/
-    /*cursor: pointer;*/
-  /*}*/
+  .clickable :hover {
+    cursor: pointer;
+  }
 
 </style>
 

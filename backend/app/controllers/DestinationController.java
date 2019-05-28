@@ -56,7 +56,6 @@ public class DestinationController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getDestinations(Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinations()
                 .thenApplyAsync(destinations -> {
                     List<Destination> publicDestinations = destinations
@@ -87,10 +86,9 @@ public class DestinationController extends Controller {
                     }
 
                     Destination destination = optionalDestination.get();
-                    System.out.println(destination);
 
                     try {
-                        if (destination.getDestinationOwner() != user.getUserId()) {
+                        if (!user.isAdmin() && destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
                             ObjectNode message = Json.newObject();
                             message.put("message", "You are not authorised to get this destination");
                             return forbidden(message);
@@ -122,7 +120,6 @@ public class DestinationController extends Controller {
         return destinationRepository.getDestinations()
                 .thenApplyAsync(destinations -> {
                     if (loggedInUser.getUserId() == userId) {
-                        System.out.println(destinations);
                         List<Destination> userDestinations = destinations.stream()
                                 .filter(destination -> {
                                     Integer ownerId = destination.getDestinationOwner();
@@ -131,10 +128,14 @@ public class DestinationController extends Controller {
                                         collect(Collectors.toList());
                         return ok(Json.toJson(userDestinations));
                     } else {
-                        System.out.println("Is the first one public" + destinations.get(0).getIsPublic());
-                        System.out.println("Is the second one public" + destinations.get(1).getIsPublic());
                         List<Destination> userDestinations = destinations.stream()
-                                .filter(Destination::getIsPublic).
+                                .filter(destination -> {
+                                    Integer ownerId = destination.getDestinationOwner();
+                                    if (ownerId != null && ownerId == userId) {
+                                        return loggedInUser.isAdmin() || destination.getIsPublic();
+                                    }
+                                    return false;
+                                }).
                                         collect(Collectors.toList());
                         return ok(Json.toJson(userDestinations));
                     }
@@ -152,10 +153,12 @@ public class DestinationController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> addDestination(Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
-
-        int userId = request.attrs().get(ActionState.USER).getUserId();
+        User user = request.attrs().get(ActionState.USER);
+        boolean createDestForUser = user.isAdmin() && jsonRequest.has("userId");
 
         try {
+            int userId = createDestForUser ? jsonRequest.get("userId").asInt() : user.getUserId();
+
             // check that the request has a body
             if (jsonRequest.isNull()) {
                 throw new BadRequestException("No details received, please send a valid request.");
@@ -347,7 +350,7 @@ public class DestinationController extends Controller {
                     Destination destination = optionalDestination.get();
                     System.out.println(destination.getDestinationOwner());
                     System.out.println(user.toString());
-                    if (destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
+                    if (!user.isAdmin() && destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
                         throw new CompletionException(new ForbiddenRequestException("You are not permitted to delete this destination"));
                     }
                     ObjectNode success = Json.newObject();
@@ -453,10 +456,14 @@ public class DestinationController extends Controller {
                         throw new CompletionException(new ForbiddenRequestException("Forbidden"));
                     }
 
-                    return photoRepository.getPhotoByIdAndUser(photoId, userFromMiddleware.getUserId())
+                    return photoRepository.getPhotoById(photoId)
                             .thenComposeAsync(optionalPhoto -> {
                                 if (!optionalPhoto.isPresent()) {
                                     throw new CompletionException(new NotFoundException("Could not find photo"));
+                                }
+
+                                if (!userFromMiddleware.isAdmin() && optionalPhoto.get().getOwnerId() != userFromMiddleware.getUserId()) {
+                                    throw new CompletionException(new ForbiddenRequestException("User does not own the image"));
                                 }
 
 

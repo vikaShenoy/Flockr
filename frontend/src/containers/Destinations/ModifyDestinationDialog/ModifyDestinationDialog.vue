@@ -146,6 +146,7 @@
                         id="longitude"
                         @click="checkSubmission"/>
               </v-flex>
+ 
             </v-flex>
 
             <v-flex xl4 lg6 md8 sm10 xs12 offset-xl4 offset-lg3 offset-md2 offset-sm1 offset-xs0>
@@ -181,6 +182,8 @@
     sendAddDestination,
     sendUpdateDestination
   } from "../DestinationsService";
+
+  import UserStore from "../../../stores/UserStore";
 
   export default {
     name: "add-destination-dialog",
@@ -390,6 +393,14 @@
               "latitude": this.destination.destinationLat,
               "longitude": this.destination.destinationLon,
             };
+
+            const userIdUrl = this.$route.params.userId;
+
+            if (userIdUrl) {
+              destinationInfo.userId = userIdUrl;
+            }
+
+
           } else {
             destinationInfo = {
               "destinationName": this.editedDestination.destinationName,
@@ -405,8 +416,11 @@
             try {
               this.destination = await sendAddDestination(destinationInfo);
               this.$emit("addNewDestination", this.destination);
-              this.$emit("update:dialog", false)
+              this.closeDialog();
             } catch (error) {
+              if (error.message === "Conflict") {
+                error.message = "Destination already exists";
+              }
               this.$emit("displayMessage", {
                 text: error.message,
                 color: "red"
@@ -418,8 +432,14 @@
               const updatedDestination = await requestDestination(this.editedDestination.destinationId);
               this.$emit("updateDestination", updatedDestination, this.index);
             } catch (error) {
+              let message;
+              if (error.status === 400) {
+                message = error.response.body.message;
+              } else {
+                message = 'Something went wrong';
+              }
               this.$emit("displayMessage", {
-                text: error.message,
+                text: message,
                 color: "red"
               });
             }

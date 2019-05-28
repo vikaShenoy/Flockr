@@ -2,10 +2,11 @@
   <v-dialog width="80%" v-model="showPhotoDialog">
     <v-card>
       <destination-photo
-              :photo="photo"
-              @displayError="displayError"
-              @permissionUpdated="permissionUpdated"
-              :hasModifyRights="hasPhotoModifyRights"/>
+        :photo="photo"
+        @displayError="displayError"
+        @permissionUpdated="permissionUpdated"
+        :hasModifyRights="hasPhotoModifyRights"
+      />
       <v-card-actions>
         <v-spacer align="left">
           <v-btn flat color="error" @click="removePhoto">
@@ -100,7 +101,7 @@
        */
       onPhotoChanged() {
         if (![null,undefined].includes(this.photo)) {
-          this.hasPhotoModifyRights = localStorage.getItem("userId") === this.photo.ownerId || UserStore.methods.isAdmin();
+          this.hasPhotoModifyRights = localStorage.getItem("userId") === this.photo.personalPhoto.ownerId.toString() || UserStore.methods.isAdmin();
         }
       },
       /**
@@ -108,7 +109,7 @@
        * Removes this photos association with the destination.
        */
       removePhoto() {
-        this.$emit("displayRemovePrompt", this.photo.photoId);
+        this.$emit("displayRemovePrompt", this.photo.personalPhoto);
       }
     }
   }

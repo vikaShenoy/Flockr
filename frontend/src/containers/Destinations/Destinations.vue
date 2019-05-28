@@ -37,17 +37,20 @@
           <v-expansion-panel>
             <v-expansion-panel-content>
               <template v-slot:header>
-                <h2>All Public Destinations</h2>
+                <h2 v-if="userStore.methods.isAdmin()">Public Destinations</h2>
+                <h2 v-else>All Public Destinations</h2>
+
               </template>
               <div v-if="publicDestinations.length === 0"></div>
               <DestinationCard
-                    v-for="(destination, index) in publicDestinations"
-                    v-bind:key="index"
-                    :destination="destination"
-                    @deleteDestination="displayPrompt(destination, index)"
-                    @editDestination="editDestination(index, destination)"
-                    @displayMessage="displayMessage"
-                    @displayRemovePrompt="displayRemovePrompt"/>
+                v-for="(destination, index) in publicDestinations"
+                v-bind:key="index"
+                :destination="destination"
+                @deleteDestination="displayDeletePrompt(destination, index)"
+                @editDestination="editDestination(index, destination)"
+                @displayMessage="displayMessage"
+                @displayRemovePrompt="displayRemovePrompt"
+              />
             </v-expansion-panel-content>
           </v-expansion-panel>
         </div>
@@ -84,6 +87,7 @@
   import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
   import Snackbar from "../../components/Snackbars/Snackbar";
   import PromptDialog from "../../components/PromptDialog/PromptDialog";
+  import UserStore from "../../stores/UserStore";
 
   export default {
     components: {
@@ -94,6 +98,7 @@
     },
     data() {
       return {
+        userStore: UserStore,
         userDestinations: null,
         publicDestinations: null,
         countries: [],
@@ -141,9 +146,12 @@
      */
     mounted: async function () {
       try {
-        const userId = localStorage.getItem("userId");
+        const userIdUrl = this.$route.params.userId;
+        const userId = userIdUrl ? userIdUrl : localStorage.getItem("userId");
         this.userDestinations = await getUserDestinations(userId);
         this.publicDestinations = await getPublicDestinations();
+
+
 
       } catch(error) {
         this.displayMessage({
@@ -195,6 +203,27 @@
         this.editMode = false;
         this.showModifyDestination = true;
       },
+      displayDeletePrompt(destination, index) {
+        this.promptDialog.deleteFunction = this.getDeleteFunction(destination, index);
+        this.promptDialog.message = 'Are you sure that you would like to delete this destination?';
+        this.promptDialog.show = true;
+      },
+      /**
+       * Called when wanting to remove a photo
+       */
+      displayRemovePrompt(photoRemoveCallback) {
+        this.promptDialog.deleteFunction = photoRemoveCallback;
+        this.promptDialog.message = 'Are you sure that you would like to delete this photos?';
+        this.promptDialog.show = true;
+      },
+      /**
+       * Called when the prompt dialog has finished.
+       * Closes the prompt dialog and resets the values to defaults.
+       */
+      promptEnded() {
+        this.promptDialog.deleteFunction = null;
+        this.promptDialog.show = false;
+      },
       /**
        * Called when the modify destination dialog emits a dialogChanged event.
        * Changes the showModifyDestination variable to match the value in the add destination dialog component.
@@ -207,9 +236,36 @@
        *
        * @param newDestination {POJO} the new destination to add to the list of destinations.
        */
-      addNewDestinationCard: function (newDestination) {
+      addNewDestinationCard: async function (newDestination) {
         // TODO: change this to take public/private into account
-        this.userDestinations.unshift(newDestination);
+        this.editedDestination = {
+          destinationId: null,
+          destinationName: null,
+          destinationType: {
+            destinationTypeId: null,
+            destinationTypeName: null
+          },
+          destinationDistrict: {
+            districtName: null,
+            districtId: null
+          },
+          destinationCountry: {
+            countryName: null,
+            countryId: null
+          },
+          destinationLat: null,
+          destinationLon: null,
+          isPublic: false,
+          index: null
+        };
+
+          this.userDestinations = await getUserDestinations(this.userStore.data.userId);
+          this.publicDestinations = await getPublicDestinations();
+        
+        if (UserStore.methods.isAdmin()) {
+          // Current hack where if user is admin, reload the page
+          window.location.reload();
+        }
       },
       /**
        * Update an existing destination after edit.
@@ -245,7 +301,7 @@
       /**
        * Gets the delete function for a destination.
        *
-       * @param destination {POJO} the destination to be deleted.
+       * @param destination {Object} the destination to be deleted.
        * @param index {Number} the index of the destination in the destinations list.
        * @return {Function} the delete function for this destination.
        */
@@ -278,36 +334,6 @@
         this.editIndex = index;
         this.editMode = true;
         this.showModifyDestination = true;
-      },
-      /**
-       * Calls a prompt dialog to be displayed to the user.
-       *
-       * @param destination {POJO} the destination to be deleted on confirmation.
-       * @param index {Number} the index of the destination in the destinations list.
-       */
-      displayDeletePrompt(destination, index) {
-        this.promptDialog.message = "Are you sure you would like to delete this destination?";
-        this.promptDialog.deleteFunction = this.getDeleteFunction(destination, index);
-        this.promptDialog.show = true;
-      },
-      /**
-       * Calls a prompt dialog to be displayed to the user.
-       *
-       * @param removePhotoFunction {Function} the function to call on confirmation.
-       */
-      displayRemovePrompt(removePhotoFunction) {
-        this.promptDialog.message = "Are you sure you would like to remove this photo from the destination?";
-        this.promptDialog.deleteFunction = removePhotoFunction;
-        this.promptDialog.show = true;
-      },
-      /**
-       * Called when the prompt dialog has finished.
-       * Closes the prompt dialog and resets the values to defaults.
-       */
-      promptEnded() {
-        this.promptDialog.message = "";
-        this.promptDialog.deleteFunction = null;
-        this.promptDialog.show = false;
       },
       /**
        * Sets the district of the edited Destination to null values.
@@ -343,7 +369,7 @@
 
 .page-title {
   position: fixed;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   padding: 15px;
   text-align: left;

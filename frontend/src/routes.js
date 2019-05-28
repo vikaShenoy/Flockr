@@ -98,6 +98,11 @@ const routes = [
     path: "/profile/:id/photos",
     component: UserGallery,
     beforeEnter: loggedIn
+  },
+  {
+    path: "/users/:userId/destinations",
+    component: Destinations,
+    beforeEnter: loggedIn,
   }
 ];
 

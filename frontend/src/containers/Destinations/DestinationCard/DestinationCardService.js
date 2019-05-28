@@ -23,7 +23,7 @@ export async function getDestinationPhotos(destinationId) {
  * @return {Promise<*>} the response body.
  */
 export async function removePhotoFromDestination(destinationId, photoId) {
-  const response = superagent.delete(endpoint(`/destinations/${destinationId}/photos/${photoId}`))
+  const response = await superagent.delete(endpoint(`/destinations/${destinationId}/photos/${photoId}`))
       .set("Authorization", localStorage.getItem("authToken"));
 
   return response.body;
