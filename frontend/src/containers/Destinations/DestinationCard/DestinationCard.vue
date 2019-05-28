@@ -5,14 +5,14 @@
       <h2 class="name-header">{{ destination.destinationName }}</h2>
       <div class="body-card col-md-12">
         <Carousel
-                :photos="photos"
-                :destinationId="destination.destinationId"
-                v-if="photos"
-                @displayError="displayMessage"
-                @permissionUpdated="permissionUpdated"
-                :hasOwnerRights="hasOwnerRights"
-                @displayRemovePrompt="displayRemovePrompt"
-                @addPhoto="addPhoto"
+          :photos="photos"
+          :destinationId="destination.destinationId"
+          v-if="photos"
+          @displayError="displayMessage"
+          @permissionUpdated="permissionUpdated"
+          :hasOwnerRights="hasOwnerRights"
+          @displayRemovePrompt="displayRemovePrompt"
+          @addPhoto="addPhoto"
         />
       </div>
     </div>
@@ -205,7 +205,8 @@
        * @param index {Number} the index of the photo.
        */
       permissionUpdated(newValue, index) {
-        this.photos[index].isPublic = newValue;
+        console.log(`Updating isPublic to ${newValue}`)
+        this.photos[index].personalPhoto.isPublic = newValue;
         if (newValue) {
           this.displayMessage("This photo is now public", "green");
         } else {
