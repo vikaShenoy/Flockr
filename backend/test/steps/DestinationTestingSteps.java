@@ -3,17 +3,13 @@ package steps;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import cucumber.api.PendingException;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
-import gherkin.deps.com.google.gson.JsonObject;
 import io.cucumber.datatable.DataTable;
-import io.ebean.Ebean;
 import models.*;
 import org.junit.Assert;
 import play.Application;
@@ -213,9 +209,7 @@ public class DestinationTestingSteps {
     @Then("then the photo gets added to the destination")
     public void thenThePhotoGetAddedToTheDestination() {
         Assert.assertEquals(201, result.status());
-
         List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
-
         Assert.assertTrue(destinationPhotos.size() > 0);
     }
 
@@ -336,7 +330,6 @@ public class DestinationTestingSteps {
     public void iUpdateTheDestinationWithTheFollowingInformation(DataTable dataTable) throws IOException {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(0);
-        List<Map<String, String>> destinationList = dataTable.asMaps();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
         Double delta = 0.0001;
@@ -411,7 +404,6 @@ public class DestinationTestingSteps {
 
     @Then("I get an error indicating that the Destination is not found")
     public void iGetAnErrorIndicatingThatTheDestinationIsNotFound() {
-
         Assert.assertEquals(404, this.result.status());
     }
 
@@ -540,6 +532,7 @@ public class DestinationTestingSteps {
     public void theOtherUsersPrivateDestinationIsDeleted() throws IOException {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(1);
+
         Result destination = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + this.destinationId, user.getToken());
         Assert.assertEquals(404, destination.status());
     }
@@ -548,12 +541,11 @@ public class DestinationTestingSteps {
     public void thePhotoIsChangedToLinkToThePublicDestination() throws IOException {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(1);
-        Destination destination = TestState.getInstance().getDestination(0);
-
+        Destination destination = TestState.getInstance().getDestination(1);
         this.result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
         this.photoData = utils.PlayResultToJson.convertResultToJson(this.result);
-
-
+        Assert.assertNotNull(this.photoData);
+        Assert.assertEquals(this.newPhotoId, this.photoData.get(0).get("personalPhoto").get("photoId").asInt());
     }
 
     @When("the user gets their own destinations")
