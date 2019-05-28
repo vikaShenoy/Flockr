@@ -1,7 +1,7 @@
 <template>
   <v-carousel class="carousel" :cycle="false">
     <v-carousel-item
-      v-for="(photo, index) in photos"
+      v-for="(photo, index) in destinationPhotos"
       :key="photo.photoId"
     >
       <v-img
@@ -20,14 +20,15 @@
             @displayRemovePrompt="displayRemovePrompt"
     />
     <AddPhotoDialog
-            :destinationPhotos="photos"
+            :destinationPhotos="destinationPhotos"
             :destinationId="destinationId"
             :showDialog="showAddPhotoDialog"
+            :userPhotos="userPhotos"
             @closeAddPhotoDialog="closeAddPhotoDialogHandler"
             @addPhoto="addPhoto"
     />
     <v-img
-      v-if="photos.length === 0"
+      v-if="destinationPhotos.length === 0"
       class="dest-image"
       :src="defaultDestinationPhoto"
     />
@@ -48,11 +49,13 @@
 import DestinationPhotoPanel from "./DestinationPhotoPanel/DestinationPhotoPanel";
 import AddPhotoDialog from "./AddDestinationPhotoDialog/AddDestinationPhotoDialog";
 import defaultDestinationPhoto from './defaultDestinationPhoto.png';
+import * as superagent from "superagent";
+import {endpoint} from "../../../../utils/endpoint";
 
 export default {
   components: {AddPhotoDialog, DestinationPhotoPanel},
   props: {
-    photos: Array,
+    destinationPhotos: Array,
     destinationId: Number,
     hasOwnerRights: {
       type: Boolean,
@@ -67,16 +70,45 @@ export default {
       addPhotoButton: false,
       inButton: false,
       showAddPhotoDialog: false,
-      defaultDestinationPhoto: defaultDestinationPhoto
+      defaultDestinationPhoto: defaultDestinationPhoto,
+      userPhotos: []
     }
   },
+  mounted() {
+    this.getUserPhotos();
+  },
   methods: {
+    //TODO jsdoc this
+    getUserPhotos: async function () {
+      let authToken = localStorage.getItem('authToken');
+      let userFromUrl = this.$route.params.userId;
+      let userId =  userFromUrl ? userFromUrl : localStorage.getItem("userId");
+      try {
+        this.userPhotos = [];
+        //TODO extract this to a service file
+        const response  = await superagent(endpoint(`/users/${userId}/photos`))
+            .set('Authorization', authToken);
+        let userPhotos = response.body;
+        let photosToShow = userPhotos.filter(userPhoto => {
+          for (const destinationPhoto of this.destinationPhotos) {
+            if (userPhoto.photoId === destinationPhoto.personalPhoto.photoId) {
+              return false;
+            }
+          }
+          return true;
+        });
+        this.userPhotos = photosToShow;
+      } catch (e) {
+        this.$emit("displayError", e.message);
+      }
+    },
     /**
      * Called when a photo is added by the user.
      * emits an event to the parent element to add the photo to the list.
      */
     addPhoto(photo) {
       this.$emit("addPhoto", photo);
+      this.getUserPhotos();
     },
     /**
      * Called when the photo is selected.
@@ -109,10 +141,11 @@ export default {
      * Called when the remove photo button is selected in the photo panel.
      * Emits a displayRemovePrompt event with a closePhotoPanel function the photoId and index of the current photo.
      *
-     * @param photoId {Number} the id of the current photo.
+     * @param photo {Object} the photo being removed
      */
-    displayRemovePrompt(photoId) {
-      this.$emit("displayRemovePrompt", this.closePhotoPanel, photoId, this.currentPhotoIndex);
+    displayRemovePrompt(photo) {
+      this.userPhotos.push(photo);
+      this.$emit("displayRemovePrompt", this.closePhotoPanel, photo.photoId, this.currentPhotoIndex);
     },
     /**
      * Called when the destination photo emits an error to display.

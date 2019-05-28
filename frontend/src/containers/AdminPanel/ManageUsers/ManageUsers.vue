@@ -14,8 +14,14 @@
           </v-btn>
 
           <v-btn class="new-user-button"
-            @click="signupButtonClicked">
+                 @click="signupButtonClicked">
             Sign Up User
+          </v-btn>
+
+          <v-btn class="new-user-button"
+                 @click="viewDestinationsButtonClicked"
+                 :disabled="this.selectedUsers.length != 1">
+            View Destinations
           </v-btn>
 
           <v-btn class="edit-trips-button" :disabled="this.selectedUsers.length === 0"
@@ -114,6 +120,16 @@ export default {
     }
   },
   methods: {
+
+    /**
+     * Called when the view destinations button is clicked.
+     * routes the admin to the destinations page for the selected user.
+     */
+    viewDestinationsButtonClicked() {
+      const userId = this.selectedUsers[0];
+
+      this.$router.push(`/users/${userId}/destinations`);
+    },
 
     /**
      * Emit a function call, indicates search admin 

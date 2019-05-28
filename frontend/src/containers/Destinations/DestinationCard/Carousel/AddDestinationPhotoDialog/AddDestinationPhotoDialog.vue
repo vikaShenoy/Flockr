@@ -15,7 +15,10 @@
                 </v-card-title>
                 <v-card-text>
 
-                    <v-layout row wrap>
+                    <v-layout
+                            v-if="userPhotos"
+                            row
+                            wrap>
                         <v-flex
                                 v-for="photo in userPhotos"
                                 :key="photo.filename"
@@ -42,6 +45,9 @@
                                 <v-btn fab v-on:click="addPhotoToDestination(photo.photoId)"><v-icon>add</v-icon></v-btn>
                             </v-img>
                         </v-flex>
+                        <v-spacer align="center">
+                            <h4 v-if="!userPhotos.length">{{ $route.params.userId ? "This user has " : "You have " }} no available photos for this destination</h4>
+                        </v-spacer>
                     </v-layout>
                 </v-card-text>
             </v-card>
@@ -64,16 +70,12 @@
                 required: true
             },
             destinationId: Number,
-            destinationPhotos: Array
-        },
-        mounted() {
-            console.log("mounted");
-            this.getUserPhotos();
+            destinationPhotos: Array,
+            userPhotos: Array
         },
         data() {
             return {
                 showAddPhotoDialog: false,
-                userPhotos: [],
                 id: null
             }
         },
@@ -98,31 +100,6 @@
             onShowPhotoDialogUpdated() {
                 this.$emit('closeAddPhotoDialog', this.showAddPhotoDialog);
             },
-            getUserPhotos: async function () {
-                let authToken = localStorage.getItem('authToken');
-                let userId = localStorage.getItem('userId');
-                try {
-                    this.userPhotos = [];
-                    const response  = await superagent(endpoint(`/users/${userId}/photos`))
-                        .set('Authorization', authToken);
-                    let userPhotos = response.body;
-                    // console.log("User Photos: ");
-                    // conosle.log(userPhotos);
-                    let photosToShow = userPhotos.filter(userPhoto => {
-                        for (const destinationPhoto of this.destinationPhotos) {
-                            if (userPhoto.photoId === destinationPhoto.personalPhoto.photoId) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    });
-                    // console.log("Photos to show");
-                    // console.log(photosToShow);
-                    this.userPhotos = photosToShow;
-                } catch (e) {
-                    this.$emit("displayError", e.message);
-                }
-            },
             thumbnailPhotoUrl(photoId) {
                 const authToken = localStorage.getItem("authToken");
                 const queryAuthorization = `?Authorization=${authToken}`;
@@ -143,9 +120,6 @@
                     photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
                     photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
                     this.$emit("addPhoto", photo);
-
-                    this.getUserPhotos();
-
                 } catch (e) {
                     this.$emit("displayError", e.message);
                 }

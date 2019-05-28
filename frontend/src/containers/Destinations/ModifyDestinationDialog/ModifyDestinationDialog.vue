@@ -146,17 +146,6 @@
                         id="longitude"
                         @click="checkSubmission"/>
               </v-flex>
-
-              <v-flex xs12 sm12 md6 lg6 xl6>
-               <v-text-field
-                  v-if="!editMode && userIsAdmin()"
-                  type="number"
-                  v-model="destination.userId"
-                  :value="destination.userId"
-                  label="User ID"
-                  :rules="requiredRule"
-                />
-              </v-flex>
  
             </v-flex>
 
@@ -405,9 +394,10 @@
               "longitude": this.destination.destinationLon,
             };
 
-            if (this.destination.userId) {
-              this.destination.userId = Number(this.destination.userId);
-              destinationInfo.userId = this.destination.userId;
+            const userIdUrl = this.$route.params.userId;
+
+            if (userIdUrl) {
+              destinationInfo.userId = userIdUrl;
             }
 
 
@@ -449,9 +439,6 @@
             }
           }
         }
-      },
-      userIsAdmin() {
-        return UserStore.methods.isAdmin();
       }
     },
 

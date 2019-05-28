@@ -37,7 +37,7 @@
           <v-expansion-panel>
             <v-expansion-panel-content>
               <template v-slot:header>
-                <h2 v-if="userStore.methods.isAdmin()">All Destinations</h2>
+                <h2 v-if="userStore.methods.isAdmin()">Public Destinations</h2>
                 <h2 v-else>All Public Destinations</h2>
 
               </template>
@@ -145,7 +145,8 @@
      */
     mounted: async function () {
       try {
-        const userId = localStorage.getItem("userId");
+        const userIdUrl = this.$route.params.userId;
+        const userId = userIdUrl ? userIdUrl : localStorage.getItem("userId");
         this.userDestinations = await getUserDestinations(userId);
         this.publicDestinations = await getPublicDestinations();
 

@@ -109,7 +109,7 @@
        * Removes this photos association with the destination.
        */
       removePhoto() {
-        this.$emit("displayRemovePrompt", this.photo.photoId);
+        this.$emit("displayRemovePrompt", this.photo.personalPhoto);
       }
     }
   }
