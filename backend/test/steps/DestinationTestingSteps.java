@@ -147,6 +147,12 @@ public class DestinationTestingSteps {
         Assert.assertFalse(destination.isPresent());
     }
 
+    @Then("I get a message saying that the destination already exists")
+    public void i_get_a_message_saying_that_the_destination_already_exists() {
+        Assert.assertEquals(409, result.status());
+
+    }
+
     @When("the user adds {string} to the destination {string}")
     public void theUserAddsStringToTheDestinationString(String photoName, String destinationName) {
         User user = TestState.getInstance().getUser(0);
@@ -206,6 +212,7 @@ public class DestinationTestingSteps {
         List<Map<String, String>> destinationList = dataTable.asMaps();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
+        Double delta = 0.0001;
 
         this.destinationNode = Json.newObject();
         this.destinationNode.put("destinationName", firstRow.get("destinationName"));
@@ -216,31 +223,22 @@ public class DestinationTestingSteps {
         this.destinationNode.put("countryId", firstRow.get("countryId"));
         this.destinationNode.put("isPublic", firstRow.get("isPublic"));
 
-        for (int i = 0; i < destinationList.size(); i++) {
-            try {
-                Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
-                TestState.getInstance().addDestination(destination);
+        Destination destinationToChange = TestState.getInstance().getDestination(0);
 
+        this.result = fakeClient.makeRequestWithToken("PUT", this.destinationNode,
+                "/api/destinations/" + destinationToChange.getDestinationId(), user.getToken());
 
-                this.result = fakeClient.makeRequestWithToken("PUT", this.destinationNode, "/api/destinations/" + destination.getDestinationId(), user.getToken());
-
-                Result getDestination = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId(), user.getToken());
-                JsonNode destinationData = utils.PlayResultToJson.convertResultToJson(getDestination);
-
-                Assert.assertEquals(destinationData.get("destinationName").asText(), firstRow.get("destinationName"));
-                Assert.assertEquals(destinationData.get("destinationType").get("destinationTypeId").asText(), firstRow.get("destinationTypeId"));
-                Assert.assertEquals(destinationData.get("destinationDistrict").get("districtId").asText(), firstRow.get("districtId"));
-                Assert.assertEquals(destinationData.get("destinationLat").asText(), firstRow.get("latitude"));
-                Assert.assertEquals(destinationData.get("destinationLon").asText(), firstRow.get("longitude"));
-                Assert.assertEquals(destinationData.get("destinationCountry").get("countryId").asText(), firstRow.get("countryId"));
-                Assert.assertEquals(destinationData.get("isPublic").asText(), firstRow.get("isPublic"));
-
-            } catch (UnauthorizedException unauthorisedExceptionE) {
-                Assert.fail(Arrays.toString(unauthorisedExceptionE.getStackTrace()));
-            } catch (ServerErrorException serverErrorE) {
-                Assert.fail(Arrays.toString(serverErrorE.getStackTrace()));
-            }
-        }
+        Destination destination = Destination.find.byId(destinationToChange.getDestinationId());
+        Assert.assertEquals(firstRow.get("destinationName"), destination.getDestinationName());
+        Assert.assertEquals(firstRow.get("latitude"), destination.getDestinationLat().toString());
+        Assert.assertEquals(firstRow.get("longitude"), destination.getDestinationLon().toString());
+        Assert.assertEquals(Double.parseDouble(firstRow.get("districtId")),
+                destination.getDestinationDistrict().getDistrictId(), delta);
+        Assert.assertEquals(Double.parseDouble(firstRow.get("countryId")),
+                destination.getDestinationCountry().getCountryId(), delta);
+        Assert.assertEquals(Double.parseDouble(firstRow.get("destinationTypeId")),
+                destination.getDestinationType().getDestinationTypeId(), delta);
+        Assert.assertEquals(Boolean.parseBoolean(firstRow.get("isPublic")), destination.getIsPublic());
     }
 
     @Then("I should be allowed to update the Destination")
@@ -287,6 +285,7 @@ public class DestinationTestingSteps {
 
     @Then("I get an error indicating that the Destination is not found")
     public void iGetAnErrorIndicatingThatTheDestinationIsNotFound() {
+
         Assert.assertEquals(404, this.result.status());
     }
 

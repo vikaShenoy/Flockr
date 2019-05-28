@@ -6,6 +6,7 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
+import exceptions.ConflictingRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.*;
@@ -15,6 +16,7 @@ import play.libs.Json;
 import play.mvc.*;
 import repository.DestinationRepository;
 
+import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
@@ -176,11 +178,31 @@ public class DestinationController extends Controller {
                 throw new BadRequestException("One of the fields you have selected does not exist.");
             }
 
-            Destination destination = new Destination(destinationName, destinationTypeAdd, districtAdd,
+            Destination destinationToAdd = new Destination(destinationName, destinationTypeAdd, districtAdd,
                     latitude, longitude, countryAdd, user, false);
 
-            return destinationRepository.insert(destination)
-                    .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)), httpExecutionContext.current());
+            return destinationRepository.getDestinations()
+                    .thenComposeAsync(destinations -> {
+                        for (Destination dest : destinations) {
+                            if (dest.equals(destinationToAdd)) {
+                                throw new CompletionException(new ConflictingRequestException(
+                                        "Destination already exists."));
+                            }
+                        }
+                        return destinationRepository.insert(destinationToAdd);
+                    }, httpExecutionContext.current())
+                    .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)))
+                    .exceptionally(e -> {
+                        try {
+                            throw e.getCause();
+                        } catch (ConflictingRequestException conflictingException) {
+                            return status(409, conflictingException.getMessage());
+                        } catch (Throwable generalException) {
+                            generalException.printStackTrace();
+                            return internalServerError("Error creating destinations");
+                        }
+
+                    });
         } catch (BadRequestException e) {
             ObjectNode message = Json.newObject();
             message.put("message", e.getMessage());
@@ -209,7 +231,8 @@ public class DestinationController extends Controller {
 
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
                     if (!user.isAdmin() && user.getUserId() != optionalDest.get().getDestinationOwner()) {
-                        throw new CompletionException(new ForbiddenRequestException("You are unauthorised to update this destination"));
+                        throw new CompletionException(new ForbiddenRequestException("You are unauthorised to update " +
+                                "this destination"));
                     }
 
                     JsonNode jsonBody = request.body().asJson();

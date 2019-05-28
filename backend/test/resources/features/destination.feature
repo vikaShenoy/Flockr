@@ -53,19 +53,6 @@ Feature: The user can manage destinations
     Then 1 destinations should be returned
 
 
-
-  Scenario: A user can add a photo to a destination
-    Given that I am logged in
-    And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          | 41.2    | 174.9     | 1         |
-    And that I have the following private destination photos
-      | destination_id   | photo_id |
-      | 1                | 1        |
-    When I change the photo permissions to public
-    Then the permission changes should be reflected in the database
-
-
   # Test updating a destination
   Scenario: A user tries to update a destination with no change in the information
     Given that I am logged in
@@ -139,3 +126,14 @@ Feature: The user can manage destinations
       | whale.png     | false     | false    |
     When the user adds "monkey.png" to the destination "Some destination I don't have"
     Then the photo does not get added to the destination
+
+  Scenario: A user tries to add a destination that already exists
+    Given that I am logged in
+    And that I have the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+    And that I want to create a Destination with the following valid data:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+    When I click the Add Destination button
+    Then I get a message saying that the destination already exists
