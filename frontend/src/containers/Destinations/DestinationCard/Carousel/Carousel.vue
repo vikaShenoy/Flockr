@@ -181,8 +181,7 @@ export default {
     max-height: 300px;
 
     .dest-image {
-      height: 100%;
-      width: auto;
+      height: 50%;
     }
   }
 
