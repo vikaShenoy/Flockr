@@ -29,13 +29,14 @@
     <v-img
       v-if="photos.length === 0"
       class="dest-image"
-      src="https://picsum.photos/300/300"/>
+      :src="defaultDestinationPhoto"
+    />
     <v-btn
-            class="carousel"
-            id="add-button"
-            color="blue-grey darken-3"
-            fab
-            @click="openAddPhotoDialog()"
+      class="carousel"
+      id="add-button"
+      color="blue-grey darken-3"
+      fab
+      @click="openAddPhotoDialog()"
     >
       <v-icon>add</v-icon>
     </v-btn>
@@ -46,6 +47,7 @@
 <script>
 import DestinationPhotoPanel from "./DestinationPhotoPanel/DestinationPhotoPanel";
 import AddPhotoDialog from "./AddDestinationPhotoDialog/AddDestinationPhotoDialog";
+import defaultDestinationPhoto from './defaultDestinationPhoto.png';
 
 export default {
   components: {AddPhotoDialog, DestinationPhotoPanel},
@@ -64,7 +66,8 @@ export default {
       currentPhotoIndex: null,
       addPhotoButton: false,
       inButton: false,
-      showAddPhotoDialog: false
+      showAddPhotoDialog: false,
+      defaultDestinationPhoto: defaultDestinationPhoto
     }
   },
   methods: {
@@ -143,6 +146,11 @@ export default {
 
   .carousel {
     max-height: 300px;
+
+    .dest-image {
+      height: 100%;
+      width: auto;
+    }
   }
 
   #add-button {
@@ -154,11 +162,6 @@ export default {
 
   .carousel :hover #add-button {
     visibility: visible;
-  }
-
-  .dest-image {
-    width: 300px;
-    height: 300px;
   }
 
 </style>

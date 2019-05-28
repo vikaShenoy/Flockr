@@ -343,7 +343,7 @@
 
 .page-title {
   position: fixed;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   padding: 15px;
   text-align: left;
