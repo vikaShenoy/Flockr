@@ -432,8 +432,14 @@
               const updatedDestination = await requestDestination(this.editedDestination.destinationId);
               this.$emit("updateDestination", updatedDestination, this.index);
             } catch (error) {
+              let message;
+              if (error.status === 400) {
+                message = error.response.body.message
+              } else {
+                message = 'Something went wrong';
+              }
               this.$emit("displayMessage", {
-                text: error.message,
+                text: message,
                 color: "red"
               });
             }
