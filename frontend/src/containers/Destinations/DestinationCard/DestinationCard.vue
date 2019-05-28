@@ -191,7 +191,7 @@
       },
       /**
        * Called when the destination photo emits an error to display.
-       * Emits the given error to it's parent to display.
+       * Emits the given error to its parent to display.
        *
        * @param message {String} the error message
        * @param color {String} the color the message will be displayed as.

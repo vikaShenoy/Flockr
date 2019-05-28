@@ -129,7 +129,7 @@
         promptDialog: {
           show: false,
           deleteFunction: null,
-          message: ""
+          message: "Are you sure you would like to delete this destination?"
         },
         snackBar: {
           show: false,
@@ -201,6 +201,17 @@
       openAddDestinationDialog() {
         this.editMode = false;
         this.showModifyDestination = true;
+      },
+      displayDeletePrompt() {
+        this.promptDialog.show = true;
+      },
+      /**
+       * Called when the prompt dialog has finished.
+       * Closes the prompt dialog and resets the values to defaults.
+       */
+      promptEnded() {
+        this.promptDialog.deleteFunction = null;
+        this.promptDialog.show = false;
       },
       /**
        * Called when the modify destination dialog emits a dialogChanged event.
