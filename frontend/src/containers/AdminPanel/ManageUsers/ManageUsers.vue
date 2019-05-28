@@ -1,6 +1,6 @@
 <template>
   <div class=manage-users>
-    <v-card>
+    <v-card class="manage-filter-card">
       <v-list two-line>
         <v-subheader class="manage-users-row">
           <div class="manage-users-text">
@@ -39,8 +39,12 @@
           </v-btn>
 
         </v-subheader>
+      </v-list>
+    </v-card>
         
         <!-- User tile -->
+      <v-card>
+        <v-list>
         <v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
           <v-list-tile-avatar>
             <img :src="item.avatar">
@@ -241,6 +245,11 @@ export default {
 
   .manage-users {
     height: 100%;
+    width: 100%;
+  }
+
+  .manage-filter-card {
+    height: 20%;
     width: 100%;
   }
 

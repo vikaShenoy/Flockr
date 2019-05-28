@@ -180,7 +180,6 @@ export default {
       dateOfBirth: null,
       currentDate: moment().format("YYYY-MM-DD"),
       arrayRequiredRule: field => field.length > 0 || "At least one is required",
-      middleNameRule: field => !(field.length === 1) || "Middle  name must be greater than 2 characters long",
       requiredRule: field => !!field || "This field is required",
       lengthRule: field => field.length >= 2 || "This field must be 2 or more characters long",
       emailRule: field => /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(field) || "This is not a valid email"
