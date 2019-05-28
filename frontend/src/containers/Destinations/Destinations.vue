@@ -43,13 +43,13 @@
               </template>
               <div v-if="publicDestinations.length === 0"></div>
               <DestinationCard
-                    v-for="(destination, index) in publicDestinations"
-                    v-bind:key="index"
-                    :destination="destination"
-                    @deleteDestination="displayDeletePrompt(destination, index)"
-                    @editDestination="editDestination(index, destination)"
-                    @displayMessage="displayMessage"
-                    @displayRemovePrompt="displayRemovePrompt"/>
+                v-for="(destination, index) in publicDestinations"
+                v-bind:key="index"
+                :destination="destination"
+                @deleteDestination="displayDeletePrompt(destination, index)"
+                @editDestination="editDestination(index, destination)"
+                @displayMessage="displayMessage"
+              />
             </v-expansion-panel-content>
           </v-expansion-panel>
         </div>
@@ -202,7 +202,8 @@
         this.editMode = false;
         this.showModifyDestination = true;
       },
-      displayDeletePrompt() {
+      async displayDeletePrompt(destination, index) {
+        this.promptDialog.deleteFunction = this.getDeleteFunction(destination, index);
         this.promptDialog.show = true;
       },
       /**
