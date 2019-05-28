@@ -37,7 +37,7 @@ cd backend
 sbt run
 ```
 And open <http://localhost:9000/>  
-**Note:** There may be a smmal delay as the front end is automatically started.
+**Note:** There may be a small delay as the front end is automatically started.
 
 ### How to run the product in production mode
 ```bash
