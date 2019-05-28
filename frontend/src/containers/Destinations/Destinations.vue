@@ -49,6 +49,7 @@
                 @deleteDestination="displayDeletePrompt(destination, index)"
                 @editDestination="editDestination(index, destination)"
                 @displayMessage="displayMessage"
+                @displayRemovePrompt="displayRemovePrompt"
               />
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -129,7 +130,7 @@
         promptDialog: {
           show: false,
           deleteFunction: null,
-          message: "Are you sure you would like to delete this destination?"
+          message: ""
         },
         snackBar: {
           show: false,
@@ -202,8 +203,17 @@
         this.editMode = false;
         this.showModifyDestination = true;
       },
-      async displayDeletePrompt(destination, index) {
+      displayDeletePrompt(destination, index) {
         this.promptDialog.deleteFunction = this.getDeleteFunction(destination, index);
+        this.promptDialog.message = 'Are you sure that you would like to delete this destination?';
+        this.promptDialog.show = true;
+      },
+      /**
+       * Called when wanting to remove a photo
+       */
+      displayRemovePrompt(photoRemoveCallback) {
+        this.promptDialog.deleteFunction = photoRemoveCallback;
+        this.promptDialog = 'Are you sure that you would like to delete this photos?';
         this.promptDialog.show = true;
       },
       /**
