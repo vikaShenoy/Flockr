@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
 
@@ -7,9 +8,11 @@ import javax.persistence.*;
 
 @Entity
 public class DestinationPhoto extends Model {
+
     @Id
     public int destinationPhotoId;
 
+    @JsonIgnore
     @ManyToOne
     private Destination destination;
 
