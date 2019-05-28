@@ -56,12 +56,11 @@ public class DestinationController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getDestinations(Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinations()
                 .thenApplyAsync(destinations -> {
                     List<Destination> publicDestinations = destinations
                                                             .stream()
-                                                            .filter(destination -> user.isAdmin() || destination.getIsPublic())
+                                                            .filter(Destination::getIsPublic)
                                                             .collect(Collectors.toList());
                     return ok(Json.toJson(publicDestinations));
                 }, httpExecutionContext.current());
@@ -121,7 +120,6 @@ public class DestinationController extends Controller {
         return destinationRepository.getDestinations()
                 .thenApplyAsync(destinations -> {
                     if (loggedInUser.getUserId() == userId) {
-                        System.out.println(destinations);
                         List<Destination> userDestinations = destinations.stream()
                                 .filter(destination -> {
                                     Integer ownerId = destination.getDestinationOwner();
@@ -130,10 +128,14 @@ public class DestinationController extends Controller {
                                         collect(Collectors.toList());
                         return ok(Json.toJson(userDestinations));
                     } else {
-                        System.out.println("Is the first one public" + destinations.get(0).getIsPublic());
-                        System.out.println("Is the second one public" + destinations.get(1).getIsPublic());
                         List<Destination> userDestinations = destinations.stream()
-                                .filter(Destination::getIsPublic).
+                                .filter(destination -> {
+                                    Integer ownerId = destination.getDestinationOwner();
+                                    if (ownerId != null && ownerId == userId) {
+                                        return loggedInUser.isAdmin() || destination.getIsPublic();
+                                    }
+                                    return false;
+                                }).
                                         collect(Collectors.toList());
                         return ok(Json.toJson(userDestinations));
                     }
@@ -240,10 +242,9 @@ public class DestinationController extends Controller {
                     if (!optionalDest.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
-                    System.out.println(user.isAdmin());
+
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
                     if (!user.isAdmin() && user.getUserId() != optionalDest.get().getDestinationOwner()) {
-                        System.out.println("I made it here");
                         throw new CompletionException(new ForbiddenRequestException("You are unauthorised to update " +
                                 "this destination"));
                     }
@@ -455,10 +456,14 @@ public class DestinationController extends Controller {
                         throw new CompletionException(new ForbiddenRequestException("Forbidden"));
                     }
 
-                    return photoRepository.getPhotoByIdAndUser(photoId, userFromMiddleware.getUserId())
+                    return photoRepository.getPhotoById(photoId)
                             .thenComposeAsync(optionalPhoto -> {
                                 if (!optionalPhoto.isPresent()) {
                                     throw new CompletionException(new NotFoundException("Could not find photo"));
+                                }
+
+                                if (!userFromMiddleware.isAdmin() && optionalPhoto.get().getOwnerId() != userFromMiddleware.getUserId()) {
+                                    throw new CompletionException(new ForbiddenRequestException("User does not own the image"));
                                 }
 
 
