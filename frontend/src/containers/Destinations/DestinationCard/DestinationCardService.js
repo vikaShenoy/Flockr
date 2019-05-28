@@ -36,9 +36,10 @@ export async function removePhotoFromDestination(destinationId, photoId) {
  * @return {Array<POJO>} the list of photos with the endpoints.
  */
 const addEndpoints = function(photos) {
+  console.log(photos);
   photos.map((photo) => {
-    photo["endpoint"] = endpoint(`/users/photos/${photo.photoId}?Authorization=${localStorage.getItem("authToken")}`);
-    photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+    photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
+    photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
   });
   return photos;
 };

@@ -6,24 +6,9 @@
     >
       <v-img
         :src="photo.thumbEndpoint"
-        style="width:300px; height:300px"
+        class="dest-image"
         alt="Some Image"
-        @click="openPhotoDialog(photo, index)"
-        v-on:mouseenter="addPhotoButton = !addPhotoButton"
-        v-on:mouseleave="addPhotoButton = !addPhotoButton">
-        <v-btn
-          color="blue-grey darken-3"
-          v-on:mouseenter="inButton = !inButton"
-          v-on:mouseleave="inButton = !inButton"
-          fab
-          @click="openAddPhotoDialog()"
-          v-if="addPhotoButton"
-          >
-            <v-icon>add</v-icon>
-        </v-btn>
-      </v-img>
-
-
+        @click="openPhotoDialog(photo, index)"/>
     </v-carousel-item>
     <destination-photo-panel
             :photo="currentPhoto"
@@ -40,6 +25,19 @@
             :showDialog="showAddPhotoDialog"
             @closeAddPhotoDialog="closeAddPhotoDialogHandler"
     />
+    <v-img
+      v-if="photos.length === 0"
+      class="dest-image"
+      src="https://picsum.photos/300/300"/>
+    <v-btn
+            class="carousel"
+            id="add-button"
+            color="blue-grey darken-3"
+            fab
+            @click="openAddPhotoDialog()"
+    >
+      <v-icon>add</v-icon>
+    </v-btn>
   </v-carousel>
 
 </template>
@@ -134,9 +132,27 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.carousel {
-  max-height: 300px;
-}
+
+  .carousel {
+    max-height: 300px;
+  }
+
+  #add-button {
+    visibility: hidden;
+    position: absolute;
+    left: 5px;
+    top: 5px;
+  }
+
+  .carousel :hover #add-button {
+    visibility: visible;
+  }
+
+  .dest-image {
+    width: 300px;
+    height: 300px;
+  }
+
 </style>
 
 
