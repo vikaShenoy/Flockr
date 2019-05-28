@@ -1,9 +1,23 @@
 # SENG302 Team 500
 
+## Context
+This project is called Travel EA is an web application that is like the app of 
+all the apps. It acts like an Executive Assistant for organising your travel. 
+In this application, you can create your profile, find your own travel partners 
+with the similar interests as you, plan your trips or use others’ trips to plan 
+your own trip.
+
+## Objective
+This README file shows how to deploy the application, test the project and shows 
+the overall project structure. We have a master branch that is a Shippable product
+and the dev branch that is the development branch for the project.
+
+##### Master Branch
 ![Master Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/master/pipeline.svg?style=flat)
+##### Dev Branch
 ![Dev Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/dev/pipeline.svg?style=flat)
 
-Project split into:
+The Project split into:
 - API backend using Play and Java
 - Front end using Vue.js
 
