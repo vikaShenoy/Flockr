@@ -1,6 +1,9 @@
 package util;
 
 
+import models.Role;
+import models.RoleType;
+import models.User;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.security.SecureRandom;
@@ -16,8 +19,7 @@ public class Security {
      * @return The hashed password
      */
     public String hashPassword(String password) {
-        String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
-        return passwordHash;
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
     /**
@@ -32,15 +34,41 @@ public class Security {
 
     /**
      * Generates a token to be used for authentication
-     * @return
+     * @return String the token for authentication
      */
     public String generateToken() {
         SecureRandom random = new SecureRandom();
-        byte bytes[] = new byte[20];
+        byte[] bytes = new byte[20];
         random.nextBytes(bytes);
         Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-        String token = encoder.encodeToString(bytes);
-        return token;
+        return encoder.encodeToString(bytes);
     }
 
+    /**
+     * Checks if a user has a given role type
+     * @return if the role exists or not
+     */
+    public boolean checkRoleExists(User user, RoleType roleType) {
+        for (Role userRole : user.getRoles()) {
+            if (userRole.getRoleType().equals(roleType.name())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+// TODO: this javadoc needs updating.
+    /**
+     * Checks if an user has permission to run certain functionality
+     * @param userFromMiddleware The user object inferred by the middleware
+     * @param userId The user retrieved from the url parameter
+     * @return True if the user
+     */
+    public boolean userHasPermission(User userFromMiddleware, int userIdFromUrl) {
+        if (checkRoleExists(userFromMiddleware, RoleType.ADMIN) || checkRoleExists(userFromMiddleware, RoleType.SUPER_ADMIN)) {
+            return true;
+        }
+
+        return userFromMiddleware.getUserId() == userIdFromUrl;
+    }
 }

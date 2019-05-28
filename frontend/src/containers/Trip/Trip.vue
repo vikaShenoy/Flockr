@@ -3,7 +3,7 @@
     <v-btn
       color="secondary"
       id="edit-trip"
-      @click="$router.push(`/trips/${$route.params.id}/edit`)"
+      @click="goToEditTrip"
     >Edit</v-btn>
 
 
@@ -34,7 +34,9 @@ export default {
     async getTrip() {
       try {
         const tripId = this.$route.params.id;
-        const userId = localStorage.getItem("userId");
+        const travellerId = this.$route.params.travellerId;
+        // If the admin is viewing another user, use them. 
+        const userId = travellerId ? travellerId : localStorage.getItem("userId");
         const rawTrip = await getTrip(userId, tripId);
         const transformedTrip = transformTrip(rawTrip); 
         this.trip = transformedTrip;
@@ -46,6 +48,17 @@ export default {
           // Add error handling later
         }
       }
+    },
+    goToEditTrip() {
+      const travellerId = this.$route.params.travellerId;
+      const tripId = this.$route.params.id;
+
+      if (travellerId) {
+        this.$router.push(`/travellers/${travellerId}/trips/${tripId}/edit`)
+      } else {
+        this.$router.push(`/trips/${tripId}/edit`);
+      }
+      
     }
   }
 };

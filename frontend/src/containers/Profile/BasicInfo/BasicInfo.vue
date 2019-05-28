@@ -19,31 +19,31 @@
 
     <v-card id="basic-info">
       <v-form ref="form">
-      <div class="profile-item">
-        <div class="item-signifier">
-          <b>First Name</b>
+        <div class="profile-item">
+          <div class="item-signifier">
+            <b>First Name</b>
+          </div>
+
+          <div class="item-value">
+            <span v-if="!this.isEditing">{{ userProfile.firstName }}</span>
+            <v-text-field
+              class="edit-field"
+              v-else
+              v-model="firstName"
+              color="secondary"
+              :rules="fieldRules"
+              :maxlength="50"
+            >
+            </v-text-field>
+          </div>
         </div>
 
-        <div class="item-value">
-          <span v-if="!this.isEditing">{{ userProfile.firstName }}</span>
-          <v-text-field
-            class="edit-field"
-            v-else
-            v-model="firstName"
-            color="secondary"
-            :rules="fieldRules"
-            :maxlength="50"
-          >
-          </v-text-field>
-        </div>
-      </div>
+        <v-divider />
 
-      <v-divider />
-
-      <div class="profile-item">
-        <div class="item-signifier">
-          <b>Middle Name</b>
-        </div>
+        <div class="profile-item">
+          <div class="item-signifier">
+            <b>Middle Name</b>
+          </div>
 
         <div class="item-value">
           <span v-if="!this.isEditing"> {{ userProfile.middleName }} </span>
@@ -59,85 +59,85 @@
         </div>
       </div>
 
-      <v-divider />
+        <v-divider />
 
-      <div class="profile-item">
-        <div class="item-signifier">
-          <b>Last Name</b>
-        </div>
+        <div class="profile-item">
+          <div class="item-signifier">
+            <b>Last Name</b>
+          </div>
 
-        <div class="item-value">
-          <span v-if="!this.isEditing">{{ userProfile.lastName }}</span>
-          <v-text-field
-            class="edit-field"
-            v-else
-            v-model="lastName"
-            color="secondary"
-            :rules="fieldRules"
-            :maxlength="50"
-          >
-          </v-text-field>
-        </div>
-      </div>
-
-      <v-divider />
-
-      <div class="profile-item">
-        <div class="item-signifier">
-          <b>Date of Birth</b>
-        </div>
-
-        <div class="item-value">
-          <span v-if="!this.isEditing">{{ userProfile.dateOfBirth }}</span>
-          <v-menu
-            v-else
-            ref="dateMenu"
-            v-model="dateMenu"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            :return-value.sync="dateOfBirth"
-            lazy
-            transition="scale-transition"
-            offset-y
-            full-width
-          >
-            <template v-slot:activator="{ on }">
-              <v-text-field
-                class="edit-field"
-                v-model="dateOfBirth"
-                readonly
-                v-on="on"
-                :rules="dateRules"
-                
-              ></v-text-field>
-            </template>
-            <v-date-picker
+          <div class="item-value">
+            <span v-if="!this.isEditing">{{ userProfile.lastName }}</span>
+            <v-text-field
+              class="edit-field"
+              v-else
+              v-model="lastName"
               color="secondary"
-              ref="picker"
-              :max="currentDate"
-              v-model="dateOfBirth"
-              no-title
-              scrollable
+              :rules="fieldRules"
+              :maxlength="50"
             >
-              <v-spacer></v-spacer>
-              <v-btn
-                flat
-                color="primary"
-                @click="dateMenu = false"
-              >Cancel</v-btn>
-              <v-btn
-                flat
-                color="primary"
-                @click="$refs.dateMenu.save(dateOfBirth)"
-              >OK</v-btn>
-            </v-date-picker>
-          </v-menu>
+            </v-text-field>
+          </div>
         </div>
-      </div>
 
-      <v-divider />
+        <v-divider />
 
-      <div class="profile-item">
+        <div class="profile-item">
+          <div class="item-signifier">
+            <b>Date of Birth</b>
+          </div>
+
+          <div class="item-value">
+            <span v-if="!this.isEditing">{{ userProfile.dateOfBirth }}</span>
+            <v-menu
+              v-else
+              ref="dateMenu"
+              v-model="dateMenu"
+              :close-on-content-click="false"
+              :nudge-right="40"
+              :return-value.sync="dateOfBirth"
+              lazy
+              transition="scale-transition"
+              offset-y
+              full-width
+            >
+              <template v-slot:activator="{ on }">
+                <v-text-field
+                  class="edit-field"
+                  v-model="dateOfBirth"
+                  readonly
+                  v-on="on"
+                  :rules="dateRules"
+
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                color="secondary"
+                ref="picker"
+                :max="currentDate"
+                v-model="dateOfBirth"
+                no-title
+                scrollable
+              >
+                <v-spacer></v-spacer>
+                <v-btn
+                  flat
+                  color="primary"
+                  @click="dateMenu = false"
+                >Cancel</v-btn>
+                <v-btn
+                  flat
+                  color="primary"
+                  @click="$refs.dateMenu.save(dateOfBirth)"
+                >OK</v-btn>
+              </v-date-picker>
+            </v-menu>
+          </div>
+        </div>
+
+        <v-divider />
+
+        <div class="profile-item">
 
         <div class="item-signifier">
           <b>Gender</b>

@@ -3,12 +3,10 @@ package repository;
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
-import models.Passport;
-import models.Nationality;
-import models.TravellerType;
-import models.User;
+import models.*;
 import play.db.ebean.EbeanConfig;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
@@ -46,9 +44,25 @@ public class UserRepository {
      */
     public CompletionStage<User> updateUser(User user) {
         return supplyAsync(() -> {
-            user.update();
+            user.save();
             return user;
         }, executionContext);
+    }
+
+    /**
+     * Gets a list roles from a list of names of roles.
+     *
+     * @param roleTypes the list of names.
+     * @return a list of roles from the names.
+     */
+    public List<Role> getRolesByRoleType(List<String> roleTypes) {
+        List<Role> roles = new ArrayList<>();
+
+        for (String roleType : roleTypes) {
+            Role role = Role.find.query().where().eq("role_type", roleType).findOne();
+            roles.add(role);
+        }
+        return roles;
     }
 
     /**
@@ -101,7 +115,8 @@ public class UserRepository {
     }
 
     /**
-     * Gets a nationality by it's ID
+     * Gets a nationality by it's ID                            System.out.println();(nationality);
+
      *
      * @param nationalityId The nationality to get
      * @return The list of nationalities
@@ -127,9 +142,25 @@ public class UserRepository {
         }, executionContext);
     }
 
+    /**
+     * Get a list of travellers, including those without a complete profile.
+     * @return a list of travellers.
+     */
+    public CompletionStage<List<User>> getAllTravellers() {
+        return supplyAsync(() -> {
+            List<User> user = User.find.query()
+                    .fetch("passports")              // contacts is a OneToMany path
+                    .fetch("travellerTypes")
+                    .fetch("nationalities")
+                    .findList();
+            return user;
+        }, executionContext);
+    }
+
 
     /**
-     * Gets a list of travellers
+     * Get a list of travellers. Only those with a complete profile.
+     * @return a list of travellers.
      */
     public CompletionStage<List<User>> getTravellers() {
         return supplyAsync(() -> {
@@ -145,6 +176,18 @@ public class UserRepository {
                     .isNotEmpty("travellerTypes")
                     .findList();
             return user;
+        }, executionContext);
+    }
+
+    /**
+     * Delete a user given its id
+     *
+     * @param userId the id of the user being deleted
+     * @return <code>CompletionStage<Void></code>
+     */
+    public CompletionStage<Void> deleteUserById(Integer userId) {
+        return runAsync(() -> {
+            User.find.deleteById(userId);
         }, executionContext);
     }
 

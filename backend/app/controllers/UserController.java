@@ -1,48 +1,50 @@
 package controllers;
 
 import actions.ActionState;
+import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Passport;
-import models.TravellerType;
-import models.User;
-import models.Nationality;
+import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import play.libs.Json;
+import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
 import repository.UserRepository;
+import util.Security;
 
 import javax.inject.Inject;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletionStage;
-import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-
-import play.libs.concurrent.HttpExecutionContext;
 
 /**
  * Contains all endpoints associated with users.
  */
 public class UserController extends Controller {
-    final Logger log = LoggerFactory.getLogger(this.getClass());
 
+    final Logger log = LoggerFactory.getLogger(this.getClass());
     private final UserRepository userRepository;
     private HttpExecutionContext httpExecutionContext;
+    private final Security security;
 
     @Inject
-    public UserController(UserRepository userRepository, HttpExecutionContext httpExecutionContext) {
+    public UserController(UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security) {
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
+        this.security = security;
     }
 
     /**
@@ -54,6 +56,32 @@ public class UserController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getTraveller(int userId, Http.Request request) {
+        return userRepository.getUserById(userId)
+                .thenApplyAsync((optUser) -> {
+                    if (!optUser.isPresent()) {
+                        ObjectNode message = Json.newObject().put("message", "User with id " + userId + " was not found");
+                        return notFound(message);
+                    }
+                    User user = optUser.get();
+                    JsonNode userAsJson = Json.toJson(user);
+                    return ok(userAsJson);
+                }, httpExecutionContext.current());
+    }
+
+    /**
+     * Updates a travellers details
+     * @param userId Redundant ID
+     * @param request Object to get the JSOn data
+     * @return 200 status if update was successful, 500 otherwise
+     */
+    @With({LoggedIn.class})
+    public CompletionStage<Result> updateTraveller(int userId, Http.Request request) {
+        JsonNode jsonBody = request.body().asJson();
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+        if (!security.userHasPermission(userFromMiddleware, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
 
         return userRepository.getUserById(userId)
                 .thenApplyAsync((user) -> {
@@ -61,103 +89,82 @@ public class UserController extends Controller {
                         return notFound();
                     }
 
-                    JsonNode userAsJson = Json.toJson(user);
+                    if (jsonBody.has("firstName")) {
+                        user.get().setFirstName(jsonBody.get("firstName").asText());
+                    }
 
-                    return ok(userAsJson);
+                    if (jsonBody.has("middleName")) {
+                        user.get().setMiddleName(jsonBody.get("middleName").asText());
+                    }
+
+                    if (jsonBody.has("lastName")) {
+                        user.get().setLastName(jsonBody.get("lastName").asText());
+                    }
+
+                    if (jsonBody.has("email")) {
+                        user.get().setEmail(jsonBody.get("email").asText());
+                    }
+
+                    if (jsonBody.has("dateOfBirth")) {
+                        try {
+                            String incomingDate = jsonBody.get("dateOfBirth").asText();
+                            Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
+                            System.out.println("Date stored in db for user is: " + date);
+                            user.get().setDateOfBirth(date);
+                        } catch (ParseException e) {
+                            System.out.println(Arrays.toString(e.getStackTrace()));
+                        }
+                    }
+
+                    if (jsonBody.has("gender")) {
+                        user.get().setGender(jsonBody.get("gender").asText());
+                    }
+
+                    if (jsonBody.has("nationalities")) {
+                        JsonNode arrNode = jsonBody.get("nationalities");
+                        ArrayList<Nationality> nationalities = new ArrayList<>();
+                        for (JsonNode id : arrNode) {
+
+                            Nationality nationality = Nationality.find.byId(id.asInt());
+                            nationalities.add(nationality);
+                        }
+                        user.get().setNationalities(nationalities);
+                    }
+
+                    if (jsonBody.has("passports")) {
+                        JsonNode arrNode = jsonBody.get("passports");
+                        ArrayList<Passport> passports = new ArrayList<>();
+                        for (JsonNode id : arrNode) {
+
+                            Passport passport = Passport.find.byId(id.asInt());
+                            passports.add(passport);
+
+                        }
+                        user.get().setPassports(passports);
+                    }
+
+                    if (jsonBody.has("travellerTypes")) {
+                        JsonNode arrNode = jsonBody.get("travellerTypes");
+                        ArrayList<TravellerType> travellerTypes = new ArrayList<>();
+                        for (JsonNode id : arrNode) {
+                            TravellerType travellerType = TravellerType.find.byId(id.asInt());
+                            travellerTypes.add(travellerType);
+                        }
+                        user.get().setTravellerTypes(travellerTypes);
+                    }
+
+                    if (jsonBody.has("gender")) {
+                        user.get().setGender(jsonBody.get("gender").asText());
+                    }
+
+                    ObjectNode message = Json.newObject();
+                    message.put("message", "Successfully updated the traveller's information");
+                    userRepository.updateUser(user.get());
+                    return ok(message);
 
                 }, httpExecutionContext.current());
-
     }
 
-    /**
-     * Updates a user's details
-      * @param userId Redundant ID
-     * @param request Object to get the JSOn data
-     * @return 200 status if update was successful, 500 otherwise
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> updateTraveller(int userId, Http.Request request) {
-        JsonNode jsonBody = request.body().asJson();
-
-
-        User user = request.attrs().get(ActionState.USER);
-
-        if (jsonBody.has("firstName")) {
-            user.setFirstName(jsonBody.get("firstName").asText());
-        }
-
-        if (jsonBody.has("middleName")) {
-            user.setMiddleName(jsonBody.get("middleName").asText());
-        }
-
-        if (jsonBody.has("lastName")) {
-            user.setLastName(jsonBody.get("lastName").asText());
-        }
-
-        if (jsonBody.has("dateOfBirth")) {
-            try {
-                String incomingDate = jsonBody.get("dateOfBirth").asText();
-                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
-                log.debug("Date stored in db for user is: " + date);
-                user.setDateOfBirth(date);
-            } catch (ParseException e) {
-                log.error(e.getMessage());
-            }
-        }
-
-        if (jsonBody.has("gender")) {
-            user.setGender(jsonBody.get("gender").asText());
-        }
-
-        if (jsonBody.has("nationalities")) {
-            JsonNode arrNode = jsonBody.get("nationalities");
-            ArrayList<Nationality> nationalities = new ArrayList<>();
-            for (JsonNode id : arrNode) {
-
-                Nationality nationality = new Nationality(null);
-                nationality.setNationalityId(id.asInt());
-                nationalities.add(nationality);
-
-            }
-            user.setNationalities(nationalities);
-        }
-
-        if (jsonBody.has("passports")) {
-            JsonNode arrNode = jsonBody.get("passports");
-            ArrayList<Passport> passports = new ArrayList<>();
-            for (JsonNode id : arrNode) {
-
-                Passport passport = new Passport(null);
-                passport.setPassportId(id.asInt());
-                passports.add(passport);
-
-            }
-            user.setPassports(passports);
-        }
-
-        if (jsonBody.has("travellerTypes")) {
-            JsonNode arrNode = jsonBody.get("travellerTypes");
-            ArrayList<TravellerType> travellerTypes = new ArrayList<>();
-            for (JsonNode id : arrNode) {
-                TravellerType travellerType = new TravellerType(null);
-                travellerType.setTravellerTypeId(id.asInt());
-                travellerTypes.add(travellerType);
-            }
-            user.setTravellerTypes(travellerTypes);
-        }
-
-        if (jsonBody.has("gender")) {
-            user.setGender(jsonBody.get("gender").asText());
-        }
-
-        ObjectNode message = Json.newObject();
-        message.put("message", "Successfully updated the traveller's information");
-
-        return supplyAsync(() -> {
-            userRepository.updateUser(user);
-            return ok(message);
-        }, httpExecutionContext.current());
-    }
 
     /**
      * A function that gets a list of all the passports and returns a 200 ok code to the HTTP client
@@ -186,6 +193,18 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
+    /**
+     * Get all users, including those who haven't filled in their complete profile.
+     * @return status code of 200 with all traveller details in json body.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getAllTravellers() {
+        return userRepository.getAllTravellers()
+                .thenApplyAsync(travellers -> {
+                    JsonNode travellersJson = Json.toJson(travellers);
+                    return ok(travellersJson);
+                }, httpExecutionContext.current());
+    }
 
     /**
      * Get all users.
@@ -198,6 +217,61 @@ public class UserController extends Controller {
                     JsonNode travellersJson = Json.toJson(travellers);
                     return ok(travellersJson);
                 }, httpExecutionContext.current());
+    }
+
+    /**
+     * Retrieve user roles from request body and update the specified user so they
+     * have these roles.
+     * @param travellerId user to have roles updated
+     * @param request HTTP request
+     * @return a status code of 200 is ok, 400 if user or role doesn't exist
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> updateTravellerRole(int travellerId, Http.Request request) {
+        System.out.println("Update traveller role called");
+
+        JsonNode jsonBody = request.body().asJson();
+        JsonNode roleArray = jsonBody.withArray("roles");
+        List<String> roleTypes = new ArrayList<>();
+
+
+        for (JsonNode roleJson : roleArray) {
+            String roleTypeString = roleJson.asText();
+            if (!RoleType.contains(roleTypeString)) {
+                return supplyAsync(() -> badRequest());
+            }
+            roleTypes.add(roleTypeString);
+        }
+
+        return userRepository.getUserById(travellerId)
+                .thenApplyAsync(optionalUser -> {
+                    if (!optionalUser.isPresent()) {
+                        return notFound();
+                    }
+                    List<Role> userRoles = userRepository.getRolesByRoleType(roleTypes);
+                    User user = optionalUser.get();
+
+                    // Prevent the default admin from having their permission removed
+                    if (user.isDefaultAdmin()) {
+                        boolean flag = false;
+                        for (String roleString : roleTypes) {
+                            if (roleString.equals(RoleType.SUPER_ADMIN.name())) {
+                                flag = true;
+                            }
+                        }
+                        if (!flag) { return forbidden(); }
+                    } else {
+                        // Prevents a non default admin from getting super-admin permission
+                        for (String roleString : roleTypes) {
+                            if (roleString.equals(RoleType.SUPER_ADMIN.name())) {
+                                return forbidden();
+                            }
+                        }
+                    }
+                    user.setRoles(userRoles);
+                    user.save();
+                    return ok("Success");
+                });
     }
 
 
@@ -225,6 +299,82 @@ public class UserController extends Controller {
                     user.setPassports(passports);
                     user.save();
                     return ok();
+                }, httpExecutionContext.current());
+    }
+
+    /**		    /**
+     * Delete a user given its id
+     * @param userId the id of the user to be deleted
+     * @param request the request passed by the controller
+     * @return
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> deleteUser(int userId, Http.Request request) {
+        User userDoingDeletion = request.attrs().get(ActionState.USER);
+        final ObjectNode message = Json.newObject();; // used in the response
+
+        return userRepository.getUserById(userId)
+                .thenApplyAsync((optionalUserBeingDeleted) -> {
+                    if (!optionalUserBeingDeleted.isPresent()) {
+                        // check that the user being deleted actually exists
+                        message.put("message", "Did not find user with id " + userId);
+                        return notFound(message);
+                    }
+
+                    User userBeingDeleted = optionalUserBeingDeleted.get();
+                    if (userBeingDeleted.isDefaultAdmin()) {
+                        // if user is the default admin, leave it alone
+                        message.put("message", "No one can delete the default admin");
+                        return unauthorized(message);
+                    } else if (userBeingDeleted.isAdmin()) {
+                        if (userDoingDeletion.isAdmin() || userDoingDeletion.isDefaultAdmin()) {
+                            // only admins and the default admin can delete admins
+                            message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
+                            CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                            CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
+                            try {
+                                return completableFuture.get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                System.out.println(e);
+                                System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
+                                message.put("message", "Something went wrong deleting that user, try again");
+                                return internalServerError(message);
+                            }
+                        } else {
+                            message.put("message", "Only admins or the default admin can delete other admins");
+                            return unauthorized(message);
+                        }
+                    } else {
+                        if (userDoingDeletion.equals(userBeingDeleted) && !userBeingDeleted.isDefaultAdmin()) {
+                            // a user can delete itself
+                            message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
+                            CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                            CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
+                            try {
+                                return completableFuture.get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                System.out.println(e);
+                                System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
+                                message.put("message", "Something went wrong deleting that user, try again");
+                                return internalServerError(message);
+                            }
+                        } else if ((userDoingDeletion.isAdmin() && !userBeingDeleted.isDefaultAdmin()) || userDoingDeletion.isDefaultAdmin()) {
+                            message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
+                            CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                            CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
+                            try {
+                                return completableFuture.get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                System.out.println(e);
+                                System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
+                                message.put("message", "Something went wrong deleting that user, try again");
+                                return internalServerError(message);
+                            }
+                        } else {
+                            message.put("message", "Regular users can not delete other regular users");
+                            return unauthorized(message);
+                        }
+                    }
                 }, httpExecutionContext.current());
     }
 
@@ -331,7 +481,7 @@ public class UserController extends Controller {
     /**
      * Allows the front-end to search for a traveller.
      *
-     * @param request
+     * @param request the http request
      * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
      */
     @With(LoggedIn.class)
@@ -345,6 +495,9 @@ public class UserController extends Controller {
         long ageMax;
         ageMax = -1;
         String gender = "";
+
+        // TODO: do not catch generic Exceptions, if this is a query method, not specifying all query parameters should not be logged as an error, it can be an info level log e.g. "no parameter nationality, omitting from search"
+
         try {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())

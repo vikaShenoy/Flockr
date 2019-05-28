@@ -1,9 +1,13 @@
 package models;
 
+import io.ebean.Finder;
 import io.ebean.Model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import java.util.List;
 
 /**
  * Roles that users inside the system can take to alter
@@ -12,13 +16,34 @@ import javax.persistence.Id;
 @Entity
 public class Role extends Model {
 
+    @ManyToMany
+    private List<User> users;
+
     @Id
     private int roleId;
 
+    @Column(unique = true)
     private String roleType;
+
+    @Override
+    public String toString() {
+        return "Role{" +
+                "roleId=" + roleId +
+                ", roleType='" + roleType + '\'' +
+                '}';
+    }
 
     public int getRoleId() {
         return roleId;
+    }
+
+
+    /**
+     * Constructor.
+     * @param roleType type of role.
+     */
+    public Role(RoleType roleType) {
+        this.roleType = roleType.name();
     }
 
     public String getRoleType() {
@@ -26,12 +51,8 @@ public class Role extends Model {
     }
 
     /**
-     * Constructor.
-     * @param roleType type of role.
+     * This is required by Ebean to make queries on the databse
      */
-    public Role(String roleType) {
-        this.roleType = roleType;
-    }
-
-
+    public static final Finder<Integer, Role> find = new Finder<>(Role.class);
 }
+

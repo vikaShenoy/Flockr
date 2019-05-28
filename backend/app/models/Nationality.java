@@ -13,22 +13,29 @@ import java.util.List;
  */
 @Entity
 public class Nationality extends Model {
+
     @Id
     private int nationalityId;
 
     @ManyToMany
     private List<User> users;
-
-    private String nationalityCountry;
+    private String nationalityName;
 
     /**
      * Constructor.
-     * @param nationalityCountry country the nationaltiy is from.
+     * @param nationalityName country the nationaltiy is from.
      */
-    public Nationality(String nationalityCountry) {
-        this.nationalityCountry = nationalityCountry;
+    public Nationality(String nationalityName) {
+        this.nationalityName = nationalityName;
     }
 
+    @Override
+    public String toString() {
+        return "Nationality{" +
+                "nationalityId=" + nationalityId +
+                ", nationalityName='" + nationalityName + '\'' +
+                '}';
+    }
 
     public int getNationalityId() {
         return nationalityId;
@@ -38,8 +45,8 @@ public class Nationality extends Model {
         this.nationalityId = nationalityId;
     }
 
-    public String getNationalityCountry() {
-        return nationalityCountry;
+    public String getNationalityName() {
+        return nationalityName;
     }
 
     /**

@@ -6,6 +6,8 @@ maintainer := "s302team500@cosc.canterbury.ac.nz"
 
 scalaVersion := "2.12.8"
 
+maintainer := "s302team500@cosc.canterbury.ac.nz"
+
 import sbt._
 import scala.sys.process._
 import java.io.File

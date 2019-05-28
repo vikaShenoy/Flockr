@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.*;
 import io.ebean.annotation.CreatedTimestamp;
 import play.data.validation.Constraints;
@@ -27,7 +28,7 @@ public class User extends Model {
     @Constraints.Required
     private String lastName;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
     public List<Nationality> nationalities;
 
     private Date dateOfBirth;
@@ -35,13 +36,26 @@ public class User extends Model {
     private String gender;
 
     @Constraints.Required
+    @Column(unique = true)
     private String email;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
     public List <TravellerType> travellerTypes;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
     public List<Passport> passports;
+
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+    public List<Role> roles;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Trip> trips;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<PersonalPhoto> personalPhotos;
+
+    @OneToOne
+    private PersonalPhoto profilePhoto;
 
     @Constraints.Required
     @CreatedTimestamp
@@ -54,6 +68,39 @@ public class User extends Model {
 
     private String token;
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", firstName='" + firstName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", nationalities=" + nationalities +
+                ", dateOfBirth=" + dateOfBirth +
+                ", gender='" + gender + '\'' +
+                ", email='" + email + '\'' +
+                ", travellerTypes=" + travellerTypes +
+                ", passports=" + passports +
+                ", roles=" + roles +
+                ", timestamp=" + timestamp +
+                ", passwordHash='" + passwordHash + '\'' +
+                ", token='" + token + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof User)) {
+            return false;
+        }
+        User otherUser = (User) o;
+        return this.getUserId() == otherUser.getUserId();
+    }
+
+    @Override
+    public int hashCode() {
+        return ((Integer) this.getUserId()).hashCode();
+    }
 
     /**
      * Create a new traveller
@@ -68,7 +115,7 @@ public class User extends Model {
      * @param passports the traveller's passports
      * @param token the traveller's token
      */
-    public User(String firstName, String middleName, String lastName, String passwordHash, String gender, String email, List<Nationality> nationalities, List<TravellerType> travellerTypes, Date dateOfBirth, List<Passport> passports, String token) {
+    public User(String firstName, String middleName, String lastName, String passwordHash, String gender, String email, List<Nationality> nationalities, List<TravellerType> travellerTypes, Date dateOfBirth, List<Passport> passports, List<Role> roles, String token) {
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
@@ -79,6 +126,7 @@ public class User extends Model {
         this.travellerTypes = travellerTypes;
         this.dateOfBirth = dateOfBirth;
         this.passports =passports;
+        this.roles = roles;
         this.token = token;
     }
 
@@ -99,6 +147,32 @@ public class User extends Model {
         this.token = token;
     }
 
+    /**
+     * Return true if the user is the default admin
+     * @return true if the user is the default admin
+     */
+    public boolean isDefaultAdmin() {
+        for (Role r : roles) {
+            if (r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * Return true if the user is an admin
+     * @return true if the user is an admin
+     */
+    public boolean isAdmin() {
+        for (Role r : roles) {
+            if (r.getRoleType().equals(RoleType.ADMIN.toString()) || r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public int getUserId() {
         return userId;
@@ -188,6 +262,22 @@ public class User extends Model {
         this.timestamp = timestamp;
     }
 
+    public List<PersonalPhoto> getPersonalPhotos() {
+        return personalPhotos;
+    }
+
+    public void setPersonalPhotos(List<PersonalPhoto> personalPhotos) {
+        this.personalPhotos = personalPhotos;
+    }
+
+    public PersonalPhoto getProfilePhoto() {
+        return profilePhoto;
+    }
+
+    public void setProfilePhoto(PersonalPhoto profilePhoto) {
+        this.profilePhoto = profilePhoto;
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -202,6 +292,14 @@ public class User extends Model {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 
     public boolean profileCompleted() {

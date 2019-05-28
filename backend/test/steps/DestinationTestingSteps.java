@@ -1,94 +1,68 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Module;
-import cucumber.api.java.After;
-import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import exceptions.ServerErrorException;
+import exceptions.UnauthorizedException;
 import io.cucumber.datatable.DataTable;
 import models.*;
 import org.junit.Assert;
 import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import utils.FakeClient;
 import utils.TestAuthenticationHelper;
+import utils.TestState;
 
-import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static play.test.Helpers.route;
 
 public class DestinationTestingSteps {
-    @Inject
-    private Application application;
+
     private JsonNode destinationData;
     private Result result;
 
-    // user data
-    private String authToken;
-
-    @Before
-    public void setUp() {
-        Module testModule = new AbstractModule() {
-            @Override
-            public void configure() {
-            }
-        };
-        GuiceApplicationBuilder builder = new GuiceApplicationLoader()
-                .builder(new ApplicationLoader.Context(Environment.simple()))
-                .overrides(testModule);
-        Guice.createInjector(builder.applicationModule()).injectMembers(this);
-
-        Helpers.start(application);
-    }
-
-    @After
-    public void tearDown() {
-        Helpers.stop(application);
-    }
-
-    @Given("a user with the following information exists:")
-    public void aUserWithTheFollowingInformationExists(DataTable dataTable) throws IOException {
-        this.authToken = TestAuthenticationHelper.theFollowingUserExists(dataTable, application);
+    @Given("users with the following information exist:")
+    public void usersWithTheFollowingInformationExists(DataTable dataTable) {
+        Application application = TestState.getInstance().getApplication();
+        TestAuthenticationHelper.theFollowingUsersExists(dataTable, application);
     }
 
     @Given("that I am logged in")
     public void thatIAmLoggedIn() {
-        Assert.assertTrue(this.authToken.length() > 0);
+        User user = TestState.getInstance().getUser(0);
+        Assert.assertTrue(user.getToken().length() > 0);
     }
 
-    @Given("^that I have a destination created with id (\\d+)$")
-    public void thatIHaveADestinationCreatedWithId(int destinationId) throws IOException {
+    @Given("that I have the following destinations:")
+    public void thatIHaveTheFollowingDestinations(DataTable dataTable) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+        List<Map<String, String>> destinationList = dataTable.asMaps();
+        for (int i = 0; i < destinationList.size(); i++) {
+            try {
+                Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
+                TestState.getInstance().addDestination(destination);
 
-        DestinationType destinationType1 = DestinationType.find.query().
-                where().eq("destination_type_id", 1).findOne();
-        Country country1 = Country.find.query().
-                where().eq("country_id", 1).findOne();
-        District district1 = District.find.query().where().eq("district_id", 1).findOne();
-        Destination destination1 = new Destination("Burning Man",destinationType1, district1, 12.1234,12.1234, country1 );
-        destination1.save();
+                Result result = fakeClient.makeRequestWithNoToken("GET", "/api/destinations/" + destination.getDestinationId());
 
-        Http.RequestBuilder deleteRequest = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/api/destinations/" + destinationId);
-        Result result = route(application, deleteRequest);
-
-        // check that the destination's name has some text in it
-        JsonNode res = utils.PlayResultToJson.convertResultToJson(result);
-        String destinationName = res.get("destinationName").asText();
-        Assert.assertTrue(destinationName.length() > 0);
+                // check that the destination's name has some text in it
+                JsonNode res = utils.PlayResultToJson.convertResultToJson(result);
+                String destinationName = res.get("destinationName").asText();
+                Assert.assertTrue(destinationName.length() > 0);
+            } catch (UnauthorizedException | ServerErrorException e) {
+                Assert.fail(Arrays.toString(e.getStackTrace()));
+            }
+        }
     }
 
     @Given("that I want to create a Destination with the following valid data:")
@@ -102,78 +76,61 @@ public class DestinationTestingSteps {
     public void thatIWantToCreateADestinationWithTheFollowingIncompleteData(DataTable dataTable) {
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
-        System.out.println(list.get(0));
 
         this.destinationData = Json.toJson(firstRow);
     }
 
-    @Given("the database has been populated with countries, districts and destination types")
-    public void theDatabaseHasBeenPopulatedWithCountriesDistrictsAndDestinationTypes() {
+    @Given("the database has been populated with the following countries, districts and destination types:")
+    public void theDatabaseHasBeenPopulatedWithCountriesDistrictsAndDestinationTypes(DataTable dataTable) {
+        List<Map<String, String>> rows = dataTable.asMaps();
 
-        DestinationType destinationType1 = new DestinationType("Event");
-        DestinationType destinationType2 = new DestinationType("City");
-
-        Country country1 = new Country("United States of America");
-        Country country2 = new Country("Australia");
-
-        District district1 = new District("Black Rock City", country1);
-        District district2 = new District("New Farm", country2);
-
-        destinationType1.save();
-        destinationType2.save();
-
-        country1.save();
-        country2.save();
-
-        district1.save();
-        district2.save();
-
+        for (Map<String, String> row : rows) {
+            DestinationType destinationType = new DestinationType(row.get("destinationType"));
+            Country country = new Country(row.get("country"));
+            District district = new District(row.get("district"), country);
+            destinationType.save();
+            country.save();
+            district.save();
+            Assert.assertNotEquals(0, destinationType.getDestinationTypeId());
+            Assert.assertNotEquals(0, country.getCountryId());
+            Assert.assertNotEquals(0, district.getDistrictId());
+        }
     }
 
     @When("I click the Add Destination button")
-    public void iClicktheAddDestination() {
+    public void IClickTheAddDestination() {
+        User user = TestState.getInstance().removeUser(0);
         Http.RequestBuilder request = Helpers.fakeRequest()
                 .method("POST")
                 .uri("/api/destinations")
+                .header("Authorization", user.getToken())
                 .bodyJson(this.destinationData);
+        Application application = TestState.getInstance().getApplication();
         this.result = route(application, request);
         Assert.assertNotNull(this.result);
     }
 
     @When("I click the Delete Destination button")
-    public void iClickTheDeleteDestinationButton() {
-        Http.RequestBuilder deleteReq = Helpers.fakeRequest()
-                .method("DELETE")
-                .uri("/api/destinations/1")
-                .header("Authorization", this.authToken);
-        this.result = route(application, deleteReq);
-        Assert.assertEquals(200, this.result.status());
+    public void IClickTheDeleteDestinationButton() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().removeUser(0);
+        Result result = fakeClient.makeRequestWithToken("DELETE", "/api/destinations/1", user.getToken());
+        Assert.assertEquals(200, result.status());
     }
 
-    @Then("I should receive a {int} status code indicating that the Destination is successfully created")
-    public void iShouldReceiveAnStatusCodeIndicatingThatDestinationIsSuccessfullyCreated(Integer expectedStatusCode) {
-        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+    @Then("The destination should be created successfully")
+    public void iShouldReceiveAnStatusCodeIndicatingThatDestinationIsSuccessfullyCreated() {
+        Assert.assertEquals(201, this.result.status());
     }
 
-    @Then("I should receive a {int} status code indicating that the Destination is not successfully created")
-    public void iShouldReceiveAStatusCodeIndicatingThatTheDestinationIsNotSuccessfullyCreated(Integer expectedStatusCode) {
-        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+    @Then("I should receive an error, because the data is incomplete")
+    public void iShouldReceiveAStatusCodeIndicatingThatTheDestinationIsNotSuccessfullyCreated() {
+        Assert.assertEquals(400, this.result.status());
     }
 
-    @Then("I try to search the Destination with the id of {int}")
-    public void iTryToSearchTheDestinationWithTheIdOf(Integer destinationId) {
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/api/destinations/" + destinationId.toString());
-        this.result = route(application, request);
-    }
-
-    @Then("I should receive a {int} status code when getting the destination with id {int} indicating that the Destination with the given ID is not found")
-    public void iShouldReceiveAStatusCodeWhenGettingTheDeletedDestinationWithId(Integer expectedStatusCode, Integer destinationId) {
-        Http.RequestBuilder checkDeletion = Helpers.fakeRequest()
-                .method("GET")
-                .uri("/api/destinations/" + destinationId.toString());
-        this.result = route(application, checkDeletion);
-        Assert.assertEquals(expectedStatusCode, (Integer) this.result.status());
+    @Then("I should receive an error indicating that the Destination is not found")
+    public void iShouldReceiveAStatusCodeWhenGettingTheDeletedDestinationWithId() {
+        Optional<Destination> destination = Destination.find.query().where().eq("destination_id", 1).findOneOrEmpty();
+        Assert.assertFalse(destination.isPresent());
     }
 }

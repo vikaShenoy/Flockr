@@ -4,7 +4,6 @@ import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import models.*;
 import play.db.ebean.EbeanConfig;
-import play.db.ebean.EbeanDynamicEvolutions;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
