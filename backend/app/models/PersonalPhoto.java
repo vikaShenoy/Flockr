@@ -7,6 +7,7 @@ import io.ebean.Model;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * A personal photo that is linked to a user
@@ -34,6 +35,9 @@ public class PersonalPhoto extends Model {
 
     @Constraints.Required
     private String thumbnailName;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<DestinationPhoto> destinationPhotos;
 
     /**
      * Constructor

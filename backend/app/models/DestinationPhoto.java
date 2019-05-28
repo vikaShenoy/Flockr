@@ -16,7 +16,7 @@ public class DestinationPhoto extends Model {
     @ManyToOne
     private Destination destination;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private PersonalPhoto personalPhoto;
 
     public DestinationPhoto(Destination destination, PersonalPhoto personalPhoto)  {

@@ -67,6 +67,7 @@
             destinationPhotos: Array
         },
         mounted() {
+            console.log("mounted");
             this.getUserPhotos();
         },
         data() {
@@ -139,10 +140,10 @@
                         .send(data);
                     this.showAddPhotoDialog = false;
                     let photo = res.body;
-                    console.log(photo);
                     photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
                     photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
                     this.$emit("addPhoto", photo);
+
                     this.getUserPhotos();
 
                 } catch (e) {
