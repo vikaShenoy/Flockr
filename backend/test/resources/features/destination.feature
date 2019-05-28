@@ -2,13 +2,13 @@ Feature: The user can manage destinations
 
   Background:
     Given users with the following information exist:
-      | firstName | lastName     | email        | password    |
-      | Danny     | Destinations | dd@email.com | where-to-go |
-      | Alice     | Brockham     | ab@gmail.com | something   |
+      | firstName | lastName     | email              | password    |
+      | Danny     | Destinations | dd@email.com       | where-to-go |
+      | Alice     | Admin        | alice@travelea.com | so-secure   |
 
   # Test that a 201 code is returned when creating a Destinations with valid data
   Scenario: A user tries to create a destination with complete valid data
-    Given that I am logged in
+    Given that user 0 logged in
     Given that I want to create a Destination with the following valid data:
       | destinationName | destinationTypeId | districtId | latitude | longitude | countryId |
       | Lower Hutt      | 1                 | 1          | -41.2    | 174.9     | 1         |
@@ -17,7 +17,7 @@ Feature: The user can manage destinations
 
     # Test that a 400 status code is returned when a user creates a Destination with incomplete data
   Scenario: A user tries to create a destination with no country
-    Given that I am logged in
+    Given that user 0 logged in
     Given that I want to create a Destination with the following incomplete data:
       | destinationName | destinationTypeId | districtId | latitude | longitude    |
       | Lower Hutt      | 1                 | 1          | -41.2    | latitudeTest |
@@ -26,7 +26,7 @@ Feature: The user can manage destinations
 
   # Test deleting a destination
   Scenario: A user tries to delete a destination
-    Given that I am logged in
+    Given that user 0 logged in
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         |
@@ -34,7 +34,7 @@ Feature: The user can manage destinations
     Then I should receive an error indicating that the Destination is not found
 
   Scenario: A user tries to get their own destination photos
-    Given that I am logged in
+    Given that user 0 logged in
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
       | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         | true     |
@@ -44,7 +44,7 @@ Feature: The user can manage destinations
 
 
   Scenario: A user tries to access another user's destinations
-    Given that I am logged in
+    Given that user 0 logged in
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
       | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         | true     |
@@ -52,10 +52,9 @@ Feature: The user can manage destinations
     When another user gets the user's destinations
     Then 1 destinations should be returned
 
-
   # Test updating a destination
   Scenario: A user tries to update a destination with no change in the information
-    Given that I am logged in
+    Given that user 0 logged in
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
@@ -65,7 +64,7 @@ Feature: The user can manage destinations
     Then I should be allowed to update the Destination
 
   Scenario: A user tries to update a destination with new information
-    Given that I am logged in
+    Given that user 0 logged in
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
@@ -75,7 +74,7 @@ Feature: The user can manage destinations
     Then the Destination information is updated
 
   Scenario: A user tries to update a non-existent destination with the given ID
-    Given that I am logged in
+    Given that user 0 logged in
     When I try to update the Destination with the following information:
       | destinationId | destinationName | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
       | 10000         | America         | 1000              | 111        | 40.0     | 184.9     | 1         | true     |
@@ -83,7 +82,7 @@ Feature: The user can manage destinations
 
   # Test adding a photo to a destination
   Scenario: A user tries to add a photo to a destination with a photo that doesn't exist
-    Given that I am logged in
+    Given that user 0 logged in
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
@@ -98,7 +97,7 @@ Feature: The user can manage destinations
     Then the photo does not get added to the destination
 
   Scenario: A user tries to add a photo to a destination with a destination that doesn't exist
-    Given that I am logged in
+    Given that user 0 logged in
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
@@ -113,7 +112,7 @@ Feature: The user can manage destinations
     Then the photo does not get added to the destination
 
   Scenario: A user tries to add a photo to a destination that isn't theirs
-    Given that I am logged in
+    Given that user 0 logged in
     And that another user has the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
@@ -128,7 +127,7 @@ Feature: The user can manage destinations
     Then the photo does not get added to the destination
 
   Scenario: A user tries to add a destination that already exists
-    Given that I am logged in
+    Given that user 0 logged in
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
@@ -137,3 +136,33 @@ Feature: The user can manage destinations
       | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
     When I click the Add Destination button
     Then I get a message saying that the destination already exists
+
+  Scenario: A regular user tries to get all the photos for a destination
+    Given that the user 0 is a regular user
+    Given that user 0 logged in
+    Given the database has been populated with the following countries, districts and destination types:
+      | destinationType | country                  | district        |
+      | Event           | United States of America | Black Rock City |
+      | City            | Australia                | New Farm        |
+    Given that I have the following destinations:
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+    Given the user has the following photos in the system:
+      | filename      | isPrimary | isPublic |
+      | monkey.png    | false     | true    |
+      | dog.jpg       | false     | false    |
+      | cat.jpeg      | false     | true    |
+      | cucumber.jpeg | false     | false    |
+      | whale.png     | false     | false    |
+    Given the photo "monkey.png" is linked to the destination "The Dairy Down The Street"
+    Given the photo "whale.png" is linked to the destination "The Dairy Down The Street"
+    When the user gets all the photos for the destination
+    Then the user can see all the public photos for the destination
+    And the user can see only their private photos linked to the destination
+
+  Scenario: A regular user tries to get all the photos for a destination that does not exist
+    Given that the user 0 is a regular user
+    Given that user 0 logged in
+    When the user gets all the photos for a destination that does not exist
+    Then they are told that the destination does not exist
+

@@ -1,10 +1,11 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.ebean.Model;
 import play.data.validation.Constraints;
-
+import play.libs.Json;
 import javax.persistence.*;
 
 /**
@@ -20,9 +21,11 @@ public class PersonalPhoto extends Model {
     @Id
     private int photoId;
 
+    @JsonProperty("isPublic")
     @Constraints.Required
     private boolean isPublic;
 
+    @JsonProperty("isPrimary")
     @Constraints.Required
     private boolean isPrimary;
 

@@ -63,7 +63,8 @@
                 type: Boolean,
                 required: true
             },
-            destinationId: Number
+            destinationId: Number,
+            destinationPhotos: Array
         },
         mounted() {
             this.getUserPhotos();
@@ -102,8 +103,21 @@
                 try {
                     const response  = await superagent(endpoint(`/users/${userId}/photos`))
                         .set('Authorization', authToken);
-                    //TODO filter out photos that are already linked to the venue
-                    this.userPhotos = response.body;
+                    const userPhotos = response.body;
+
+
+                    const photosToShow = userPhotos.filter(userPhoto => {
+                        for (const destinationPhoto of this.destinationPhotos) {
+                            if (userPhoto.photoId === destinationPhoto.photoId) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+
+                    this.userPhotos = photosToShow;
+
+
                 } catch (e) {
                     console.log(e);
                 }
@@ -125,6 +139,7 @@
                         .set('Authorization', authToken)
                         .send(data);
                     this.showAddPhotoDialog = false;
+                    console.log(res.body)
 
                     //TODO Tell destination card component to update its carousel
 

@@ -35,6 +35,7 @@
             @displayRemovePrompt="displayRemovePrompt"
     />
     <AddPhotoDialog
+            :destinationPhotos="photos"
             :destinationId="destinationId"
             :showDialog="showAddPhotoDialog"
             @closeAddPhotoDialog="closeAddPhotoDialogHandler"

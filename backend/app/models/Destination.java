@@ -5,6 +5,7 @@ import javax.persistence.*;
 import io.ebean.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -12,7 +13,6 @@ import java.util.List;
  */
 @Entity
 public class Destination extends Model {
-
 
     @Id
     private int destinationId;
@@ -30,9 +30,9 @@ public class Destination extends Model {
 
     @ManyToOne
     private District destinationDistrict;
+
     private Double destinationLat;
     private Double destinationLon;
-
     @ManyToOne
     private Country destinationCountry;
 
@@ -45,6 +45,23 @@ public class Destination extends Model {
     @Override
     public int hashCode() {
         return destinationId;
+    }
+
+    @Override
+    public String toString() {
+        return "Destination{" +
+                "destinationId=" + destinationId +
+                ", destinationName='" + destinationName + '\'' +
+                ", destinationType=" + destinationType +
+                ", tripDestinations=" + tripDestinations +
+                ", destinationPhotos=" + destinationPhotos +
+                ", destinationDistrict=" + destinationDistrict +
+                ", destinationLat=" + destinationLat +
+                ", destinationLon=" + destinationLon +
+                ", destinationCountry=" + destinationCountry +
+                ", destinationOwner=" + destinationOwner +
+                ", isPublic=" + isPublic +
+                '}';
     }
 
     @Override
@@ -148,6 +165,30 @@ public class Destination extends Model {
 
     public void setDestinationPhotos(List<DestinationPhoto> destinationPhotos) {
         this.destinationPhotos = destinationPhotos;
+    }
+
+    public List<DestinationPhoto> getDestinationPhotos() {
+        return destinationPhotos;
+    }
+
+    /**
+     * Get the the public photos linked to the destination
+     * @return a list of all the public photos in the destination
+     */
+    public List<DestinationPhoto> getPublicDestinationPhotos() {
+        return destinationPhotos.parallelStream().filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().isPublic())).collect(Collectors.toList());
+    }
+
+    /**
+     * Get the private photos from a particular user linked to the destination
+     * @param userId the id of the user for which we want the private photos in the destination
+     * @return the private photos for the given user that are linked with the destination
+     */
+    public List<DestinationPhoto> getPrivatePhotosForUserWithId(int userId) {
+        return destinationPhotos.parallelStream()
+            .filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().getUser().getUserId() == userId))
+            .filter(destinationPhoto -> !destinationPhoto.getPersonalPhoto().isPublic())
+            .collect(Collectors.toList());
     }
 
     /**

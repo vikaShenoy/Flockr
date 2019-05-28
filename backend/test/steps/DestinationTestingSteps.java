@@ -1,8 +1,11 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import cucumber.api.PendingException;
+import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -10,6 +13,7 @@ import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import gherkin.deps.com.google.gson.JsonObject;
 import io.cucumber.datatable.DataTable;
+import io.ebean.Ebean;
 import models.*;
 import org.junit.Assert;
 import play.Application;
@@ -18,21 +22,24 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import utils.FakeClient;
+import utils.PlayResultToJson;
 import utils.TestAuthenticationHelper;
 import utils.TestState;
 
 import java.io.IOException;
 import java.util.*;
 
-
 import static play.test.Helpers.route;
 
 public class DestinationTestingSteps {
+
     private JsonNode destinationData;
     private Result existingDestination;
     private ObjectNode destinationNode;
     private Result result;
     private JsonNode destinations;
+    private User user;
+    private Destination destination;
 
 
     @Given("users with the following information exist:")
@@ -41,9 +48,9 @@ public class DestinationTestingSteps {
         TestAuthenticationHelper.theFollowingUsersExists(dataTable, application);
     }
 
-    @Given("that I am logged in")
-    public void thatIAmLoggedIn() {
-        User user = TestState.getInstance().getUser(0);
+    @Given("^that user (\\d+) logged in$")
+    public void thatUserLoggedIn(int userIndex) throws Throwable {
+        user = TestState.getInstance().getUser(userIndex);
         Assert.assertTrue(user.getToken().length() > 0);
     }
 
@@ -94,7 +101,6 @@ public class DestinationTestingSteps {
         }
     }
 
-
     @Given("that I want to create a Destination with the following valid data:")
     public void thatIWantToCreateADestinationWithTheFollowingValidData(DataTable dataTable) {
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
@@ -108,6 +114,21 @@ public class DestinationTestingSteps {
         Map<String, String> firstRow = list.get(0);
 
         this.destinationData = Json.toJson(firstRow);
+    }
+
+    @Given("^that the user (\\d+) is a regular user$")
+    public void thatTheUserIsARegularUser(int userIndex) throws Throwable {
+        User user = TestState.getInstance().getUser(userIndex);
+        Assert.assertFalse(user.isAdmin() || user.isDefaultAdmin());
+    }
+
+    @Given("^that the user (\\d+) is an admin$")
+    public void thatTheUserIsAnAdmin(int userIndex) throws Throwable {
+        User user = TestState.getInstance().getUser(userIndex);
+        List<Role> roles = new ArrayList<>();
+        roles.add(new Role(RoleType.ADMIN));
+        user.setRoles(roles);
+        Assert.assertTrue(user.isAdmin());
     }
 
     @When("I click the Add Destination button")
@@ -155,12 +176,10 @@ public class DestinationTestingSteps {
 
     @When("the user adds {string} to the destination {string}")
     public void theUserAddsStringToTheDestinationString(String photoName, String destinationName) {
-        User user = TestState.getInstance().getUser(0);
         List<Destination> destinations = TestState.getInstance().getDestinations();
-        Destination destination = null;
         for (Destination currentDestination : destinations) {
             if (currentDestination.getDestinationName().equals(destinationName)) {
-                destination = currentDestination;
+                this.destination = currentDestination;
             }
         }
 
@@ -203,7 +222,113 @@ public class DestinationTestingSteps {
         Assert.assertEquals(0, destinationPhotos.size());
     }
 
+    @When("^the user gets all the photos for the destination$")
+    public void theUserGetsAllThePhotosForTheDestination() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
+        Assert.assertEquals(200, result.status());
+    }
 
+    @Then("^the user can see all the public photos for the destination$")
+    public void theUserCanSeeAllThePublicPhotosForTheDestination() throws Throwable {
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(result);
+        Assert.assertTrue(resultAsJson.isArray());
+        ArrayNode destinationPhotos = (ArrayNode) resultAsJson;
+        System.out.println(destinationPhotos);
+
+        List<DestinationPhoto> publicDestinationPhotos = destination.getPublicDestinationPhotos();
+        System.out.println(publicDestinationPhotos);
+
+        int publicPhotosFound = 0;
+        for (JsonNode destinationPhoto : destinationPhotos) {
+            JsonNode personalPhoto = destinationPhoto.get("personalPhoto");
+            if (personalPhoto.get("isPublic").asText().equals("true")) {
+                publicPhotosFound += 1;
+            }
+        }
+        Assert.assertEquals(1, publicPhotosFound);
+    }
+
+    @And("^the user can see only their private photos linked to the destination$")
+    public void theUserCanSeeOnlyTheirPrivatePhotosLinkedToTheDestination() throws Throwable {
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(result);
+        Assert.assertTrue(resultAsJson.isArray());
+        ArrayNode destinationPhotos = (ArrayNode) resultAsJson;
+
+        int privatePhotosFound = 0;
+        for (JsonNode node : destinationPhotos) {
+            JsonNode personalPhoto = node.get("personalPhoto");
+            if (personalPhoto.get("isPublic").asText().equals("false")) {
+                privatePhotosFound += 1;
+            }
+        }
+        Assert.assertEquals(1, privatePhotosFound);
+    }
+
+    @And("^the admin can see all the user's private photos linked to the destination$")
+    public void theAdminCanSeeAllTheUserSPrivatePhotosLinkedToTheDestination() throws Throwable {
+        List<DestinationPhoto> destinationPhotos = destination.getDestinationPhotos();
+
+        // get number of private photos for venue in database
+        int numberOfPrivatePhotosInDatabase = destinationPhotos.stream().mapToInt(destinationPhoto -> !destinationPhoto.getPersonalPhoto().isPublic() ? 1 : 0).sum();
+
+        int numberOfPrivatePhotosInResponse = 0;
+
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(result);
+        Assert.assertTrue(resultAsJson.isArray());
+        ArrayNode venuePhotos = (ArrayNode) resultAsJson;
+
+        for (JsonNode venuePhoto : venuePhotos) {
+            JsonNode personalPhoto = venuePhoto.get("personalPhoto");
+            if (personalPhoto.get("isPublic").asText().equals("false")) {
+                numberOfPrivatePhotosInResponse += 1;
+            }
+        }
+
+        Assert.assertEquals(numberOfPrivatePhotosInDatabase, numberOfPrivatePhotosInResponse);
+    }
+
+    @When("^the user gets all the photos for a destination that does not exist$")
+    public void theUserGetsAllThePhotosForADestinationThatDoesNotExist() throws Throwable {
+
+        // find the maximum destination id
+        List<Integer> destinationIds = Destination.find.query().where().findIds();
+        int maxId = 0;
+        for (int id : destinationIds) {
+            maxId = id > maxId ? id : maxId;
+        }
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + (maxId + 1) + "/photos", user.getToken());
+    }
+
+    @Then("^they are told that the destination does not exist$")
+    public void theyAreToldThatTheDestinationDoesNotExist() {
+        Assert.assertEquals(404, result.status());
+    }
+
+    @Given("the photo {string} is linked to the destination {string}")
+    public void thePhotoIsLinkedToTheDestination(String photoFilename, String destinationName) {
+        this.theUserAddsStringToTheDestinationString(photoFilename, destinationName);
+        Assert.assertEquals(201, this.result.status());
+    }
+
+    @Given("the destination {string} has public photos linked to it")
+    public void theDestinationHasPublicPhotosLinkedToIt(String destinationName) {
+        this.theUserAddsStringToTheDestinationString("monkey.png", destinationName);
+
+        List<Destination> destinations = TestState.getInstance().getDestinations();
+        destination = null;
+        for (Destination currentDestination : destinations) {
+            if (currentDestination.getDestinationName().equals(destinationName)) {
+                destination = currentDestination;
+            }
+        }
+
+        List<DestinationPhoto> publicDestinationPhotos = this.destination.getPublicDestinationPhotos();
+
+        Assert.assertTrue(destination.getPublicDestinationPhotos().size() > 0);
+    }
 
     @When("I update the Destination with the following information:")
     public void iUpdateTheDestinationWithTheFollowingInformation(DataTable dataTable) throws IOException {

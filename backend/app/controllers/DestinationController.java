@@ -10,8 +10,9 @@ import exceptions.ConflictingRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.*;
-import models.*;
 import org.omg.CosNaming.NamingContextPackage.NotFound;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.*;
 import repository.DestinationRepository;
@@ -19,7 +20,6 @@ import repository.DestinationRepository;
 import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.List;
 import java.util.concurrent.CompletionException;
@@ -39,6 +39,7 @@ public class DestinationController extends Controller {
     private final DestinationRepository destinationRepository;
     private final PhotoRepository photoRepository;
     private HttpExecutionContext httpExecutionContext;
+    final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
     public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext, PhotoRepository photoRepository) {
@@ -78,17 +79,24 @@ public class DestinationController extends Controller {
     public CompletionStage<Result> getDestination(int destinationId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinationById(destinationId)
-                .thenApplyAsync((destination) -> {
-                    if (!destination.isPresent()) {
+                .thenApplyAsync((optionalDestination) -> {
+                    if (!optionalDestination.isPresent()) {
                         ObjectNode message = Json.newObject();
                         message.put("message", "No destination exists with the specified ID");
                         return notFound(message);
                     }
 
-                    if (destination.get().getDestinationOwner() != user.getUserId()) {
-                        ObjectNode message = Json.newObject();
-                        message.put("message", "You are not authorised to get this destination");
-                        return forbidden(message);
+                    Destination destination = optionalDestination.get();
+                    System.out.println(destination);
+
+                    try {
+                        if (destination.getDestinationOwner() != user.getUserId()) {
+                            ObjectNode message = Json.newObject();
+                            message.put("message", "You are not authorised to get this destination");
+                            return forbidden(message);
+                        }
+                    } catch (NullPointerException e) {
+                        log.error(e.getMessage());
                     }
 
                     JsonNode destAsJson = Json.toJson(destination);
@@ -205,7 +213,7 @@ public class DestinationController extends Controller {
                     });
         } catch (BadRequestException e) {
             ObjectNode message = Json.newObject();
-            message.put("message", e.getMessage());
+            message.put("message", "Please provide a valid Destination with complete data");
             return supplyAsync(() -> badRequest(message));
         }
 
@@ -477,6 +485,86 @@ public class DestinationController extends Controller {
                         return internalServerError("dfd");
                     }
                 });
+    }
+
+    /**
+     * Get all the photos linked to this destination
+     * @param destinationId the id of the destination
+     * @param request the HTTP request trying to get the destination photos
+     * @return a response according to the API spec
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getPhotos(int destinationId, Http.Request request) {
+        // TODO: check that the destination is not private once Story 13 is done
+        // TODO: if destination is private, check that the user has permission once Story 13 is done
+
+        ObjectNode res = Json.newObject();
+        String messageKey = "message";
+        User user = request.attrs().get(ActionState.USER);
+        return destinationRepository.getDestinationById(destinationId).thenApplyAsync((optionalDestination -> {
+            if (!optionalDestination.isPresent()) {
+                res.put(messageKey, "Destination " + destinationId + " does not exist");
+                return notFound(res);
+            }
+            Destination destination = optionalDestination.get();
+            List<DestinationPhoto> destinationPhotos = destination.getDestinationPhotos();
+
+            if (user.isAdmin() || user.isDefaultAdmin()) {
+                return ok(Json.toJson(destinationPhotos)); // TODO: find out why "isPrimary" is serialised as "primary" in JSON
+            }
+
+            List<DestinationPhoto> photosToReturn = new ArrayList<>();
+            List<DestinationPhoto> publicDestinationPhotos = destination.getPublicDestinationPhotos();
+            List<DestinationPhoto> privatePhotosForUser = destination.getPrivatePhotosForUserWithId(user.getUserId());
+            photosToReturn.addAll(publicDestinationPhotos);
+            photosToReturn.addAll(privatePhotosForUser);
+
+            JsonNode photos = Json.toJson(photosToReturn);
+            System.out.println(photos);
+
+            return ok(Json.toJson(photosToReturn));
+        }), httpExecutionContext.current());
+    }
+
+    /**
+     * Remove the association between a personal photo and a destination
+     * @param photoId the id of the photo
+     * @param request the HTTP request
+     * @return a response that complies with the API spec
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> unlinkPhoto(int destinationId, int photoId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        ObjectNode res = Json.newObject();
+        String messageKey = "message";
+
+        return destinationRepository.getDestinationPhotoById(destinationId, photoId).thenApplyAsync(optionalDestinationPhoto -> {
+            // return 404 if destination photo is not found
+            if (!optionalDestinationPhoto.isPresent()) {
+                res.put(messageKey, String.format("Photo %d is not linked to destination %d",photoId, destinationId));
+                return notFound(res);
+            }
+
+            // allow deletion of the destination photo to any admin
+            DestinationPhoto destinationPhoto  = optionalDestinationPhoto.get();
+            if (user.isDefaultAdmin() || user.isAdmin()) {
+                destinationPhoto.delete();
+                res.put(messageKey, "The destination photo link was deleted");
+                return ok(res);
+            }
+
+            // allow the photo's owner to delete the destination photo
+            PersonalPhoto personalPhoto = destinationPhoto.getPersonalPhoto();
+            if (personalPhoto.getUser().equals(user)) {
+                destinationPhoto.delete();
+                res.put(messageKey, "The destination photo link was deleted");
+                return ok(res);
+            }
+
+            // else tell the user they are not allowed :P
+            res.put(messageKey, String.format("User %d is not allowed to delete destination photo %d",user.getUserId(), photoId));
+            return forbidden(res);
+        }, httpExecutionContext.current());
     }
 
 }

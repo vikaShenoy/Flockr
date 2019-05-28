@@ -9,33 +9,10 @@ import { endpoint } from "../../../utils/endpoint";
  * @return {Promise<Array<POJO>>} the list of photos.
  */
 export async function getDestinationPhotos(destinationId) {
-  // const res = await superagent(endpoint(`destinations/${destinationId}/photos`)); 
+  const res = await superagent(endpoint(`/destinations/${destinationId}/photos`))
+      .set("Authorization", localStorage.getItem("authToken"));
 
-  // return addEndpoints(res.body);
-
-  // Returning mock data while endpoint is being developed
-  return [
-    {
-      photoId: 246,
-      isPrimary: true,
-      isPublic: false,
-      filenameHash: "something.jpg",
-      thumbnailName: "something.png",
-      endpoint: `http://localhost:9000/api/users/photos/246?Authorization=${localStorage.getItem("authToken")}`,
-      thumbEndpoint: `http://localhost:9000/api/users/photos/246/thumbnail?Authorization=${localStorage.getItem("authToken")}`,
-      ownerId: 108
-    },
-    {
-      photoId: 248,
-      isPrimary: true,
-      isPublic: true,
-      filenameHash: "something.jpg",
-      thumbnailName: "something.png",
-      endpoint: `http://localhost:9000/api/users/photos/248?Authorization=${localStorage.getItem("authToken")}`,
-      thumbEndpoint: `http://localhost:9000/api/users/photos/248/thumbnail?Authorization=${localStorage.getItem("authToken")}`,
-      ownerId: 108
-    },
-  ];
+  return addEndpoints(res.body);
 }
 
 /**
