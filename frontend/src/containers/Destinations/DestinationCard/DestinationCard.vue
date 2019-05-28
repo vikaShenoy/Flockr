@@ -12,6 +12,7 @@
                 @permissionUpdated="permissionUpdated"
                 :hasOwnerRights="hasOwnerRights"
                 @displayRemovePrompt="displayRemovePrompt"
+                @addPhoto="addPhoto"
         />
       </div>
     </div>
@@ -124,6 +125,13 @@
       }
     },
     methods: {
+      /**
+       * Called when the carousels emits an add photo event.
+       * Adds the photo to the photos list.
+       */
+      addPhoto(photo) {
+        this.photos.push(photo);
+      },
       /**
        * Removes a photo at the given index from the photos array.
        *

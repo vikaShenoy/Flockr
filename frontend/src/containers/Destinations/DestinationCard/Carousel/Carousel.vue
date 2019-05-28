@@ -24,6 +24,7 @@
             :destinationId="destinationId"
             :showDialog="showAddPhotoDialog"
             @closeAddPhotoDialog="closeAddPhotoDialogHandler"
+            @addPhoto="addPhoto"
     />
     <v-img
       v-if="photos.length === 0"
@@ -67,6 +68,13 @@ export default {
     }
   },
   methods: {
+    /**
+     * Called when a photo is added by the user.
+     * emits an event to the parent element to add the photo to the list.
+     */
+    addPhoto(photo) {
+      this.$emit("addPhoto", photo);
+    },
     /**
      * Called when the photo is selected.
      * Opens the photo dialog and sets the current photo values.

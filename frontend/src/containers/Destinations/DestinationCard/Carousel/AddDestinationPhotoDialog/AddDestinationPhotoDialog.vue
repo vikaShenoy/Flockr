@@ -105,7 +105,6 @@
                         .set('Authorization', authToken);
                     const userPhotos = response.body;
 
-
                     const photosToShow = userPhotos.filter(userPhoto => {
                         for (const destinationPhoto of this.destinationPhotos) {
                             if (userPhoto.photoId === destinationPhoto.photoId) {
@@ -114,12 +113,9 @@
                         }
                         return true;
                     });
-
                     this.userPhotos = photosToShow;
-
-
                 } catch (e) {
-                    console.log(e);
+                    this.$emit("displayError", e.message);
                 }
             },
             thumbnailPhotoUrl(photoId) {
@@ -135,16 +131,17 @@
 
                 try {
                     const res = await superagent.post(endpoint(`/destinations/${this.id}/photos`))
-
                         .set('Authorization', authToken)
                         .send(data);
                     this.showAddPhotoDialog = false;
-                    console.log(res.body)
-
+                    let photo = res.body;
+                    photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
+                    photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+                    this.$emit("addPhoto", photo);
                     //TODO Tell destination card component to update its carousel
 
                 } catch (e) {
-                    console.log(e);
+                    this.$emit("displayError", e.message);
                 }
 
             },
