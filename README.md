@@ -1,7 +1,7 @@
 # SENG302 Team 500
 
 ## Context
-This project is called Travel EA is an web application that is like the app of 
+This project is called Travel EA which is a web application that is like the app of 
 all the apps. It acts like an Executive Assistant for organising your travel. 
 In this application, you can create your profile, find your own travel partners 
 with the similar interests as you, plan your trips or use others’ trips to plan 
@@ -119,7 +119,7 @@ Refer to the root directory for the [project license](/LICENSE)
 
 ## Author and Contributors
 * Angelica Dela Cruz
-* Isaac Foster
 * Exequiel Bahamonde Carcamo
+* Isaac Foster
 * Rafael Goesmann
 
