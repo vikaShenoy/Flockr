@@ -26,6 +26,7 @@ import utils.PlayResultToJson;
 import utils.TestAuthenticationHelper;
 import utils.TestState;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -38,8 +39,12 @@ public class DestinationTestingSteps {
     private ObjectNode destinationNode;
     private Result result;
     private JsonNode destinations;
+    private int newPhotoId;
+    private List<String> photosToRemove = new ArrayList<>();
+    private JsonNode photoData;
     private User user;
     private Destination destination;
+    private int destinationId;
 
 
     @Given("users with the following information exist:")
@@ -63,7 +68,6 @@ public class DestinationTestingSteps {
             try {
                 ObjectNode currentDestination = (ObjectNode) Json.toJson(destinationList.get(i));
                 Destination destination = fakeClient.makeTestDestination(currentDestination, user.getToken());
-
                 destination.setDestinationOwner(user.getUserId());
 
                 if (currentDestination.has("isPublic")) {
@@ -76,6 +80,7 @@ public class DestinationTestingSteps {
 
                 Destination destination1 = Destination.find.byId(destination.getDestinationId());
                 Assert.assertNotNull(destination1);
+                TestState.getInstance().addDestination(destination1);
                 Assert.assertTrue(destination1.getDestinationName().length() > 0);
                 this.result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId(), user.getToken());
                 existingDestination = this.result;
@@ -94,6 +99,7 @@ public class DestinationTestingSteps {
             try {
                 Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
                 TestState.getInstance().addDestination(destination);
+                this.destinationId = destination.getDestinationId();
                 Assert.assertNotEquals(0, destination.getDestinationId());
             } catch (UnauthorizedException | ServerErrorException e) {
                 Assert.fail(Arrays.toString(e.getStackTrace()));
@@ -168,6 +174,12 @@ public class DestinationTestingSteps {
         Assert.assertFalse(destination.isPresent());
     }
 
+    @Then("I get a message saying that the destination already exists")
+    public void i_get_a_message_saying_that_the_destination_already_exists() {
+        Assert.assertEquals(409, result.status());
+
+    }
+
     @When("the user adds {string} to the destination {string}")
     public void theUserAddsStringToTheDestinationString(String photoName, String destinationName) {
         List<Destination> destinations = TestState.getInstance().getDestinations();
@@ -179,7 +191,6 @@ public class DestinationTestingSteps {
 
         List<PersonalPhoto> personalPhotos = user.getPersonalPhotos();
         PersonalPhoto personalPhoto = null;
-        System.out.println("personalPhotos size is: " + personalPhotos.size());
         for (PersonalPhoto currentPersonalPhoto : personalPhotos) {
             if (currentPersonalPhoto.getFilenameHash().equals(photoName)) {
                 personalPhoto = currentPersonalPhoto;
@@ -196,7 +207,6 @@ public class DestinationTestingSteps {
         }
 
         int destinationId = destination != null ? destination.getDestinationId() : 0;
-        System.out.println("destinationId is: " + destinationId);
         result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destinationId + "/photos", user.getToken());
     }
 
@@ -228,10 +238,8 @@ public class DestinationTestingSteps {
         JsonNode resultAsJson = PlayResultToJson.convertResultToJson(result);
         Assert.assertTrue(resultAsJson.isArray());
         ArrayNode destinationPhotos = (ArrayNode) resultAsJson;
-        System.out.println(destinationPhotos);
 
         List<DestinationPhoto> publicDestinationPhotos = destination.getPublicDestinationPhotos();
-        System.out.println(publicDestinationPhotos);
 
         int publicPhotosFound = 0;
         for (JsonNode destinationPhoto : destinationPhotos) {
@@ -331,6 +339,7 @@ public class DestinationTestingSteps {
         List<Map<String, String>> destinationList = dataTable.asMaps();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
+        Double delta = 0.0001;
 
         this.destinationNode = Json.newObject();
         this.destinationNode.put("destinationName", firstRow.get("destinationName"));
@@ -341,31 +350,22 @@ public class DestinationTestingSteps {
         this.destinationNode.put("countryId", firstRow.get("countryId"));
         this.destinationNode.put("isPublic", firstRow.get("isPublic"));
 
-        for (int i = 0; i < destinationList.size(); i++) {
-            try {
-                Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
-                TestState.getInstance().addDestination(destination);
+        Destination destinationToChange = TestState.getInstance().getDestination(1);
 
+        this.result = fakeClient.makeRequestWithToken("PUT", this.destinationNode,
+                "/api/destinations/" + destinationToChange.getDestinationId(), user.getToken());
 
-                this.result = fakeClient.makeRequestWithToken("PUT", this.destinationNode, "/api/destinations/" + destination.getDestinationId(), user.getToken());
-
-                Result getDestination = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId(), user.getToken());
-                JsonNode destinationData = utils.PlayResultToJson.convertResultToJson(getDestination);
-
-                Assert.assertEquals(destinationData.get("destinationName").asText(), firstRow.get("destinationName"));
-                Assert.assertEquals(destinationData.get("destinationType").get("destinationTypeId").asText(), firstRow.get("destinationTypeId"));
-                Assert.assertEquals(destinationData.get("destinationDistrict").get("districtId").asText(), firstRow.get("districtId"));
-                Assert.assertEquals(destinationData.get("destinationLat").asText(), firstRow.get("latitude"));
-                Assert.assertEquals(destinationData.get("destinationLon").asText(), firstRow.get("longitude"));
-                Assert.assertEquals(destinationData.get("destinationCountry").get("countryId").asText(), firstRow.get("countryId"));
-                Assert.assertEquals(destinationData.get("isPublic").asText(), firstRow.get("isPublic"));
-
-            } catch (UnauthorizedException unauthorisedExceptionE) {
-                Assert.fail(Arrays.toString(unauthorisedExceptionE.getStackTrace()));
-            } catch (ServerErrorException serverErrorE) {
-                Assert.fail(Arrays.toString(serverErrorE.getStackTrace()));
-            }
-        }
+        Destination destination = Destination.find.byId(destinationToChange.getDestinationId());
+        Assert.assertEquals(firstRow.get("destinationName"), destination.getDestinationName());
+        Assert.assertEquals(firstRow.get("latitude"), destination.getDestinationLat().toString());
+        Assert.assertEquals(firstRow.get("longitude"), destination.getDestinationLon().toString());
+        Assert.assertEquals(Double.parseDouble(firstRow.get("districtId")),
+                destination.getDestinationDistrict().getDistrictId(), delta);
+        Assert.assertEquals(Double.parseDouble(firstRow.get("countryId")),
+                destination.getDestinationCountry().getCountryId(), delta);
+        Assert.assertEquals(Double.parseDouble(firstRow.get("destinationTypeId")),
+                destination.getDestinationType().getDestinationTypeId(), delta);
+        Assert.assertEquals(Boolean.parseBoolean(firstRow.get("isPublic")), destination.getIsPublic());
     }
 
     @Then("I should be allowed to update the Destination")
@@ -377,8 +377,7 @@ public class DestinationTestingSteps {
     public void theDestinationInformationIsUpdated() throws IOException {
         Assert.assertEquals(200, this.result.status());
         JsonNode originalDestination = utils.PlayResultToJson.convertResultToJson(existingDestination);
-        System.out.println("it is: " + destinationNode);
-        System.out.println("scond it" + originalDestination);
+
         Assert.assertEquals(destinationNode.get("destinationName").asText(), originalDestination.get("destinationName").asText());
         Assert.assertEquals(destinationNode.get("destinationTypeId").asText(), originalDestination.get("destinationType").get("destinationTypeId").asText());
         Assert.assertEquals(destinationNode.get("districtId").asText(), originalDestination.get("destinationDistrict").get("districtId").asText());
@@ -412,9 +411,150 @@ public class DestinationTestingSteps {
 
     @Then("I get an error indicating that the Destination is not found")
     public void iGetAnErrorIndicatingThatTheDestinationIsNotFound() {
+
         Assert.assertEquals(404, this.result.status());
     }
 
+
+    @Given("that another user have the following destinations:")
+    public void thatAnotherUserHaveTheFollowingDestinations(DataTable dataTable) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(0);
+        List<Map<String, String>> destinationList = dataTable.asMaps();
+
+        for (int i = 0; i < destinationList.size(); i++) {
+            try {
+                ObjectNode currentDestination = (ObjectNode) Json.toJson(destinationList.get(i));
+                Destination destination = fakeClient.makeTestDestination(currentDestination, user.getToken());
+                destination.setDestinationOwner(user.getUserId());
+
+                if (currentDestination.has("isPublic")) {
+                    destination.setIsPublic(Boolean.parseBoolean(currentDestination.get("isPublic").asText()));
+                }
+
+                // Save to set permission as post endpoint doesn't do it
+                destination.update();
+                TestState.getInstance().addDestination(destination);
+
+                Destination dest = Destination.find.byId(destination.getDestinationId());
+                Assert.assertNotNull(dest);
+
+                this.result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId(), user.getToken());
+                existingDestination = this.result;
+            } catch (UnauthorizedException | ServerErrorException e) {
+                Assert.fail(Arrays.toString(e.getStackTrace()));
+            }
+        }
+    }
+
+    @When("I try to update another user's destination with the following information:")
+    public void iTryToUpdateAnotherUsersDestinationWithTheInformation(DataTable dataTable) throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(1);
+
+        List<Map<String, String>> destinationList = dataTable.asMaps();
+        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
+        Map<String, String> firstRow = list.get(0);
+        this.destinationData = utils.PlayResultToJson.convertResultToJson(existingDestination);
+
+        this.destinationNode = Json.newObject();
+        this.destinationNode.put("destinationName", firstRow.get("destinationName"));
+        this.destinationNode.put("destinationTypeId", firstRow.get("destinationTypeId"));
+        this.destinationNode.put("districtId", firstRow.get("districtId"));
+        this.destinationNode.put("latitude", firstRow.get("latitude"));
+        this.destinationNode.put("longitude", firstRow.get("longitude"));
+        this.destinationNode.put("countryId", firstRow.get("countryId"));
+        this.destinationNode.put("isPublic", firstRow.get("isPublic"));
+
+        for (int i = 0; i < destinationList.size(); i++) {
+            this.result = fakeClient.makeRequestWithToken("PUT", this.destinationNode, "/api/destinations/" + this.destinationData.get("destinationId").asInt(), user.getToken());
+        }
+    }
+
+    @Then("I get an error indicating that I am not allowed to make changes on the destination")
+    public void iGetAnErrorIndicatingThatIAmNotAllowedToMakeChangesOnTheDestination() {
+        Assert.assertEquals(403, this.result.status());
+    }
+
+    @Given("that destination is linked to the user's destination photo")
+    public void thatDestinationIsLinkedToTheUsersDestinationPhoto() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(1);
+
+        Map<String, String> values = new HashMap<>();
+        values.put("isPrimary", Boolean.toString(false));
+        values.put("isPublic", Boolean.toString(true));
+
+        File file = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/", "monkey.png");
+
+        if (!file.exists()) {
+            Assert.fail(String.format("File %s was not found", file));
+        }
+
+        this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
+                "POST",
+                "/api/users/" + user.getUserId() + "/photos",
+                user.getToken(),
+                file,
+                values);
+
+        Assert.assertNotNull(this.result);
+        JsonNode resultAsJson = PlayResultToJson.convertResultToJson(this.result);
+        this.newPhotoId = resultAsJson.get("photoId").asInt();
+        this.photosToRemove.add(resultAsJson.get("filenameHash").asText());
+
+        Assert.assertNotNull(this.newPhotoId);
+        Assert.assertEquals(201, this.result.status());
+
+        List<Destination> destinations = TestState.getInstance().getDestinations();
+
+        Destination destination = null;
+        for (Destination currentDestination : destinations) {
+            if (currentDestination.getDestinationName().equals("The Dairy Down The Street")) {
+                destination = currentDestination;
+                this.destinationId = destination.getDestinationId();
+            }
+        }
+
+        List<PersonalPhoto> personalPhotos = user.getPersonalPhotos();
+        PersonalPhoto personalPhoto = null;
+        for (PersonalPhoto currentPersonalPhoto : personalPhotos) {
+            if (currentPersonalPhoto.getFilenameHash().equals("monkey.png")) {
+                personalPhoto = currentPersonalPhoto;
+            }
+        }
+
+        ObjectNode requestBody = Json.newObject();
+        requestBody.put("photoId", this.newPhotoId);
+
+        if (personalPhoto != null) {
+            requestBody.put("photoId", personalPhoto.getPhotoId());
+        }
+
+        int destinationId = destination != null ? destination.getDestinationId() : 0;
+        this.result = fakeClient.makeRequestWithToken("POST", requestBody,"/api/destinations/" + destinationId + "/photos", user.getToken());
+        Assert.assertEquals(201, this.result.status());
+    }
+
+    @Then("the other user's private destination is deleted")
+    public void theOtherUsersPrivateDestinationIsDeleted() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(1);
+        Result destination = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + this.destinationId, user.getToken());
+        Assert.assertEquals(404, destination.status());
+    }
+
+    @Then("the photo is changed to link to the public destination")
+    public void thePhotoIsChangedToLinkToThePublicDestination() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        User user = TestState.getInstance().getUser(1);
+        Destination destination = TestState.getInstance().getDestination(0);
+
+        this.result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
+        this.photoData = utils.PlayResultToJson.convertResultToJson(this.result);
+
+
+    }
 
     @When("the user gets their own destinations")
     public void theUserRetrievesTheirOwnPhotos() throws IOException {

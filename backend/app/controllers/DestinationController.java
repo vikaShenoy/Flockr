@@ -6,6 +6,7 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
+import exceptions.ConflictingRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.*;
@@ -16,6 +17,7 @@ import play.libs.Json;
 import play.mvc.*;
 import repository.DestinationRepository;
 
+import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -151,7 +153,7 @@ public class DestinationController extends Controller {
     public CompletionStage<Result> addDestination(Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
 
-        int user = request.attrs().get(ActionState.USER).getUserId();
+        int userId = request.attrs().get(ActionState.USER).getUserId();
 
         try {
             // check that the request has a body
@@ -184,11 +186,34 @@ public class DestinationController extends Controller {
                 throw new BadRequestException("One of the fields you have selected does not exist.");
             }
 
-            Destination destination = new Destination(destinationName, destinationTypeAdd, districtAdd,
-                    latitude, longitude, countryAdd, user, false);
+            Destination destinationToAdd = new Destination(destinationName, destinationTypeAdd, districtAdd,
+                    latitude, longitude, countryAdd, userId, false);
 
-            return destinationRepository.insert(destination)
-                    .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)), httpExecutionContext.current());
+            return destinationRepository.getDestinations()
+                    .thenComposeAsync(destinations -> {
+                        for (Destination dest : destinations) {
+                            boolean ownsDestination = dest.getDestinationOwner() != null
+                                    && dest.getDestinationOwner() == userId;
+                            if (dest.equals(destinationToAdd) &&
+                                    (dest.getIsPublic() || ownsDestination)) {
+                                throw new CompletionException(new ConflictingRequestException(
+                                        "Destination already exists."));
+                            }
+                        }
+                        return destinationRepository.insert(destinationToAdd);
+                    }, httpExecutionContext.current())
+                    .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)))
+                    .exceptionally(e -> {
+                        try {
+                            throw e.getCause();
+                        } catch (ConflictingRequestException conflictingException) {
+                            return status(409, conflictingException.getMessage());
+                        } catch (Throwable generalException) {
+                            generalException.printStackTrace();
+                            return internalServerError("Error creating destinations");
+                        }
+
+                    });
         } catch (BadRequestException e) {
             ObjectNode message = Json.newObject();
             message.put("message", "Please provide a valid Destination with complete data");
@@ -217,7 +242,8 @@ public class DestinationController extends Controller {
 
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
                     if (!user.isAdmin() && user.getUserId() != optionalDest.get().getDestinationOwner()) {
-                        throw new CompletionException(new ForbiddenRequestException("You are unauthorised to update this destination"));
+                        throw new CompletionException(new ForbiddenRequestException("You are unauthorised to update " +
+                                "this destination"));
                     }
 
                     JsonNode jsonBody = request.body().asJson();
