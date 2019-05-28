@@ -231,9 +231,9 @@ public class PhotoController extends Controller {
                     return forbidden();
                 } else {
                     JsonNode photoAsJSON = Json.toJson(optionalPhoto);
-                    System.out.println(photoAsJSON);
+                    log.error(photoAsJSON.asText());
                     String path = System.getProperty("user.dir") + "/storage/photos/" + optionalPhoto.get().getFilenameHash();
-                    System.out.println(path);
+                    log.error(path);
                     return ok().sendFile(new File(path));
                 }
             }
