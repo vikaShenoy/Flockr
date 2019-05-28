@@ -236,7 +236,7 @@
        *
        * @param newDestination {POJO} the new destination to add to the list of destinations.
        */
-      addNewDestinationCard: function (newDestination) {
+      addNewDestinationCard: async function (newDestination) {
         // TODO: change this to take public/private into account
         this.editedDestination = {
           destinationId: null,
@@ -258,6 +258,9 @@
           isPublic: false,
           index: null
         };
+
+          this.userDestinations = await getUserDestinations(this.userStore.data.userId);
+          this.publicDestinations = await getPublicDestinations();
         
         if (UserStore.methods.isAdmin()) {
           // Current hack where if user is admin, reload the page
