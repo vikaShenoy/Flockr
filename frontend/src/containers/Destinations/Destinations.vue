@@ -276,7 +276,7 @@
       /**
        * Gets the delete function for a destination.
        *
-       * @param destination {POJO} the destination to be deleted.
+       * @param destination {Object} the destination to be deleted.
        * @param index {Number} the index of the destination in the destinations list.
        * @return {Function} the delete function for this destination.
        */
@@ -309,36 +309,6 @@
         this.editIndex = index;
         this.editMode = true;
         this.showModifyDestination = true;
-      },
-      /**
-       * Calls a prompt dialog to be displayed to the user.
-       *
-       * @param destination {POJO} the destination to be deleted on confirmation.
-       * @param index {Number} the index of the destination in the destinations list.
-       */
-      displayDeletePrompt(destination, index) {
-        this.promptDialog.message = "Are you sure you would like to delete this destination?";
-        this.promptDialog.deleteFunction = this.getDeleteFunction(destination, index);
-        this.promptDialog.show = true;
-      },
-      /**
-       * Calls a prompt dialog to be displayed to the user.
-       *
-       * @param removePhotoFunction {Function} the function to call on confirmation.
-       */
-      displayRemovePrompt(removePhotoFunction) {
-        this.promptDialog.message = "Are you sure you would like to remove this photo from the destination?";
-        this.promptDialog.deleteFunction = removePhotoFunction;
-        this.promptDialog.show = true;
-      },
-      /**
-       * Called when the prompt dialog has finished.
-       * Closes the prompt dialog and resets the values to defaults.
-       */
-      promptEnded() {
-        this.promptDialog.message = "";
-        this.promptDialog.deleteFunction = null;
-        this.promptDialog.show = false;
       },
       /**
        * Sets the district of the edited Destination to null values.
