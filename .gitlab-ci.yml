@@ -70,11 +70,14 @@ production-run:
   script: 
     - "cd backend/target/universal"
     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-    - sudo bash /opt/startserver -p stop
-    - sudo rm -rf /var/www/prod/*
-    - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT/* /var/www/prod/
-    - sudo mv /var/www/prod/conf/application.prod.conf /var/www/prod/conf/application.conf
-    - sudo bash /opt/startserver -p start
+    - pm2 delete prod-server || true
+    - sudo rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT
+    - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
+    - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/conf
+    - sudo mv application.prod.conf application.conf
+    - cd ../bin
+    - pm2 start "sudo bash seng302-team-500 -Dhttp.port=443" --name=prod-server
+
   only:
     - master
   stage: deploy
