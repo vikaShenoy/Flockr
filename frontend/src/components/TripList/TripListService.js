@@ -128,9 +128,9 @@ export function sortTrips(trips) {
     
     // If 2 trips compared don't have any dates or the dates are the same
     if (!startA && !startB || startA.isSame(startB)) {
-      return tripA.tripId - tripB.tripId;
+      return tripB.tripId - tripA.tripId;
     } else {
-      return startA.valueOf() - startB.valueOf();
+      return startB.valueOf() - startA.valueOf();
     }
   });
 }
