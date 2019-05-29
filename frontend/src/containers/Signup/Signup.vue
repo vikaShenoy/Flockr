@@ -1,4 +1,5 @@
 <template>
+  <div id="signup-container">
   <v-card
     id="signup"
     class="col-lg-6 offset-lg-3"
@@ -65,6 +66,8 @@
       @click="signup()"
     >Sign Up</v-btn>
   </v-card>
+
+  </div>
 </template>
 
 <script>
@@ -253,6 +256,13 @@ export default {
   h2 {
     text-align: center;
   }
+}
+
+#signup-container {
+  display: flex;
+  background-image: url("../../assets/background.jpg");
+  background-size: cover;
+  width: 100%;
 }
 </style>
 
