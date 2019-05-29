@@ -135,6 +135,7 @@ export default {
 <style lang="scss" scoped>
 #passports {
   padding: 10px;
+  margin-bottom: 20px;
 }
 
 #header {
@@ -145,6 +146,10 @@ export default {
   align-items: center;
   > * {
     flex-grow: 1;
+  }
+
+  h3 {
+    text-align: left;
   }
 }
 

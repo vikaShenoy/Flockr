@@ -1,6 +1,5 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
 	<div style="width: 100%">
-		<div class="page-title"><h1>Search Travellers</h1></div>
 		<div class="search-container">
 			<!-- Min and Max Age Slider -->
 			<!-- Nationality, Gender and Traveller Typ Select Input -->
@@ -253,7 +252,7 @@
 	@import "../../styles/_variables.scss";
 
 	.search-container {
-		margin: 110px 0 0;
+		margin: 20px 0 0;
 	}
 
 	.page-title {

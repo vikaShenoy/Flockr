@@ -23,6 +23,7 @@
           class="date"
           v-model="props.item.arrivalDate"
           type="date"
+          color="secondary"
         ></v-text-field>
       </td>
       <td>
@@ -30,6 +31,7 @@
           class="time"
           v-model="props.item.arrivalTime"
           type="time"
+          color="secondary"
         ></v-text-field>
       </td>
       <td>
@@ -37,6 +39,7 @@
           class="date"
           v-model="props.item.departureDate"
           type="date"
+          color="secondary"
         ></v-text-field>
       </td>
       <td>
@@ -44,6 +47,7 @@
           class="time"
           v-model="props.item.departureTime"
           type="time"
+          color="secondary"
         ></v-text-field>
       </td>
       <td v-if="isEditing && tripDestinations.length > 2">

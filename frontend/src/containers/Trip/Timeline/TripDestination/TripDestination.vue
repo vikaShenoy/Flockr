@@ -2,7 +2,7 @@
     <div>
         <v-timeline-item :style="{width: '90%', marginLeft: '5%'}" color="primary" small :right="alignRight">
             <v-card>
-                <v-card-title class="primary">
+                <v-card-title class="secondary">
                     <h3 class="white--text font-weight-light">{{tripDestination.destinationName}}</h3>
                 </v-card-title>
                 <v-container>

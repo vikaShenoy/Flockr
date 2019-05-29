@@ -142,16 +142,22 @@ export default {
 <style lang="scss" scoped>
 #nationalities {
   padding: 10px;
+  margin-bottom: 20px;
 }
 
 #header {
   width: 100%;
+  margin-top: 20px;
   display: flex;
   flex-flow: row nowrap;
   justify-content: center;
   align-items: center;
   > * {
     flex-grow: 1;
+  }
+
+  h3 {
+    text-align: left;
   }
 }
 
