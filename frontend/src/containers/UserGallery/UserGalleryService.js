@@ -21,17 +21,22 @@ export async function getPhotosForUser(userId) {
  * @return the photosDetails array with added properties for endpoints on each one.
  */
 let addExtras = function(photosDetails) {
-  for (let i = 0; i < photosDetails.length; i++) {
-    photosDetails[i].endpoint = endpoint(`/users/photos/${photosDetails[i]["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
-    photosDetails[i].thumbEndpoint = endpoint(`/users/photos/${photosDetails[i]["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
-    photosDetails[i].deleteFunction = async function() {
-      const response = await superAgent.delete(endpoint(`/users/photos/${photosDetails[i].photoId}`))
-          .set("authorization", localStorage.getItem("authToken"));
-      return response.body;
-    };
-  }
+  photosDetails.map(photo => {
+        photo.endpoint = endpoint(`/users/photos/${photo["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
+        photo.thumbEndpoint = endpoint(`/users/photos/${photo["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+  });
   return photosDetails;
 };
+
+/**
+ * Delete Function for a photo.
+ * Sends a request to the server to delete a users photo.
+ */
+export async function deleteUserPhoto(photo) {
+  const response = await superAgent.delete(endpoint(`/users/photos/${photo.photoId}`))
+      .set("authorization", localStorage.getItem("authToken"));
+  return response.body;
+}
 
 /**
  * Sends a request to the server to update the permission of the photo
@@ -47,6 +52,5 @@ export async function updatePhotoPermissions(newValue, photoId) {
         "isPublic": newValue,
         "isPrimary": false
       });
-
   return response.body;
 }

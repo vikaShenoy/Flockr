@@ -89,6 +89,7 @@ export default {
     };
   },
   methods: {
+    
     /**
      * Checks if the first name field is empty and renders error if it is
      * @returns {number} If there are errors or not
@@ -103,6 +104,9 @@ export default {
       }
       return this.firstNameErrors.length === 0;
     },
+    /**
+     * Set all fields and errors to empty.
+     */
     clearData() {
       this.firstName =  "",
       this.lastName =  "",

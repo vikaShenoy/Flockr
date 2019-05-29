@@ -2,12 +2,15 @@
   <v-dialog
           v-model="dialog"
           width="80%"
-          v-if="photo.endpoint"
+          v-if="photo"
   >
     <v-card>
       <v-responsive>
         <!-- Weird bug that only accepts this format -->
-        <v-layout grid-list class="photo-panel">
+        <v-layout
+                v-if="photo.endpoint"
+                grid-list
+                class="photo-panel">
           <v-img
                   :src="`${photo.endpoint}`"
                   lazy-src="src/containers/Profile/Photos/beach-holiday.jpg"
@@ -18,7 +21,13 @@
       </v-responsive>
       <v-card-actions>
         <v-spacer align="left">
-          <v-btn flat color="error" @click="deletePhoto">Delete</v-btn>
+          <v-btn
+                  v-if="showModify"
+                  flat
+                  color="error"
+                  @click="deletePhoto">
+            Delete
+          </v-btn>
         </v-spacer>
         <v-spacer align="center">
           <v-switch
@@ -49,7 +58,7 @@
     props: {
       photo: {
         type: Object,
-        required: true,
+        required: false,
         endpoint: {
           type: String,
           required: false
@@ -60,13 +69,17 @@
         },
         deleteFunction: {
           type: Function,
-          immediate: true
+          required: false
         }
       },
       currentPhotoIndex: Number,
       showDialog: {
         type: Boolean,
         required: true
+      },
+      deleteFunction: {
+        type: Function,
+        required: false
       }
     },
 
@@ -102,15 +115,22 @@
        * Opens a delete prompt for the user to confirm and passes in the delete function.
        */
       deletePhoto() {
-        this.$emit("deletePhoto", this.photo.deleteFunction);
+        if (this.photo.deleteFunction) {
+          this.$emit("deletePhoto", this.photo.deleteFunction);
+        } else {
+          this.$emit("deletePhoto", this.deleteFunction);
+        }
       },
       /**
        * Called when the dialog variable changes state.
+       * If the photo has been set to an object, updates other fields.
        */
       showDialogChanged() {
-        this.showModify = (localStorage.getItem("userId") === this.$route.params.id || UserStore.methods.isAdmin());
-        this.isPublicData = this.photo.public;
-        this.dialog = this.showDialog;
+        if (this.photo) {
+          this.showModify = (localStorage.getItem("userId") === this.$route.params.id || UserStore.methods.isAdmin());
+          this.isPublicData = this.photo.public;
+          this.dialog = this.showDialog;
+        }
       },
       /**
        * Called when the user chooses to update photo permissions.

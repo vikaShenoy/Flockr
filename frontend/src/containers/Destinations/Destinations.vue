@@ -1,141 +1,365 @@
 <template>
   <div style="width: 100%">
     <div class="page-title"><h1>Destinations</h1></div>
-    <div class="destinations-panel destinations-card">
-      <DestinationCard
-              v-for="(destination, index) in destinations"
-              v-bind:key="index"
-              :destination="destination.destinationObject"
-              :editMode="destination.editMode"
-              :deleteOnClick="deleteDestination"
-              :destinationTypes="destinationTypes"
-              :countries="countries"
-              @editModeChanged="changeEditMode"
-              @idChanged="changeIdOfDestination"
-              @deleteNewDestination="deleteNewDestination"
-      ></DestinationCard>
-      <v-btn fab id="addDestinationButton" v-on:click="addNewDestinationCard">
-        <v-icon>add</v-icon>
-      </v-btn>
-    </div>
+      <div class="destinations-panel destinations-card">
+        <div v-if="!publicDestinations || !userDestinations" id="loading">
+           <v-progress-circular
+            indeterminate
+            color="secondary"
+          ></v-progress-circular>
+        </div>
+
+        <div v-else>
+          <v-expansion-panel>
+            <v-expansion-panel-content>
+              <template v-slot:header>
+                <h2>My Destinations</h2>
+              </template>
+              <!--
+                Need this div to appear when no destinations are there or
+                the expansion panel will disappear
+               -->
+              <div v-if="userDestinations.length === 0"></div>
+              <destination-card
+                    v-for="(destination, index) in userDestinations"
+                    v-bind:key="index"
+                    :destination="destination"
+                    @deleteDestination="displayDeletePrompt(destination, index)"
+                    @editDestination="editDestination(index, destination)"
+                    @displayMessage="displayMessage"
+                    @displayRemovePrompt="displayRemovePrompt"
+                    />
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <br>
+
+          <v-expansion-panel>
+            <v-expansion-panel-content>
+              <template v-slot:header>
+                <h2 v-if="userStore.methods.isAdmin()">Public Destinations</h2>
+                <h2 v-else>All Public Destinations</h2>
+
+              </template>
+              <div v-if="publicDestinations.length === 0"></div>
+              <DestinationCard
+                v-for="(destination, index) in publicDestinations"
+                v-bind:key="index"
+                :destination="destination"
+                @deleteDestination="displayDeletePrompt(destination, index)"
+                @editDestination="editDestination(index, destination)"
+                @displayMessage="displayMessage"
+                @displayRemovePrompt="displayRemovePrompt"
+              />
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </div>
+        <v-btn fab id="addDestinationButton" v-on:click="openAddDestinationDialog">
+          <v-icon>add</v-icon>
+        </v-btn>
+      </div>
+    <modify-destination-dialog
+            :dialog.sync="showModifyDestination"
+            :destinationTypes="destinationTypes"
+            :countries="countries"
+            :editedDestination="editedDestination"
+            :editMode="editMode"
+            :index="editIndex"
+            @dialogChanged="changeShowAddDestinationDialog"
+            @displayMessage="displayMessage"
+            @addNewDestination="addNewDestinationCard"
+            @updateDestination="updateDestination"/>
+    <snackbar
+      :snackbarModel="snackBar"
+      @displayMessage="displayMessage"
+      @dismissSnackbar="dismissSnackbar"/>
+    <prompt-dialog
+      :onConfirm="promptDialog.deleteFunction"
+      :dialog="promptDialog.show"
+      :message="promptDialog.message"
+      @promptEnded="promptEnded"/>
   </div>
 </template>
 
 <script>
   import DestinationCard from "./DestinationCard/DestinationCard";
-  import {requestCountries, requestDestinations, requestDestinationTypes, sendDeleteDestination} from "./DestinationsService";
+  import {requestCountries, getUserDestinations, getPublicDestinations, requestDestinationTypes, sendDeleteDestination} from "./DestinationsService";
+  import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
+  import Snackbar from "../../components/Snackbars/Snackbar";
+  import PromptDialog from "../../components/PromptDialog/PromptDialog";
+  import UserStore from "../../stores/UserStore";
 
   export default {
     components: {
+      PromptDialog,
+      Snackbar,
+      ModifyDestinationDialog: ModifyDestinationDialog,
       DestinationCard
     },
     data() {
       return {
-        destinations: [],
+        userStore: UserStore,
+        userDestinations: null,
+        publicDestinations: null,
         countries: [],
-        destinationTypes: []
+        destinationTypes: [],
+        showModifyDestination: false,
+        editedDestination: {
+          destinationId: null,
+          destinationName: null,
+          destinationType: {
+            destinationTypeId: null,
+            destinationTypeName: null
+          },
+          destinationDistrict: {
+            districtName: null,
+            districtId: null
+          },
+          destinationCountry: {
+            countryName: null,
+            countryId: null
+          },
+          destinationLat: null,
+          destinationLon: null,
+          isPublic: false,
+          index: null
+          // TODO: Add owner here when ready.
+        },
+        editMode: false,
+        editIndex: null,
+        promptDialog: {
+          show: false,
+          deleteFunction: null,
+          message: ""
+        },
+        snackBar: {
+          show: false,
+          timeout: 5000,
+          text: "",
+          color: "green",
+          snackbarId: 1
+        }
       }
     },
     /**
      * Load data.
      */
     mounted: async function () {
-      let currentDestinations;
       try {
-        currentDestinations = await requestDestinations();
+        const userIdUrl = this.$route.params.userId;
+        const userId = userIdUrl ? userIdUrl : localStorage.getItem("userId");
+        this.userDestinations = await getUserDestinations(userId);
+        this.publicDestinations = await getPublicDestinations();
 
-        for (let index in currentDestinations) {
-          this.destinations.push({
-            destinationObject: currentDestinations[index],
-            editMode: false
-          });
-        }
+
+
       } catch(error) {
-        console.log(error);
+        this.displayMessage({
+          show: true,
+          text: error.message,
+          color: "red"
+        });
       }
       try {
         this.countries = await requestCountries();
       } catch (error) {
-        console.log(error);
+        this.displayMessage({
+          show: true,
+          text: error.message,
+          color: "red"
+        });
       }
 
       try {
         this.destinationTypes = await requestDestinationTypes();
       } catch (error) {
-        console.log(error);
+        this.displayMessage({
+          show: true,
+          text: error.message,
+          color: "red"
+        });
       }
     },
     methods: {
       /**
-       * Add a new empty destination card.
+       * Displays a message using the snackbar.
        */
-      addNewDestinationCard: function () {
-        this.destinations.unshift({
-          destinationObject: {
-            destinationId: null,
-            destinationName: "",
-            destinationType: {
-              destinationTypeId: null,
-              destinationTypeName: null
-            },
-            destinationDistrict: {
-              districtId: null,
-              districtName: null
-            },
-            destinationLat: "",
-            destinationLon: "",
-            destinationCountry: {
-              countryId: null,
-              countryName: null
-            }
-          }, editMode: true
-        });
+      displayMessage(snackBar) {
+        this.snackBar.text = snackBar.text;
+        this.snackBar.color = snackBar.color;
+        this.snackBar.show = true;
       },
-
       /**
-       * Delete a destination from frontend and send request to delete from backend.
+       * Dismisses the snackbar
        */
-      deleteDestination: async function (event) {
-        let targetIndex = await this.getIndexOfDestinationFromTarget(event.target.parentNode);
-        try {
-          sendDeleteDestination(this.destinations[targetIndex].destinationObject.destinationId);
-          this.destinations.splice(targetIndex, 1);
-        } catch(error) {
-          console.log(error);
+      dismissSnackbar() {
+        this.snackBar.show = false;
+      },
+      /**
+       * Called when the add button is selected.
+       * Opens the add destination dialog window.
+       */
+      openAddDestinationDialog() {
+        this.editMode = false;
+        this.showModifyDestination = true;
+      },
+      displayDeletePrompt(destination, index) {
+        this.promptDialog.deleteFunction = this.getDeleteFunction(destination, index);
+        this.promptDialog.message = 'Are you sure that you would like to delete this destination?';
+        this.promptDialog.show = true;
+      },
+      /**
+       * Called when wanting to remove a photo
+       */
+      displayRemovePrompt(photoRemoveCallback) {
+        this.promptDialog.deleteFunction = photoRemoveCallback;
+        this.promptDialog.message = 'Are you sure that you would like to delete this photos?';
+        this.promptDialog.show = true;
+      },
+      /**
+       * Called when the prompt dialog has finished.
+       * Closes the prompt dialog and resets the values to defaults.
+       */
+      promptEnded() {
+        this.promptDialog.deleteFunction = null;
+        this.promptDialog.show = false;
+      },
+      /**
+       * Called when the modify destination dialog emits a dialogChanged event.
+       * Changes the showModifyDestination variable to match the value in the add destination dialog component.
+       */
+      changeShowAddDestinationDialog(newValue) {
+        this.showModifyDestination = newValue;
+      },
+      /**
+       * Add a new destination to the list of destinations.
+       *
+       * @param newDestination {POJO} the new destination to add to the list of destinations.
+       */
+      addNewDestinationCard: async function (newDestination) {
+        // TODO: change this to take public/private into account
+        this.editedDestination = {
+          destinationId: null,
+          destinationName: null,
+          destinationType: {
+            destinationTypeId: null,
+            destinationTypeName: null
+          },
+          destinationDistrict: {
+            districtName: null,
+            districtId: null
+          },
+          destinationCountry: {
+            countryName: null,
+            countryId: null
+          },
+          destinationLat: null,
+          destinationLon: null,
+          isPublic: false,
+          index: null
+        };
+
+          this.userDestinations = await getUserDestinations(this.userStore.data.userId);
+          this.publicDestinations = await getPublicDestinations();
+        
+        if (UserStore.methods.isAdmin()) {
+          // Current hack where if user is admin, reload the page
+          window.location.reload();
         }
       },
-
       /**
-       * Delete a new destination.
+       * Update an existing destination after edit.
+       *
+       * @param destination {POJO} the updated destination.
+       * @param index {int} the index of the destination.
        */
-      deleteNewDestination: async function (target) {
-        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
-        this.destinations.splice(targetIndex, 1);
+      updateDestination(destination, index) {
+        window.location.reload();
+        this.editedDestination = {
+          destinationId: null,
+          destinationName: null,
+          destinationType: {
+            destinationTypeId: null,
+            destinationTypeName: null
+          },
+          destinationDistrict: {
+            districtName: null,
+            districtId: null
+          },
+          destinationCountry: {
+            countryName: null,
+            countryId: null
+          },
+          destinationLat: null,
+          destinationLon: null,
+          isPublic: false
+        };
+        this.editIndex = null;
+
+        this.showModifyDestination = false;
       },
-
-      changeEditMode: async function (value, target) {
-        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
-        this.destinations[targetIndex].editMode = value;
-      },
-
-      changeIdOfDestination: async function (value, target) {
-        let targetIndex = await this.getIndexOfDestinationFromTarget(target);
-        this.destinations[targetIndex].destinationObject.destinationId = value;
-      },
-
-      getIndexOfDestinationFromTarget: function (target) {
-        let targetIndex = 0;
-        let destinationCards = target.parentNode.childNodes;
-
-        // Iterate through destination cards till the target card is found and save the index
-        for(let i = 0; i < destinationCards.length; i++) {
-          if (destinationCards[i] === target) {
-            targetIndex = i;
+      /**
+       * Gets the delete function for a destination.
+       *
+       * @param destination {Object} the destination to be deleted.
+       * @param index {Number} the index of the destination in the destinations list.
+       * @return {Function} the delete function for this destination.
+       */
+      getDeleteFunction: function (destination, index) {
+        return async () => {
+          try {
+            await sendDeleteDestination(destination.destinationId);
+            window.location.reload();
+            this.displayMessage({
+              text: `Destination ${destination.destinationName} successfully deleted.`,
+              color: "green"
+            });
+          } catch (error) {
+            this.displayMessage({
+              show: true,
+              text: error.message,
+              color: "red"
+            });
           }
         }
-        return targetIndex;
+      },
+      /**
+       * Called when the edit button is selected on a destination.
+       *
+       * @param {Number} index the index of the destination in the destinations list.
+       * @param {POJO} destination the destination Object
+       */
+      editDestination(index, destination) {
+        this.editedDestination = destination;
+        this.editIndex = index;
+        this.editMode = true;
+        this.showModifyDestination = true;
+      },
+      /**
+       * Sets the district of the edited Destination to null values.
+       * If the destination country value does not match the districts country value.
+       */
+      onEditCountryChanged() {
+        if (![null, undefined].includes(this.editedDestination.destinationDistrict.country) &&
+            this.editedDestination.destinationCountry.countryId !==
+            this.editedDestination.destinationDistrict.country.countryId) {
+          this.editedDestination.destinationDistrict.districtId = null;
+          this.editedDestination.destinationDistrict.districtName = null;
+          this.editedDestination.destinationDistrict.country.countryId = null;
+        }
       }
     },
+    watch: {
+      editCountryValue : {
+        handler: "onEditCountryChanged",
+        immediate: true
+      }
+    },
+    computed: {
+      editCountryValue() {
+        return this.editedDestination.destinationCountry.countryId;
+      }
+    }
   }
 
 </script>
@@ -145,7 +369,7 @@
 
 .page-title {
   position: fixed;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   padding: 15px;
   text-align: left;
@@ -176,7 +400,7 @@
   padding: 110px 50px 50px;
 }
 
-#addDestinationButton {
+#add-destinations-button {
   position: fixed;
   bottom: 30px;
   right: 30px;
@@ -184,6 +408,14 @@
   .v-icon {
     color: $darker-white;
   }
+}
+
+#loading {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 </style>

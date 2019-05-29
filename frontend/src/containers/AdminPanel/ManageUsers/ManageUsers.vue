@@ -1,6 +1,6 @@
 <template>
   <div class=manage-users>
-    <v-card>
+    <v-card class="manage-filter-card">
       <v-list two-line>
         <v-subheader class="manage-users-row">
           <div class="manage-users-text">
@@ -14,8 +14,14 @@
           </v-btn>
 
           <v-btn class="new-user-button"
-            @click="signupButtonClicked">
+                 @click="signupButtonClicked">
             Sign Up User
+          </v-btn>
+
+          <v-btn class="new-user-button"
+                 @click="viewDestinationsButtonClicked"
+                 :disabled="this.selectedUsers.length != 1">
+            View Destinations
           </v-btn>
 
           <v-btn class="edit-trips-button" :disabled="this.selectedUsers.length === 0"
@@ -33,8 +39,12 @@
           </v-btn>
 
         </v-subheader>
+      </v-list>
+    </v-card>
         
         <!-- User tile -->
+      <v-card>
+        <v-list>
         <v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
           <v-list-tile-avatar>
             <img :src="item.avatar">
@@ -72,6 +82,7 @@
 
 <script>
 import {deleteUsers, getAllUsers} from "../AdminPanelService";
+import {endpoint} from "../../../utils/endpoint.js";
 import moment from "moment";
 import SignUp from "../../Signup/Signup";
 import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
@@ -96,21 +107,46 @@ export default {
     };
   },
   computed: {
-    // get the user ids that are selected
+    
+    /**
+     * Get the user ids of selected users.
+     */
     selectedUsers: function() {
       return this.items.filter((item) => item.selected).map((user) => user.userId);
     },
-    // return whether the edit button is enabled
+    
+    /**
+     * Return whether the edit button is enabled.
+     */
     isEditButtonEnabled: function() {
       // only enable the button when one user is selected
       return this.selectedUsers.length == 0;
     }
   },
   methods: {
-    //Emit an event to update the admin search array in the parent
-    searchAdminChange(searchAdmin)  {
+
+    /**
+     * Called when the view destinations button is clicked.
+     * routes the admin to the destinations page for the selected user.
+     */
+    viewDestinationsButtonClicked() {
+      const userId = this.selectedUsers[0];
+
+      this.$router.push(`/users/${userId}/destinations`);
+    },
+
+    /**
+     * Emit a function call, indicates search admin 
+     * has changed.
+     */
+    searchAdminChange(searchAdmin) 
+    {
       this.$emit('update:adminSearch',searchAdmin);
     },
+
+    /**
+     * Show a prompt to the user.
+     */
     showPrompt(message, onConfirm) {
       this.prompt.message = message;
       this.prompt.onConfirm = onConfirm;
@@ -167,13 +203,31 @@ export default {
      * Use a generic avatar untill photos are implemented.
      */
     mapUsers: function() {
+        for (let thing of this.users) {
+            console.log(thing);
+        }
       return this.users.map((user) => ({
-          avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
+          avatar: this.photoUrl(user.profilePhoto),
           userId: user.userId,
           title: user.firstName + ' ' + user.lastName,
           subtitle: 'Joined on ' + moment(user.timestamp).format("D/M/YYYY H:mm"),
           selected: false
       }));
+    },
+    /**
+     * Gets the URL of a photo for a user
+     * @param {number} photoId the ID of the photo to get
+     * @returns {string} the url of the photo
+     */
+    photoUrl(profilePhoto) {
+        if (profilePhoto != null) {
+            const authToken = localStorage.getItem("authToken");
+            const queryAuthorization = `?Authorization=${authToken}`;
+            return endpoint(`/users/photos/${profilePhoto.photoId}${queryAuthorization}`);
+        } else {
+            return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
+
+        }
     }
   },
   props: ["users"],
@@ -191,6 +245,11 @@ export default {
 
   .manage-users {
     height: 100%;
+    width: 100%;
+  }
+
+  .manage-filter-card {
+    height: 20%;
     width: 100%;
   }
 

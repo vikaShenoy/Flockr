@@ -8,6 +8,7 @@ import play.db.ebean.EbeanConfig;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
+import java.sql.SQLOutput;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -57,6 +58,34 @@ public class DestinationRepository {
         }, executionContext);
     }
 
+    /**
+     * Gets a list of all destinations that a user has created
+     * @return List of destinations
+     */
+    public CompletionStage<List<Destination>> getDestinationsbyUserId(int userId) {
+        return supplyAsync(() -> {
+            List<Destination> destinations = Destination.find.query().where().eq("destination_owner", userId).findList();
+            return destinations;
+        }, executionContext);
+    }
+
+
+    /**
+     * Get a destination photo associated with a destination given both ids
+     *
+     * @param destinationId the id of the destination
+     * @param photoId the id of the photo
+     * @return an optional destination photo if such link exists
+     */
+    public CompletionStage<Optional<DestinationPhoto>> getDestinationPhotoById(int destinationId, int photoId) {
+        return supplyAsync(() -> {
+            Optional<DestinationPhoto> destinationPhoto = DestinationPhoto.find.query()
+                    .where().eq("destination_destination_id", destinationId)
+                    .and().eq("personal_photo_photo_id", photoId).findOneOrEmpty();
+            return destinationPhoto;
+        }, executionContext);
+    }
+
 
     /**
      * Inserts a destination into the database
@@ -79,7 +108,7 @@ public class DestinationRepository {
      */
     public CompletionStage<Destination> update(Destination destination) {
         return supplyAsync(() -> {
-            destination.update();
+            destination.save();
             return destination;
         }, executionContext);
     }
@@ -132,6 +161,32 @@ public class DestinationRepository {
         return supplyAsync(() -> {
             Destination.find.deleteById(destinationId);
             return destinationId;
+        }, executionContext);
+    }
+
+    /**
+     * Saves the destination photo into the database
+     *
+     * @param destinationPhoto the destination photo to be saved in the database
+     * @return the photo object
+     */
+    public CompletionStage<DestinationPhoto> savePhoto(DestinationPhoto destinationPhoto) {
+        return supplyAsync(() -> {
+            destinationPhoto.save();
+            return destinationPhoto;
+        });
+    }
+
+    /**
+     * Insert a destination photo into the database
+     *
+     * @param photo the destination photo to be inserted in the database
+     * @return the photo object
+     */
+    public CompletionStage<DestinationPhoto> insertDestinationPhoto(DestinationPhoto photo) {
+        return supplyAsync(() -> {
+            photo.insert();
+            return photo;
         }, executionContext);
     }
 

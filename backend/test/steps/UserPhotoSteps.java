@@ -72,7 +72,30 @@ public class UserPhotoSteps {
 
     @Given("^the user has the following photos in the system:$")
     public void theUserHasTheFollowingPhotosInTheSystem(DataTable dataTable) {
-        User testUser = TestState.getInstance().removeUser(0);
+        User testUser = TestState.getInstance().getUser(0);
+        this.photoList = dataTable;
+        List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
+
+        User user = User.find.byId(testUser.getUserId());
+        Assert.assertNotNull(user);
+        List<PersonalPhoto> photos = new ArrayList<>();
+        for (Map<String, String> row : list) {
+            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")), null);
+            photo.save();
+            photo = PersonalPhoto.find.byId(photo.getPhotoId());
+            photos.add(photo);
+        }
+        user.setPersonalPhotos(photos);
+        user.save();
+        user = User.find.byId(testUser.getUserId());
+
+        Assert.assertNotNull(user);
+        Assert.assertEquals(list.size(), user.getPersonalPhotos().size());
+    }
+
+    @Given("^the admin user has the following photos in the system:$")
+    public void theAdminUserHasTheFollowingPhotosInTheSystem(DataTable dataTable) {
+        User testUser = TestState.getInstance().getUser(1);
         this.photoList = dataTable;
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
 
@@ -212,11 +235,11 @@ public class UserPhotoSteps {
         }
 
         this.result = fakeClient.makeMultipartFormRequestWithFileAndToken(
-            "POST",
-            "/api/users/" + this.karenRegular.getUserId() + "/photos",
-            this.tylerRegular.getToken(),
-            file,
-            values);
+                "POST",
+                "/api/users/" + this.karenRegular.getUserId() + "/photos",
+                this.tylerRegular.getToken(),
+                file,
+                values);
 
         if (this.result.status() == 200) {
             Assert.assertNotNull(this.result);
@@ -271,7 +294,7 @@ public class UserPhotoSteps {
         Assert.assertEquals(200, this.result.status());
     }
 
-    @Then("^the user gets the same list$")
+    @Then("^the list does not contain the primary photo$")
     public void theUserGetsTheSameList() throws IOException {
         JsonNode jsonNode = PlayResultToJson.convertResultToJson(this.result);
         Assert.assertTrue(jsonNode.isArray());
@@ -282,10 +305,7 @@ public class UserPhotoSteps {
         while (iterator.hasNext()) {
             JsonNode nextPhoto = iterator.next();
             PersonalPhoto personalPhoto = objectMapper.treeToValue(nextPhoto, PersonalPhoto.class);
-            Map<String, String> row = rowsIterator.next();
-            Assert.assertEquals(row.get("filename"), personalPhoto.getFilenameHash());
-            Assert.assertEquals(Boolean.valueOf(row.get("isPrimary")), personalPhoto.isPrimary());
-            Assert.assertEquals(Boolean.valueOf(row.get("isPublic")), personalPhoto.isPublic());
+            Assert.assertFalse(personalPhoto.isPrimary());
         }
     }
 

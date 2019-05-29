@@ -25,8 +25,9 @@
 
         <Photos
           :photos="userProfile.personalPhotos"
-          v-on:addImage="addImage"
-           />
+          @deletePhoto="deletePhoto"
+          @showError="showError"
+          v-on:addImage="addImage"/>
       </div>
 
       <div class="col-lg-8">
@@ -66,6 +67,7 @@ import Photos from "./Photos/Photos";
 import moment from "moment";
 import { getUser } from "./ProfileService";
 import Snackbar from "../../components/Snackbars/Snackbar";
+import {endpoint} from "../../utils/endpoint";
 
 export default {
   components: {
@@ -95,6 +97,19 @@ export default {
     this.getUserInfo();
   },
   methods: {
+    /**
+     * Called when a deletePhoto event is emitted from the photos component.
+     * Removes the photo at the given index.
+     *
+     * @param index {Number} the index of the photo to be removed.
+     */
+    deletePhoto(index) {
+      this.userProfile.personalPhotos.splice(index, 1);
+      this.errorSnackbar.color = "success";
+      this.errorSnackbar.text = "Photo deleted successfully";
+      this.errorSnackbar.show = true;
+
+    },
     /**
      * Gets a users info and sets the users state
      */
@@ -138,9 +153,11 @@ export default {
     showError(text) {
       this.errorSnackbar.text = text;
       this.errorSnackbar.show = true;
+      this.errorSnackbar.color = "error";
     },
     addImage(image) {
-      console.log("I am ");
+      image.endpoint = endpoint(`/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
+      image.thumbEndpoint = endpoint(`/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
       this.userProfile.personalPhotos.push(image);
     }
   }

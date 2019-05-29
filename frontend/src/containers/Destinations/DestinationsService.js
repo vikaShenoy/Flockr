@@ -3,11 +3,39 @@ import { endpoint } from "../../utils/endpoint";
 
 
 /**
- * Get a list of all the destinations currently in the database, must be logged in to succeed
- * @returns {Promise<Array>} of all destinations
+ * Get a list of all public and private destinations that a user has
+ * @param {number} userId ID of the user to get destinations from
+ * @returns {Promise<Array>} the users public and private destinations
  */
-export async function requestDestinations() {
+export async function getUserDestinations(userId) {
+  const res = await superagent.get(endpoint(`/users/${userId}/destinations`))
+      .set("Authorization", localStorage.getItem("authToken"));
+
+  return res.body;
+}
+
+/**
+ * Get a list of all public destinations
+ * @returns {Promise<Array>} the list of public destinations
+ */
+export async function getPublicDestinations() {
   const res = await superagent.get(endpoint("/destinations"))
+    .set("Authorization", localStorage.getItem("authToken"));
+
+  return res.body;
+}
+
+
+
+
+/**
+ * Sends a request to get a specific destination.
+ *
+ * @param destinationId {Number} the id of the destination.
+ * @return {Promise<JSON>} the destination object.
+ */
+export async function requestDestination(destinationId) {
+  const res = await superagent.get(endpoint(`/destinations/${destinationId}`))
       .set("Authorization", localStorage.getItem("authToken"));
 
   return res.body;
@@ -74,7 +102,6 @@ export async function sendAddDestination(destinationInfo) {
   const res = await superagent.post(endpoint("/destinations"))
       .set("Authorization", localStorage.getItem("authToken"))
       .send(destinationInfo);
-
   return res.body;
 }
 
