@@ -532,6 +532,8 @@ public class PhotoController extends Controller {
      */
     private void saveThumbnail(File originalImage, File thumbFileDestination, String photoContentType) throws IOException {
         BufferedImage bufferedImage = ImageIO.read(originalImage);
+        ImageIO.write(bufferedImage, photoContentType, originalImage);
+
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
         int midWidth = bufferedImage.getWidth() / 2;

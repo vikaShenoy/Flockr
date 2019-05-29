@@ -12,7 +12,7 @@
                 grid-list
                 class="photo-panel">
           <v-img
-                  :src="`${photo.endpoint}`"
+                  :src="`${ photo.endpoint }`"
                   lazy-src="src/containers/Profile/Photos/beach-holiday.jpg"
                   class="grey darken-3"
                   :contain="true"/>
