@@ -1,6 +1,5 @@
 <template>
   <div style="width: 100%">
-    <div class="page-title"><h1>Destinations</h1></div>
       <div class="destinations-panel destinations-card">
         <div v-if="!publicDestinations || !userDestinations" id="loading">
            <v-progress-circular
@@ -54,7 +53,7 @@
             </v-expansion-panel-content>
           </v-expansion-panel>
         </div>
-        <v-btn fab id="addDestinationButton" v-on:click="openAddDestinationDialog">
+        <v-btn fab id="add-destination-button" v-on:click="openAddDestinationDialog" color="secondary" depressed>
           <v-icon>add</v-icon>
         </v-btn>
       </div>
@@ -368,14 +367,13 @@
 @import "../../styles/_variables.scss";
 
 .page-title {
-  position: fixed;
   z-index: 2;
   width: 100%;
   padding: 15px;
-  text-align: left;
   background: $primary;
   font-size: 20px;
-  h1 {
+  
+  h2 {
     color: $darker-white;
   }
 }
@@ -397,10 +395,10 @@
 }
 
 .destinations-card {
-  padding: 110px 50px 50px;
+  padding: 20px 50px 50px;
 }
 
-#add-destinations-button {
+#add-destination-button {
   position: fixed;
   bottom: 30px;
   right: 30px;
@@ -417,5 +415,6 @@
   align-items: center;
   justify-content: center;
 }
+
 
 </style>

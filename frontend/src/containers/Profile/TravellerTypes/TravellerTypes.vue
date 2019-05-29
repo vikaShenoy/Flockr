@@ -154,6 +154,10 @@ export default {
   > * {
     flex-grow: 1;
   }
+
+  h3 {
+    text-align: left;
+  }
 }
 
 .traveller-types-card {

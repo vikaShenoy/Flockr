@@ -1,7 +1,9 @@
 <template>
   <v-app>
-    <div id="app">
-      <Navbar />
+      <Navbar /> 
+      <div id="app">
+
+      <Sidebar />
 
       <div class="container-fluid" id="content">
         <router-view></router-view>
@@ -13,10 +15,12 @@
 
 <script>
 
+import Sidebar from "./Sidebar/Sidebar";
 import Navbar from "./Navbar/Navbar";
 
 export default {
   components: {
+    Sidebar,
     Navbar
   },
   name: "App",
@@ -34,16 +38,17 @@ export default {
 #app {
   display: flex;
   flex-direction: row;
-  height: 200%;
+  height: 100%;
 }
 
 #content {
   display: flex;
-  height: 100%;
   width: calc(100% - 240px);
+  height: calc(100% - 64px);
   margin-left: 240px;
   padding-left: 0px;
   padding-right: 0px;
+  margin-top: 64px;
 }
 
 </style>

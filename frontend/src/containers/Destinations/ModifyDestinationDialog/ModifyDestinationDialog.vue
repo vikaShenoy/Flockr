@@ -161,8 +161,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer align="right">
-          <v-btn flat color="success" @click="checkSubmission">Submit</v-btn>
           <v-btn flat color="error" @click="closeDialog">Cancel</v-btn>
+          <v-btn flat color="success" @click="checkSubmission">Submit</v-btn>
         </v-spacer>
       </v-card-actions>
     </v-card>

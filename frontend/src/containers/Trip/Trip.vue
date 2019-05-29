@@ -4,6 +4,7 @@
       color="secondary"
       id="edit-trip"
       @click="goToEditTrip"
+      depressed
     >Edit</v-btn>
 
 

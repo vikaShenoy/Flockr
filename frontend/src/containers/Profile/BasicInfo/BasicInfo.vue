@@ -306,6 +306,10 @@ b {
   > * {
     flex-grow: 1;
   }
+
+  h3 {
+    text-align: left;
+  }
 }
 
 #edit-btn {

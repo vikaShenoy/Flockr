@@ -143,7 +143,7 @@ export default {
 
 <style lang="scss" scoped>
 #add-trip {
-  align-self: center;
+  margin-top: 30px;
   padding: 20px;
 
   h2 {

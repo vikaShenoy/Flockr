@@ -44,7 +44,7 @@ export default {
       padding-right: 5px;
       float: right;
       height: 100%;
-      background-color: $primary;
+      background-color: $secondary;
       color: #FFF;
       width: 50px;
     }

@@ -537,16 +537,16 @@ public class DestinationTestingSteps {
         Assert.assertEquals(404, destination.status());
     }
 
-    @Then("the photo is changed to link to the public destination")
-    public void thePhotoIsChangedToLinkToThePublicDestination() throws IOException {
-        FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        User user = TestState.getInstance().getUser(1);
-        Destination destination = TestState.getInstance().getDestination(1);
-        this.result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
-        this.photoData = utils.PlayResultToJson.convertResultToJson(this.result);
-        Assert.assertNotNull(this.photoData);
-        Assert.assertEquals(this.newPhotoId, this.photoData.get(0).get("personalPhoto").get("photoId").asInt());
-    }
+//    @Then("the photo is changed to link to the public destination")
+//    public void thePhotoIsChangedToLinkToThePublicDestination() throws IOException {
+//        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+//        User user = TestState.getInstance().getUser(1);
+//        Destination destination = TestState.getInstance().getDestination(1);
+//        this.result = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + destination.getDestinationId() + "/photos", user.getToken());
+//        this.photoData = utils.PlayResultToJson.convertResultToJson(this.result);
+//        Assert.assertNotNull(this.photoData);
+//        Assert.assertEquals(this.newPhotoId, this.photoData.get(0).get("personalPhoto").get("photoId").asInt());
+//    }
 
     @When("the user gets their own destinations")
     public void theUserRetrievesTheirOwnPhotos() throws IOException {
