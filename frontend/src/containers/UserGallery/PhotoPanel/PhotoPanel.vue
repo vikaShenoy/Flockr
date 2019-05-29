@@ -13,6 +13,7 @@
                   lazy-src="src/containers/Profile/Photos/beach-holiday.jpg"
                   class="grey darken-3"
                   :contain="true"/>
+          <img :src="photo.endpoint" />
         </v-layout>
       </v-responsive>
       <v-card-actions>

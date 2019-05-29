@@ -234,7 +234,16 @@ public class PhotoController extends Controller {
                         String filename = photo.get().getFilenameHash().substring(0, índiceDePunto);
                         String path = System.getProperty("user.dir") + "/storage/photos";
                         filename += fileType;
-                        return ok().sendFile(new File(path, filename));
+                        File photoToBeSent = new File(path, filename);
+                        if (!photoToBeSent.exists()) {
+                            // here for the last of sprint 4 where we can't seem to access photos
+                            // but we can access the thumbnails
+                            ObjectNode res = Json.newObject();
+                            String messageKey = "message";
+                            res.put(messageKey, "Did not find the photo..." + photoToBeSent);
+                            return internalServerError(res);
+                        }
+                        return ok().sendFile(photoToBeSent);
                     }
                 }).exceptionally(error -> {
                     try {
