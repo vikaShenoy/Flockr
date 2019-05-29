@@ -10,6 +10,8 @@ recent-artifacts-backend:
       - backend/target/universal/*.zip
   except:
     - tags
+    - dev
+    - master
   script:
     - "cd backend && sbt dist"
   stage: build
