@@ -24,7 +24,7 @@ export default {
   data() {
     return {
       // Tells TripList what user to get trips from
-      userId: localStorage.getItem("userId")
+      userId: this.$route.params.id
     };
   }
 };

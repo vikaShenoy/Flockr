@@ -276,8 +276,8 @@ public class TripController extends Controller {
     public CompletionStage<Result> getTrips(Http.Request request, int userId) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(userFromMiddleware, userId)) {
-            return supplyAsync(Controller::forbidden);
+        if (!userFromMiddleware.isAdmin() && userId != userFromMiddleware.getUserId()) {
+            return supplyAsync(() -> ok(Json.toJson(new ArrayList<>())));
         }
 
         return tripRepository.getTripsByIds(userId)
