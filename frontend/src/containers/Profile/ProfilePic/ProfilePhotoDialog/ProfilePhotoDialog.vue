@@ -61,10 +61,12 @@
       <ProfilePhotosSelection
         :photos="photos"
         :photoUrl="photoUrl"
-        v-if="photos.length"
         v-on:photoSelected="photoSelected"
         :selectedPhoto="selectedPhoto"
       />
+
+
+
       <v-card-actions>
         <v-spacer align="right">
           <v-btn flat color="secondary" v-on:click="$emit('closeDialog')">Cancel</v-btn>

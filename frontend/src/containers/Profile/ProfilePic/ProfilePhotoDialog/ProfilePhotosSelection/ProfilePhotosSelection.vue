@@ -1,18 +1,24 @@
 <!--Handles the selection of the profile photo-->
 <template>
   <div id="profile-photos-selection">
-    <div></div>
     <span>Photos</span>
     <v-divider></v-divider>
+    <div v-if="photos.length">
+      <img
+        class="profile-photo"
+        
+        v-bind:class="{'selected-photo': selectedPhoto && photo.photoId == selectedPhoto.photoId}"
+        v-for="(photo, index) in photos"
+        v-bind:key="photo.photoId"
+        :src="thumbnailPhotoUrl(photo.photoId)"
+        @click="selectPhoto(index)"
+      />
+    </div>
 
-    <img
-      class="profile-photo"
-      v-bind:class="{'selected-photo': selectedPhoto && photo.photoId == selectedPhoto.photoId}"
-      v-for="(photo, index) in photos"
-      v-bind:key="photo.photoId"
-      :src="thumbnailPhotoUrl(photo.photoId)"
-      @click="selectPhoto(index)"
-    />
+    <div v-else>
+      <br />
+      <b>You have no photos. Please upload a photo before setting a profile picture</b>
+    </div>
   </div>
 </template>
 <script>
