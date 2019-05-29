@@ -48,7 +48,6 @@ export default {
   }
 
   .trip-card {
-    width: 150%;
     justify-content: center;
     margin-left: 10px;
     }
