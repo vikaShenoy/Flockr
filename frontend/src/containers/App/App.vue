@@ -38,11 +38,13 @@ export default {
 #app {
   display: flex;
   flex-direction: row;
+  height: 100%;
 }
 
 #content {
   display: flex;
   width: calc(100% - 240px);
+  height: calc(100% - 64px);
   margin-left: 240px;
   padding-left: 0px;
   padding-right: 0px;
