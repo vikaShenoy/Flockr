@@ -20,6 +20,15 @@ public class District extends Model {
     @ManyToOne
     private Country country;
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof District)) {
+            return false;
+        }
+        District districtToCompare = (District) obj;
+        return this.districtId == districtToCompare.districtId;
+    }
+
     /**
      * Constructor.
      * @param districtName name of the district.

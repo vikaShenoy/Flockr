@@ -23,7 +23,7 @@ Feature: As a registered user I want to have photos that display on my profile
       | cucumber.jpeg | false     | false    |
       | whale.png     | false     | false    |
     When the user requests all their photos
-    Then the user gets the same list
+    Then the list does not contain the primary photo
 
   @UserPhotos
   Scenario: a user requests a list of photos for a user that does not exist
@@ -46,7 +46,7 @@ Feature: As a registered user I want to have photos that display on my profile
       | cucumber.jpeg | false     | false    |
       | whale.png     | false     | false    |
     When the admin user requests the photos of another user
-    Then the user gets the same list
+    Then the list does not contain the primary photo
 
   @UserPhotos
   Scenario: A user can add a photo

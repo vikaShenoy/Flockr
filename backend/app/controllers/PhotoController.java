@@ -126,6 +126,7 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
+        //TODO: does this need to check if photo is in the destination????
         User user = request.attrs().get(ActionState.USER);
         return photoRepository.getPhotoById(photoId)
                 .thenComposeAsync((optionalPhoto) -> {

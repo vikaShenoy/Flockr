@@ -40,6 +40,15 @@ public class DestinationType extends Model {
     }
 
     public static final Finder<Integer, DestinationType> find = new Finder<>(DestinationType.class);
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof DestinationType)) {
+            return false;
+        }
+        DestinationType destinationTypeToCompare = (DestinationType) obj;
+        return this.destinationTypeId == destinationTypeToCompare.destinationTypeId;
+    }
 }
 
 

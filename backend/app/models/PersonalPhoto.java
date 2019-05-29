@@ -1,11 +1,13 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.ebean.Model;
 import play.data.validation.Constraints;
-
+import play.libs.Json;
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * A personal photo that is linked to a user
@@ -20,9 +22,11 @@ public class PersonalPhoto extends Model {
     @Id
     private int photoId;
 
+    @JsonProperty("isPublic")
     @Constraints.Required
     private boolean isPublic;
 
+    @JsonProperty("isPrimary")
     @Constraints.Required
     private boolean isPrimary;
 
@@ -31,6 +35,9 @@ public class PersonalPhoto extends Model {
 
     @Constraints.Required
     private String thumbnailName;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<DestinationPhoto> destinationPhotos;
 
     /**
      * Constructor
@@ -60,6 +67,15 @@ public class PersonalPhoto extends Model {
 
     public User getUser() {
         return this.user;
+    }
+
+    public int getOwnerId() {
+        return user.getUserId();
+    }
+
+    public void setOwnerId(int userId) {
+        //TODO: find a way to gracefully handle this.
+        return;
     }
 
     public void setPublic(boolean isPublic) {
