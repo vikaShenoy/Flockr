@@ -320,7 +320,7 @@
 	}
 
 	.profile-pic {
-		width: 100%;
+		width: 30%;
 		height: auto;
 	}
 

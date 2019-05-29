@@ -249,7 +249,7 @@ export default {
   }
 
   .manage-filter-card {
-    height: 20%;
+    height: 10%;
     width: 100%;
   }
 
