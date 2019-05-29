@@ -126,7 +126,6 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
-        //TODO: does this need to check if photo is in the destination????
         User user = request.attrs().get(ActionState.USER);
         return photoRepository.getPhotoById(photoId)
                 .thenComposeAsync((optionalPhoto) -> {
@@ -231,12 +230,9 @@ public class PhotoController extends Controller {
                        return forbidden();
                     }
                     else {
-                        int índiceDePunto = photo.get().getFilenameHash().lastIndexOf('.');
-                        String fileType = photo.get().getFilenameHash().substring(índiceDePunto);
-                        String filename = photo.get().getFilenameHash().substring(0, índiceDePunto);
                         String path = System.getProperty("user.dir") + "/storage/photos";
-                        filename += fileType;
-                        File photoToBeSent = new File(path, filename);
+                        photo.get().getFilenameHash();
+                        File photoToBeSent = new File(path, photo.get().getFilenameHash());
                         if (!photoToBeSent.exists()) {
                             // here for the last of sprint 4 where we can't seem to access photos
                             // but we can access the thumbnails
