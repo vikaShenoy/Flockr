@@ -139,11 +139,12 @@ public class PhotoController extends Controller {
                     }
                     File photoToDelete = new File("./storage/photos/" + photo.getFilenameHash());
                     File thumbnailToDelete = new File("./storage/photos/" + photo.getThumbnailName());
-                    if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
-                        throw new CompletionException(new NotFoundException());
-                    }
                     ObjectNode message = Json.newObject();
-                    message.put("message", "Successfully deleted the photo");
+                    if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
+                        message.put("message", "Your photo file was missing, photo has been removed from the system.");
+                    } else {
+                        message.put("message", "Successfully deleted the photo");
+                    }
                     return this.photoRepository.deletePhoto(photo.getPhotoId());
                 })
                 .thenApplyAsync(photo -> (Result) ok())
