@@ -126,7 +126,6 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
-        //TODO: does this need to check if photo is in the destination????
         User user = request.attrs().get(ActionState.USER);
         return photoRepository.getPhotoById(photoId)
                 .thenComposeAsync((optionalPhoto) -> {
@@ -139,11 +138,12 @@ public class PhotoController extends Controller {
                     }
                     File photoToDelete = new File("./storage/photos/" + photo.getFilenameHash());
                     File thumbnailToDelete = new File("./storage/photos/" + photo.getThumbnailName());
-                    if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
-                        throw new CompletionException(new NotFoundException());
-                    }
                     ObjectNode message = Json.newObject();
-                    message.put("message", "Successfully deleted the photo");
+                    if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
+                        message.put("message", "Your photo file was missing, photo has been removed from the system.");
+                    } else {
+                        message.put("message", "Successfully deleted the photo");
+                    }
                     return this.photoRepository.deletePhoto(photo.getPhotoId());
                 })
                 .thenApplyAsync(photo -> (Result) ok())
@@ -230,12 +230,18 @@ public class PhotoController extends Controller {
                        return forbidden();
                     }
                     else {
-                        int índiceDePunto = photo.get().getFilenameHash().lastIndexOf('.');
-                        String fileType = photo.get().getFilenameHash().substring(índiceDePunto);
-                        String filename = photo.get().getFilenameHash().substring(0, índiceDePunto);
                         String path = System.getProperty("user.dir") + "/storage/photos";
-                        filename += fileType;
-                        return ok().sendFile(new File(path, filename));
+                        photo.get().getFilenameHash();
+                        File photoToBeSent = new File(path, photo.get().getFilenameHash());
+                        if (!photoToBeSent.exists()) {
+                            // here for the last of sprint 4 where we can't seem to access photos
+                            // but we can access the thumbnails
+                            ObjectNode res = Json.newObject();
+                            String messageKey = "message";
+                            res.put(messageKey, "Did not find the photo..." + photoToBeSent);
+                            return internalServerError(res);
+                        }
+                        return ok().sendFile(photoToBeSent);
                     }
                 }).exceptionally(error -> {
                     try {
@@ -526,6 +532,8 @@ public class PhotoController extends Controller {
      */
     private void saveThumbnail(File originalImage, File thumbFileDestination, String photoContentType) throws IOException {
         BufferedImage bufferedImage = ImageIO.read(originalImage);
+        ImageIO.write(bufferedImage, photoContentType, originalImage);
+
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
         int midWidth = bufferedImage.getWidth() / 2;

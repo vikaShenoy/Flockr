@@ -117,16 +117,14 @@
                         :value="editedDestination.destinationLat"
                         label="Latitude"
                         :rules="latitudeRules"
-                        id="latitude"
-                        @click="checkSubmission"/>
+                        id="latitude"/>
                 <v-text-field
                         v-else
                         v-model="destination.destinationLat"
                         :value="destination.destinationLat"
                         label="Latitude"
                         :rules="latitudeRules"
-                        id="latitude"
-                        @click="checkSubmission"/>
+                        id="latitude"/>
               </v-flex>
               <v-flex xs12 sm12 md6 lg6 xl6>
                 <v-text-field
@@ -135,16 +133,14 @@
                         :value="editedDestination.destinationLon"
                         label="Longitude"
                         :rules="longitudeRules"
-                        id="longitude"
-                        @click="checkSubmission"/>
+                        id="longitude"/>
                 <v-text-field
                         v-else
                         v-model="destination.destinationLon"
                         :value="destination.destinationLon"
                         label="Longitude"
                         :rules="longitudeRules"
-                        id="longitude"
-                        @click="checkSubmission"/>
+                        id="longitude"/>
               </v-flex>
  
             </v-flex>
