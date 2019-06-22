@@ -187,6 +187,12 @@ public class UserRepository {
      */
     public CompletionStage<Void> deleteUserById(Integer userId) {
         return runAsync(() -> {
+            /* Cannot figure out correct annotations to delete profile photo so currently
+               setting profile photo to null first before deleting */
+
+            User userToDelete = User.find.byId(userId);
+            userToDelete.setProfilePhoto(null);
+            userToDelete.update();
             User.find.deleteById(userId);
         }, executionContext);
     }

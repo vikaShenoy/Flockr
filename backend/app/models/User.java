@@ -54,7 +54,7 @@ public class User extends Model {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PersonalPhoto> personalPhotos;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private PersonalPhoto profilePhoto;
 
     @Constraints.Required
