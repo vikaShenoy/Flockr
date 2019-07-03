@@ -5,6 +5,7 @@ import Signup from "./containers/Signup/Signup.vue";
 import Login from "./containers/Login/Login.vue";
 import Profile from "./containers/Profile/Profile.vue";
 import Destinations from "./containers/Destinations/Destinations.vue";
+import OldDestinations from "./containers/Destinations/OldDestinations.vue";
 import SearchTravellers from "./containers/SearchTravellers/SearchTravellers.vue";
 import Trips from "./containers/Trips/Trips.vue";
 import AddTrip from "./containers/AddTrip/AddTrip.vue";
@@ -43,9 +44,14 @@ const routes = [
     beforeEnter: loggedIn
   },
   {
+    path: "/oldDestinations",
+    component: OldDestinations,
+    beforeEnter: loggedIn,
+  },
+  {
     path: "/destinations",
     component: Destinations,
-    beforeEnter: loggedIn,
+    beforeEnter: loggedIn
   },
   {
     path: "/trips",
