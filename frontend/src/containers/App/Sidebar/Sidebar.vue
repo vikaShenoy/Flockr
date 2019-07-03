@@ -17,6 +17,23 @@
       </v-list-tile>
 
 
+      <v-list-tile
+        @click="goBackToOwnAccount()"
+        class="nav-item"
+        v-if="userStore.viewingAsAnotherUser"
+      >
+        <v-list-tile-action>
+          <v-icon class="nav-icon">arrow_back</v-icon>
+        </v-list-tile-action>
+
+        <v-list-tile-content>
+          <v-list-tile-title>Back to own account</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+
+
+
+
     </v-list>
  </v-navigation-drawer>
 </template>
@@ -106,7 +123,7 @@ export default {
           loggedOut: false,
           requiresAdminRole: true
         }
-      ]
+      ],
     };
   },
   methods: {
@@ -123,8 +140,6 @@ export default {
         case "/logout":
           await logout();
           UserStore.methods.logout();
-          localStorage.removeItem("userId");
-          localStorage.removeItem("authToken");
           this.$router.push("/");
           break;
         default:
@@ -161,10 +176,9 @@ export default {
         }
       });
     },
-    /**
-     * Event handler called when nav item has been clicked
-     * @param {string} url - The url of the nav item
-     */
+    goBackToOwnAccount() {
+      UserStore.methods.backToOwnAccount();
+    }
   },
 }
 </script>

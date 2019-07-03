@@ -234,6 +234,11 @@ export default {
         if (!localStorage.getItem("authToken")) {
           localStorage.setItem("authToken", token);
           localStorage.setItem("userId", userId);
+
+          /* Used so if user is admin and wants to view as another user,
+          then we'll know what ID to go back to once they are done
+          */
+          localStorage.setItem("ownUserId", userId);
           this.$router.push(`/profile/${userId}`);
         } else {
           this.clearData();

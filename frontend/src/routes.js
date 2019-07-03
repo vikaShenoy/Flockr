@@ -53,21 +53,9 @@ const routes = [
     beforeEnter: loggedIn
   },
   {
-    // Allows an admin to view other traveller's trips
-    path: "/travellers/:travellerId/trips",
-    component: Trips,
-    beforeEnter: isAdmin
-  },
-  {
     path: "/trips/add",
     component: AddTrip,
     beforeEnter: loggedIn
-  },
-  {
-    // Allows an admin to create trips for other users
-    path: "/travellers/:travellerId/trips/add",
-    component: AddTrip,
-    beforeEnter: isAdmin
   },
   {
     path: "/trips/:id",
@@ -75,19 +63,9 @@ const routes = [
     beforeEnter: loggedIn
   },
   {
-    path: "/travellers/:travellerId/trips/:id",
-    component: Trip,
-    beforeEnter: isAdmin
-  },
-  {
     path: "/trips/:id/edit",
     component: EditTrip,
     beforeEnter: loggedIn
-  },
-  {
-    path: "/travellers/:travellerId/trips/:id/edit",
-    component: EditTrip,
-    beforeEnter: isAdmin
   },
   {
     path: "/admin",
@@ -99,11 +77,6 @@ const routes = [
     component: UserGallery,
     beforeEnter: loggedIn
   },
-  {
-    path: "/users/:userId/destinations",
-    component: Destinations,
-    beforeEnter: loggedIn,
-  }
 ];
 
 const router = new VueRouter({

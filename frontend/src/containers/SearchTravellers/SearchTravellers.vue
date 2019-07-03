@@ -206,21 +206,18 @@
 
 				try {
 					// call the get travellers function passing in the formatted queries
-					this.travellers = await requestTravellers(queries);
-					console.log(this.travellers);
+					const travellers = await requestTravellers(queries);
+					const userId = localStorage.getItem("userId");
 
-					for (let i = 0; i < this.travellers.length; i++) {
-						// Calculate the age from the date of birth and set it in the traveller
-						this.travellers[i].age = moment().diff(moment(this.travellers[i].dateOfBirth), "years");
-
-						const nationalityNames = this.travellers[i].nationalities.map(nationality => nationality.nationalityName);
-						this.travellers[i].nationalities = nationalityNames;
-
-						const travellerTypes = this.travellers[i].travellerTypes.map(travellerType => travellerType.travellerTypeName);
-						this.travellers[i].travellerTypes = travellerTypes;
-
-					}
-				} catch (error) {
+					this.travellers = travellers
+					.filter(traveller => traveller.userId !== Number(userId))
+					.map(traveller => {
+						const age = moment().diff(moment(traveller.dateOfBirth), "years"); 
+						const nationalityNames = traveller.nationalities.map(nationality => nationality.nationalityName);
+						const travellerTypes = traveller.travellerTypes.map(travellerType => travellerType.travellerTypeName);
+						return {...traveller, age, nationalities: nationalityNames, travellerTypes}
+					});
+			} catch (error) {
 					console.log(error);
 				}
 			},

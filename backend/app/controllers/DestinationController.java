@@ -119,7 +119,8 @@ public class DestinationController extends Controller {
         User loggedInUser = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinations()
                 .thenApplyAsync(destinations -> {
-                    if (loggedInUser.getUserId() == userId) {
+                    System.out.println("is the logged in user an admin: " +  loggedInUser.isAdmin());
+                    if (loggedInUser.getUserId() == userId || loggedInUser.isAdmin()) {
                         List<Destination> userDestinations = destinations.stream()
                                 .filter(destination -> {
                                     Integer ownerId = destination.getDestinationOwner();
@@ -151,14 +152,15 @@ public class DestinationController extends Controller {
      */
 
     @With(LoggedIn.class)
-    public CompletionStage<Result> addDestination(Http.Request request) {
+    public CompletionStage<Result> addDestination(int userId, Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
         User user = request.attrs().get(ActionState.USER);
-        boolean createDestForUser = user.isAdmin() && jsonRequest.has("userId");
+
+        if (!user.isAdmin() && user.getUserId() != userId) {
+            return supplyAsync(() -> forbidden("You don't have permission to create the destination"));
+        }
 
         try {
-            int userId = createDestForUser ? jsonRequest.get("userId").asInt() : user.getUserId();
-
             // check that the request has a body
             if (jsonRequest.isNull()) {
                 throw new BadRequestException("No details received, please send a valid request.");
@@ -167,8 +169,8 @@ public class DestinationController extends Controller {
             String destinationName;
             int destinationTypeId;
             int districtId;
-            Double latitude;
-            Double longitude;
+            double latitude;
+            double longitude;
             int countryId;
 
             try {

@@ -8,33 +8,53 @@
           </div>
           <v-text-field label="Search User" color="secondary" @input="searchAdminChange">
           </v-text-field>
-          <v-btn class="logout-user-button" v-on:click.stop="logoutUsersButtonClicked" :disabled="this.selectedUsers.length != 1"
-            @click="logoutUsersButtonClicked">
+
+          <v-btn
+            class="action-button"
+            :disabled="this.selectedUsers.length !== 1"
+            @click="viewAsUserClicked"
+            depressed
+            color="secondary"
+          >
+            View as User
+          </v-btn>
+
+          <v-btn
+            class="action-button"
+            :disabled="this.selectedUsers.length !== 1"
+            @click="logoutUsersButtonClicked"
+            depressed
+            color="secondary"
+          >
             Log Out User
           </v-btn>
 
-          <v-btn class="new-user-button"
-                 @click="signupButtonClicked">
+          <v-btn
+            class="action-button"
+            @click="signupButtonClicked"
+            depressed
+            color="secondary"
+          >
             Sign Up User
           </v-btn>
 
-          <v-btn class="new-user-button"
-                 @click="viewDestinationsButtonClicked"
-                 :disabled="this.selectedUsers.length != 1">
-            View Destinations
-          </v-btn>
-
-          <v-btn class="edit-trips-button" :disabled="this.selectedUsers.length === 0"
-            @click="viewTripsButtonClicked">
-            View Trips
-          </v-btn>
-
-          <v-btn class="edit-user-button" v-on:click.stop="editUserButtonClicked" :disabled="this.selectedUsers.length != 1">
+          <v-btn
+            class="action-button"
+            :disabled="this.selectedUsers.length !== 1"
+            depressed
+            color="secondary"
+          >
             Edit user
           </v-btn>
 
-          <v-btn class="delete-users-button" :disabled="this.selectedUsers.length === 0"
-            @click="showPrompt('Are you sure?', deleteUsersButtonClicked)">
+          <v-btn
+            class="action-button"
+            :disabled="this.selectedUsers.length === 0"
+            @click="showPrompt('Are you sure?', deleteUsersButtonClicked)"
+            depressed
+            color="secondary"
+          >
+          
             Delete users
           </v-btn>
 
@@ -86,6 +106,7 @@ import {endpoint} from "../../../utils/endpoint.js";
 import moment from "moment";
 import SignUp from "../../Signup/Signup";
 import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
+import UserStore from "../../../stores/UserStore";
 
 export default {
   components: {
@@ -200,19 +221,19 @@ export default {
     },
     /**
      * Format the user data to be displayed on the admin panel. 
+     * Also filters user so it doesn't contain self
      * Use a generic avatar untill photos are implemented.
      */
     mapUsers: function() {
-        for (let thing of this.users) {
-            console.log(thing);
-        }
-      return this.users.map((user) => ({
-          avatar: this.photoUrl(user.profilePhoto),
-          userId: user.userId,
-          title: user.firstName + ' ' + user.lastName,
-          subtitle: 'Joined on ' + moment(user.timestamp).format("D/M/YYYY H:mm"),
-          selected: false
-      }));
+      return this.users
+      .filter(user => user.userId !== UserStore.data.userId)
+      .map(user => ({
+        avatar: this.photoUrl(user.profilePhoto),
+        userId: user.userId,
+        title: user.firstName + ' ' + user.lastName,
+        subtitle: 'Joined on ' + moment(user.timestamp).format("D/M/YYYY H:mm"),
+        selected: false
+    }));
     },
     /**
      * Gets the URL of a photo for a user
@@ -220,14 +241,18 @@ export default {
      * @returns {string} the url of the photo
      */
     photoUrl(profilePhoto) {
-        if (profilePhoto != null) {
-            const authToken = localStorage.getItem("authToken");
-            const queryAuthorization = `?Authorization=${authToken}`;
-            return endpoint(`/users/photos/${profilePhoto.photoId}${queryAuthorization}`);
-        } else {
-            return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
-
-        }
+      if (profilePhoto != null) {
+          const authToken = localStorage.getItem("authToken");
+          const queryAuthorization = `?Authorization=${authToken}`;
+          return endpoint(`/users/photos/${profilePhoto.photoId}${queryAuthorization}`);
+      } else {
+          return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
+      }
+    },
+    viewAsUserClicked() {
+      const user = this.users.filter(user => user.userId == this.selectedUsers[0])[0];
+      UserStore.methods.viewAsAnotherUser(user);
+      this.$router.push(`/profile/${user.userId}`);
     }
   },
   props: ["users"],
@@ -271,20 +296,11 @@ export default {
       justify-self: start;
     }
 
-    .edit-trips-button {
+    .action-button {
       justify-self: end;
       width: fit-content;
     }
 
-    .edit-user-button {
-      justify-self: end;
-      width: fit-content;
-    }
-
-    .delete-users-button {
-      justify-self: end;
-      width: fit-content;
-    }
   }
 
   p {
