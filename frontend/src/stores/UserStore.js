@@ -98,7 +98,7 @@ const UserStore = {
       localStorage.removeItem("userId");
       localStorage.removeItem("authToken");
       localStorage.removeItem("ownUserId");
-
+      UserStore.data.viewingAsAnotherUser = false;
     },
     /**
      * Determines if the user's profile has been completed
