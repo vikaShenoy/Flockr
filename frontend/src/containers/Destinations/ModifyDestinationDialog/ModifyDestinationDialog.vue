@@ -162,7 +162,7 @@
       <v-card-actions>
         <v-spacer align="right">
           <v-btn flat color="error" @click="closeDialog">Cancel</v-btn>
-          <v-btn flat color="success" @click="checkSubmission">Submit</v-btn>
+          <v-btn flat color="success" @click="checkSubmission" :loading="formIsLoading">Submit</v-btn>
         </v-spacer>
       </v-card-actions>
     </v-card>
@@ -174,50 +174,22 @@
   import {rules} from "../../../utils/rules"
   import {
     requestDestination,
-    requestDistricts,
     sendAddDestination,
     sendUpdateDestination
   } from "../DestinationsService";
+  import { requestCountries, requestDestinationTypes, requestDistricts } from "./ModifyDestinationDialogService";
 
   import UserStore from "../../../stores/UserStore";
-
   export default {
     name: "add-destination-dialog",
-
     props: {
       dialog: {
         type: Boolean,
         required: true
       },
-      destinationTypes: {
-        type: Array,
-        required: true
-      },
-      countries: {
-        type: Array,
-        required: true
-      },
       editedDestination: {
         type: Object,
-        required: false,
-        destinationId: Number,
-        destinationName: String,
-        destinationType: {
-          destinationTypeName: String,
-          destinationTypeId: Number
-        },
-        destinationDistrict: {
-          districtName: String,
-          districtId: Number
-        },
-        destinationCountry: {
-          countryName: String,
-          countryId: Number
-        },
-        destinationLat: Number,
-        destinationLon: Number,
-        isPublic: Boolean
-        // TODO: Add owner here when ready.
+        required: false
       },
       index: {
         type: Number,
@@ -254,12 +226,18 @@
         longitudeRules: [rules.required, rules.onlyNumbers, rules.absoluteRange(180.0, "longitude")],
         districtDisabled: true,
         editDistrictDisabled: false,
+        countries: [],
         districts: [],
+        destinationTypes: [], 
         locationDisabled: false,
-        isValidForm: false
+        isValidForm: false,
+        formIsLoading: false
       }
     },
-
+    mounted() {
+      this.getCountries();
+      this.getDestinationTypes();
+    },
     computed: {
       destCountry() {
         return this.destination.destinationCountry.countryId;
@@ -268,7 +246,6 @@
         return this.editedDestination.destinationCountry.countryId;
       }
     },
-
     methods: {
       /**
        * Gets the users current geo location if permitted.
@@ -296,6 +273,40 @@
             text: "Not supported by your browser",
             color: "red"
           });
+        }
+      },
+      /**
+       * Gets countries to populate select input with
+       */
+      async getCountries() {
+        try {
+          const countries = await requestCountries();
+          this.countries = countries;
+        } catch (e) {
+          console.log("Could not get countries");
+        }
+      },
+      /**
+       * Gets destination types to populate destination types with and sets it as state
+       */
+      async getDestinationTypes() {
+        try {
+          const destinationTypes = await requestDestinationTypes(); 
+          this.destinationTypes = destinationTypes;
+        } catch (e) {
+          console.log("Could not get destination types");
+        }
+      },
+      /**
+       * Gets districts in a specific country and sets it as state
+       * @param {number} countryId The country of where to get districts from
+       */
+      async getDistricts(countryId) {
+        try {
+          const districts = await requestDistricts(countryId);
+          this.districts = districts;
+        } catch (e) {
+          console.log("Could not get districts");
         }
       },
       /**
@@ -379,6 +390,7 @@
       async checkSubmission() {
         this.$refs.form.validate();
         if (this.isValidForm) {
+          this.formIsLoading = true;
           let destinationInfo;
           if (!this.editMode) {
             destinationInfo = {
@@ -389,15 +401,7 @@
               "latitude": this.destination.destinationLat,
               "longitude": this.destination.destinationLon,
             };
-
-            const userIdUrl = this.$route.params.userId;
-
-            if (userIdUrl) {
-              destinationInfo.userId = userIdUrl;
-            }
-
-
-          } else {
+         } else {
             destinationInfo = {
               "destinationName": this.editedDestination.destinationName,
               "destinationTypeId": this.editedDestination.destinationType.destinationTypeId,
@@ -413,12 +417,12 @@
               this.destination = await sendAddDestination(destinationInfo);
               this.$emit("addNewDestination", this.destination);
               this.closeDialog();
+              this.formIsLoading = false;
             } catch (error) {
-              if (error.message === "Conflict") {
-                error.message = "Destination already exists";
-              }
+              this.formIsLoading = false;
+              const errorMessage = error.message === "Conflict" ? "Destination already exists" : error.message;
               this.$emit("displayMessage", {
-                text: error.message,
+                text: errorMessage,
                 color: "red"
               });
             }
@@ -427,13 +431,10 @@
               await sendUpdateDestination(destinationInfo, this.editedDestination.destinationId);
               const updatedDestination = await requestDestination(this.editedDestination.destinationId);
               this.$emit("updateDestination", updatedDestination, this.index);
+              this.formIsLoading = false;
             } catch (error) {
-              let message;
-              if (error.status === 400) {
-                message = error.response.body.message;
-              } else {
-                message = 'Something went wrong';
-              }
+              const message = error.status === 400 ? error.response.body.message : "Something went wrong";
+              this.formIsLoading = false
               this.$emit("displayMessage", {
                 text: message,
                 color: "red"

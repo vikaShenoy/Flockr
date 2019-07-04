@@ -34,38 +34,37 @@
         :destination="destination"
       />
     </div>
+
+    <v-btn
+      outline
+      color="secondary"
+      id="add-destination-btn"
+      fab
+      @click="$emit('addDestinationClicked')"
+    >
+      <v-icon>add</v-icon>
+    </v-btn>
+
+    <add-destination-dialog>
+      
+    </add-destination-dialog>
   </div>
 
   </v-card>
 </template>
 
 <script>
-import { getYourDestinations } from "./DestinationSidebarService";
 import DestinationSummary from "./DestinationSummary/DestinationSummary";
 
 export default {
+  props: ["yourDestinations", "publicDestinations"],
   components: {
     DestinationSummary
   },
   data() {
     return {
-      viewOption: "your",
-      yourDestinations: null,
-      publicDestinations: null
+      viewOption: "your"
     };
-  },
-  mounted() {
-    this.getYourDestinations();  
-  },
-  methods: {
-    async getYourDestinations() {
-      try {
-        const yourDestinations = await getYourDestinations(); 
-        this.yourDestinations = yourDestinations;
-      } catch (e) {
-        console.log("Could not get your destinations");
-      }
-    }
   },
   computed: {
     shouldShowSpinner() {
@@ -78,8 +77,15 @@ export default {
     getDestinationsList() {
       return this.viewOption === "your" ? this.yourDestinations : this.publicDestinations;
     }
-  } 
+  },
+  watch: {
+    viewOption(newViewOption) {
+      this.$emit("viewOptionChanged", newViewOption); 
+    }
+  }
+  
 }
+
 </script>
 
 
@@ -134,6 +140,12 @@ export default {
       display: flex;
       height: 100%;
       flex-direction: column;
+    }
+
+    #add-destination-btn {
+      position: absolute;
+      bottom: 0;
+      right: 0;
     }
   }
 </style>

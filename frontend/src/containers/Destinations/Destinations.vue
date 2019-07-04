@@ -3,7 +3,20 @@
     <div id="map">
       <DestinationMap />
     </div>
-    <DestinationSidebar />
+    <DestinationSidebar 
+      :yourDestinations="yourDestinations"
+      :publicDestinations="publicDestinations"
+      v-on:viewOptionChanged="viewOptionChanged"
+      v-on:addDestinationClicked="addDestinationClicked"
+    />
+
+    <ModifyDestinationDialog
+      :dialog="showCreateDestDialog"
+      :editMode="false"
+      v-on:addNewDestination="addNewDestination"
+    >
+
+    </ModifyDestinationDialog>
 
   </div>
 
@@ -13,12 +26,69 @@
 <script>
 import DestinationSidebar from "./DestinationSidebar/DestinationSidebar";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
+import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
+import { getYourDestinations, getPublicDestinations } from "./DestinationsService";
 
 export default {
   components: {
     DestinationSidebar,
-    DestinationMap 
+    DestinationMap,
+    ModifyDestinationDialog
   },
+  data() {
+    return {
+      yourDestinations: null,
+      publicDestinations: null,
+      showCreateDestDialog: false,
+    };
+  },
+  mounted() {
+    this.getYourDestinations();
+  },
+  methods: {
+    /**
+     * Gets destinations for the logged in user
+     */
+    async getYourDestinations() {
+      try {
+        const yourDestinations = await getYourDestinations(); 
+        this.yourDestinations = yourDestinations;
+      } catch (e) {
+        console.log("Could not get your destinations");
+      }
+    },
+    /**
+     * Gets all public destinations
+     */
+    async getPublicDestinations() {
+      try {
+        const publicDestinations = await getPublicDestinations();
+        this.publicDestinations = publicDestinations;
+      } catch (e) {
+        console.log("Could not get public destinations");
+      }
+    },
+    /**
+     * Emit event from sidebar indicating that the user has swapped the type of
+     * destinations to view
+     */
+    viewOptionChanged(viewOption) {
+      // If user wants to load public destinations and they haven't been loaded, then load
+      if (viewOption === "public" && !this.publicDestinations) {
+        console.log("Did I make it here");
+        this.getPublicDestinations();
+      }
+    },
+    /**
+     * Shows create destination dialog
+     */
+    addDestinationClicked() {
+      this.showCreateDestDialog = true;      
+    },
+    addNewDestination(destination) {
+      this.yourDestinations.push(destination); 
+    }
+  }
 }
 </script>
 
