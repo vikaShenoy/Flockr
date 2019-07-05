@@ -44,10 +44,6 @@
     >
       <v-icon>add</v-icon>
     </v-btn>
-
-    <add-destination-dialog>
-      
-    </add-destination-dialog>
   </div>
 
   </v-card>

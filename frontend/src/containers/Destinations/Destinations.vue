@@ -1,9 +1,13 @@
 <template>
   <div id="destinations">
     <div id="map">
-      <DestinationMap />
+      <DestinationMap 
+        :destinations="getDestinationsCurrentlyViewing()"
+      />
     </div>
+
     <DestinationSidebar 
+      :viewOption="viewOption"
       :yourDestinations="yourDestinations"
       :publicDestinations="publicDestinations"
       v-on:viewOptionChanged="viewOptionChanged"
@@ -14,6 +18,7 @@
       :dialog="showCreateDestDialog"
       :editMode="false"
       v-on:addNewDestination="addNewDestination"
+      v-on:dialogChanged="addDestDialogChanged"
     >
 
     </ModifyDestinationDialog>
@@ -40,6 +45,7 @@ export default {
       yourDestinations: null,
       publicDestinations: null,
       showCreateDestDialog: false,
+      viewOption: "your"
     };
   },
   mounted() {
@@ -73,6 +79,7 @@ export default {
      * destinations to view
      */
     viewOptionChanged(viewOption) {
+      this.viewOption = viewOption;
       // If user wants to load public destinations and they haven't been loaded, then load
       if (viewOption === "public" && !this.publicDestinations) {
         console.log("Did I make it here");
@@ -87,6 +94,14 @@ export default {
     },
     addNewDestination(destination) {
       this.yourDestinations.push(destination); 
+    },
+    addDestDialogChanged(dialogValue) {
+      this.showCreateDestDialog = dialogValue; 
+    },
+    getDestinationsCurrentlyViewing() {
+      const destinations = this.viewOption === "your" ? this.yourDestinations : this.publicDestinations;
+      if (!destinations) return [];
+      return destinations;
     }
   }
 }
