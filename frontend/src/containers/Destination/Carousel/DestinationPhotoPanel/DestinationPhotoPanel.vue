@@ -24,8 +24,8 @@
 </template>
 
 <script>
-  import DestinationPhoto from "../../../../../components/DestinationPhoto/DestinationPhoto";
-  import UserStore from "../../../../../stores/UserStore";
+  import DestinationPhoto from "../../../../components/DestinationPhoto/DestinationPhoto";
+  import UserStore from "../../../../stores/UserStore";
   export default {
     name: "destination-photo-panel",
     components: {DestinationPhoto},

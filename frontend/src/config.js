@@ -1,7 +1,6 @@
 const env = process.env.NODE_ENV;
 const REMOTE_URL = "http://csse-s302g5.canterbury.ac.nz";
-// My own key for now until we get one from tutors
-const GOOGLE_MAPS_KEY = "AIzaSyDPP4vfOEfKA0ks04NxKvy746UfOAawDRE";
+const GOOGLE_MAPS_KEY = "AIzaSyDCyC_ON0GgSmJIfPlL7oke5PZgbR8TLbg";
 
 let backendUrl = "";
 
@@ -19,5 +18,5 @@ switch (env) {
 
 export default {
   backendUrl,
-  GOOGLE_MAPS_KEY
+  GOOGLE_MAPS_KEY,
 };

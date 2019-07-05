@@ -4,6 +4,7 @@ import Home from "./containers/Home/Home.vue";
 import Signup from "./containers/Signup/Signup.vue";
 import Login from "./containers/Login/Login.vue";
 import Profile from "./containers/Profile/Profile.vue";
+import Destination from "./containers/Destination/Destination";
 import Destinations from "./containers/Destinations/Destinations.vue";
 import OldDestinations from "./containers/Destinations/OldDestinations.vue";
 import SearchTravellers from "./containers/SearchTravellers/SearchTravellers.vue";
@@ -109,6 +110,12 @@ const routes = [
     path: "/users/:userId/destinations",
     component: Destinations,
     beforeEnter: loggedIn,
+  },
+  {
+    path: "/destinations/:destinationId",
+    component: Destination,
+    beforeEnter: loggedIn
+    
   }
 ];
 

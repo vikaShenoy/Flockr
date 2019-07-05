@@ -3,8 +3,20 @@
     id="destination-sidebar"
     :elevation="20"
   >
+
+
   <div id="title">
     <h2>Destinations</h2>
+    <v-btn
+      flat
+      color="secondary"
+      id="add-destination-btn"
+      @click="$emit('addDestinationClicked')"
+    >
+      <v-icon>add</v-icon>
+    </v-btn>
+
+
    <v-btn-toggle v-model="viewOption" flat id="view-option" mandatory>
       <v-btn class="option" value="your" v-bind:class="{'not-selected': viewOption !== 'your'}">
         Your Destinations
@@ -35,15 +47,6 @@
       />
     </div>
 
-    <v-btn
-      outline
-      color="secondary"
-      id="add-destination-btn"
-      fab
-      @click="$emit('addDestinationClicked')"
-    >
-      <v-icon>add</v-icon>
-    </v-btn>
   </div>
 
   </v-card>
@@ -140,8 +143,8 @@ export default {
 
     #add-destination-btn {
       position: absolute;
-      bottom: 0;
-      right: 0;
+      margin-top: 13px;
+      left: 0;
     }
   }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="destination-summary">
+  <div class="destination-summary" @click="$router.push(`/destinations/${destination.destinationId}`)">
     <v-avatar> <img
           src="https://vuetifyjs.com/apple-touch-icon-180x180.png"
           alt="avatar"

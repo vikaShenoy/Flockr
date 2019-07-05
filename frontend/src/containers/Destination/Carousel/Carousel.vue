@@ -5,7 +5,7 @@
       :key="photo.photoId"
     >
       <v-img
-        :src="photo.thumbEndpoint"
+        :src="photo.endpoint"
         class="dest-image"
         alt="Some Image"
         @click="openPhotoDialog(photo, index)"/>
@@ -50,7 +50,7 @@ import DestinationPhotoPanel from "./DestinationPhotoPanel/DestinationPhotoPanel
 import AddPhotoDialog from "./AddDestinationPhotoDialog/AddDestinationPhotoDialog";
 import defaultDestinationPhoto from './defaultDestinationPhoto.png';
 import * as superagent from "superagent";
-import {endpoint} from "../../../../utils/endpoint";
+import {endpoint} from "../../../utils/endpoint";
 
 export default {
   components: {AddPhotoDialog, DestinationPhotoPanel},

@@ -1,159 +1,190 @@
 <template>
   <v-dialog
-          v-model="dataDialog"
-          width="60%"
-          persistent>
+    v-model="dataDialog"
+    width="60%"
+    persistent
+  >
     <v-card>
       <v-card-title class="primary title">
-        <v-layout v-if="editMode" row>
+        <v-layout row>
           <v-spacer align="center">
             <h2 class="light-text">
               <v-icon large>location_on</v-icon>
-              Edit Destination
-            </h2>
-          </v-spacer>
-        </v-layout>
-        <v-layout v-else row>
-          <v-spacer align="center">
-            <h2 class="light-text">
-              <v-icon large>location_on</v-icon>
-              Add Destination
+              {{ editMode ? "Edit Destination" : "Add Destination" }}
             </h2>
           </v-spacer>
         </v-layout>
       </v-card-title>
       <v-card-text>
         <v-form
-                ref="form"
-                v-model="isValidForm">
+          ref="form"
+          v-model="isValidForm"
+        >
           <v-flex grid-list>
             <!-- Destination Name -->
-            <v-flex xs12 sm10 md8 lg6 xl4 offset-xs0 offset-sm1 offset-md2 offset-lg3 offset-xl4>
+            <v-flex
+              xs12
+              sm10
+              md8
+              lg6
+              xl4
+              offset-xs0
+              offset-sm1
+              offset-md2
+              offset-lg3
+              offset-xl4
+            >
               <v-text-field
-                      v-if="editMode"
-                      v-model="editedDestination.destinationName"
-                      :value="editedDestination.destinationName"
-                      :items="destinationTypes"
-                      label="Name"
-                      :rules="requiredRule"/>
-              <v-text-field
-                      v-else
-                      v-model="destination.destinationName"
-                      :value="destination.destinationName"
-                      :items="destinationTypes"
-                      label="Name"
-                      :rules="requiredRule"/>
+                v-model="destination.destinationName"
+                :value="destination.destinationName"
+                :items="destinationTypes"
+                label="Name"
+                :rules="requiredRule"
+              />
             </v-flex>
 
-            <v-flex xl4 lg6 md8 sm10 xs12 offset-xl4 offset-lg3 offset-md2 offset-sm1 offset-xs0>
+            <v-flex
+              xl4
+              lg6
+              md8
+              sm10
+              xs12
+              offset-xl4
+              offset-lg3
+              offset-md2
+              offset-sm1
+              offset-xs0
+            >
               <v-select
-                      v-if="editMode"
-                      v-model="editedDestination.destinationType.destinationTypeId"
-                      :value="editedDestination.destinationType.destinationTypeId"
-                      :items="destinationTypes"
-                      item-value="destinationTypeId"
-                      item-text="destinationTypeName"
-                      label="Type"
-                      :rules="requiredRule"/>
-              <v-select
-                      v-else
-                      v-model="destination.destinationType.destinationTypeId"
-                      :value="destination.destinationType.destinationTypeId"
-                      :items="destinationTypes"
-                      item-value="destinationTypeId"
-                      item-text="destinationTypeName"
-                      label="Type"
-                      :rules="requiredRule"/>
+                v-model="destination.destinationType.destinationTypeId"
+                :value="destination.destinationType.destinationTypeId"
+                :items="destinationTypes"
+                item-value="destinationTypeId"
+                item-text="destinationTypeName"
+                label="Type"
+                :rules="requiredRule"
+              />
+             
             </v-flex>
 
-            <v-flex xl4 lg6 md8 sm10 xs12 offset-xl4 offset-lg3 offset-md2 offset-sm1 offset-xs0>
+            <v-flex
+              xl4
+              lg6
+              md8
+              sm10
+              xs12
+              offset-xl4
+              offset-lg3
+              offset-md2
+              offset-sm1
+              offset-xs0
+            >
               <v-select
-                      v-if="editMode"
-                      v-model="editedDestination.destinationCountry.countryId"
-                      :value="editedDestination.destinationCountry.countryId"
-                      :items="countries"
-                      item-value="countryId"
-                      item-text="countryName"
-                      label="Country"
-                      :rules="requiredRule"/>
-              <v-select
-                      v-else
-                      v-model="destination.destinationCountry.countryId"
-                      :value="destination.destinationCountry.countryId"
-                      :items="countries"
-                      item-value="countryId"
-                      item-text="countryName"
-                      label="Country"
-                      :rules="requiredRule"/>
+                v-model="destination.destinationCountry.countryId"
+                :value="destination.destinationCountry.countryId"
+                :items="countries"
+                item-value="countryId"
+                item-text="countryName"
+                label="Country"
+                :rules="requiredRule"
+              />
             </v-flex>
 
-            <v-flex xl4 lg6 md8 sm10 xs12 offset-xl4 offset-lg3 offset-md2 offset-sm1 offset-xs0>
+            <v-flex
+              xl4
+              lg6
+              md8
+              sm10
+              xs12
+              offset-xl4
+              offset-lg3
+              offset-md2
+              offset-sm1
+              offset-xs0
+            >
               <v-select
-                      v-if="editMode"
-                      v-model="editedDestination.destinationDistrict.districtId"
-                      :value="editedDestination.destinationDistrict.districtId"
-                      :items="districts"
-                      item-value="districtId"
-                      item-text="districtName"
-                      :disabled="editDistrictDisabled"
-                      label="District"
-                      :rules="requiredRule"/>
-              <v-select
-                      v-else
-                      v-model="destination.destinationDistrict.districtId"
-                      :value="destination.destinationDistrict.districtId"
-                      :items="districts"
-                      item-value="districtId"
-                      item-text="districtName"
-                      :disabled="districtDisabled"
-                      label="District"
-                      :rules="requiredRule"/>
+                v-model="destination.destinationDistrict.districtId"
+                :value="destination.destinationDistrict.districtId"
+                :items="districts"
+                item-value="districtId"
+                item-text="districtName"
+                :disabled="!destination.destinationCountry.countryId"
+                label="District"
+                :rules="requiredRule"
+              />
             </v-flex>
-            <v-flex xl4 lg6 md8 sm10 xs12 offset-xl4 offset-lg3 offset-md2 offset-sm1 offset-xs0 row>
-              <v-flex xs12 sm12 md6 lg6 xl6>
+            <v-flex
+              xl4
+              lg6
+              md8
+              sm10
+              xs12
+              offset-xl4
+              offset-lg3
+              offset-md2
+              offset-sm1
+              offset-xs0
+              row
+            >
+              <v-flex
+                xs12
+                sm12
+                md6
+                lg6
+                xl6
+              >
                 <v-text-field
-                        v-if="editMode"
-                        v-model="editedDestination.destinationLat"
-                        :value="editedDestination.destinationLat"
-                        label="Latitude"
-                        :rules="latitudeRules"
-                        id="latitude"/>
-                <v-text-field
-                        v-else
-                        v-model="destination.destinationLat"
-                        :value="destination.destinationLat"
-                        label="Latitude"
-                        :rules="latitudeRules"
-                        id="latitude"/>
+                  v-model="destination.destinationLat"
+                  :value="destination.destinationLat"
+                  label="Latitude"
+                  :rules="latitudeRules"
+                  id="latitude"
+                />
               </v-flex>
-              <v-flex xs12 sm12 md6 lg6 xl6>
+              <v-flex
+                xs12
+                sm12
+                md6
+                lg6
+                xl6
+              >
                 <v-text-field
-                        v-if="editMode"
-                        v-model="editedDestination.destinationLon"
-                        :value="editedDestination.destinationLon"
-                        label="Longitude"
-                        :rules="longitudeRules"
-                        id="longitude"/>
-                <v-text-field
-                        v-else
-                        v-model="destination.destinationLon"
-                        :value="destination.destinationLon"
-                        label="Longitude"
-                        :rules="longitudeRules"
-                        id="longitude"/>
+                  v-model="destination.destinationLon"
+                  :value="destination.destinationLon"
+                  label="Longitude"
+                  :rules="longitudeRules"
+                  id="longitude"
+                />
               </v-flex>
- 
+
             </v-flex>
 
-            <v-flex xl4 lg6 md8 sm10 xs12 offset-xl4 offset-lg3 offset-md2 offset-sm1 offset-xs0>
+            <v-flex
+              xl4
+              lg6
+              md8
+              sm10
+              xs12
+              offset-xl4
+              offset-lg3
+              offset-md2
+              offset-sm1
+              offset-xs0
+            >
               <v-spacer align="center">
                 <v-btn
-                        flat
-                        color="secondary"
-                        @click="getUserLocation">Use My Current Location
+                  flat
+                  color="secondary"
+                  @click="getUserLocation"
+                >Use My Current Location
                 </v-btn>
               </v-spacer>
-              <v-switch color="secondary" label="Set to public" v-if="editMode" v-model="editedDestination.isPublic"></v-switch>
+              <v-switch
+                color="secondary"
+                label="Set to public"
+                v-if="editMode"
+                v-model="destination.isPublic"
+              ></v-switch>
             </v-flex>
 
           </v-flex>
@@ -161,8 +192,17 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer align="right">
-          <v-btn flat color="error" @click="closeDialog">Cancel</v-btn>
-          <v-btn flat color="success" @click="checkSubmission" :loading="formIsLoading">Submit</v-btn>
+          <v-btn
+            flat
+            color="error"
+            @click="closeDialog"
+          >Cancel</v-btn>
+          <v-btn
+            flat
+            color="success"
+            @click="checkSubmission"
+            :loading="formIsLoading"
+          >Submit</v-btn>
         </v-spacer>
       </v-card-actions>
     </v-card>
@@ -170,41 +210,164 @@
 </template>
 
 <script>
+import { rules } from "../../../utils/rules";
+import {
+  requestDestination,
+  sendAddDestination,
+  sendUpdateDestination
+} from "../DestinationsService";
+import {
+  requestCountries,
+  requestDestinationTypes,
+  requestDistricts
+} from "./ModifyDestinationDialogService";
 
-  import {rules} from "../../../utils/rules"
-  import {
-    requestDestination,
-    sendAddDestination,
-    sendUpdateDestination
-  } from "../DestinationsService";
-  import { requestCountries, requestDestinationTypes, requestDistricts } from "./ModifyDestinationDialogService";
+import ErrorSnackbar from "../../../components/Snackbars/ErrorSnackbar";
 
-  import UserStore from "../../../stores/UserStore";
-  export default {
-    name: "add-destination-dialog",
-    props: {
-      dialog: {
-        type: Boolean,
-        required: true
+import UserStore from "../../../stores/UserStore";
+export default {
+  name: "add-destination-dialog",
+  props: {
+    dialog: {
+      type: Boolean,
+      required: true
+    },
+    destinationToEdit: {
+      type: Object,
+      required: false
+    },
+    editMode: {
+      type: Boolean,
+      required: true
+    }
+  },
+  data() {
+    return {
+      dataDialog: false,
+      destination: {
+        destinationName: "",
+        destinationType: {
+          destinationTypeId: null,
+          destinationTypeName: null
+        },
+        destinationDistrict: {
+          districtId: null,
+          districtName: null
+        },
+        destinationLat: "",
+        destinationLon: "",
+        destinationCountry: {
+          countryId: null,
+          countryName: null
+        }
       },
-      editedDestination: {
-        type: Object,
-        required: false
-      },
-      index: {
-        type: Number,
-        required: false
-      },
-      editMode: {
-        type: Boolean,
-        required: true
+      requiredRule: [rules.required],
+      latitudeRules: [
+        rules.required,
+        rules.onlyNumbers,
+        rules.absoluteRange(90.0, "latitude")
+      ],
+      longitudeRules: [
+        rules.required,
+        rules.onlyNumbers,
+        rules.absoluteRange(180.0, "longitude")
+      ],
+      districtDisabled: true,
+      editDistrictDisabled: false,
+      countries: [],
+      districts: [],
+      destinationTypes: [],
+      locationDisabled: false,
+      isValidForm: false,
+      formIsLoading: false
+    };
+  },
+  mounted() {
+    console.log(this.snackbarModel);
+    this.getCountries();
+    this.getDestinationTypes();
+
+    if (this.editMode) {
+      // Shallow copy to not overwrite what is currently being showed
+      this.destination = { ...this.destinationToEdit };
+    }
+  },
+  computed: {
+    destCountry() {
+      return this.destination.destinationCountry.countryId;
+    }
+  },
+  methods: {
+    /**
+     * Gets the users current geo location if permitted.
+     */
+    getUserLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            this.destination.destinationLat = position.coords.latitude;
+            this.destination.destinationLon = position.coords.longitude;
+          },
+          error => {
+            this.$emit("displayMessage", {
+              show: true,
+              text: error.message,
+              color: "red"
+            });
+          }
+        );
+      } else {
+        this.$emit("displayMessage", {
+          show: true,
+          text: "Not supported by your browser",
+          color: "red"
+        });
       }
     },
-
-    data() {
-      return {
-        dataDialog: false,
-        destination: {
+    /**
+     * Gets countries to populate select input with
+     */
+    async getCountries() {
+      try {
+        const countries = await requestCountries();
+        this.countries = countries;
+      } catch (e) {
+        this.showError("Could not get countries");
+      }
+    },
+    /**
+     * Gets destination types to populate destination types with and sets it as state
+     */
+    async getDestinationTypes() {
+      try {
+        const destinationTypes = await requestDestinationTypes();
+        this.destinationTypes = destinationTypes;
+      } catch (e) {
+        
+      }
+    },
+    /**
+     * Gets districts in a specific country and sets it as state
+     * @param {number} countryId The country of where to get districts from
+     */
+    async getDistricts(countryId) {
+      try {
+        const districts = await requestDistricts(countryId);
+        this.districts = districts;
+      } catch (e) {
+        this.showError("Could not get districts");
+      }
+    },
+    showError(errorMessage) {
+      this.$emit("showError", errorMessage); 
+    },
+    /**
+     * Closes the dialog window and resets all fields to default values.
+     */
+    closeDialog() {
+      this.dataDialog = false;
+      if (!this.editMode) {
+        this.destination = {
           destinationName: "",
           destinationType: {
             destinationTypeId: null,
@@ -220,266 +383,125 @@
             countryId: null,
             countryName: null
           }
-        },
-        requiredRule: [rules.required],
-        latitudeRules: [rules.required, rules.onlyNumbers, rules.absoluteRange(90.0, "latitude")],
-        longitudeRules: [rules.required, rules.onlyNumbers, rules.absoluteRange(180.0, "longitude")],
-        districtDisabled: true,
-        editDistrictDisabled: false,
-        countries: [],
-        districts: [],
-        destinationTypes: [], 
-        locationDisabled: false,
-        isValidForm: false,
-        formIsLoading: false
+        };
+        this.$refs.form.reset();
       }
+      this.$refs.form.resetValidation();
     },
-    mounted() {
-      this.getCountries();
-      this.getDestinationTypes();
-    },
-    computed: {
-      destCountry() {
-        return this.destination.destinationCountry.countryId;
-      },
-      editDestCountry() {
-        return this.editedDestination.destinationCountry.countryId;
-      }
-    },
-    methods: {
-      /**
-       * Gets the users current geo location if permitted.
-       */
-      getUserLocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition((position) => {
-            if (this.editMode) {
-              this.editedDestination.destinationLat = position.coords.latitude;
-              this.editedDestination.destinationLon = position.coords.longitude;
-            } else {
-              this.destination.destinationLat = position.coords.latitude;
-              this.destination.destinationLon = position.coords.longitude;
-            }
-          }, (error) => {
-            this.$emit("displayMessage", {
-              show: true,
-              text: error.message,
-              color: "red"
-            });
-          });
-        } else {
-          this.$emit("displayMessage", {
-            show: true,
-            text: "Not supported by your browser",
-            color: "red"
-          });
+    /**
+     * Called when the submit button is selected.
+     * Checks the form is valid and sends the request to add a new destination if so.
+     */
+    async checkSubmission() {
+      this.$refs.form.validate();
+      if (this.isValidForm) {
+        this.formIsLoading = true;
+        const destinationInfo = {
+          destinationName: this.destination.destinationName,
+          destinationTypeId: this.destination.destinationType.destinationTypeId,
+          countryId: this.destination.destinationCountry.countryId,
+          districtId: this.destination.destinationDistrict.districtId,
+          latitude: this.destination.destinationLat,
+          longitude: this.destination.destinationLon
+        };
+
+        // Extra field that is only valid for editing destinations
+        if (this.editMode) {
+          destinationInfo.isPublic = this.destination.isPublic;
         }
-      },
-      /**
-       * Gets countries to populate select input with
-       */
-      async getCountries() {
-        try {
-          const countries = await requestCountries();
-          this.countries = countries;
-        } catch (e) {
-          console.log("Could not get countries");
-        }
-      },
-      /**
-       * Gets destination types to populate destination types with and sets it as state
-       */
-      async getDestinationTypes() {
-        try {
-          const destinationTypes = await requestDestinationTypes(); 
-          this.destinationTypes = destinationTypes;
-        } catch (e) {
-          console.log("Could not get destination types");
-        }
-      },
-      /**
-       * Gets districts in a specific country and sets it as state
-       * @param {number} countryId The country of where to get districts from
-       */
-      async getDistricts(countryId) {
-        try {
-          const districts = await requestDistricts(countryId);
-          this.districts = districts;
-        } catch (e) {
-          console.log("Could not get districts");
-        }
-      },
-      /**
-       * Called when the country is selected.
-       * Requests the district for the given country.
-       */
-      async onCountryChanged() {
+
         if (!this.editMode) {
-          this.destination.destinationDistrict.districtName = null;
-          this.destination.destinationDistrict.districtId = null;
-        } else {
-          this.$emit("editCountryChanged", this.index);
-        }
-        if (this.editMode && [undefined, null].includes(this.editedDestination.destinationCountry.countryId)) {
-          this.editDistrictDisabled = true;
-        } else if (!this.editMode && [undefined, null].includes(this.destination.destinationCountry.countryId)) {
-          this.districtDisabled = true;
+          try {
+            this.destination = await sendAddDestination(destinationInfo);
+            this.$emit("addNewDestination", this.destination);
+            this.closeDialog();
+            this.formIsLoading = false;
+          } catch (error) {
+            this.formIsLoading = false;
+            const errorMessage =
+              error.message === "Conflict"
+                ? "Destination already exists"
+                : error.message;
+            this.showError(errorMessage);
+          }
         } else {
           try {
-            if (this.editMode) {
-              this.districts = await requestDistricts(this.editedDestination.destinationCountry.countryId);
-              this.editDistrictDisabled = false;
-            } else {
-              this.districts = await requestDistricts(this.destination.destinationCountry.countryId);
-              this.districtDisabled = false;
-            }
+            await sendUpdateDestination(
+              destinationInfo,
+              this.destination.destinationId
+            );
+            const updatedDestination = await requestDestination(
+              this.destination.destinationId
+            );
+            this.$emit("updateDestination", updatedDestination);
+            this.formIsLoading = false;
           } catch (error) {
-            this.$emit("displayMessage", {
-              show: true,
-              text: error.message,
-              color: "red"
-            });
+            const message =
+              error.status === 400
+                ? error.response.body.message
+                : "Something went wrong";
+            this.formIsLoading = false;
+            this.showError(message);
           }
         }
-      },
-      /**
-       * Called when the dialog prop is modified.
-       * Updates the dataDialog to match the dialog prop.
-       */
-      onDialogChanged() {
-        this.dataDialog = this.dialog;
-      },
-      /**
-       * Called when the dataDialog object is modified.
-       * Emits an event to the parent to notify it of the new value of dataDialog.
-       */
-      onDataDialogChanged() {
-        this.$emit("dialogChanged", this.dataDialog);
-      },
-      /**
-       * Closes the dialog window and resets all fields to default values.
-       */
-      closeDialog() {
-        this.dataDialog = false;
-        if (!this.editMode) {
-          this.destination = {
-            destinationName: "",
-            destinationType: {
-              destinationTypeId: null,
-              destinationTypeName: null
-            },
-            destinationDistrict: {
-              districtId: null,
-              districtName: null
-            },
-            destinationLat: "",
-            destinationLon: "",
-            destinationCountry: {
-              countryId: null,
-              countryName: null
-            }
-          };
-          this.$refs.form.reset();
-        }
-        this.$refs.form.resetValidation()
-      },
-      /**
-       * Called when the submit button is selected.
-       * Checks the form is valid and sends the request to add a new destination if so.
-       */
-      async checkSubmission() {
-        this.$refs.form.validate();
-        if (this.isValidForm) {
-          this.formIsLoading = true;
-          let destinationInfo;
-          if (!this.editMode) {
-            destinationInfo = {
-              "destinationName": this.destination.destinationName,
-              "destinationTypeId": this.destination.destinationType.destinationTypeId,
-              "countryId": this.destination.destinationCountry.countryId,
-              "districtId": this.destination.destinationDistrict.districtId,
-              "latitude": this.destination.destinationLat,
-              "longitude": this.destination.destinationLon,
-            };
-         } else {
-            destinationInfo = {
-              "destinationName": this.editedDestination.destinationName,
-              "destinationTypeId": this.editedDestination.destinationType.destinationTypeId,
-              "countryId": this.editedDestination.destinationCountry.countryId,
-              "districtId": this.editedDestination.destinationDistrict.districtId,
-              "latitude": this.editedDestination.destinationLat,
-              "longitude": this.editedDestination.destinationLon,
-              "isPublic": this.editedDestination.isPublic
-            };
-          }
-          if (!this.editMode) {
-            try {
-              this.destination = await sendAddDestination(destinationInfo);
-              this.$emit("addNewDestination", this.destination);
-              this.closeDialog();
-              this.formIsLoading = false;
-            } catch (error) {
-              this.formIsLoading = false;
-              const errorMessage = error.message === "Conflict" ? "Destination already exists" : error.message;
-              this.$emit("displayMessage", {
-                text: errorMessage,
-                color: "red"
-              });
-            }
-          } else {
-            try {
-              await sendUpdateDestination(destinationInfo, this.editedDestination.destinationId);
-              const updatedDestination = await requestDestination(this.editedDestination.destinationId);
-              this.$emit("updateDestination", updatedDestination, this.index);
-              this.formIsLoading = false;
-            } catch (error) {
-              const message = error.status === 400 ? error.response.body.message : "Something went wrong";
-              this.formIsLoading = false
-              this.$emit("displayMessage", {
-                text: message,
-                color: "red"
-              });
-            }
-          }
-        }
-      }
-    },
-
-    watch: {
-      dialog: {
-        handler: "onDialogChanged",
-        immediate: true
-      },
-      dataDialog: {
-        handler: "onDataDialogChanged",
-        immediate: true
-      },
-      destCountry: {
-        handler: "onCountryChanged",
-        immediate: true
-      },
-      editDestCountry: {
-        handler: "onCountryChanged",
-        immediate: true
       }
     }
+  },
 
+  watch: {
+    /**
+     * Called when the dialog prop is modified.
+     * Updates the dataDialog to match the dialog prop.
+     * Also updates destination to reflect what is currently being shown
+     */
+    dialog() {
+      if (this.editMode) {
+        // Deep clones what is being sent in
+        this.destination = JSON.parse(JSON.stringify(this.destinationToEdit));
+      }
+      this.dataDialog = this.dialog;
+    },
+    /**
+     * Called when the dataDialog object is modified.
+     * Emits an event to the parent to notify it of the new value of dataDialog.
+     */
+    dataDialog() {
+      this.$emit("dialogChanged", this.dataDialog);
+    },
+    /**
+     * Called when the country is selected.
+     * Requests the district for the given country.
+     */
+    async destCountry() {
+      try {
+        this.districts = await requestDistricts(
+          this.destination.destinationCountry.countryId
+        );
+      } catch (error) {
+        this.$emit("displayMessage", {
+          show: true,
+          text: error.message,
+          color: "red"
+        });
+      }
+    },
   }
+};
 </script>
 
 <style lang="scss" scoped>
-  @import "../../../styles/_variables.scss";
-  @import "../../../styles/_defaults.scss";
+@import "../../../styles/_variables.scss";
+@import "../../../styles/_defaults.scss";
 
-  .light-text {
-    -webkit-text-fill-color: $darker-white;
-  }
+.light-text {
+  -webkit-text-fill-color: $darker-white;
+}
 
-  #latitude {
-    padding: 0 10px 0 0;
-  }
+#latitude {
+  padding: 0 10px 0 0;
+}
 
-  #longitude {
-    padding: 0 0 0 10px;
-  }
+#longitude {
+  padding: 0 0 0 10px;
+}
 </style>
