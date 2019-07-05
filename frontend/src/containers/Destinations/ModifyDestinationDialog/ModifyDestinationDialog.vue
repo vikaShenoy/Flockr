@@ -219,6 +219,7 @@ import {
 import {
   requestCountries,
   requestDestinationTypes,
+  requestTravellerTypes,
   requestDistricts
 } from "./ModifyDestinationDialogService";
 
@@ -277,15 +278,16 @@ export default {
       countries: [],
       districts: [],
       destinationTypes: [],
+      travellerTypes: [],
       locationDisabled: false,
       isValidForm: false,
       formIsLoading: false
     };
   },
   mounted() {
-    console.log(this.snackbarModel);
     this.getCountries();
     this.getDestinationTypes();
+    this.getTravellerTypes();
 
     if (this.editMode) {
       // Shallow copy to not overwrite what is currently being showed
@@ -356,6 +358,17 @@ export default {
         this.districts = districts;
       } catch (e) {
         this.showError("Could not get districts");
+      }
+    },
+    /**
+     * Gets all traveller types
+     */
+    async getTravellerTypes() {
+      try {
+        const travellerTypes = await requestTravellerTypes();
+        this.travellerTypes = travellerTypes;
+      } catch (e) {
+        this.showError("Could not get traveller types");
       }
     },
     showError(errorMessage) {

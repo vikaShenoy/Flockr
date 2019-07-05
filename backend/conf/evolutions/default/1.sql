@@ -71,11 +71,29 @@ create table destination (
   constraint pk_destination primary key (destination_id)
 );
 
+create table destination_traveller_type (
+  destination_destination_id    integer not null,
+  traveller_type_traveller_type_id integer not null,
+  constraint pk_destination_traveller_type primary key (destination_destination_id,traveller_type_traveller_type_id)
+);
+
 create table destination_photo (
   destination_photo_id          integer auto_increment not null,
   destination_destination_id    integer,
   personal_photo_photo_id       integer,
   constraint pk_destination_photo primary key (destination_photo_id)
+);
+
+create table destination_proposal (
+  destination_proposal_id       integer auto_increment not null,
+  destination_destination_id    integer,
+  constraint pk_destination_proposal primary key (destination_proposal_id)
+);
+
+create table destination_proposal_traveller_type (
+  destination_proposal_destination_proposal_id integer not null,
+  traveller_type_traveller_type_id integer not null,
+  constraint pk_destination_proposal_traveller_type primary key (destination_proposal_destination_proposal_id,traveller_type_traveller_type_id)
 );
 
 create table destination_type (
@@ -201,11 +219,26 @@ alter table destination add constraint fk_destination_destination_district_distr
 create index ix_destination_destination_country_country_id on destination (destination_country_country_id);
 alter table destination add constraint fk_destination_destination_country_country_id foreign key (destination_country_country_id) references country (country_id) on delete restrict on update restrict;
 
+create index ix_destination_traveller_type_destination on destination_traveller_type (destination_destination_id);
+alter table destination_traveller_type add constraint fk_destination_traveller_type_destination foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
+
+create index ix_destination_traveller_type_traveller_type on destination_traveller_type (traveller_type_traveller_type_id);
+alter table destination_traveller_type add constraint fk_destination_traveller_type_traveller_type foreign key (traveller_type_traveller_type_id) references traveller_type (traveller_type_id) on delete restrict on update restrict;
+
 create index ix_destination_photo_destination_destination_id on destination_photo (destination_destination_id);
 alter table destination_photo add constraint fk_destination_photo_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
 
 create index ix_destination_photo_personal_photo_photo_id on destination_photo (personal_photo_photo_id);
 alter table destination_photo add constraint fk_destination_photo_personal_photo_photo_id foreign key (personal_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
+
+create index ix_destination_proposal_destination_destination_id on destination_proposal (destination_destination_id);
+alter table destination_proposal add constraint fk_destination_proposal_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
+
+create index ix_destination_proposal_traveller_type_destination_proposal on destination_proposal_traveller_type (destination_proposal_destination_proposal_id);
+alter table destination_proposal_traveller_type add constraint fk_destination_proposal_traveller_type_destination_proposal foreign key (destination_proposal_destination_proposal_id) references destination_proposal (destination_proposal_id) on delete restrict on update restrict;
+
+create index ix_destination_proposal_traveller_type_traveller_type on destination_proposal_traveller_type (traveller_type_traveller_type_id);
+alter table destination_proposal_traveller_type add constraint fk_destination_proposal_traveller_type_traveller_type foreign key (traveller_type_traveller_type_id) references traveller_type (traveller_type_id) on delete restrict on update restrict;
 
 create index ix_district_country_country_id on district (country_country_id);
 alter table district add constraint fk_district_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
@@ -260,11 +293,26 @@ drop index ix_destination_destination_district_district_id on destination;
 alter table destination drop foreign key fk_destination_destination_country_country_id;
 drop index ix_destination_destination_country_country_id on destination;
 
+alter table destination_traveller_type drop foreign key fk_destination_traveller_type_destination;
+drop index ix_destination_traveller_type_destination on destination_traveller_type;
+
+alter table destination_traveller_type drop foreign key fk_destination_traveller_type_traveller_type;
+drop index ix_destination_traveller_type_traveller_type on destination_traveller_type;
+
 alter table destination_photo drop foreign key fk_destination_photo_destination_destination_id;
 drop index ix_destination_photo_destination_destination_id on destination_photo;
 
 alter table destination_photo drop foreign key fk_destination_photo_personal_photo_photo_id;
 drop index ix_destination_photo_personal_photo_photo_id on destination_photo;
+
+alter table destination_proposal drop foreign key fk_destination_proposal_destination_destination_id;
+drop index ix_destination_proposal_destination_destination_id on destination_proposal;
+
+alter table destination_proposal_traveller_type drop foreign key fk_destination_proposal_traveller_type_destination_proposal;
+drop index ix_destination_proposal_traveller_type_destination_proposal on destination_proposal_traveller_type;
+
+alter table destination_proposal_traveller_type drop foreign key fk_destination_proposal_traveller_type_traveller_type;
+drop index ix_destination_proposal_traveller_type_traveller_type on destination_proposal_traveller_type;
 
 alter table district drop foreign key fk_district_country_country_id;
 drop index ix_district_country_country_id on district;
@@ -311,7 +359,13 @@ drop table if exists country;
 
 drop table if exists destination;
 
+drop table if exists destination_traveller_type;
+
 drop table if exists destination_photo;
+
+drop table if exists destination_proposal;
+
+drop table if exists destination_proposal_traveller_type;
 
 drop table if exists destination_type;
 
