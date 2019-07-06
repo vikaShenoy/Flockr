@@ -143,6 +143,7 @@ public class FakePlayClient implements FakeClient {
 
     @Override
     public Destination makeTestDestination(JsonNode destinationNode, String authToken) throws IOException, UnauthorizedException, ServerErrorException {
+        ((ObjectNode) destinationNode).set("travellerTypeIds", Json.toJson(new ArrayList<>()));
         Result result = this.makeRequestWithToken("POST", (ObjectNode) destinationNode, "/api/destinations", authToken);
         if (result.status() == 201) {
             JsonNode destinationAsJsonNode = PlayResultToJson.convertResultToJson(result);

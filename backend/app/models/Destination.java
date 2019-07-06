@@ -63,6 +63,7 @@ public class Destination extends Model {
                 ", destinationLon=" + destinationLon +
                 ", destinationCountry=" + destinationCountry +
                 ", destinationOwner=" + destinationOwner +
+                ", travellerTypes=" + travellerTypes +
                 ", isPublic=" + isPublic +
                 '}';
     }
@@ -77,7 +78,19 @@ public class Destination extends Model {
         boolean sameDistrict = this.destinationDistrict.equals(destinationToCompare.getDestinationDistrict());
         boolean sameType = this.destinationType.equals(destinationToCompare.getDestinationType());
         boolean sameCountry = this.destinationCountry.equals(destinationToCompare.getDestinationCountry());
-        return (sameName && sameDistrict && sameType && sameCountry);
+
+        if (travellerTypes.size() != destinationToCompare.travellerTypes.size()) {
+            return false;
+        }
+
+        boolean sameTravellerTypes = true;
+        for (int i = 0; i < travellerTypes.size(); i++) {
+             if (!travellerTypes.get(i).equals(destinationToCompare.travellerTypes.get(i))) {
+                 sameTravellerTypes = false;
+             }
+        }
+
+        return (sameName && sameDistrict && sameType && sameCountry && sameTravellerTypes);
     }
 
     /**
@@ -91,7 +104,7 @@ public class Destination extends Model {
      * @param destinationOwner the owner of the destination
      * @param isPublic whether or not the destination is public
      */
-    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, Integer destinationOwner, boolean isPublic ) {
+    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, Integer destinationOwner, List<TravellerType> travellerTypes, boolean isPublic ) {
         this.destinationName = destinationName;
         this.destinationType = destinationType;
         this.destinationDistrict = destinationDistrict;
@@ -99,6 +112,7 @@ public class Destination extends Model {
         this.destinationLon = destinationLon;
         this.destinationCountry = destinationCountry;
         this.destinationOwner = destinationOwner;
+        this.travellerTypes = travellerTypes;
         this.isPublic = isPublic;
     }
 

@@ -48,7 +48,7 @@ public class TestAuthenticationHelper {
                 Assert.assertNotEquals(0, user.getUserId());
 
                 user = testState.getFakeClient().loginMadeUpUser(user, plainTextPassword);
-                if (row.get("isAdmin").equals("true")) {
+                if (row.get("isAdmin") != null && row.get("isAdmin").equals("true")) {
                     List<Role> roles = new ArrayList<>();
                     Role adminRole = Role.find.query().where().eq("role_type", RoleType.ADMIN.toString()).findOne();
                     roles.add(adminRole);

@@ -113,6 +113,47 @@
                 :rules="requiredRule"
               />
             </v-flex>
+
+            <v-flex
+              xl4
+              lg6
+              md8
+              sm10
+              xs12
+              offset-xl4
+              offset-lg3
+              offset-md2
+              offset-sm1
+              offset-xs0
+            >
+          <v-combobox
+        v-model="destination.travellerTypes"
+        :items="travellerTypes"
+        item-text="travellerTypeName"
+        item-value="travellerTypeId"
+        :rules="requiredRule"
+        label="Traveller Types"
+        chips
+        clearable
+        solo
+        multiple
+      >
+
+        <template v-slot:selection="data">
+          <v-chip
+            color="primary"
+            text-color="white"
+            :selected="data.selected"
+            close
+            @input="removeTravellerType(data.item)"
+          >
+            <strong>{{ data.item.travellerTypeName }}</strong>&nbsp;
+          </v-chip>
+        </template>
+      </v-combobox>
+            </v-flex>
+
+
             <v-flex
               xl4
               lg6
@@ -255,6 +296,7 @@ export default {
           districtId: null,
           districtName: null
         },
+        travellerTypes: [],
         destinationLat: "",
         destinationLon: "",
         destinationCountry: {
@@ -390,6 +432,7 @@ export default {
             districtId: null,
             districtName: null
           },
+          travellerTypes: [],
           destinationLat: "",
           destinationLon: "",
           destinationCountry: {
@@ -400,6 +443,12 @@ export default {
         this.$refs.form.reset();
       }
       this.$refs.form.resetValidation();
+    },
+    /**
+     * Removes a traveller type from chips
+     */
+    removeTravellerType(item) {
+      this.destination.travellerTypes.splice(this.destination.travellerTypes.indexOf(item), 1);
     },
     /**
      * Called when the submit button is selected.
@@ -415,7 +464,8 @@ export default {
           countryId: this.destination.destinationCountry.countryId,
           districtId: this.destination.destinationDistrict.districtId,
           latitude: this.destination.destinationLat,
-          longitude: this.destination.destinationLon
+          longitude: this.destination.destinationLon,
+          travellerTypes: this.destination.travellerTypes.map(travellerType => travellerType.travellerTypeId)
         };
 
         // Extra field that is only valid for editing destinations

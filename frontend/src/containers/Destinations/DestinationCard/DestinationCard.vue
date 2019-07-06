@@ -54,14 +54,12 @@
 
 <script>
 
-  import Carousel from "./Carousel/Carousel";
   import {getDestinationPhotos, removePhotoFromDestination} from "./DestinationCardService";
   import UserStore from "../../../stores/UserStore";
 
   export default {
     name: "destination-card",
     components: {
-      Carousel
     },
     data() {
       return {

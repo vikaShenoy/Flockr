@@ -12,8 +12,8 @@
 
 
       <v-flex class="destination-item" xs3>
-        <v-icon color="secondary" style="font-size: 30px;">directions_walk</v-icon>
-        <b>Type</b>
+        <v-icon color="secondary" style="font-size: 30px;">category</v-icon>
+        <b>Destination Type</b>
       </v-flex>
 
       <v-flex class="destination-value" xs9>
@@ -45,6 +45,22 @@
 
       <v-flex class="destination-value" xs9>
         {{ destination.isPublic ? "Yes" : "No" }}
+      </v-flex>
+
+      <v-flex class="destination-item" xs3>
+        <v-icon color="secondary" style="font-size: 30px;">directions_walk</v-icon>
+        <b>Traveller Types</b>
+      </v-flex>
+
+      <v-flex class="destination-value" xs9>
+        <v-chip
+          v-for="travellerType in destination.travellerTypes"
+          v-bind:key="travellerType.travellerTypeId"
+          color="primary"
+          text-color="white"
+        >
+          {{ travellerType.travellerTypeName }}
+        </v-chip>
       </v-flex>
 
 

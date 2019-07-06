@@ -56,8 +56,8 @@ Feature: The user can manage destinations
   Scenario: A user tries to update a destination with no change in the information
     Given that user 0 logged in
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | false    |
     When I update the Destination with the following information:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
       | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | false    |
@@ -66,11 +66,11 @@ Feature: The user can manage destinations
   Scenario: A user tries to update a destination with new information
     Given that user 0 logged in
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | false    |
     When I update the Destination with the following information:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | The Dairy Down The Street | 1                 | 1          | 40.0     | 184.9     | 1         | true     |
+      | The Dairy Down The Street | 1                 | 1          | 40.0     | 184.9     | 1         |  true    |
     Then the Destination information is updated
 
   Scenario: A user tries to update a non-existent destination with the given ID

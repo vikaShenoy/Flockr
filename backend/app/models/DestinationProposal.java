@@ -13,10 +13,10 @@ public class DestinationProposal extends Model {
     @Id
     private int destinationProposalId;
 
-    @ManyToOne
+    @ManyToOne(cascade=CascadeType.PERSIST)
     private Destination destination;
 
-    @ManyToMany(cascade=CascadeType.PERSIST)
+    @ManyToMany(cascade=CascadeType.ALL)
     private List<TravellerType> travellerTypes;
 
     public DestinationProposal(Destination destination, List<TravellerType> travellerTypes) {

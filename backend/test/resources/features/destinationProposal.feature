@@ -75,3 +75,4 @@ Feature: As a registered user, I can make proposals for public destinations
 
 
 
+

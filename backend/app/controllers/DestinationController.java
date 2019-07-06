@@ -31,6 +31,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import play.libs.concurrent.HttpExecutionContext;
 import repository.PhotoRepository;
+import util.DestinationUtil;
 
 
 /**
@@ -40,13 +41,15 @@ public class DestinationController extends Controller {
     private final DestinationRepository destinationRepository;
     private final PhotoRepository photoRepository;
     private HttpExecutionContext httpExecutionContext;
+    private final DestinationUtil destinationUtil;
     final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
-    public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext, PhotoRepository photoRepository) {
+    public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext, PhotoRepository photoRepository, DestinationUtil destinationUtil) {
         this.photoRepository = photoRepository;
         this.destinationRepository = destinationRepository;
         this.httpExecutionContext = httpExecutionContext;
+        this.destinationUtil = destinationUtil;
     }
 
     /**
@@ -171,6 +174,7 @@ public class DestinationController extends Controller {
             Double latitude;
             Double longitude;
             int countryId;
+            JsonNode travellerTypeIds;
 
             try {
                 destinationName = jsonRequest.get("destinationName").asText();
@@ -179,6 +183,8 @@ public class DestinationController extends Controller {
                 latitude = jsonRequest.get("latitude").asDouble();
                 longitude = jsonRequest.get("longitude").asDouble();
                 countryId = jsonRequest.get("countryId").asInt();
+                travellerTypeIds = jsonRequest.get("travellerTypeIds");
+
             } catch (NullPointerException exception) {
                 throw new BadRequestException("One or more fields are missing.");
             }
@@ -190,8 +196,11 @@ public class DestinationController extends Controller {
                 throw new BadRequestException("One of the fields you have selected does not exist.");
             }
 
+            List<TravellerType> allTravellerTypes = TravellerType.find.all();
+            List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
+
             Destination destinationToAdd = new Destination(destinationName, destinationTypeAdd, districtAdd,
-                    latitude, longitude, countryAdd, userId, false);
+                    latitude, longitude, countryAdd, userId, travellerTypes, false);
 
             return destinationRepository.getDestinations()
                     .thenComposeAsync(destinations -> {
@@ -259,6 +268,10 @@ public class DestinationController extends Controller {
                     double latitude = jsonBody.get("latitude").asDouble();
                     double longitude = jsonBody.get("longitude").asDouble();
                     boolean isPublic = jsonBody.get("isPublic").asBoolean();
+                    JsonNode travellerTypeIds = jsonBody.get("travellerTypeIds");
+                    List<TravellerType> allTravellerTypes = TravellerType.find.all();
+                    List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
+
 
                     Destination destination = optionalDest.get();
 
@@ -278,6 +291,7 @@ public class DestinationController extends Controller {
                     destination.setDestinationLat(latitude);
                     destination.setDestinationLon(longitude);
                     destination.setIsPublic(isPublic);
+                    destination.setTravellerTypes(travellerTypes);
 
                     List<Integer> duplicatedDestinationIds = new ArrayList<>();
                     // Checks if destination is a duplicate destination
@@ -598,20 +612,8 @@ public class DestinationController extends Controller {
 
             // Get traveller type objects from ID's
             JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
-            List<TravellerType> travellerTypes = new ArrayList<>();
-            for (JsonNode travellerTypeIdNode : travellerTypeIds) {
-                int travellerTypeId = travellerTypeIdNode.asInt();
-                TravellerType travellerType = TravellerType.find.byId(travellerTypeId);
-                if (travellerType == null) {
-                    throw new CompletionException(new BadRequestException("Traveller type not found"));
-                }
-                // Can't have duplicate traveller type ID's
-                if (!travellerTypes.contains(travellerType)) {
-                    travellerTypes.add(travellerType);
-                } else {
-                    throw new CompletionException(new BadRequestException("Duplicate traveller type"));
-                }
-            }
+            List<TravellerType> allTravellerTypes = TravellerType.find.all();
+            List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
 
             DestinationProposal proposal = new DestinationProposal(destination, travellerTypes);
             return destinationRepository.createProposal(proposal);
@@ -655,6 +657,7 @@ public class DestinationController extends Controller {
             Destination destination = destinationProposal.getDestination();
             destination.setTravellerTypes(destinationProposal.getTravellerTypes());
             destination.update();
+            destinationProposal.delete();
             return ok();
         });
     }

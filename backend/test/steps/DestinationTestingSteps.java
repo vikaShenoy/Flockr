@@ -108,6 +108,7 @@ public class DestinationTestingSteps {
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         Map<String, String> firstRow = list.get(0);
         this.destinationData = Json.toJson(firstRow);
+        ((ObjectNode) destinationData).set("travellerTypeIds", Json.toJson(new ArrayList<>()));
     }
 
     @Given("that I want to create a Destination with the following incomplete data:")
@@ -342,6 +343,7 @@ public class DestinationTestingSteps {
         this.destinationNode.put("longitude", firstRow.get("longitude"));
         this.destinationNode.put("countryId", firstRow.get("countryId"));
         this.destinationNode.put("isPublic", firstRow.get("isPublic"));
+        this.destinationNode.set("travellerTypeIds", Json.toJson(new ArrayList<>()));
 
         Destination destinationToChange = TestState.getInstance().getDestination(1);
 
