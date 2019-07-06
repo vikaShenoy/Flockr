@@ -57,4 +57,28 @@ public class DestinationProposalTestSteps {
         Assert.assertNotEquals(200, result.status());
     }
 
+    @When("an admin accepts the proposal")
+    public void anAdminAcceptsTheProposal() {
+        User adminUser = TestState.getInstance().getUser(1);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        result = fakeClient.makeRequestWithToken("PATCH", "/api/destinations/proposals/1", adminUser.getToken());
+    }
+
+    @When("a user tries to accept the proposal")
+    public void aUserTriesToAcceptTheProposal() {
+        User adminUser = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        result = fakeClient.makeRequestWithToken("PATCH", "/api/destinations/proposals/1", adminUser.getToken());
+    }
+
+    @Then("the proposal is accepted")
+    public void theProposalIsAccepted() {
+        Assert.assertEquals(200, result.status());
+    }
+
+    @Then("the proposal is not accepted")
+    public void theProposalIsNotAccepted() {
+        Assert.assertNotEquals(200, result.status());
+    }
+
 }

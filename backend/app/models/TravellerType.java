@@ -18,6 +18,9 @@ public class TravellerType extends Model {
     @ManyToMany
     private List<User> users;
 
+    @ManyToMany
+    private List<Destination> destinations;
+
     @Id
     private int travellerTypeId;
 

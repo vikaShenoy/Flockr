@@ -51,6 +51,7 @@ DELETE      /api/destinations/:destinationId/photos/:photoId    controllers.Dest
 
 # Destination Proposal endpoints
 POST        /api/destinations/:destinationId/proposals          controllers.DestinationController.addProposal(request: Request, destinationId: Int)
+PATCH       /api/destinations/proposals/:destinationProposalId      controllers.DestinationController.acceptProposal(request: Request, destinationProposalId: Int)
 
 
 # Trip Routes

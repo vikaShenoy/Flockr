@@ -349,8 +349,6 @@ public class DestinationController extends Controller {
                         throw new CompletionException(new NotFoundException());
                     }
                     Destination destination = optionalDestination.get();
-                    System.out.println(destination.getDestinationOwner());
-                    System.out.println(user.toString());
                     if (!user.isAdmin() && destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
                         throw new CompletionException(new ForbiddenRequestException("You are not permitted to delete this destination"));
                     }
@@ -531,7 +529,6 @@ public class DestinationController extends Controller {
             photosToReturn.addAll(privatePhotosForUser);
 
             JsonNode photos = Json.toJson(photosToReturn);
-            System.out.println(photos);
 
             return ok(Json.toJson(photosToReturn));
         }), httpExecutionContext.current());
@@ -634,6 +631,33 @@ public class DestinationController extends Controller {
         });
     }
 
+    /**
+     * Allows an admin to accept a traveller type proposal change
+     * @param request the HTTP request used to retrieve the user from
+     * @param destinationProposalId Id of destination prosposal to accept
+     * @return
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> acceptProposal(Http.Request request, int destinationProposalId) {
+        User user = request.attrs().get(ActionState.USER);
+
+        if (!user.isAdmin()) {
+            return supplyAsync(() -> forbidden("User is not an admin"));
+        }
+
+        return destinationRepository.getDestinationProposalById(destinationProposalId)
+        .thenApplyAsync(optionalDestinationProposal -> {
+            if (!optionalDestinationProposal.isPresent()) {
+                return notFound("Proposal could not be found");
+            }
+            DestinationProposal destinationProposal = optionalDestinationProposal.get();
+
+            Destination destination = destinationProposal.getDestination();
+            destination.setTravellerTypes(destinationProposal.getTravellerTypes());
+            destination.update();
+            return ok();
+        });
+    }
 
 }
 

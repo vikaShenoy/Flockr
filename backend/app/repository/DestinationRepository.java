@@ -7,6 +7,7 @@ import play.db.ebean.EbeanConfig;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.sql.SQLOutput;
 import java.util.List;
@@ -190,13 +191,30 @@ public class DestinationRepository {
         }, executionContext);
     }
 
+    /**
+     * Creates a proposal
+     * @param proposal The proposal to create
+     * @return The created proposal
+     */
     public CompletionStage<DestinationProposal> createProposal(DestinationProposal proposal) {
        return supplyAsync(() -> {
            proposal.insert();
-           System.out.println("size is: " + DestinationProposal.find.all().size());
-           System.out.println(proposal.getDestinationProposalId());
            return proposal;
        }, executionContext);
+    }
+
+    /**
+     * Finds a destinationProposal by it's ID
+     * @param destinationProposalId the ID to search for
+     * @return The destinationProposal that corresponds to the ID
+     */
+    public CompletionStage<Optional<DestinationProposal>> getDestinationProposalById(int destinationProposalId) {
+        return supplyAsync(() -> DestinationProposal.find.query()
+                            .fetch("travellerTypes")
+                            .fetch("destination")
+                            .where().eq("destinationProposalId", destinationProposalId)
+                            .findOneOrEmpty()
+                , executionContext);
     }
 
 }
