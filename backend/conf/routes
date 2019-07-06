@@ -49,6 +49,9 @@ POST        /api/destinations/:destinationId/photos             controllers.Dest
 GET         /api/destinations/:destinationId/photos             controllers.DestinationController.getPhotos(destinationId: Int, request: Request)
 DELETE      /api/destinations/:destinationId/photos/:photoId    controllers.DestinationController.unlinkPhoto(destinationId: Int, photoId: Int, request: Request)
 
+# Destination Proposal endpoints
+POST        /api/destinations/:destinationId/proposals          controllers.DestinationController.addProposal(request: Request, destinationId: Int)
+
 
 # Trip Routes
 GET         /api/users/:userId/trips                  controllers.TripController.getTrips(request: Request, userId: Int)

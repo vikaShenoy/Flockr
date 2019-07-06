@@ -44,6 +44,16 @@ public class TravellerType extends Model {
     }
 
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+
+        TravellerType comparedTravellerType = (TravellerType) obj;
+        return travellerTypeId == comparedTravellerType.travellerTypeId;
+    }
+
     /**
      * This is required by EBean to make queries on the database
      */

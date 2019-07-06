@@ -48,6 +48,7 @@ public class TestAuthenticationHelper {
                 Assert.assertNotEquals("", user.getToken());
                 testState.addUser(user);
             } catch (IOException | FailedToSignUpException | ServerErrorException | FailedToLoginException e) {
+                e.printStackTrace();
                 Assert.fail(Arrays.toString(e.getStackTrace()));
             }
         }

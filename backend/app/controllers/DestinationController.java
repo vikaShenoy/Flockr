@@ -4,6 +4,7 @@ import actions.ActionState;
 import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.ConflictingRequestException;
@@ -576,6 +577,63 @@ public class DestinationController extends Controller {
             return forbidden(res);
         }, httpExecutionContext.current());
     }
+
+    /**
+     * Allows a user to add a proposal
+     * @param request Request object to get user object
+     * @param destinationId ID of destination to propose to
+     * @return A response that complies with the API spec
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> addProposal(Http.Request request, int destinationId) {
+        return destinationRepository.getDestinationById(destinationId)
+        .thenComposeAsync(optionalDestination -> {
+            if (!optionalDestination.isPresent()) {
+                throw new CompletionException(new BadRequestException("Destination not found"));
+            }
+
+            Destination destination = optionalDestination.get();
+
+            // Cannot make proposals for destinations that are not public
+            if (!destination.getIsPublic()) {
+                throw new CompletionException(new ForbiddenRequestException("Destination is not public"));
+            }
+
+            // Get traveller type objects from ID's
+            JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
+            List<TravellerType> travellerTypes = new ArrayList<>();
+            for (JsonNode travellerTypeIdNode : travellerTypeIds) {
+                int travellerTypeId = travellerTypeIdNode.asInt();
+                TravellerType travellerType = TravellerType.find.byId(travellerTypeId);
+                if (travellerType == null) {
+                    throw new CompletionException(new BadRequestException("Traveller type not found"));
+                }
+                // Can't have duplicate traveller type ID's
+                if (!travellerTypes.contains(travellerType)) {
+                    travellerTypes.add(travellerType);
+                } else {
+                    throw new CompletionException(new BadRequestException("Duplicate traveller type"));
+                }
+            }
+
+            DestinationProposal proposal = new DestinationProposal(destination, travellerTypes);
+            return destinationRepository.createProposal(proposal);
+        })
+        .thenApplyAsync(proposal -> (Result) ok())
+        .exceptionally(e -> {
+            try {
+                throw e.getCause();
+            } catch (BadRequestException badRequestException) {
+                return badRequest(badRequestException.getMessage());
+            } catch (ForbiddenRequestException forbiddenException) {
+                return forbidden(forbiddenException.getMessage());
+            }
+            catch (Throwable throwableException) {
+                return internalServerError(throwableException.getMessage());
+            }
+        });
+    }
+
 
 }
 

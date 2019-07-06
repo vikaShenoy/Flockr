@@ -27,7 +27,6 @@ public class Destination extends Model {
 
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
     private List<DestinationPhoto> destinationPhotos;
-
     @ManyToMany(cascade = CascadeType.PERSIST)
     private List<TravellerType> travellerTypes;
 
@@ -166,6 +165,15 @@ public class Destination extends Model {
 
     public boolean getIsPublic() { return this.isPublic; }
 
+
+    public List<TravellerType> getTravellerTypes() {
+        return travellerTypes;
+    }
+
+    public void setTravellerTypes(List<TravellerType> travellerTypes) {
+        this.travellerTypes = travellerTypes;
+    }
+
     public void setDestinationPhotos(List<DestinationPhoto> destinationPhotos) {
         this.destinationPhotos = destinationPhotos;
     }
@@ -192,6 +200,10 @@ public class Destination extends Model {
             .filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().getUser().getUserId() == userId))
             .filter(destinationPhoto -> !destinationPhoto.getPersonalPhoto().isPublic())
             .collect(Collectors.toList());
+    }
+
+    public boolean canModifyDestination(User user) {
+        return user.isAdmin() || (destinationOwner != null && destinationOwner == user.getUserId());
     }
 
     /**

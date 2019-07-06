@@ -190,5 +190,13 @@ public class DestinationRepository {
         }, executionContext);
     }
 
+    public CompletionStage<DestinationProposal> createProposal(DestinationProposal proposal) {
+       return supplyAsync(() -> {
+           proposal.insert();
+           System.out.println("size is: " + DestinationProposal.find.all().size());
+           System.out.println(proposal.getDestinationProposalId());
+           return proposal;
+       }, executionContext);
+    }
 
 }
