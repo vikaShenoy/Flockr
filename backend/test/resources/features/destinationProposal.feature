@@ -72,6 +72,48 @@ Feature: As a registered user, I can make proposals for public destinations
 
 
 
+      @DestinationProposal
+      Scenario: An admin can succesfully reject a destination proposal
+       Given that I have the following destinations:
+         | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+         | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | true     |
+       And I propose the following traveller types
+         | travellerTypeId |
+         | 1               |
+         | 2               |
+         | 3               |
+       When an admin rejects the proposal
+       Then the proposal is rejected
+
+      @DestinationProposal
+      Scenario: A user cannot reject a destination proposal
+       Given that I have the following destinations:
+         | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+         | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | true     |
+       And I propose the following traveller types
+         | travellerTypeId |
+         | 1               |
+         | 2               |
+         | 3               |
+       When a user tries to reject the proposal
+       Then the proposal is not rejected
+
+
+      @DestinationProposal
+      Scenario: A user cannot reject a destination proposal
+      Given that I have the following destinations:
+        | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+        | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | true     |
+      And I propose the following traveller types
+        | travellerTypeId |
+        | 1               |
+        | 2               |
+        | 3               |
+      When an admin tries to reject a proposal that does not exist
+      Then the proposal is not rejected
+
+
+
 
 
 

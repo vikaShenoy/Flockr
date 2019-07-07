@@ -662,5 +662,17 @@ public class DestinationController extends Controller {
         });
     }
 
+    @With(LoggedIn.class)
+    public CompletionStage<Result> rejectProposal(Http.Request request, int destinationProposalId) {
+        User user = request.attrs().get(ActionState.USER);
+
+        if (!user.isAdmin()) {
+            return supplyAsync(() -> forbidden("User is not an admin"));
+        }
+
+        return destinationRepository.deleteDestinationProposalById(destinationProposalId)
+                .thenApplyAsync((Void) -> ok());
+    }
+
 }
 

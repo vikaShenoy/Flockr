@@ -81,4 +81,44 @@ public class DestinationProposalTestSteps {
         Assert.assertNotEquals(200, result.status());
     }
 
+    @When("an admin rejects the proposal")
+    public void anAdminRejectsTheProposal() {
+        User adminUser = TestState.getInstance().getUser(1);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        result = fakeClient.makeRequestWithToken("PATCH", "/api/destinations/proposals/1", adminUser.getToken());
+    }
+
+    @Then("the proposal is rejected")
+    public void theProposalIsRejected() {
+        Assert.assertEquals(200, result.status());
+
+        // Make sure that proposal has been deleted
+        int amountOfProposals = DestinationProposal.find.all().size();
+        Assert.assertEquals(0, amountOfProposals);
+    }
+
+    @When("a user tries to reject the proposal")
+    public void aUserTriesToRejectTheProposal() {
+        User testUser = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        result = fakeClient.makeRequestWithToken("PATCH", "/api/destinations/proposals/1", testUser.getToken());
+    }
+
+    @When("an admin tries to reject a proposal that does not exist")
+    public void aUserTriesToRejectAProposalThatDoesNotExist() {
+        User adminUser = TestState.getInstance().getUser(0);
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        result = fakeClient.makeRequestWithToken("PATCH", "/api/destinations/proposals/3", adminUser.getToken());
+    }
+
+    @Then("the proposal is not rejected")
+    public void theProposalIsNotRejected() {
+        Assert.assertNotEquals(200, result.status());
+
+        // Make sure that the proposal is still there
+        int amountOfProposals = DestinationProposal.find.all().size();
+        Assert.assertEquals(1, amountOfProposals);
+    }
+
+
 }

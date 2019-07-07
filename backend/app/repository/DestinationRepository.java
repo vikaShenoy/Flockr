@@ -5,6 +5,7 @@ import io.ebean.EbeanServer;
 import models.*;
 import play.db.ebean.EbeanConfig;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.annotation.processing.Completion;
@@ -215,6 +216,12 @@ public class DestinationRepository {
                             .where().eq("destinationProposalId", destinationProposalId)
                             .findOneOrEmpty()
                 , executionContext);
+    }
+
+    public CompletionStage<Void> deleteDestinationProposalById(int destinatinoProposalId) {
+         return runAsync(() -> {
+           DestinationProposal.find.deleteById(destinatinoProposalId);
+        });
     }
 
 }
