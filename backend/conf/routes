@@ -33,6 +33,14 @@ PATCH        /api/users/photos/:photoId                         controllers.Phot
 GET          /api/users/photos/:photoId/thumbnail               controllers.PhotoController.getThumbnail(photoId: Int, request: Request)
 
 
+
+
+# Destination Proposal endpoints
+GET         /api/destinations/proposals                         controllers.DestinationController.getProposals(request: Request)
+POST        /api/destinations/:destinationId/proposals          controllers.DestinationController.addProposal(request: Request, destinationId: Int)
+PATCH       /api/destinations/proposals/:destinationProposalId      controllers.DestinationController.acceptProposal(request: Request, destinationProposalId: Int)
+DELETE      /api/destinations/proposals/:destinationProposalId  controllers.DestinationController.rejectProposal(request: Request, destinationProposalId: Int)
+
 # Destination Routes
 GET         /api/destinations                                   controllers.DestinationController.getDestinations(request: Request)
 GET         /api/users/:userId/destinations                     controllers.DestinationController.getUserDestinations(userId: Int, request: Request)
@@ -44,15 +52,12 @@ DELETE      /api/destinations/:destinationId                    controllers.Dest
 POST        /api/destinations                                   controllers.DestinationController.addDestination(request: Request)
 PUT         /api/destinations/:destinationId                    controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
 
+
+
 # Destination photos routes
 POST        /api/destinations/:destinationId/photos             controllers.DestinationController.addPhoto(destinationId: Int, request: Request)
 GET         /api/destinations/:destinationId/photos             controllers.DestinationController.getPhotos(destinationId: Int, request: Request)
 DELETE      /api/destinations/:destinationId/photos/:photoId    controllers.DestinationController.unlinkPhoto(destinationId: Int, photoId: Int, request: Request)
-
-# Destination Proposal endpoints
-POST        /api/destinations/:destinationId/proposals          controllers.DestinationController.addProposal(request: Request, destinationId: Int)
-PATCH       /api/destinations/proposals/:destinationProposalId      controllers.DestinationController.acceptProposal(request: Request, destinationProposalId: Int)
-DELETE      /api/destinations/proposals/:destinationProposalId  controllers.DestinationController.rejectProposal(request: Request, destinationProposalId: Int)
 
 
 # Trip Routes

@@ -224,4 +224,8 @@ public class DestinationRepository {
         });
     }
 
+    public CompletionStage<List<DestinationProposal>> getDestinationProposals() {
+        return supplyAsync(() -> DestinationProposal.find.all());
+    }
+
 }

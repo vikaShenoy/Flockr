@@ -674,5 +674,17 @@ public class DestinationController extends Controller {
                 .thenApplyAsync((Void) -> ok());
     }
 
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getProposals(Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+        if (!user.isAdmin()) {
+            return supplyAsync(() -> forbidden("User is not an admin"));
+        }
+
+        return destinationRepository.getDestinationProposals()
+        .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));
+    }
+
 }
 

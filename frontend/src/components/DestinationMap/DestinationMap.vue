@@ -23,7 +23,11 @@
       style="width: 100%; height: 100%"
       :options="{
         mapTypeControl: false,
-        fullscreenControl: false
+        fullscreenControl: false,
+        styles: [{
+          stylers: [{}]
+        }]
+        
       }"
     >
 
@@ -198,7 +202,7 @@ export default {
 
 #overlay {
   top: 64px;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.4);
   pointer-events: none;
   position: absolute;
   width: 100%;

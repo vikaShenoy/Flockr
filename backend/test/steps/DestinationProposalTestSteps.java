@@ -1,6 +1,7 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -14,8 +15,10 @@ import org.junit.Assert;
 import play.libs.Json;
 import play.mvc.Result;
 import utils.FakeClient;
+import utils.PlayResultToJson;
 import utils.TestState;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -106,7 +109,7 @@ public class DestinationProposalTestSteps {
 
     @When("an admin tries to reject a proposal that does not exist")
     public void aUserTriesToRejectAProposalThatDoesNotExist() {
-        User adminUser = TestState.getInstance().getUser(0);
+        User adminUser = TestState.getInstance().getUser(1);
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         result = fakeClient.makeRequestWithToken("PATCH", "/api/destinations/proposals/3", adminUser.getToken());
     }
@@ -118,6 +121,24 @@ public class DestinationProposalTestSteps {
         // Make sure that the proposal is still there
         int amountOfProposals = DestinationProposal.find.all().size();
         Assert.assertEquals(1, amountOfProposals);
+    }
+
+    @When("an admin requests all proposals")
+    public void anAdminRequestsAllProposals() {
+       User testAdmin = TestState.getInstance().getUser(1);
+       FakeClient fakeClient = TestState.getInstance().getFakeClient();
+       result = fakeClient.makeRequestWithToken("GET", "/api/destinations/proposals", testAdmin.getToken());
+    }
+
+    @Then("the correct data will be returned")
+    public void theCorrectDataWillBeReturned() throws IOException {
+        Assert.assertEquals(200, result.status());
+        JsonNode proposals = PlayResultToJson.convertResultToJson(result);
+        JsonNode myProposalJson = proposals.get(0);
+        ObjectMapper objectMapper = new ObjectMapper();
+        DestinationProposal myProposal = objectMapper.treeToValue(myProposalJson, DestinationProposal.class);
+        List<Integer> travellerTypeIds = myProposal.getTravellerTypes().stream().map(TravellerType::getTravellerTypeId).collect(Collectors.toList());
+        myProposal.getTravellerTypes().equals(travellerTypeIds);
     }
 
 

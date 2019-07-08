@@ -112,6 +112,18 @@ Feature: As a registered user, I can make proposals for public destinations
       When an admin tries to reject a proposal that does not exist
       Then the proposal is not rejected
 
+      @DestinationProposal
+      Scenario: An admin can get a list of proposals
+       Given that I have the following destinations:
+        | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
+        | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | true     |
+      And I propose the following traveller types
+        | travellerTypeId |
+        | 1               |
+        | 2               |
+        | 3               |
+      When an admin requests all proposals
+      Then the correct data will be returned
 
 
 
