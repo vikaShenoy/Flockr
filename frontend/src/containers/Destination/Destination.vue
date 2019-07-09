@@ -27,6 +27,16 @@
       <v-flex xs12 style="padding-bottom: 0px">
         <div style="float: right">
         <v-btn
+          color="secondary" 
+          depressed          
+          v-if="destination.isPublic"
+          @click="isShowingTravellerTypesDialog = true"
+        >
+         Request Traveller Types 
+        </v-btn>
+ 
+
+        <v-btn
           color="secondary"
           depressed
           @click="showingEditDestDialog = true"
@@ -41,7 +51,8 @@
         >
           <v-icon>delete</v-icon>
         </v-btn>
-        </div>
+
+       </div>
       </v-flex>
       <v-flex xs12 sm6 lg4 xl4 style="padding-bottom: 0px">
         
@@ -54,7 +65,9 @@
       </v-flex>
 
       <v-flex xs12 sm6 lg8 xl8 style="padding-bottom: 0px">
-        <DestinationDetails :destination="destination"/>
+        <DestinationDetails
+          :destination="destination"
+        />
       </v-flex>
     </v-layout>
     </v-container>
@@ -62,7 +75,7 @@
 
   <Snackbar
     :snackbarModel="snackbarModel"
-    v-on:dismissSnackbar="dismissSnackbar"
+     v-on:dismissSnackbar="dismissSnackbar"
      />
 
   <PromptDialog
@@ -70,6 +83,13 @@
     message="Are you sure you want to delete the destination?"
     :onConfirm="deleteDestination"
     v-on:promptEnded="isShowingDeleteDestDialog = false"
+  />
+
+  <RequestTravellerTypes 
+    :isShowingTravellerTypesDialog.sync="isShowingTravellerTypesDialog" 
+    :destination="destination"
+    v-on:proposalSent="proposalSent"
+    v-on:showError="showError"
   />
   </div>
 </template>
@@ -82,6 +102,7 @@ import DestinationDetails from "./DestinationDetails/DestinationDetails";
 import Carousel from "./Carousel/Carousel";
 import PromptDialog from "../../components/PromptDialog/PromptDialog";
 import Snackbar from "../../components/Snackbars/Snackbar";
+import RequestTravellerTypes from "./RequestTravellerTypes/RequestTravellerTypes";
 
 
 export default {
@@ -91,7 +112,8 @@ export default {
     DestinationDetails,
     ModifyDestinationDialog,
     Snackbar,
-    PromptDialog
+    PromptDialog,
+    RequestTravellerTypes
   },
   data() {
     return {
@@ -106,7 +128,8 @@ export default {
         text: "",
         color: null,
         snackbarId: 1
-      }
+      },
+      isShowingTravellerTypesDialog: false
     };
   },
   async mounted() {
@@ -140,6 +163,11 @@ export default {
     },
     dismissSnackbar() {
       this.snackbarModel.show = false;
+    },
+    proposalSent() {
+      this.snackbarModel.color = "success";
+      this.snackbarModel.text = "Proposal Sent";
+      this.snackbarModel.show = true;
     },
     async deleteDestination() {
       const destinationId = this.$route.params.destinationId;
