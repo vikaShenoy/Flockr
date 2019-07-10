@@ -465,7 +465,7 @@ export default {
           districtId: this.destination.destinationDistrict.districtId,
           latitude: this.destination.destinationLat,
           longitude: this.destination.destinationLon,
-          travellerTypes: this.destination.travellerTypes.map(travellerType => travellerType.travellerTypeId)
+          travellerTypeIds: this.destination.travellerTypes.map(travellerType => travellerType.travellerTypeId)
         };
 
         // Extra field that is only valid for editing destinations

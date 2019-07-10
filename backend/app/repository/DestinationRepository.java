@@ -218,14 +218,21 @@ public class DestinationRepository {
                 , executionContext);
     }
 
-    public CompletionStage<Void> deleteDestinationProposalById(int destinatinoProposalId) {
-         return runAsync(() -> {
-           DestinationProposal.find.deleteById(destinatinoProposalId);
-        });
+    /**
+     *
+     * @param destinationProposalId
+     * @return void as nothing needs to be returned
+     */
+    public CompletionStage<Void> deleteDestinationProposalById(int destinationProposalId) {
+         return runAsync(() -> DestinationProposal.find.deleteById(destinationProposalId));
     }
 
+    /**
+     * Gets all destination proposals
+     * @return the destination proposals
+     */
     public CompletionStage<List<DestinationProposal>> getDestinationProposals() {
-        return supplyAsync(() -> DestinationProposal.find.all());
+        return supplyAsync(DestinationProposal.find::all);
     }
 
 }

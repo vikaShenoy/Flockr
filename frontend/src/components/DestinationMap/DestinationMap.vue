@@ -1,5 +1,6 @@
 <template>
   <div id="map">
+    <!--Conditional title that gets displayed at the bottom left of the map-->
     <div id="destination-title" v-if="destinationTitle">
 
       <v-avatar> <img
@@ -15,6 +16,7 @@
 
     </div>
 
+  <!--empty stylers object is used as it makes the google icon white-->
     <GmapMap
       ref="map"
       :center="{lat:10, lng:10}"
@@ -119,6 +121,10 @@ export default {
     }
   },
   methods: {
+    /**
+     * Transforms destinations to a format that the gmap api understands
+     * @returns {Object} the transformed marker object
+     */
     mapDestinationsToMarkers(destinations) {
       return destinations.map(destination => ({
         position: {
@@ -129,6 +135,9 @@ export default {
         destination
       }));
     },
+    /**
+     * Gets called when map marker has been clicked on
+     */
     toggleInfoWindow(marker, index) {
       this.infoWindowPos = marker.position;
       this.infoContent = marker.destination;
@@ -143,6 +152,9 @@ export default {
     }
   },
   watch: {
+    /**
+     * Watches for changes of markers to recenter them
+     */
     destinations(newDestinations) {
       const markers = this.mapDestinationsToMarkers(newDestinations);
       this.$refs.map.$mapPromise.then(map => {
@@ -152,6 +164,8 @@ export default {
         }
 
         map.fitBounds(bounds);
+        const zoomLevel = map.getZoom();
+        map.setZoom(zoomLevel > 6 ? 6 : zoom);
       });
     }
   }

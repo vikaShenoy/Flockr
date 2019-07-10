@@ -43,7 +43,7 @@
     </v-card>
         
         <!-- User tile -->
-      <v-card>
+      <v-card id="users">
         <v-list>
         <v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
           <v-list-tile-avatar>
@@ -244,7 +244,6 @@ export default {
   @import "../../../styles/_variables.scss";
 
   .manage-users {
-    height: 100%;
     width: 100%;
   }
 
@@ -289,5 +288,10 @@ export default {
 
   p {
     margin: 0;
+  }
+
+  #users {
+    max-height: 400px;
+    overflow: auto;
   }
 </style>

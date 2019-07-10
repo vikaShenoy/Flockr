@@ -281,10 +281,7 @@ public class PhotoController extends Controller {
                         return true;
                     }
 
-                    if (uploadingUser.equals(receivingUser)) {
-                        return true;
-                    }
-                    return false;
+                    return uploadingUser.equals(receivingUser);
                 }, httpExecutionContext.current());
     }
 

@@ -36,17 +36,17 @@ GET          /api/users/photos/:photoId/thumbnail               controllers.Phot
 
 
 # Destination Proposal endpoints
-GET         /api/destinations/proposals                         controllers.DestinationController.getProposals(request: Request)
+GET         /api/destinations/proposals                         controllers.DestinationController.getProposals
 POST        /api/destinations/:destinationId/proposals          controllers.DestinationController.addProposal(request: Request, destinationId: Int)
-PATCH       /api/destinations/proposals/:destinationProposalId      controllers.DestinationController.acceptProposal(request: Request, destinationProposalId: Int)
-DELETE      /api/destinations/proposals/:destinationProposalId  controllers.DestinationController.rejectProposal(request: Request, destinationProposalId: Int)
+PATCH       /api/destinations/proposals/:destinationProposalId      controllers.DestinationController.acceptProposal(destinationProposalId: Int)
+DELETE      /api/destinations/proposals/:destinationProposalId  controllers.DestinationController.rejectProposal(destinationProposalId: Int)
 
 # Destination Routes
 GET         /api/destinations                                   controllers.DestinationController.getDestinations(request: Request)
 GET         /api/users/:userId/destinations                     controllers.DestinationController.getUserDestinations(userId: Int, request: Request)
-GET         /api/destinations/countries                         controllers.DestinationController.getCountries()
+GET         /api/destinations/countries                         controllers.DestinationController.getCountries
 GET         /api/destinations/countries/:countryId/districts    controllers.DestinationController.getDistricts(countryId: Int)
-GET         /api/destinations/types                             controllers.DestinationController.getDestinationTypes()
+GET         /api/destinations/types                             controllers.DestinationController.getDestinationTypes
 GET         /api/destinations/:destinationId                    controllers.DestinationController.getDestination(destinationId: Int, request: Request)
 DELETE      /api/destinations/:destinationId                    controllers.DestinationController.deleteDestination(destinationId: Int, request: Request)
 POST        /api/destinations                                   controllers.DestinationController.addDestination(request: Request)

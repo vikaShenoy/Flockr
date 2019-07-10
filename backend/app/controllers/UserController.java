@@ -310,7 +310,7 @@ public class UserController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteUser(int userId, Http.Request request) {
         User userDoingDeletion = request.attrs().get(ActionState.USER);
-        final ObjectNode message = Json.newObject();; // used in the response
+        final ObjectNode message = Json.newObject();// used in the response
 
         return userRepository.getUserById(userId)
                 .thenApplyAsync((optionalUserBeingDeleted) -> {

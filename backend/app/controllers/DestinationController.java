@@ -245,7 +245,7 @@ public class DestinationController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> updateDestination(Http.Request request, int destinationId) {
-        JsonNode response = Json.newObject();
+        ObjectNode response = Json.newObject();
         User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinationById(destinationId)
                 .thenComposeAsync(optionalDest -> {
@@ -332,16 +332,17 @@ public class DestinationController extends Controller {
                     try {
                         throw error.getCause();
                     } catch (NotFoundException notFoundE) {
-                        ((ObjectNode) response).put("message", "There is no destination with the given ID found");
+                        response.put("message", "There is no destination with the given ID found");
                         return notFound(response);
                     } catch (ForbiddenRequestException forbiddenRequest) {
-                        ((ObjectNode) response).put("message", forbiddenRequest.getMessage());
+                        response.put("message", forbiddenRequest.getMessage());
                         return forbidden(response);
                     } catch (BadRequestException badRequestE) {
-                        ((ObjectNode) response).put("message", badRequestE.getMessage());
+                        response.put("message", badRequestE.getMessage());
                         return badRequest(response);
                     } catch (Throwable ee) {
-                        ((ObjectNode) response).put("message", "Endpoint under development");
+                        ee.printStackTrace();
+                        response.put("message", "Endpoint under development");
                         return internalServerError(response);
                     }
                 });
@@ -635,18 +636,11 @@ public class DestinationController extends Controller {
 
     /**
      * Allows an admin to accept a traveller type proposal change
-     * @param request the HTTP request used to retrieve the user from
      * @param destinationProposalId Id of destination prosposal to accept
-     * @return
+     * @return A response that complies with the API spec
      */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> acceptProposal(Http.Request request, int destinationProposalId) {
-        User user = request.attrs().get(ActionState.USER);
-
-        if (!user.isAdmin()) {
-            return supplyAsync(() -> forbidden("User is not an admin"));
-        }
-
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> acceptProposal(int destinationProposalId) {
         return destinationRepository.getDestinationProposalById(destinationProposalId)
         .thenApplyAsync(optionalDestinationProposal -> {
             if (!optionalDestinationProposal.isPresent()) {
@@ -662,26 +656,23 @@ public class DestinationController extends Controller {
         });
     }
 
-    @With(LoggedIn.class)
-    public CompletionStage<Result> rejectProposal(Http.Request request, int destinationProposalId) {
-        User user = request.attrs().get(ActionState.USER);
-
-        if (!user.isAdmin()) {
-            return supplyAsync(() -> forbidden("User is not an admin"));
-        }
-
+    /**
+     * Allows an admin to reject a destination proposal
+     * @param destinationProposalId the ID of the proposal to reject
+     * @return A response that complies with the API spec
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> rejectProposal(int destinationProposalId) {
         return destinationRepository.deleteDestinationProposalById(destinationProposalId)
                 .thenApplyAsync((Void) -> ok());
     }
 
-    @With(LoggedIn.class)
-    public CompletionStage<Result> getProposals(Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-
-        if (!user.isAdmin()) {
-            return supplyAsync(() -> forbidden("User is not an admin"));
-        }
-
+    /**
+     * Allows an admin to get all destination proposals
+     * @return
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> getProposals() {
         return destinationRepository.getDestinationProposals()
         .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));
     }
