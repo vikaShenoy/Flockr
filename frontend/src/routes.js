@@ -6,11 +6,10 @@ import Login from "./containers/Login/Login.vue";
 import Profile from "./containers/Profile/Profile.vue";
 import Destination from "./containers/Destination/Destination";
 import Destinations from "./containers/Destinations/Destinations.vue";
-import OldDestinations from "./containers/Destinations/OldDestinations.vue";
 import SearchTravellers from "./containers/SearchTravellers/SearchTravellers.vue";
-import Trips from "./containers/Trips/Trips.vue";
-import AddTrip from "./containers/AddTrip/AddTrip.vue";
 import Trip from "./containers/Trip/Trip.vue";
+import Trips from "./containers/Trips/OldTrips.vue";
+import AddTrip from "./containers/AddTrip/AddTrip.vue";
 import EditTrip from "./containers/EditTrip/EditTrip.vue";
 import AdminPanel from "./containers/AdminPanel/AdminPanel.vue";
 
@@ -45,11 +44,6 @@ const routes = [
     beforeEnter: loggedIn
   },
   {
-    path: "/oldDestinations",
-    component: OldDestinations,
-    beforeEnter: loggedIn,
-  },
-  {
     path: "/destinations",
     component: Destinations,
     beforeEnter: loggedIn
@@ -77,14 +71,9 @@ const routes = [
     beforeEnter: isAdmin
   },
   {
-    path: "/trips/:id",
+    path: "/trips/:tripId",
     component: Trip,
     beforeEnter: loggedIn
-  },
-  {
-    path: "/travellers/:travellerId/trips/:id",
-    component: Trip,
-    beforeEnter: isAdmin
   },
   {
     path: "/trips/:id/edit",

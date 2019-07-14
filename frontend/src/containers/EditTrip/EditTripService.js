@@ -52,12 +52,12 @@ export async function getTrip(tripId, userId) {
  * @param {string} tripName - The edited trip name
  * @param {Object[]} tripDestinations - The edited trip destinations
  */
-export function editTrip(tripId, userId, tripName, tripDestinations) {
+export function editTrip(tripId, tripName, tripDestinations) {
+   const userId = localStorage.getItem("userId");
 
-   const transformedTripDestinations = tripDestinations.map((tripDestination, index)  => {
+   const transformedTripDestinations = tripDestinations.map(tripDestination  => {
     const transformedTripDestination = {};
-    transformedTripDestination.id = index;
-    transformedTripDestination.destinationId = tripDestination.destinationId;
+    transformedTripDestination.destinationId = tripDestination.destination.destinationId;
     transformedTripDestination.arrivalDate = moment(tripDestination.arrivalDate).valueOf();
     transformedTripDestination.arrivalTime = tripDestination.arrivalTime === null || tripDestination.arrivalTime === "" ? null : moment.duration(tripDestination.arrivalTime).asMinutes();
     transformedTripDestination.departureDate = moment(tripDestination.departureDate).valueOf(); 

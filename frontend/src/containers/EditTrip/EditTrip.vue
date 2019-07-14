@@ -126,9 +126,7 @@ export default {
 
       try {
         const tripId = this.$route.params.id;
-        const travellerId = this.$route.params.travellerId;
-        const userId = travellerId ? travellerId : localStorage.getItem("userId")
-        await editTrip(tripId, userId, this.tripName, this.tripDestinations);
+        await editTrip(tripId, this.tripName, this.tripDestinations);
 
         if (travellerId) {
           this.$router.push(`/travellers/${travellerId}/trips/${tripId}`);

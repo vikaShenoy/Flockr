@@ -7,7 +7,8 @@ import moment from "moment";
  * @param {number} userId 
  * @param {number} tripId 
  */
-export async function getTrip(userId, tripId) {
+export async function getTrip(tripId) {
+  const userId = localStorage.getItem("userId");
   const res = await superagent.get(endpoint(`/users/${userId}/trips/${tripId}`))
     .set("Authorization", localStorage.getItem("authToken"));
   return res.body;
