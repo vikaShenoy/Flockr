@@ -6,7 +6,6 @@ import Login from "./containers/Login/Login.vue";
 import Profile from "./containers/Profile/Profile.vue";
 import Destination from "./containers/Destination/Destination";
 import Destinations from "./containers/Destinations/Destinations.vue";
-import OldDestinations from "./containers/Destinations/OldDestinations.vue";
 import SearchTravellers from "./containers/SearchTravellers/SearchTravellers.vue";
 import Trips from "./containers/Trips/Trips.vue";
 import AddTrip from "./containers/AddTrip/AddTrip.vue";
@@ -43,11 +42,6 @@ const routes = [
     path: "/search",
     component: SearchTravellers,
     beforeEnter: loggedIn
-  },
-  {
-    path: "/oldDestinations",
-    component: OldDestinations,
-    beforeEnter: loggedIn,
   },
   {
     path: "/destinations",
