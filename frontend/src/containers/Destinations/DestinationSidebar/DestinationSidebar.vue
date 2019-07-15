@@ -3,8 +3,6 @@
     id="destination-sidebar"
     :elevation="20"
   >
-
-
   <div id="title">
     <h2>Destinations</h2>
     <v-btn
@@ -96,7 +94,6 @@ export default {
     height: 100%;
     width: 315px; 
     float: right;
-
 
     #title {
       height: 100px;

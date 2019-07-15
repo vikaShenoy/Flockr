@@ -1,79 +1,119 @@
 <template>
-  <div id="trip-container">
-    <v-btn
-      color="secondary"
-      id="edit-trip"
-      @click="goToEditTrip"
-      depressed
-    >Edit</v-btn>
+  <div id="destinations">
+    <div id="map">
+      <DestinationMap 
+        :destinations="[]"
+      />
+    </div>
 
+    <TripItemSidebar 
+      :trip="trip"      
+      v-on:destinationOrderChanged="destinationOrderChanged"
+    />
 
-    <Timeline :trip="trip" v-if="trip"/>
+    <Snackbar
+      :snackbarModel="snackbarModel"
+      v-on:dismissSnackbar="snackbarModel.show = false"
+    />
   </div>
 </template>
 
 <script>
-import Timeline from "./Timeline/Timeline";
-import { getTrip, transformTrip } from "./TripService.js";
+import TripItemSidebar from "./TripItemSidebar/TripItemSidebar.vue";
+import DestinationMap from "../../components/DestinationMap/DestinationMap";
+import { getTrip, transformTrip, contiguousDestinations } from "./TripService";
+import { getYourDestinations, getPublicDestinations } from "../Destinations/DestinationsService";
+import Snackbar from "../../components/Snackbars/Snackbar";
+import { editTrip, transformTripResponse } from "../EditTrip/EditTripService";
 
 export default {
   components: {
-    Timeline
+    TripItemSidebar,
+    DestinationMap,
+    Snackbar
   },
   data() {
     return {
-      trip: null
+      trip: null,
+      snackbarModel: {
+        show: false,
+        timeout: 3000,
+        text: "",
+        color: "",
+        snackbarId: 0
+      }
     };
   },
   mounted() {
     this.getTrip();
   },
   methods: {
-    /**
-     * Sends request to get trip and then transforms trip to the right format
-     */
+    showError(errorMessage) {
+      this.snackbarModel.text = errorMessage;
+      this.snackbarModel.color = "error";
+      this.snackbarModel.show = true;
+    },
+    showSuccessMessage(successMessage) {
+      this.snackbarModel.text = successMessage;
+      this.snackbarModel.color = "success";
+      this.snackbarModel.show = true;
+    },
     async getTrip() {
       try {
-        const tripId = this.$route.params.id;
-        const travellerId = this.$route.params.travellerId;
-        // If the admin is viewing another user, use them. 
-        const userId = travellerId ? travellerId : localStorage.getItem("userId");
-        const rawTrip = await getTrip(userId, tripId);
-        const transformedTrip = transformTrip(rawTrip); 
-        this.trip = transformedTrip;
+        const tripId = this.$route.params.tripId;
+        const trip = await getTrip(tripId);
+        this.trip = trip;
       } catch (e) {
-        console.log(e);
-        if (e.status === 404) {
-          this.$router.go(-1);
-        } else {
-          // Add error handling later
-        }
+        this.showError("Could not get trip");
       }
     },
-    goToEditTrip() {
-      const travellerId = this.$route.params.travellerId;
-      const tripId = this.$route.params.id;
+    /**
+     * Changes order of destination
+     */
+    async destinationOrderChanged(indexes) {
+      try {
+        const tripId = this.$route.params.tripId;
 
-      if (travellerId) {
-        this.$router.push(`/travellers/${travellerId}/trips/${tripId}/edit`)
-      } else {
-        this.$router.push(`/trips/${tripId}/edit`);
+        if (contiguousDestinations(this.trip.tripDestinations, indexes.newIndex, indexes.oldIndex)) {
+          this.showError("Cannot have contiguous destinations");
+          const tripDestinations = [...this.trip.tripDestinations];
+          this.trip.tripDestinations = [];
+
+          setTimeout(() => {
+            this.trip.tripDestinations = tripDestinations;
+          }, 0);
+          
+          return
+        }
+
+        // Reorder elements
+        [this.trip.tripDestinations[indexes.newIndex], this.trip.tripDestinations[indexes.oldIndex]] = [this.trip.tripDestinations[indexes.oldIndex], this.trip.tripDestinations[indexes.newIndex]];
+
+        await editTrip(tripId, this.trip.tripName, this.trip.tripDestinations);
+        this.showSuccessMessage("Successfully changed order");
+      } catch (e) {
+        console.log(e);
+        this.showError("Could not changed order");
       }
-      
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
-  #trip-container {
-        width: 100%;
-    }
+  #destinations {
+    width: 100%;
+  }
 
-    #edit-trip {
-      float: right;
-      margin-top: 10px;
-      z-index: 1;
-      margin-right: 10px;
-    }
+  #map {
+    width: calc(100% - 300px);
+    display: inline-block;
+    height: 100%;
+    position: fixed;
+  }
+
 </style>
+
+
+
+
