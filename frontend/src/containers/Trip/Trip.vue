@@ -21,10 +21,10 @@
 <script>
 import TripItemSidebar from "./TripItemSidebar/TripItemSidebar.vue";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
-import { getTrip, transformTrip, contiguousDestinations } from "./TripService";
 import { getYourDestinations, getPublicDestinations } from "../Destinations/DestinationsService";
 import Snackbar from "../../components/Snackbars/Snackbar";
-import { editTrip, transformTripResponse } from "../EditTrip/EditTripService";
+import { getTrip, transformTripResponse, contiguousDestinations } from "./TripService";
+
 
 export default {
   components: {
@@ -61,9 +61,11 @@ export default {
     async getTrip() {
       try {
         const tripId = this.$route.params.tripId;
-        const trip = await getTrip(tripId);
+        const rawTrip = await getTrip(tripId);
+        const trip = transformTripResponse(rawTrip);
         this.trip = trip;
       } catch (e) {
+        console.log(e);
         this.showError("Could not get trip");
       }
     },

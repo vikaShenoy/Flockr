@@ -32,9 +32,10 @@
        Add Destination
         </v-btn>
 
-        <AddDestinationDialog 
+        <ModifyTripDestinationDialog 
           :isShowing.sync="isShowingAddDestinationDialog" 
           :editMode="false"
+          :trip="trip"
         />
           
     </div>
@@ -46,13 +47,13 @@
 <script>
 import Sortable from "sortablejs";
 import Timeline from "./Timeline/Timeline.vue";
-import AddDestinationDialog from "./AddDestinationDialog/AddDestinationDialog";
+import ModifyTripDestinationDialog from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
 
 
 export default {
   components: {
     Timeline,
-    AddDestinationDialog
+    ModifyTripDestinationDialog
   },
   data() {
     return {

@@ -20,10 +20,9 @@ function formatTime(time) {
 export function transformTripResponse(trip) {
   return {
     tripName: trip.tripName,
-    tripDestinations: trip.tripDestinations.map((tripDestination, index) => {
+    tripDestinations: trip.tripDestinations.map(tripDestination => {
       return {
-        id: index,
-        destinationId: tripDestination.destination.destinationId,
+        destination: tripDestination.destination,
         arrivalDate: tripDestination.arrivalDate === 0 ? null : moment(tripDestination.arrivalDate).format("YYYY-MM-DD"),
         arrivalTime: tripDestination.arrivalTime === -1 ? null : formatTime(moment.duration(tripDestination.arrivalTime, "minutes")),
         departureDate: tripDestination.departureDate === 0 ? null : moment(tripDestination.departureDate).format("YYYY-MM-DD"),
