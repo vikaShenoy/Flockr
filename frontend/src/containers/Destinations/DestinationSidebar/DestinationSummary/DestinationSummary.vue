@@ -23,11 +23,28 @@
 </template>
 
 <script>
+import superagent from "superagent";
+import { endpoint } from "../../../../utils/endpoint";
 
 export default {
+  mounted() {
+    this.testingPrintPhotos();
+  },
   props: {
     destination: {
       type: Object
+    }
+  },
+  methods: {
+    testingPrintPhotos: function() {
+      console.log("Testing");
+    },
+
+    getDestinationPhoto: async function(destinationId) {
+      const res = await superagent.get(endpoint(`/destinations/${destinationId}/photos`))
+        .set("Authorization", localStorage.getItem("authToken"));
+      let destinationPhotoId = res.body[0].destinationPhotoId  
+      return endpoint(`/destinations/${destinationId}/photos/${destinationPhotoId}`);
     }
   }
 };
