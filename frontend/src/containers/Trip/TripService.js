@@ -62,13 +62,16 @@ export function transformTrip(trip) {
 }
 
 /**
- * Verifies that destinations contiguous
+ * Checks if two destinations are contiguious after they have been swapped
+ * @param {Array} tripDestinations The list of destinations to swap
+ * @param {number} newIndex The index to swap to
+ * @param {number} oldIndex The index to swap from
+ * @returns {boolean} True if the destinations are contigious, false otherwise
  */
 export function contiguousDestinations(tripDestinations, newIndex, oldIndex) {
   const copiedTripDestinations = [...tripDestinations];
   [copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
 
-  console.log(copiedTripDestinations.map(copiedTripDestination => copiedTripDestination.destination.destinationName));
   let oldDestinationId = copiedTripDestinations[0].destination.destinationId;
 
   for (let i = 1; i < copiedTripDestinations.length; i ++) {

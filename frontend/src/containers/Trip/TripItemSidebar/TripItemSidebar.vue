@@ -22,6 +22,21 @@
       <Timeline :trip="trip"
         v-on:destinationOrderChanged="destinationOrderChanged"
        />
+
+       <v-btn 
+        depressed
+        color="secondary"
+        id="add-trip-destination-btn"
+        @click="isShowingAddDestinationDialog = true"
+       >
+       Add Destination
+        </v-btn>
+
+        <AddDestinationDialog 
+          :isShowing.sync="isShowingAddDestinationDialog" 
+          :editMode="false"
+        />
+          
     </div>
   </div>
 
@@ -31,11 +46,18 @@
 <script>
 import Sortable from "sortablejs";
 import Timeline from "./Timeline/Timeline.vue";
+import AddDestinationDialog from "./AddDestinationDialog/AddDestinationDialog";
 
 
 export default {
   components: {
-    Timeline
+    Timeline,
+    AddDestinationDialog
+  },
+  data() {
+    return {
+      isShowingAddDestinationDialog: false
+    };
   },
   props: {
     trip: {
@@ -108,6 +130,13 @@ export default {
       margin-top: 13px;
       left: 0;
     }
+
+    #add-trip-destination-btn {
+      margin: 0 auto;
+      display: block;
+    }
   }
+
+
 </style>
 
