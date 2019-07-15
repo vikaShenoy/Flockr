@@ -21,7 +21,7 @@
 <script>
 import TripItemSidebar from "./TripItemSidebar/TripItemSidebar.vue";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
-import { getTrip, transformTrip } from "./TripService";
+import { getTrip, transformTrip, contiguousDestinations } from "./TripService";
 import { getYourDestinations, getPublicDestinations } from "../Destinations/DestinationsService";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import { editTrip, transformTripResponse } from "../EditTrip/EditTripService";
@@ -73,11 +73,26 @@ export default {
     async destinationOrderChanged(indexes) {
       try {
         const tripId = this.$route.params.tripId;
+
+        if (contiguousDestinations(this.trip.tripDestinations, indexes.newIndex, indexes.oldIndex)) {
+          this.showError("Cannot have contiguous destinations");
+          const tripDestinations = [...this.trip.tripDestinations];
+          this.trip.tripDestinations = [];
+
+          setTimeout(() => {
+            this.trip.tripDestinations = tripDestinations;
+          }, 0);
+          
+          return
+        }
+
+        // Reorder elements
+        [this.trip.tripDestinations[indexes.newIndex], this.trip.tripDestinations[indexes.oldIndex]] = [this.trip.tripDestinations[indexes.oldIndex], this.trip.tripDestinations[indexes.newIndex]];
+
         await editTrip(tripId, this.trip.tripName, this.trip.tripDestinations);
-        const movedRow = this.trip.tripDestinations.splice(indexes.oldIndex, 1)[0];
-        this.trip.tripDestinations.splice(indexes.newIndex, 0, movedRow);
         this.showSuccessMessage("Successfully changed order");
       } catch (e) {
+        console.log(e);
         this.showError("Could not changed order");
       }
     }

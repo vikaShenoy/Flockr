@@ -3,8 +3,9 @@
             <v-timeline
               dense
             >
+                <!--data-destinationId is used to disable sorting items with the same destinationID-->
                 <TripDestination
-                    v-for="(tripDestination) in trip.tripDestinations"
+                    v-for="tripDestination in trip.tripDestinations"
                     :key="tripDestination.destinationName"
                     :tripDestination="tripDestination"
                     alignRight
@@ -41,7 +42,7 @@ export default {
             }
         });
         }
-    },
+   },
     watch: {
         data(newData)  {
             console.log(newData);

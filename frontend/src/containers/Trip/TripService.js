@@ -60,3 +60,26 @@ export function transformTrip(trip) {
     })
   } 
 }
+
+/**
+ * Verifies that destinations contiguous
+ */
+export function contiguousDestinations(tripDestinations, newIndex, oldIndex) {
+  const copiedTripDestinations = [...tripDestinations];
+  [copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
+
+  console.log(copiedTripDestinations.map(copiedTripDestination => copiedTripDestination.destination.destinationName));
+  let oldDestinationId = copiedTripDestinations[0].destination.destinationId;
+
+  for (let i = 1; i < copiedTripDestinations.length; i ++) {
+    
+    if (copiedTripDestinations[i].destination.destinationId === oldDestinationId) {
+      return true;
+    }
+
+    oldDestinationId = copiedTripDestinations[i].destination.destinationId;
+  }
+
+  return false;
+}
+
