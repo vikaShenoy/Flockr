@@ -146,6 +146,13 @@ export default {
           this.$router.push(url);
           break;
       }
+    },
+    /**
+     * Allows an admin to go back to their own account
+     */
+    async goBackToOwnAccount() {
+      await UserStore.methods.backToOwnAccount();
+      this.$router.push(`/profile/${UserStore.data.userId}`);
     }
   },
   computed: {
@@ -175,9 +182,6 @@ export default {
           return false;
         }
       });
-    },
-    goBackToOwnAccount() {
-      UserStore.methods.backToOwnAccount();
     }
   },
 }

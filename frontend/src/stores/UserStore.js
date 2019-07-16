@@ -130,6 +130,7 @@ const UserStore = {
       UserStore.methods.setData(res.body);
       localStorage.setItem("userId", ownUserId);
       UserStore.data.viewingAsAnotherUser = false;
+      return res.body.userId;
     }
   }
 };
