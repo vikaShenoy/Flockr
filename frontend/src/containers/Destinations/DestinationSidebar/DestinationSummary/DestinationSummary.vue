@@ -1,7 +1,7 @@
 <template>
   <div class="destination-summary" @click="$router.push(`/destinations/${destination.destinationId}`)">
     <v-avatar> <img
-          src="https://vuetifyjs.com/apple-touch-icon-180x180.png"
+          :src="imageSrc"
           alt="avatar"
           class="avatar"
         />
@@ -28,11 +28,16 @@ import { endpoint } from "../../../../utils/endpoint";
 
 export default {
   mounted() {
-    this.testingPrintPhotos();
+    this.getDestinationPhoto(this.destination.destinationId)
   },
   props: {
     destination: {
       type: Object
+    }
+  },
+  data() {
+    return {
+      imageSrc: "https://www.tibs.org.tw/images/default.jpg"
     }
   },
   methods: {
@@ -43,8 +48,9 @@ export default {
     getDestinationPhoto: async function(destinationId) {
       const res = await superagent.get(endpoint(`/destinations/${destinationId}/photos`))
         .set("Authorization", localStorage.getItem("authToken"));
-      let destinationPhotoId = res.body[0].destinationPhotoId  
-      return endpoint(`/destinations/${destinationId}/photos/${destinationPhotoId}`);
+      console.log(res.body)
+      let photoId = res.body[0].personalPhoto.photoId;
+      this.imageSrc = endpoint(`/users/photos/${photoId}`) + '?Authorization=' + localStorage.getItem("authToken");
     }
   }
 };
