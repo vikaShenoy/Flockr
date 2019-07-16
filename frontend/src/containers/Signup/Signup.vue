@@ -166,7 +166,7 @@ export default {
       if (!this.password) {
         this.passwordErrors = ["Password is required"];
       } else if (this.password.length < 6) {
-        this.passwordErrors = ["Password has to be atleast 6 characters long"];
+        this.passwordErrors = ["Password has to be at least 6 characters long"];
       } else if (this.confirmPassword && (this.password !== this.confirmPassword)) {
         this.passwordErrors = ["Passwords are not identical"];
         this.confirmPasswordErrors = ["Passwords are not identical"];
