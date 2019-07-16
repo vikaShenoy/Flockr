@@ -71,3 +71,32 @@ export function contiguousDestinations(tripDestinations, newIndex, oldIndex) {
   return false;
 }
 
+/**
+ * Edit a trip. Send a request to the edit trip backend endpoint with
+ * the trip data to edit.
+ * @param {number} tripId - The ID of the trip to edit
+ * @param {string} tripName - The edited trip name
+ * @param {Object[]} tripDestinations - The edited trip destinations
+ */
+export async function editTrip(tripId, tripName, tripDestinations) {
+   const userId = localStorage.getItem("userId");
+
+   const transformedTripDestinations = tripDestinations.map(tripDestination  => ({
+    destinationId: tripDestination.destination.destinationId,
+    arrivalDate: tripDestination.arrivalDate ? moment(tripDestination.arrivalDate).valueOf() : null,
+    arrivalTime: tripDestination.arrivalTime ? moment.duration(tripDestination.arrivalTime).asMinutes() : null,
+    departureDate: tripDestination.departureDate ? moment(tripDestination.departureDate).valueOf() : null,
+    departureTime: tripDestination.departureTime ? tripDestination.departureTime === null || tripDestination.departureTime === ""? null : moment.duration(tripDestination.departureTime).asMinutes() : null,
+   })); 
+
+  const authToken = localStorage.getItem("authToken");
+
+  await superagent.put(endpoint(`/users/${userId}/trips/${tripId}`))
+    .set("Authorization", authToken)
+    .send({
+      tripName,
+      tripDestinations: transformedTripDestinations
+    });
+
+}
+

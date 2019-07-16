@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="trip-destination">
     <v-timeline-item
       :style="{width: '90%', marginLeft: '5%'}"
       color="primary"
@@ -16,7 +16,7 @@
               <v-icon size="30">flight_takeoff</v-icon>
             </v-flex>
             <v-flex xs10>
-              <p>{{tripDestination.arrival}}</p>
+              <p>{{tripDestination.arrivalTime}}</p>
             </v-flex>
           </v-layout>
           <v-layout>
@@ -57,6 +57,10 @@ export default {
 
 .container {
   padding: 5px;
+}
+
+.trip-destination {
+  cursor: move;
 }
 </style>
 

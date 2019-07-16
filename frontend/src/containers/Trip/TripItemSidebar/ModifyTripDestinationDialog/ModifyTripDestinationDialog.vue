@@ -50,6 +50,7 @@
                     readonly
                     v-on="on"
                     color="secondary"
+                    clearable
                   ></v-text-field>
                 </template>
                 <v-date-picker
@@ -97,6 +98,7 @@
                     v-on="on"
                     color="secondary"
                     xs4
+                    clearable
                   ></v-text-field>
                 </v-flex>
               </template>
@@ -131,6 +133,7 @@
                     v-on="on"
                     color="secondary"
                     xs8
+                    clearable
                   ></v-text-field>
                 </v-flex>
               </template>
@@ -177,6 +180,7 @@
                     readonly
                     v-on="on"
                     color="secondary"
+                    clearable
                   ></v-text-field>
                 </v-flex>
               </template>
@@ -197,6 +201,7 @@
             depressed
             color="secondary"
             @click="modifyTripDestination()"
+            :loading="isLoading"
           >
             {{ editMode ? "Update" : "Create" }}
           </v-btn>
@@ -209,8 +214,7 @@
 
 <script>
 import { rules } from "../../../../utils/rules";
-import { getDestinations, editTrip } from "./ModifyTripDestinationDialogService";
-import { transformFormattedTrip } from '../../TripService';
+import { getDestinations, editTrip, transformFormattedTrip } from "./ModifyTripDestinationDialogService";
 
 export default {
   props: {
@@ -243,7 +247,8 @@ export default {
       departureDateMenu: false,
       departureTimeMenu: false,
       dateRules: [rules.required],
-      destinationRules: [rules.required]
+      destinationRules: [rules.required],
+      isLoading: false
     };
   },
   mounted() {
@@ -256,10 +261,13 @@ export default {
       if (this.editMode) {
       } else {
         const newTripDestinations = [...this.trip.tripDestinations, this.tripDestination];
-        console.log(newTripDestinations);
+        console.log(transformFormattedTrip);
         const unformattedTrip = transformFormattedTrip({...this.trip, tripDestinations: newTripDestinations});
         const tripId = this.$route.params.tripId;
+        this.isLoading = true;
         await editTrip(tripId, unformattedTrip);
+        this.isLoading = false;
+        this.isShowingDialog = false;
       }
     },
     async getDestinations() {

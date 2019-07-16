@@ -23,7 +23,7 @@ import TripItemSidebar from "./TripItemSidebar/TripItemSidebar.vue";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
 import { getYourDestinations, getPublicDestinations } from "../Destinations/DestinationsService";
 import Snackbar from "../../components/Snackbars/Snackbar";
-import { getTrip, transformTripResponse, contiguousDestinations } from "./TripService";
+import { getTrip, transformTripResponse, contiguousDestinations, editTrip } from "./TripService";
 
 
 export default {

@@ -108,7 +108,7 @@ Feature: The user can manage destinations
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
       | The Dairy Down The Street | 1                 | 1          | 40.0     | 184.9     | 1         | true     |
     Then the other user's private destination is deleted
-    And the photo is changed to link to the public destination
+#    And the photo is changed to link to the public destination
 
   # Test adding a photo to a destination
   Scenario: A user tries to add a photo to a destination with a photo that doesn't exist

@@ -44,34 +44,4 @@ export async function getTrip(tripId, userId) {
   return res.body;
 }
 
-/**
- * Edit a trip. Send a request to the edit trip backend endpoint with
- * the trip data to edit.
- * @param {number} tripId - The ID of the trip to edit
- * @param {string} tripName - The edited trip name
- * @param {Object[]} tripDestinations - The edited trip destinations
- */
-export function editTrip(tripId, tripName, tripDestinations) {
-   const userId = localStorage.getItem("userId");
 
-   const transformedTripDestinations = tripDestinations.map(tripDestination  => {
-    const transformedTripDestination = {};
-    transformedTripDestination.destinationId = tripDestination.destination.destinationId;
-    transformedTripDestination.arrivalDate = moment(tripDestination.arrivalDate).valueOf();
-    transformedTripDestination.arrivalTime = tripDestination.arrivalTime === null || tripDestination.arrivalTime === "" ? null : moment.duration(tripDestination.arrivalTime).asMinutes();
-    transformedTripDestination.departureDate = moment(tripDestination.departureDate).valueOf(); 
-    transformedTripDestination.departureTime = tripDestination.departureTime === null || tripDestination.departureTime === ""? null : moment.duration(tripDestination.departureTime).asMinutes();
-
-    return transformedTripDestination;
-  }); 
-
-
-  const authToken = localStorage.getItem("authToken");
-
-  return superagent.put(endpoint(`/users/${userId}/trips/${tripId}`))
-    .set("Authorization", authToken)
-    .send({
-      tripName,
-      tripDestinations: transformedTripDestinations
-    });
-}
