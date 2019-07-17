@@ -31,3 +31,20 @@ export async function emailTaken(email) {
 
   return false;
 }
+
+export const rules = {
+  required: field => !!field || "Field is required",
+  noNumbers: field => !/\d/.test(field) || "No Numbers Allowed",
+  nonEmptyArray: field => field.length > 0 || "Please select at least 1"
+};
+
+/**
+ * Update the user's information
+ * @param {Number | String} userId the id of the user
+ * @param {Object} basicInfo object containing info being updated, as per API spec
+ */
+export function updateBasicInfo(userId, basicInfo) {
+  return superagent.patch(endpoint(`/users/${userId}`))
+  .set("Authorization", localStorage.getItem("authToken"))
+  .send(basicInfo);
+}

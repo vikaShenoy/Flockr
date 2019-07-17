@@ -7,6 +7,17 @@
   </div>
 </template>
 
+<script>
+export default {
+  data () {
+      return {
+        e1: 0
+      }
+    }
+}
+</script>
+
+
 <style lang="scss" scoped>
 @import "../../styles/_variables.scss";
   #home {
