@@ -40,15 +40,6 @@
 
           <v-btn
             class="action-button"
-            :disabled="this.selectedUsers.length !== 1"
-            depressed
-            color="secondary"
-          >
-            Edit user
-          </v-btn>
-
-          <v-btn
-            class="action-button"
             :disabled="this.selectedUsers.length === 0"
             @click="showPrompt('Are you sure?', deleteUsersButtonClicked)"
             depressed
@@ -134,14 +125,6 @@ export default {
      */
     selectedUsers: function() {
       return this.items.filter((item) => item.selected).map((user) => user.userId);
-    },
-    
-    /**
-     * Return whether the edit button is enabled.
-     */
-    isEditButtonEnabled: function() {
-      // only enable the button when one user is selected
-      return this.selectedUsers.length == 0;
     }
   },
   methods: {
@@ -187,15 +170,6 @@ export default {
      */
     signupButtonClicked: function() {
       this.showSignup = true;
-    },
-
-    /**
-     * Event handler for when the button to edit an user is clicked.
-     * Emit an event for the parent to handle editing users.
-     */
-    editUserButtonClicked: function() {
-      const userId = this.selectedUsers[0];
-      this.$emit('wantToEditUserById', userId);
     },
     /**
      * Call the admin panel service to logout the given user ids.
