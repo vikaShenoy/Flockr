@@ -468,12 +468,9 @@ public class UserController extends Controller {
      * @param request unused request object
      * @return ok with status 200 if types obtained, 401 if no token is provided
      */
-    @With(LoggedIn.class)
     public CompletionStage<Result> getTravellerTypes(Http.Request request) {
         return userRepository.getAllTravellerTypes()
-                .thenApplyAsync((types) -> {
-                    return ok(Json.toJson(types));
-                }, httpExecutionContext.current());
+                .thenApplyAsync((types) -> ok(Json.toJson(types)), httpExecutionContext.current());
     }
 
 
