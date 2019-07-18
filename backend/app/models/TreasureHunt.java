@@ -1,10 +1,12 @@
 package models;
 
+import exceptions.NotFoundException;
 import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Optional;
 
 @Entity
 public class TreasureHunt extends Model {
@@ -13,6 +15,9 @@ public class TreasureHunt extends Model {
     private int treasureHuntId;
 
     private String treasureHuntName;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User owner;
 
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
     private Destination treasureHuntDestination;
@@ -48,8 +53,8 @@ public class TreasureHunt extends Model {
         this.treasureHuntName = treasureHuntName;
     }
 
-    public Destination getTreasureHuntDestination() {
-        return treasureHuntDestination;
+    public int getTreasureHuntDestinationId() {
+        return treasureHuntDestination.getDestinationId();
     }
 
     public void setTreasureHuntDestination(Destination treasureHuntDestination) {
@@ -70,7 +75,7 @@ public class TreasureHunt extends Model {
 
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
-    }y
+    }
 
     public Date getEndDate() {
         return endDate;
@@ -78,6 +83,24 @@ public class TreasureHunt extends Model {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+
+    public int getOwnerId() {
+        return owner.getUserId();
+    }
+
+    /**
+     * Setter for the owner of the treasure hunt.
+     *
+     * @param ownerId the id of the owner.
+     * @throws NotFoundException
+     */
+    public void setOwnerId(int ownerId) throws NotFoundException {
+        Optional<User> optionalUser = User.find.query().where().eq("user_id", ownerId).findOneOrEmpty();
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("This user does not exist");
+        }
+        this.owner = optionalUser.get();
     }
 
     /**
