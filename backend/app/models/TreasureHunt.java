@@ -8,6 +8,9 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.Optional;
 
+/**
+ * Class models a treasure hunt for a given destination.
+ */
 @Entity
 public class TreasureHunt extends Model {
 
