@@ -19,8 +19,11 @@
     </div>
 
     <div v-else>
-      <Timeline :trip="trip"
+      <Timeline
+        :trip="trip"
         v-on:destinationOrderChanged="destinationOrderChanged"
+        v-on:showEditTripDestination="showEditTripDestination"
+        v-on:deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
        />
 
        <v-btn 
@@ -36,8 +39,16 @@
           :isShowing.sync="isShowingAddDestinationDialog" 
           :editMode="false"
           :trip="trip"
+          v-on:updatedTripDestinations="tripDestinationsUpdated"
         />
-          
+
+        <ModifyTripDestinationDialog 
+          :isShowing.sync="isShowingUpdateDestinationDialog" 
+          :editMode="true"
+          :trip="trip"
+          v-on:updatedTripDestinations="tripDestinationsUpdated"
+          :editedTripDestination="editedTripDestination"
+        />
     </div>
   </div>
 
@@ -57,7 +68,9 @@ export default {
   },
   data() {
     return {
-      isShowingAddDestinationDialog: false
+      isShowingAddDestinationDialog: false,
+      isShowingUpdateDestinationDialog: false,
+      editedTripDestination: null,
     };
   },
   props: {
@@ -66,8 +79,22 @@ export default {
     }
   },
   methods: {
+    /**
+     * Emitted when the order of destinations have changed
+     */
     destinationOrderChanged(indexes) {
       this.$emit("destinationOrderChanged", indexes);
+    },
+    /**
+     * Called when the edit button has been pressed on
+     * a trip destination
+     */
+    showEditTripDestination(tripDestination) {
+      this.isShowingUpdateDestinationDialog = true; 
+      this.editedTripDestination = tripDestination;
+    },
+    tripDestinationsUpdated(tripDestinations) {
+      this.$emit("updatedTripDestinations", tripDestinations);
     }
   }
 }
@@ -81,9 +108,9 @@ export default {
 
   #trip-item-sidebar {
     position: fixed;
-    height: 100%;
     width: 315px; 
     right: 0;
+    height: calc(100vh - 64px);
 
 
     #title {
@@ -100,6 +127,12 @@ export default {
       z-index: 3;
     }
 
+    #trip-destinations-list {
+      padding-bottom: 10px;
+      overflow-y: auto;
+      height: calc(100vh - 114px);
+    }
+
     .option {
       background-color: $secondary;
       color: $darker-white;
@@ -112,10 +145,6 @@ export default {
 
     .theme--light.v-btn-toggle {
       background: none !important;
-    }
-
-    #trip-destinations-list {
-      height: 100%;
     }
 
     #spinner {

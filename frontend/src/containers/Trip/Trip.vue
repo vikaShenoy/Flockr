@@ -9,6 +9,8 @@
     <TripItemSidebar 
       :trip="trip"      
       v-on:destinationOrderChanged="destinationOrderChanged"
+      v-on:updatedTripDestinations="updatedTripDestinations"
+      v-on:deleteTripDestination="deleteTripDestination"
     />
 
     <Snackbar
@@ -23,7 +25,7 @@ import TripItemSidebar from "./TripItemSidebar/TripItemSidebar.vue";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
 import { getYourDestinations, getPublicDestinations } from "../Destinations/DestinationsService";
 import Snackbar from "../../components/Snackbars/Snackbar";
-import { getTrip, transformTripResponse, contiguousDestinations, editTrip } from "./TripService";
+import { getTrip, transformTripResponse, contiguousDestinations, editTrip, contiguousReorderedDestinations } from "./TripService";
 
 
 export default {
@@ -76,15 +78,10 @@ export default {
       try {
         const tripId = this.$route.params.tripId;
 
-        if (contiguousDestinations(this.trip.tripDestinations, indexes.newIndex, indexes.oldIndex)) {
+        if (contiguousReorderedDestinations(this.trip.tripDestinations, indexes.newIndex, indexes.oldIndex)) {
           this.showError("Cannot have contiguous destinations");
           const tripDestinations = [...this.trip.tripDestinations];
-          this.trip.tripDestinations = [];
-
-          setTimeout(() => {
-            this.trip.tripDestinations = tripDestinations;
-          }, 0);
-          
+          this.$set(this.trip, "tripDestinations", tripDestinations);
           return
         }
 
@@ -96,6 +93,32 @@ export default {
       } catch (e) {
         console.log(e);
         this.showError("Could not changed order");
+      }
+    },
+    updatedTripDestinations(tripDestinations) {
+      this.$set(this.trip, "tripDestinations", tripDestinations);
+    },
+    async deleteTripDestination(tripDestination) {
+      if (this.trip.tripDestinations.length === 2) {
+        this.showError("You cannot have less then 2 destinations");
+        return;
+      }
+      const newTripDestinations = [...this.trip.tripDestinations].filter(currentTripDestination => {
+        return tripDestination.tripDestinationId !== currentTripDestination.tripDestinationId;
+      });
+      if (contiguousDestinations(newTripDestinations)) {
+        this.showError("Deleting this destination results in contiguous destinations");
+        return;
+      }
+
+      const tripId = this.$route.params.tripId;
+
+      try {
+        await editTrip(tripId, this.trip.tripName, newTripDestinations);
+        this.$set(this.trip, "tripDestinations", newTripDestinations);
+        this.showSuccessMessage("Removed destination from trip");
+      } catch (e) {
+        this.showError("Could not remove destination from trip");        
       }
     }
   }

@@ -9,6 +9,8 @@
                     :key="tripDestination.destinationName"
                     :tripDestination="tripDestination"
                     alignRight
+                    v-on:showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
+                    v-on:deleteTripDestination="deleteTripDestination => $emit('deleteTripDestination', tripDestination)"
                 />
             </v-timeline>
     </div>    

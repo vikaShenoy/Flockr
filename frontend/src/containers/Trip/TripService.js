@@ -34,6 +34,7 @@ export function transformTripResponse(trip) {
     tripName: trip.tripName,
     tripDestinations: trip.tripDestinations.map(tripDestination => {
       return {
+        tripDestinationId: tripDestination.tripDestinationId,
         destination: tripDestination.destination,
         arrivalDate: !tripDestination.arrivalDate ? null : moment(tripDestination.arrivalDate).format("YYYY-MM-DD"),
         arrivalTime: !tripDestination.arrivalTime ? null : formatTime(moment.duration(tripDestination.arrivalTime, "minutes")),
@@ -44,32 +45,39 @@ export function transformTripResponse(trip) {
   };
 }
 
-
-
 /**
- * Checks if two destinations are contiguious after they have been swapped
+ * Checks if destinations are contiguious
  * @param {Array} tripDestinations The list of destinations to swap
- * @param {number} newIndex The index to swap to
- * @param {number} oldIndex The index to swap from
  * @returns {boolean} True if the destinations are contigious, false otherwise
  */
-export function contiguousDestinations(tripDestinations, newIndex, oldIndex) {
-  const copiedTripDestinations = [...tripDestinations];
-  [copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
-
-  let oldDestinationId = copiedTripDestinations[0].destination.destinationId;
-
-  for (let i = 1; i < copiedTripDestinations.length; i ++) {
+export function contiguousDestinations(tripDestinations) {
+  let oldDestinationId = tripDestinations[0].destination.destinationId;
+  for (const tripDestination of tripDestinations.slice(1)) {
     
-    if (copiedTripDestinations[i].destination.destinationId === oldDestinationId) {
+    if (tripDestination.destination.destinationId === oldDestinationId) {
       return true;
     }
-
-    oldDestinationId = copiedTripDestinations[i].destination.destinationId;
+    oldDestinationId = tripDestination.destination.destinationId;
   }
 
   return false;
 }
+
+/**
+ * Checks if destinations are contiguous after they have been swapped
+ * @param {Array} tripDestinations list of destinations to swap and check
+ * @param {number} newIndex index to be swapped to
+ * @param {number} oldIndex index to be swapped by
+ * @returns {boolean} True if the trip destinations are contiguous, false otherwise
+ */
+export function contiguousReorderedDestinations(tripDestinations, newIndex, oldIndex) {
+  const copiedTripDestinations = [...tripDestinations];
+  [copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
+  return contiguousDestinations(copiedTripDestinations);
+}
+
+
+
 
 /**
  * Edit a trip. Send a request to the edit trip backend endpoint with

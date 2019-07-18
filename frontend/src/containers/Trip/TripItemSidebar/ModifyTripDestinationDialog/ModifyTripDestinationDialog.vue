@@ -22,7 +22,7 @@
             <v-flex xs12>
               <v-select
                 v-model="tripDestination.destination"
-                :items="destinations"
+                :items="filteredDestinations"
                 item-text="destinationName"
                 :item-value="destination => destination"
                 label="Destination"
@@ -229,12 +229,17 @@ export default {
     trip: {
       type: Object,
       required: true
+    },
+    editedTripDestination: {
+      type: Object,
+      required: false
     }
   },
   data() {
     return {
       isShowingDialog: false,
       tripDestination: {
+        tripDestinationId: null,
         arrivalDate: "",
         arrivalTime: "",
         departureDate: "",
@@ -257,23 +262,60 @@ export default {
   methods: {
     async modifyTripDestination() {
       if (!this.$refs.form.validate()) return;
+      let newTripDestinations;
 
       if (this.editMode) {
+        // Replace trip destination with the new content
+        newTripDestinations = [...this.trip.tripDestinations].map(tripDestination => {
+          if (tripDestination.tripDestinationId === this.tripDestination.tripDestinationId) {
+            return this.tripDestination;
+          }
+
+          return tripDestination;
+        });
       } else {
-        const newTripDestinations = [...this.trip.tripDestinations, this.tripDestination];
-        console.log(transformFormattedTrip);
+          newTripDestinations = [...this.trip.tripDestinations, this.tripDestination];
+      }
+
         const unformattedTrip = transformFormattedTrip({...this.trip, tripDestinations: newTripDestinations});
         const tripId = this.$route.params.tripId;
         this.isLoading = true;
         await editTrip(tripId, unformattedTrip);
         this.isLoading = false;
         this.isShowingDialog = false;
-      }
+        this.$emit("updatedTripDestinations", newTripDestinations);
     },
     async getDestinations() {
       const destinations = await getDestinations();
       this.destinations = destinations;
     }
+  },
+  computed: {
+    filteredDestinations() {
+      if (this.editMode) {
+        const tripDestinationIndex = this.trip.tripDestinations.findIndex(tripDestination => tripDestination.tripDestinationId === this.tripDestination.tripDestinationId);
+
+        return this.destinations.filter(destination => {
+          let filterPreviousDestination = true;
+          let filterPastDestination = true;
+          // Filter out destination before the edited destination (if exists)
+          if (tripDestinationIndex > 0) {
+            filterPreviousDestination = destination.destinationId !== this.trip.tripDestinations[tripDestinationIndex - 1].destination.destinationId;
+          }
+
+          // Filter out destination after the edited destination (if exists)
+          if (tripDestinationIndex < this.trip.tripDestinations.length - 1) {
+            filterPastDestination = destination.destinationId !== this.trip.tripDestinations[tripDestinationIndex + 1].destination.destinationId;
+          }
+
+          return filterPreviousDestination && filterPastDestination;
+        });
+      } else {
+          return this.destinations.filter(destination => {
+            return destination.destinationId !== this.trip.tripDestinations[this.trip.tripDestinations.length - 1].destination.destinationId;
+          });
+        }
+      }
   },
   watch: {
     // Synchronize both isShowing state and props
@@ -282,6 +324,10 @@ export default {
     },
     isShowing(value) {
       this.isShowingDialog = value;
+    },
+    editedTripDestination(tripDestination) {
+      console.log("Did I make it here");
+      this.tripDestination = {...tripDestination};
     }
   }
 };
