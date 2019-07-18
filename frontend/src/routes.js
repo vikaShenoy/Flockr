@@ -12,7 +12,7 @@ import Trip from "./containers/Trip/Trip.vue";
 import EditTrip from "./containers/EditTrip/EditTrip.vue";
 import AdminPanel from "./containers/AdminPanel/AdminPanel.vue";
 
-import { loggedIn, loggedInOrOut, isAdmin } from "./utils/auth";
+import { loggedIn, loggedInOrOut, isAdmin, loggedOut } from "./utils/auth";
 import UserGallery from "./containers/UserGallery/UserGallery";
 
 // All routes need to be annotated with loggedIn or loggedInOrOut
@@ -30,12 +30,12 @@ const routes = [
   {
     path: "/signup",
     component: Signup,
-    beforeEnter: loggedInOrOut
+    beforeEnter: loggedOut
   },
   {
     path: "/login",
     component: Login,
-    beforeEnter: loggedInOrOut
+    beforeEnter: loggedOut
   },
   {
     path: "/search",

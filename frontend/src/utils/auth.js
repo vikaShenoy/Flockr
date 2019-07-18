@@ -111,3 +111,23 @@ export async function isAdmin(to, from, next) {
     next("/");
   }
 }
+
+/**
+ * Router onEnter hook to check if the user is logged out
+ * @param {*} to The route to go to
+ * @param {*} from The router the user is currently in
+ * @param {*} next Function to choose where the user is going
+ */
+export async function loggedOut(to, from, next) {
+  const userId = localStorage.getItem("userId");
+  const userToken = localStorage.getItem("authToken");
+
+  if (userId || userToken) {
+    next("/");
+    return;
+  } else {
+    next();
+    return;
+  }
+
+}
