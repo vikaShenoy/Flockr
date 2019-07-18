@@ -1,10 +1,13 @@
 package models;
 
+import io.ebean.Finder;
+import io.ebean.Model;
+
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-public class TreasureHunt {
+public class TreasureHunt extends Model {
 
     @Id
     private int treasureHuntId;
@@ -67,7 +70,7 @@ public class TreasureHunt {
 
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
-    }
+    }y
 
     public Date getEndDate() {
         return endDate;
@@ -76,4 +79,9 @@ public class TreasureHunt {
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
+
+    /**
+     * This is required by EBean to make queries on the database
+     */
+    public static final Finder<Integer, TreasureHunt> find = new Finder<>(TreasureHunt.class);
 }

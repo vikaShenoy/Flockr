@@ -57,6 +57,10 @@ DELETE      /api/users/:userId/trips/:tripId          controllers.TripController
 GET         /api/users/:userId/trips/:tripId          controllers.TripController.getTrip(userId: Int, tripId: Int, request: Request)
 PUT         /api/users/:userId/trips/:tripId          controllers.TripController.updateTrip(request: Request, userId: Int, tripId : Int)
 
+# Treasure hunt routes
+POST        /api/users/:userId/treasurehunts          controllers.TreasureHuntController.addTreasureHunt(request: Request, userId: Int)
+
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET          /assets/*file                                      controllers.Assets.at(path="/public", file)
