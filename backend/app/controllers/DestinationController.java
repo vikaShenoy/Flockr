@@ -437,6 +437,7 @@ public class DestinationController extends Controller {
 
     /**
      * Adds a photo to a destination
+     *
      * @param destinationId the destination to add a photo to
      * @param request the request object
      * @return - 400 If request body fields don't exist
@@ -513,6 +514,7 @@ public class DestinationController extends Controller {
 
     /**
      * Get all the photos linked to this destination
+     *
      * @param destinationId the id of the destination
      * @param request the HTTP request trying to get the destination photos
      * @return a response according to the API spec
@@ -551,6 +553,7 @@ public class DestinationController extends Controller {
 
     /**
      * Remove the association between a personal photo and a destination
+     *
      * @param photoId the id of the photo
      * @param request the HTTP request
      * @return a response that complies with the API spec
@@ -592,6 +595,7 @@ public class DestinationController extends Controller {
 
     /**
      * Allows a user to add a proposal
+     *
      * @param request Request object to get user object
      * @param destinationId ID of destination to propose to
      * @return A response that complies with the API spec
@@ -636,6 +640,7 @@ public class DestinationController extends Controller {
 
     /**
      * Allows an admin to accept a traveller type proposal change
+     *
      * @param destinationProposalId Id of destination prosposal to accept
      * @return A response that complies with the API spec
      */
@@ -658,6 +663,7 @@ public class DestinationController extends Controller {
 
     /**
      * Allows an admin to reject a destination proposal
+     *
      * @param destinationProposalId the ID of the proposal to reject
      * @return A response that complies with the API spec
      */
@@ -668,8 +674,9 @@ public class DestinationController extends Controller {
     }
 
     /**
-     * Allows an admin to get all destination proposals
-     * @return
+     * Allows an admin to get all the destination proposals
+     *
+     * @return A response that complies with the API spec
      */
     @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> getProposals() {

@@ -193,7 +193,8 @@ public class DestinationRepository {
     }
 
     /**
-     * Creates a proposal
+     * Creates a destination proposal
+     *
      * @param proposal The proposal to create
      * @return The created proposal
      */
@@ -205,8 +206,9 @@ public class DestinationRepository {
     }
 
     /**
-     * Finds a destinationProposal by it's ID
-     * @param destinationProposalId the ID to search for
+     * Finds a destination proposal by the given ID
+     *
+     * @param destinationProposalId the ID of the destination proposal to be search
      * @return The destinationProposal that corresponds to the ID
      */
     public CompletionStage<Optional<DestinationProposal>> getDestinationProposalById(int destinationProposalId) {
@@ -219,8 +221,9 @@ public class DestinationRepository {
     }
 
     /**
+     * Deletes a destination proposal with the given ID
      *
-     * @param destinationProposalId
+     * @param destinationProposalId the ID of the destination proposal to be search
      * @return void as nothing needs to be returned
      */
     public CompletionStage<Void> deleteDestinationProposalById(int destinationProposalId) {
@@ -228,7 +231,8 @@ public class DestinationRepository {
     }
 
     /**
-     * Gets all destination proposals
+     * Gets all destination proposals information
+     *
      * @return the destination proposals
      */
     public CompletionStage<List<DestinationProposal>> getDestinationProposals() {
