@@ -65,8 +65,8 @@ public class User extends Model {
     @Constraints.Required
     private String passwordHash;
 
-
     private String token;
+
 
     @Override
     public String toString() {
