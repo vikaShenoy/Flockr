@@ -32,7 +32,7 @@ public class TreasureHunt extends Model {
     public TreasureHunt(String treasureHuntName, int treasureHuntDestinationId, String riddle,
                         Date startDate, Date endDate) throws NotFoundException {
         this.treasureHuntName = treasureHuntName;
-        setTreasureHuntDestination(treasureHuntDestinationId);
+        setTreasureHuntDestinationId(treasureHuntDestinationId);
         this.riddle = riddle;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -54,11 +54,11 @@ public class TreasureHunt extends Model {
         this.treasureHuntName = treasureHuntName;
     }
 
-    public int getTreasureHuntDestination() {
+    public int getTreasureHuntDestinationId() {
         return treasureHuntDestination.getDestinationId();
     }
 
-    public void setTreasureHuntDestination(int treasureHuntDestinationId) throws NotFoundException {
+    public void setTreasureHuntDestinationId(int treasureHuntDestinationId) throws NotFoundException {
         Optional<Destination> dest = Destination.find.query().where().eq("destination_id", treasureHuntDestinationId).findOneOrEmpty();
         if (!dest.isPresent()) {
             throw new NotFoundException("Destination not found.");

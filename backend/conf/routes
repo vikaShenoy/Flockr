@@ -57,7 +57,9 @@ DELETE      /api/users/:userId/trips/:tripId          controllers.TripController
 GET         /api/users/:userId/trips/:tripId          controllers.TripController.getTrip(userId: Int, tripId: Int, request: Request)
 PUT         /api/users/:userId/trips/:tripId          controllers.TripController.updateTrip(request: Request, userId: Int, tripId : Int)
 
-# Treasure hunt routes
+# Treasure Hunt Routes
+PUT         /treasurehunts/:treasureHuntId              controllers.TreasureHuntController.editTreasureHunt(request: Request, treasureHuntId: Int)
+DELETE      /treasurehunts/:treasureHuntId              controllers.TreasureHuntController.deleteTreasureHunt(request: Request, treasureHuntId: Int)
 POST        /api/users/:userId/treasurehunts          controllers.TreasureHuntController.addTreasureHunt(request: Request, userId: Int)
 
 
