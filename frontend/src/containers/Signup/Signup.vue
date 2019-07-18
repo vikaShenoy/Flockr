@@ -1,29 +1,5 @@
 <template>
   <div id="signup-container">
-    <v-card id="signup" class="col-lg-6 offset-lg-3" :style="{display: 'none'}">
-
-      <h2>Sign Up</h2>
-
-      <v-text-field v-model="firstName" color="secondary" label="First Name" @blur="validateFirstName()"
-        :error-messages="firstNameErrors" :maxlength="50"/>
-
-      <v-text-field v-model="lastName" color="secondary" label="Last Name" @blur="validateLastName()"
-        :error-messages="lastNameErrors" :maxlength="50"/>
-
-      <v-text-field v-model="email" color="secondary" label="Email" @blur="validateEmail()"
-        :error-messages="emailErrors" autocomplete="off" :maxlength="320"/>
-
-
-      <v-text-field v-model="password" type="password" color="secondary" label="Password" @blur="validatePassword()"
-        :error-messages="passwordErrors" :maxlength="50"/>
-
-      <v-text-field v-model="confirmPassword" type="password" color="secondary" label="Confirm Password"
-        @blur="validateConfirmPassword()" :error-messages="confirmPasswordErrors" :maxlength="50"
-        v-on:keyup.enter="signup"/>
-
-      <v-btn color="secondary" depressed class="col-sm-4 offset-sm-4" @click="signup()">Sign Up</v-btn>
-    </v-card>
-
     <v-stepper v-model="currStepperStep">
       <v-stepper-header>
         <v-stepper-step :complete="currStepperStep > 1" step="1">Basic Info</v-stepper-step>
