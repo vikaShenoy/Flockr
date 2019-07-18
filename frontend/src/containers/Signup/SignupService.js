@@ -1,5 +1,6 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
+import moment from "moment";
 
 /**
  * Sign up a user.
@@ -35,7 +36,8 @@ export async function emailTaken(email) {
 export const rules = {
   required: field => !!field || "Field is required",
   noNumbers: field => !/\d/.test(field) || "No Numbers Allowed",
-  nonEmptyArray: field => field.length > 0 || "Please select at least 1"
+  nonEmptyArray: field => field.length > 0 || "Please select at least 1",
+  dateBeforeToday: field => moment(field, 'DD/MM/YYYY') < moment() || "Must be before today and in DD/MM/YYYY format"
 };
 
 /**

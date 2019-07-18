@@ -44,6 +44,10 @@
             <v-text-field v-model="lastName" color="secondary" label="Last name" @blur="validateLastName()"
               :error-messages="lastNameErrors" :maxlength="50" />
 
+            <v-text-field v-model="dateOfBirth" mask="date" label="Birthday" hint="DD/MM/YYYY" persistent-hint
+            return-masked-value placeholder="12/04/2003" :rules="[rules.dateBeforeToday, rules.required]"
+            validate-on-blur />
+
             <v-select :rules="[rules.required]" v-model="gender" :items="genderOptions" color="secondary"
               label="Gender" />
           </v-card>
@@ -76,7 +80,6 @@
             <v-combobox v-model="selectedPassports" :items="this.allPassports" :item-text="p => p.passportCountry" label="Passports"
               :rules="[rules.nonEmptyArray]" clearable multiple />
 
-            <!-- Add traveller type validation -->
             <v-combobox v-model="selectedTravellerTypes" :items="this.allTravellerTypes" :item-text="t => t.travellerTypeName"
               label="Traveller types" :rules="[rules.nonEmptyArray]" clearable multiple />
           </v-card>
@@ -97,6 +100,7 @@ import { getNationalities } from "../Profile/Nationalities/NationalityService.js
 import { getPassports } from "../Profile/Passports/PassportService.js";
 import { getTravellerTypes, getAllTravellerTypes } from "../Profile/TravellerTypes/TravellerTypesService.js";
 import { validate } from "email-validator";
+import moment from "moment";
 
 export default {
   async mounted() {
@@ -129,6 +133,7 @@ export default {
       selectedPassports: [],
       allTravellerTypes: [],
       selectedTravellerTypes: [],
+      dateOfBirth: "",
       currStepperStep: 1,
       rules: rules,
       loading: false,
@@ -143,8 +148,10 @@ export default {
      * Return true if all the required fields in the basic info stepper are completed
      */
     isBasicInfoStepperCompleted: function() {
-      const { firstName, lastName, gender } = this;
-      return [firstName, lastName, gender].every(field => field.length > 0);
+      const { firstName, lastName, gender, dateOfBirth } = this;
+      const fieldsAreNotEmpty = [firstName, lastName, gender, dateOfBirth].every(field => field.length > 0);
+      const dateOfBirthBeforeToday = moment(dateOfBirth, 'DD/MM/YYYY') < moment();
+      return fieldsAreNotEmpty;
     },
     /**
      * Return true if all the required fields in the login info stepper are completed
@@ -184,7 +191,7 @@ export default {
       this.lastNameErrors = [];
 
       if (!this.lastName) {
-        this.lastNameErrors = ["Last Name is required"];
+        this.lastNameErrors = ["Last name is required"];
       } else {
         this.lastNameErrors = [];
       }
@@ -301,14 +308,16 @@ export default {
         selectedNationalityIds, 
         selectedPassportIds, 
         selectedTravellerTypeIds, 
-        gender 
+        gender ,
+        dateOfBirth
       } = this;
       try {
         await updateBasicInfo(signedUpUserId, {
           nationalities: selectedNationalityIds,
           passports: selectedPassportIds,
           travellerTypes: selectedTravellerTypeIds,
-          gender: gender
+          gender: gender,
+          dateOfBirth: moment(dateOfBirth, 'DD/MM/YYYY').format('YYYY-DD-MM')
         });
         this.$router.push(`/profile/${signedUpUserId}`);
         this.loading = false;
