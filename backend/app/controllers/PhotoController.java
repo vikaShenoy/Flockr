@@ -140,11 +140,6 @@ public class PhotoController extends Controller {
                     File thumbnailToDelete = new File("./storage/photos/" + photo.getThumbnailName());
                     ObjectNode message = Json.newObject();
 
-                    if (user.getProfilePhoto().getPhotoId() == photo.getPhotoId()) {
-                        user.setProfilePhoto(null);
-                        user.save();
-                    }
-
                     if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
                         message.put("message", "Your photo file was missing, photo has been removed from the system.");
                     } else {
