@@ -67,6 +67,15 @@ export default {
           requiresAdminRole: false
         },
         {
+          title: "Treasure Hunts",
+          icon: "zoom_out_map",
+          url: "/treasure-hunts",
+          profileCompleted: true,
+          loggedIn: true,
+          loggedOut: false,
+          requiresAdminRole: false
+        },
+        {
           title: "Sign up",
           icon: "person_add",
           url: "/signup",
