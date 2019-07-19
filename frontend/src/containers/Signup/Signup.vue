@@ -264,13 +264,20 @@ export default {
       this.loading = true;
       const validFields = await this.validate();
       if (!validFields) return;
+
+      const userInfo = {
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        password: this.password,
+      };
+
+      if (this.middleName.length > 0) {
+        userInfo.middleName = this.middleName;
+      }
+
       try {
-        const { token, userId } = await signup({
-          firstName: this.firstName,
-          lastName: this.lastName,
-          email: this.email,
-          password: this.password,
-        });
+        const { token, userId } = await signup(userInfo);
 
         // Only set local storage if user is not currently logged in
         if (!localStorage.getItem("authToken")) {
