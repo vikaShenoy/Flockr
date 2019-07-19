@@ -3,6 +3,7 @@
     <div id="map">
       <DestinationMap 
         :destinations="mapTripDestinationsToDestinations()"
+        :isTripMap="true"
       />
     </div>
 
@@ -75,7 +76,7 @@ export default {
         const rawTrip = await getTrip(tripId);
         const trip = transformTripResponse(rawTrip);
         this.trip = trip;
-      } catch (e) {
+    } catch (e) {
         console.log(e);
         this.showError("Could not get trip");
       }
@@ -88,14 +89,22 @@ export default {
         const tripId = this.$route.params.tripId;
 
         if (contiguousReorderedDestinations(this.trip.tripDestinations, indexes.newIndex, indexes.oldIndex)) {
+
+
           this.showError("Cannot have contiguous destinations");
           const tripDestinations = [...this.trip.tripDestinations];
-          this.$set(this.trip, "tripDestinations", tripDestinations);
+          this.trip.tripDestinations = [];
+          setTimeout(() => {
+            this.trip.tripDestinations = tripDestinations;
+          }, 0);
+          
           return
         }
 
         // Reorder elements
-        [this.trip.tripDestinations[indexes.newIndex], this.trip.tripDestinations[indexes.oldIndex]] = [this.trip.tripDestinations[indexes.oldIndex], this.trip.tripDestinations[indexes.newIndex]];
+        const temp = {...this.trip.tripDestinations[indexes.oldIndex]};
+        this.trip.tripDestinations.splice(indexes.oldIndex, 1);
+        this.trip.tripDestinations.splice(indexes.newIndex, 0, temp);
 
         await editTrip(tripId, this.trip.tripName, this.trip.tripDestinations);
         this.showSuccessMessage("Successfully changed order");

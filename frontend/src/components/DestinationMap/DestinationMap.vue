@@ -23,7 +23,8 @@
       style="width: 100%; height: 100%"
       :options="{
         mapTypeControl: false,
-        fullscreenControl: false
+        fullscreenControl: false,
+        minZoom: 2
       }"
     >
 
@@ -36,7 +37,7 @@
         :icon="marker.icon"
       />
 
-      <div v-if="destinations.length">
+      <div v-if="destinations.length && isTripMap">
         <GmapPolyline
           v-for="(marker, index) in mapDestinationsToMarkers(destinations).slice(0, destinations.length - 1)"
           v-bind:key="index"
@@ -50,7 +51,9 @@
               lng: destinations[index + 1].destinationLon
             }
           ]"
+          
           :options="{
+            strokeColor: '#4d80af',
             icons: [{
               icon: {
                 path: forwardClosedArrow
@@ -134,6 +137,10 @@ export default {
       required: false
     },
     shouldShowOverlay: {
+      type: Boolean,
+      required: false
+    },
+    isTripMap: {
       type: Boolean,
       required: false
     }

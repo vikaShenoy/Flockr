@@ -71,8 +71,12 @@ export function contiguousDestinations(tripDestinations) {
  * @returns {boolean} True if the trip destinations are contiguous, false otherwise
  */
 export function contiguousReorderedDestinations(tripDestinations, newIndex, oldIndex) {
+
   const copiedTripDestinations = [...tripDestinations];
-  [copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
+  //[copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
+  let temp = copiedTripDestinations[oldIndex];
+  copiedTripDestinations.splice(oldIndex, 1);
+  copiedTripDestinations.splice(newIndex, 0, temp);
   return contiguousDestinations(copiedTripDestinations);
 }
 

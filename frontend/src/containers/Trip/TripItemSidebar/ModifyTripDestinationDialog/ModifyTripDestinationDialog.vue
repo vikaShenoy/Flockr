@@ -284,6 +284,15 @@ export default {
         this.isLoading = false;
         this.isShowingDialog = false;
         this.$emit("updatedTripDestinations", newTripDestinations);
+
+        this.tripDestination = {
+          tripDestinationId: null,
+          arrivalDate: "",
+          arrivalTime: "",
+          departureDate: "",
+          departureTime: "",
+          destination: null
+        };
     },
     async getDestinations() {
       const destinations = await getDestinations();
@@ -311,6 +320,9 @@ export default {
           return filterPreviousDestination && filterPastDestination;
         });
       } else {
+          if (!this.trip.tripDestinations.length) {
+            return [];
+          }
           return this.destinations.filter(destination => {
             return destination.destinationId !== this.trip.tripDestinations[this.trip.tripDestinations.length - 1].destination.destinationId;
           });

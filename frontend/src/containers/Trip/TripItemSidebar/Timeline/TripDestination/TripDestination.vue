@@ -57,7 +57,6 @@ export default {
      */
     formatDateTime(date, time) {
       if (!date && !time) {
-        console.log(date, time)
         return "No Date";
       }
 
