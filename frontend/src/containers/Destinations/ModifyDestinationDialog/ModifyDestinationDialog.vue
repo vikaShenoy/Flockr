@@ -64,7 +64,7 @@
                 label="Type"
                 :rules="requiredRule"
               />
-             
+
             </v-flex>
 
             <v-flex
@@ -113,6 +113,47 @@
                 :rules="requiredRule"
               />
             </v-flex>
+
+            <v-flex
+              xl4
+              lg6
+              md8
+              sm10
+              xs12
+              offset-xl4
+              offset-lg3
+              offset-md2
+              offset-sm1
+              offset-xs0
+            >
+          <v-combobox
+        v-model="destination.travellerTypes"
+        :items="travellerTypes"
+        item-text="travellerTypeName"
+        item-value="travellerTypeId"
+        :rules="requiredRule"
+        label="Traveller Types"
+        chips
+        clearable
+        solo
+        multiple
+      >
+
+        <template v-slot:selection="data">
+          <v-chip
+            color="primary"
+            text-color="white"
+            :selected="data.selected"
+            close
+            @input="removeTravellerType(data.item)"
+          >
+            <strong>{{ data.item.travellerTypeName }}</strong>&nbsp;
+          </v-chip>
+        </template>
+      </v-combobox>
+            </v-flex>
+
+
             <v-flex
               xl4
               lg6
@@ -219,6 +260,7 @@ import {
 import {
   requestCountries,
   requestDestinationTypes,
+  requestTravellerTypes,
   requestDistricts
 } from "./ModifyDestinationDialogService";
 
@@ -234,6 +276,27 @@ export default {
     },
     destinationToEdit: {
       type: Object,
+      required: false,
+      destinationId: Number,
+      destinationName: String,
+      destinationType: {
+        destinationTypeName: String,
+        destinationTypeId: Number
+      },
+      destinationDistrict: {
+        districtName: String,
+        districtId: Number
+      },
+      destinationCountry: {
+        countryName: String,
+        countryId: Number
+      },
+      destinationLat: Number,
+      destinationLon: Number,
+      isPublic: Boolean
+    },
+    index: {
+      type: Number,
       required: false
     },
     editMode: {
@@ -254,6 +317,7 @@ export default {
           districtId: null,
           districtName: null
         },
+        travellerTypes: [],
         destinationLat: "",
         destinationLon: "",
         destinationCountry: {
@@ -277,15 +341,16 @@ export default {
       countries: [],
       districts: [],
       destinationTypes: [],
+      travellerTypes: [],
       locationDisabled: false,
       isValidForm: false,
       formIsLoading: false
     };
   },
   mounted() {
-    console.log(this.snackbarModel);
     this.getCountries();
     this.getDestinationTypes();
+    this.getTravellerTypes();
 
     if (this.editMode) {
       // Shallow copy to not overwrite what is currently being showed
@@ -343,7 +408,7 @@ export default {
         const destinationTypes = await requestDestinationTypes();
         this.destinationTypes = destinationTypes;
       } catch (e) {
-        
+
       }
     },
     /**
@@ -358,8 +423,19 @@ export default {
         this.showError("Could not get districts");
       }
     },
+    /**
+     * Gets all traveller types
+     */
+    async getTravellerTypes() {
+      try {
+        const travellerTypes = await requestTravellerTypes();
+        this.travellerTypes = travellerTypes;
+      } catch (e) {
+        this.showError("Could not get traveller types");
+      }
+    },
     showError(errorMessage) {
-      this.$emit("showError", errorMessage); 
+      this.$emit("showError", errorMessage);
     },
     /**
      * Closes the dialog window and resets all fields to default values.
@@ -377,6 +453,7 @@ export default {
             districtId: null,
             districtName: null
           },
+          travellerTypes: [],
           destinationLat: "",
           destinationLon: "",
           destinationCountry: {
@@ -387,6 +464,12 @@ export default {
         this.$refs.form.reset();
       }
       this.$refs.form.resetValidation();
+    },
+    /**
+     * Removes a traveller type from chips
+     */
+    removeTravellerType(item) {
+      this.destination.travellerTypes.splice(this.destination.travellerTypes.indexOf(item), 1);
     },
     /**
      * Called when the submit button is selected.
@@ -402,7 +485,8 @@ export default {
           countryId: this.destination.destinationCountry.countryId,
           districtId: this.destination.destinationDistrict.districtId,
           latitude: this.destination.destinationLat,
-          longitude: this.destination.destinationLon
+          longitude: this.destination.destinationLon,
+          travellerTypeIds: this.destination.travellerTypes.map(travellerType => travellerType.travellerTypeId)
         };
 
         // Extra field that is only valid for editing destinations

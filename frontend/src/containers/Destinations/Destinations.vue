@@ -113,7 +113,7 @@ export default {
   }
 
   #map {
-    width: calc(100% - 300px);
+    width: calc(100% - 555px);
     display: inline-block;
     height: 100%;
     position: fixed;

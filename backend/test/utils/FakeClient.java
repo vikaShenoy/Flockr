@@ -97,10 +97,11 @@ public interface FakeClient {
      * Creates a test destination to run tests with. Using the create destination endpoint.
      *
      * @param destinationNode the JsonNode containing the new destinations data.
-     * @param authToken       the suthentication token to add to the request.
+     * @param authToken       the authentication token to add to the request.
+     * @param userId          userId of who to make the destination for
      * @return the test destination.
      */
-    Destination makeTestDestination(JsonNode destinationNode, String authToken) throws IOException, UnauthorizedException, ServerErrorException;
+    Destination makeTestDestination(JsonNode destinationNode, String authToken, int userId) throws IOException, UnauthorizedException, ServerErrorException;
 
     /**
      * Make a request (with a multipart/form body) to the application, providing an authorisation token.

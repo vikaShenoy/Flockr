@@ -5,8 +5,10 @@ import io.ebean.EbeanServer;
 import models.*;
 import play.db.ebean.EbeanConfig;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.sql.SQLOutput;
 import java.util.List;
@@ -190,5 +192,51 @@ public class DestinationRepository {
         }, executionContext);
     }
 
+    /**
+     * Creates a destination proposal
+     *
+     * @param proposal The proposal to create
+     * @return The created proposal
+     */
+    public CompletionStage<DestinationProposal> createProposal(DestinationProposal proposal) {
+       return supplyAsync(() -> {
+           proposal.insert();
+           return proposal;
+       }, executionContext);
+    }
+
+    /**
+     * Finds a destination proposal by the given ID
+     *
+     * @param destinationProposalId the ID of the destination proposal to be search
+     * @return The destinationProposal that corresponds to the ID
+     */
+    public CompletionStage<Optional<DestinationProposal>> getDestinationProposalById(int destinationProposalId) {
+        return supplyAsync(() -> DestinationProposal.find.query()
+                            .fetch("travellerTypes")
+                            .fetch("destination")
+                            .where().eq("destinationProposalId", destinationProposalId)
+                            .findOneOrEmpty()
+                , executionContext);
+    }
+
+    /**
+     * Deletes a destination proposal with the given ID
+     *
+     * @param destinationProposalId the ID of the destination proposal to be search
+     * @return void as nothing needs to be returned
+     */
+    public CompletionStage<Void> deleteDestinationProposalById(int destinationProposalId) {
+         return runAsync(() -> DestinationProposal.find.deleteById(destinationProposalId));
+    }
+
+    /**
+     * Gets all destination proposals information
+     *
+     * @return the destination proposals
+     */
+    public CompletionStage<List<DestinationProposal>> getDestinationProposals() {
+        return supplyAsync(DestinationProposal.find::all);
+    }
 
 }

@@ -51,3 +51,18 @@ export async function deleteDestination(destinationId) {
     .set("Authorization", localStorage.getItem("authToken"));
 }
 
+/**
+ * Sends a delete request to the server to remove the association of a photo from a destination.
+ *
+ * @param destinationId {Number} the id of the destination.
+ * @param photoId {Number} the id of the photo.
+ * @return {Promise<*>} the response body.
+ */
+export async function removePhotoFromDestination(destinationId, photoId) {
+  const response = await superagent.delete(endpoint(`/destinations/${destinationId}/photos/${photoId}`))
+      .set("Authorization", localStorage.getItem("authToken"));
+
+  return response.body;
+}
+
+

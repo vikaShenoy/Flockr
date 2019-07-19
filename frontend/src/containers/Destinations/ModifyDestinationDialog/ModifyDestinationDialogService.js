@@ -36,3 +36,12 @@ export async function requestDistricts(countryId) {
   return res.body;
 }
 
+/**
+ * 
+ */
+export async function requestTravellerTypes() {
+  const res = await superagent.get(endpoint("/users/types"))
+    .set("Authorization", localStorage.getItem("authToken"));
+  return res.body;
+}
+

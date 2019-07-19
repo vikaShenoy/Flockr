@@ -34,7 +34,7 @@ public class TripUtil {
             Date departureDate = new Timestamp(tripDestinationJson.get("departureDate").asLong());
             Integer departureTime = tripDestinationJson.get("departureTime").asInt();
 
-            Destination destination = new Destination(null, null, null, null, null, null, -1, false);
+            Destination destination = new Destination(null, null, null, null, null, null, -1, new ArrayList<>(), false);
             destination.setDestinationId(destinationId);
 
             TripDestination tripDestination = new TripDestination(destination, arrivalDate, arrivalTime, departureDate, departureTime);

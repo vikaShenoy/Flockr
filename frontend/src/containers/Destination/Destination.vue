@@ -27,9 +27,20 @@
       <v-flex xs12 style="padding-bottom: 0px">
         <div style="float: right">
         <v-btn
+          color="secondary" 
+          depressed          
+          v-if="destination.isPublic"
+          @click="isShowingTravellerTypesDialog = true"
+        >
+         Request Traveller Types 
+        </v-btn>
+ 
+
+        <v-btn
           color="secondary"
           depressed
           @click="showingEditDestDialog = true"
+          v-if="userStore.methods.isAdmin() || destination.destinationOwner === userStore.data.userId"
         >
           <v-icon>edit</v-icon>
         </v-btn>
@@ -38,10 +49,12 @@
           color="error"
           depressed
           @click="isShowingDeleteDestDialog = true"
+          v-if="userStore.methods.isAdmin() || destination.destinationOwner === userStore.data.userId"
         >
           <v-icon>delete</v-icon>
         </v-btn>
-        </div>
+
+       </div>
       </v-flex>
       <v-flex xs12 sm6 lg4 xl4 style="padding-bottom: 0px">
         
@@ -50,11 +63,16 @@
           :destinationPhotos="destinationPhotos"
           :destinationId="destination.destinationId"
           :hasOwnerRights="hasOwnerRights"
+          v-on:addPhoto="addPhoto"
+          v-on:displayRemovePrompt="displayRemovePrompt"
+          v-on:permissionUpdated="permissionUpdated"
         /> 
       </v-flex>
 
       <v-flex xs12 sm6 lg8 xl8 style="padding-bottom: 0px">
-        <DestinationDetails :destination="destination"/>
+        <DestinationDetails
+          :destination="destination"
+        />
       </v-flex>
     </v-layout>
     </v-container>
@@ -62,7 +80,7 @@
 
   <Snackbar
     :snackbarModel="snackbarModel"
-    v-on:dismissSnackbar="dismissSnackbar"
+     v-on:dismissSnackbar="dismissSnackbar"
      />
 
   <PromptDialog
@@ -71,17 +89,34 @@
     :onConfirm="deleteDestination"
     v-on:promptEnded="isShowingDeleteDestDialog = false"
   />
+
+  <RequestTravellerTypes 
+    :isShowingTravellerTypesDialog.sync="isShowingTravellerTypesDialog" 
+    :destination="destination"
+    v-on:proposalSent="proposalSent"
+    v-on:showError="showError"
+  />
+
+  <prompt-dialog
+      :onConfirm="promptDialog.deleteFunction"
+      :dialog="promptDialog.show"
+      :message="promptDialog.message"
+      @promptEnded="promptEnded"/>
+
   </div>
 </template>
 
 <script>
-import { getDestination, getDestinationPhotos, deleteDestination } from "./DestinationService";
+import { getDestination, getDestinationPhotos, deleteDestination, removePhotoFromDestination } from "./DestinationService";
 import ModifyDestinationDialog from "../Destinations/ModifyDestinationDialog/ModifyDestinationDialog";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
 import DestinationDetails from "./DestinationDetails/DestinationDetails";
 import Carousel from "./Carousel/Carousel";
 import PromptDialog from "../../components/PromptDialog/PromptDialog";
 import Snackbar from "../../components/Snackbars/Snackbar";
+import RequestTravellerTypes from "./RequestTravellerTypes/RequestTravellerTypes";
+import UserStore from '../../stores/UserStore';
+
 
 
 export default {
@@ -91,10 +126,12 @@ export default {
     DestinationDetails,
     ModifyDestinationDialog,
     Snackbar,
-    PromptDialog
+    PromptDialog,
+    RequestTravellerTypes
   },
   data() {
     return {
+      userStore: UserStore,
       destination: null,
       destinationPhotos: [],
       hasOwnerRights: false,
@@ -106,6 +143,12 @@ export default {
         text: "",
         color: null,
         snackbarId: 1
+      },
+      isShowingTravellerTypesDialog: false,
+      promptDialog: {
+        show: false,
+        message: "",
+        deleteFunction: null
       }
     };
   },
@@ -141,6 +184,49 @@ export default {
     dismissSnackbar() {
       this.snackbarModel.show = false;
     },
+    proposalSent() {
+      this.snackbarModel.color = "success";
+      this.snackbarModel.text = "Proposal Sent";
+      this.snackbarModel.show = true;
+    },
+    /**
+     * Displays a message using the snackbar.
+     */
+    displayMessage(text, color) {
+      this.snackbarModel.text = text;
+      this.snackbarModel.color = color;
+      this.snackbarModel.show = true;
+    },
+    displayRemovePrompt(closeDialog, photoId, index) {
+      const destinationId = this.destination.destinationId;
+      const removePhoto = this.removePhoto;
+      const displayMessage = this.displayMessage;
+      const removeFunction = async function () {
+        try {
+          await removePhotoFromDestination(destinationId, photoId);
+          removePhoto(index);
+          closeDialog(false);
+          displayMessage("The photo has been successfully removed.", "green");
+        } catch (error) {
+          displayMessage(error.message, "red");
+        }
+      };
+
+      this.promptDialog.deleteFunction = removeFunction;
+      this.promptDialog.message = 'Are you sure that you would like to delete this photos?';
+      this.promptDialog.show = true;
+    },
+    /**
+     * Removes a photo at the given index from the photos array.
+     *
+     * @param index {Number} the index of the photo.
+     */
+    removePhoto(index) {
+      this.destinationPhotos.splice(index, 1);
+    },
+    addPhoto(photo) {
+      this.destinationPhotos.push(photo)
+    },
     async deleteDestination() {
       const destinationId = this.$route.params.destinationId;
       try {
@@ -150,7 +236,26 @@ export default {
         console.log(e);
         this.showError("Could not delete destination");
       }
-    } 
+    },
+    /* Called when the prompt dialog has finished.
+      * Closes the prompt dialog and resets the values to defaults.
+    */
+    promptEnded() {
+      this.promptDialog.deleteFunction = null;
+      this.promptDialog.show = false;
+    },
+
+    permissionUpdated(newValue, index) {
+      
+      this.destinationPhotos[index].personalPhoto.isPublic = newValue;
+      if (newValue) {
+        this.displayMessage("This photo is now public", "green");
+      } else {
+        this.displayMessage("This photo is now private", "green");
+      }
+    }
+
+
   }
 }
 </script>
