@@ -74,7 +74,7 @@ public class TreasureHuntController extends Controller {
      * - 400 - When the data given in the request is invalid.
      * - 401 - When the user is not authorized.
      * - 403 - When the user does not have permission.
-     * - 404 - When the treasure hunt does not exist.
+     * - 404 - When the treasure hunt or user does not exist.
      *
      * @param request        the http request.
      * @param treasureHuntId the id of the treasure hunt.
@@ -89,7 +89,10 @@ public class TreasureHuntController extends Controller {
                     }
                     TreasureHunt treasureHunt = optionalTreasureHunt.get();
 
-                    //TODO: Forbidden exception here.
+                    User userFromMiddleWare = request.attrs().get(ActionState.USER);
+                    if (!userFromMiddleWare.isAdmin() && userFromMiddleWare.getUserId() != treasureHunt.getOwnerId()) {
+                        throw new CompletionException(new ForbiddenRequestException("You do not have permission to perform this action."));
+                    }
 
                     JsonNode jsonBody = request.body().asJson();
                     if (jsonBody.has("treasureHuntName")) {
@@ -101,19 +104,11 @@ public class TreasureHuntController extends Controller {
                         }
                         treasureHunt.setTreasureHuntName(treasureHuntName);
                     }
-                    if (jsonBody.has("ownerId")) {
-                        int ownerId = jsonBody.get("ownerId").asInt();
-                        try {
-                            treasureHunt.setOwnerId(ownerId);
-                        } catch (NotFoundException e) {
-                            throw new CompletionException(e);
-                        }
-                    }
                     if (jsonBody.has("treasureHuntDestinationId")) {
                         int destinationId = jsonBody.get("treasureHuntDestinationId").asInt();
                         try {
                             treasureHunt.setTreasureHuntDestinationId(destinationId);
-                        } catch (NotFoundException e) {
+                        } catch (BadRequestException e) {
                             throw new CompletionException(e);
                         }
                     }
@@ -195,7 +190,12 @@ public class TreasureHuntController extends Controller {
                         throw new CompletionException(new NotFoundException("Treasure hunt not found"));
                     }
                     TreasureHunt treasureHunt = optionalTreasureHunt.get();
-                    //TODO: check permission here.
+
+                    User userFromMiddleWare = request.attrs().get(ActionState.USER);
+                    if (!userFromMiddleWare.isAdmin() && userFromMiddleWare.getUserId() != treasureHunt.getOwnerId()) {
+                        throw new CompletionException(new ForbiddenRequestException("You do not have permission to perform this action."));
+                    }
+
                     return treasureHuntRepository.removeTreasureHunt(treasureHunt);
                 })
                 .thenApplyAsync(deleted -> {
@@ -239,11 +239,9 @@ public class TreasureHuntController extends Controller {
                         treasureHunt.setOwnerId(user.getUserId());
 
                         return created();
-                    } catch (NotFoundException e) {
+                    } catch (BadRequestException e) {
                         ObjectNode message = Json.newObject().put("message", "Destination not found");
-                        return notFound(message);
-                    } catch (Exception e) {
-                        return badRequest();
+                        return badRequest(message);
                     }
                 }, executionContext);
     }
