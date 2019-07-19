@@ -58,17 +58,12 @@ GET         /api/users/:userId/trips/:tripId                    controllers.Trip
 PUT         /api/users/:userId/trips/:tripId                    controllers.TripController.updateTrip(request: Request, userId: Int, tripId : Int)
 
 # Treasure Hunt Routes
-<<<<<<< Updated upstream
+
 PUT         /api/treasurehunts/:treasureHuntId                  controllers.TreasureHuntController.editTreasureHunt(request: Request, treasureHuntId: Int)
 DELETE      /api/treasurehunts/:treasureHuntId                  controllers.TreasureHuntController.deleteTreasureHunt(request: Request, treasureHuntId: Int)
 POST        /api/users/:userId/treasurehunts                    controllers.TreasureHuntController.addTreasureHunt(request: Request, userId: Int)
+GET         /api/users/:userId/treasurehunts                    controllers.TreasureHuntController.getTresureHuntsByUserId(request: Request, userId: Int)
 
-=======
-PUT         /treasurehunts/:treasureHuntId              controllers.TreasureHuntController.editTreasureHunt(request: Request, treasureHuntId: Int)
-DELETE      /treasurehunts/:treasureHuntId              controllers.TreasureHuntController.deleteTreasureHunt(request: Request, treasureHuntId: Int)
-POST        /api/users/:userId/treasurehunts          controllers.TreasureHuntController.addTreasureHunt(request: Request, userId: Int)
-GET         /api/users/:userId/trips                  controllers.TreasureHuntController.getTresureHuntsByUserId(request: Request, userId: Int)
->>>>>>> Stashed changes
 
 
 # Map static resources from the /public folder to the /assets URL path
