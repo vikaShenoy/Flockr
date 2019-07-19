@@ -64,7 +64,7 @@
                 label="Type"
                 :rules="requiredRule"
               />
-             
+
             </v-flex>
 
             <v-flex
@@ -387,7 +387,7 @@ export default {
         const destinationTypes = await requestDestinationTypes();
         this.destinationTypes = destinationTypes;
       } catch (e) {
-        
+
       }
     },
     /**
@@ -414,7 +414,7 @@ export default {
       }
     },
     showError(errorMessage) {
-      this.$emit("showError", errorMessage); 
+      this.$emit("showError", errorMessage);
     },
     /**
      * Closes the dialog window and resets all fields to default values.

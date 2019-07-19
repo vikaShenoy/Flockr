@@ -76,6 +76,7 @@ export default {
         UserStore.methods.setData(user);
         localStorage.setItem("authToken", user.token);
         localStorage.setItem("userId", user.userId);
+        localStorage.setItem("ownUserId", user.userId);
         this.$router.push(`/profile/${user.userId}`);
       } catch (e) {
         this.hasInvalidCredentials = true;         

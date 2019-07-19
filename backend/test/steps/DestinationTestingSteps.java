@@ -63,16 +63,16 @@ public class DestinationTestingSteps {
         for (int i = 0; i < destinationList.size(); i++) {
             try {
                 ObjectNode currentDestination = (ObjectNode) Json.toJson(destinationList.get(i));
-                destination = fakeClient.makeTestDestination(currentDestination, user.getToken());
+                destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken(), user.getUserId());
                 destination = Destination.find.byId(destination.getDestinationId());
                 destination.setDestinationOwner(user.getUserId());
 
                 if (currentDestination.has("isPublic")) {
                     destination.setIsPublic(Boolean.parseBoolean(currentDestination.get("isPublic").asText()));
                 }
+
                 // Save to set permission as post endpoint doesn't do it
                 destination.save();
-                System.out.println(Destination.find.byId(destination.getDestinationId()).getDestinationOwner());
                 TestState.getInstance().addDestination(destination);
 
                 Destination destination1 = Destination.find.byId(destination.getDestinationId());
@@ -114,7 +114,7 @@ public class DestinationTestingSteps {
         List<Map<String, String>> destinationList = dataTable.asMaps();
         for (int i = 0; i < destinationList.size(); i++) {
             try {
-                Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken());
+                Destination destination = fakeClient.makeTestDestination(Json.toJson(destinationList.get(i)), user.getToken(), user.getUserId());
                 TestState.getInstance().addDestination(destination);
                 this.destinationId = destination.getDestinationId();
                 Assert.assertNotEquals(0, destination.getDestinationId());
@@ -156,15 +156,11 @@ public class DestinationTestingSteps {
     }
 
     @When("I click the Add Destination button")
-    public void IClickTheAddDestination() {
-        User user = TestState.getInstance().removeUser(0);
-        Http.RequestBuilder request = Helpers.fakeRequest()
-                .method("POST")
-                .uri("/api/destinations")
-                .header("Authorization", user.getToken())
-                .bodyJson(this.destinationData);
+    public void IClickTheAddDestination() throws IOException, UnauthorizedException, ServerErrorException{
+        User user = TestState.getInstance().getUser(0);
         Application application = TestState.getInstance().getApplication();
-        this.result = route(application, request);
+        Result createDestinationResult = TestState.getInstance().getFakeClient().makeRequestWithToken("POST", (ObjectNode) this.destinationData, "/api/users/" + user.getUserId() + "/destinations", user.getToken());
+        this.result = createDestinationResult;
         Assert.assertNotNull(this.result);
     }
 
@@ -237,8 +233,6 @@ public class DestinationTestingSteps {
 
     @Then("the photo does not get added to the destination")
     public void thePhotoDoesNotGetAdded() {
-        System.out.println(this.result.status());
-
         Assert.assertNotEquals(201, result.status());
         List<DestinationPhoto> destinationPhotos = DestinationPhoto.find.all();
         Assert.assertEquals(0, destinationPhotos.size());
@@ -442,7 +436,7 @@ public class DestinationTestingSteps {
         for (int i = 0; i < destinationList.size(); i++) {
             try {
                 ObjectNode currentDestination = (ObjectNode) Json.toJson(destinationList.get(i));
-                Destination destination = fakeClient.makeTestDestination(currentDestination, user.getToken());
+                Destination destination = fakeClient.makeTestDestination(currentDestination, user.getToken(), user.getUserId());
                 destination.setDestinationOwner(user.getUserId());
 
                 if (currentDestination.has("isPublic")) {
@@ -498,7 +492,7 @@ public class DestinationTestingSteps {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         User user = TestState.getInstance().getUser(1);
 
-        Result destination = fakeClient.makeRequestWithToken("GET", "/api/destinations/" + this.destinationId, user.getToken());
+        Result destination = fakeClient.makeRequestWithToken("GET", "/api/users" + user.getUserId() + "/destinations/" + this.destinationId, user.getToken());
         Assert.assertEquals(404, destination.status());
     }
 
@@ -522,15 +516,8 @@ public class DestinationTestingSteps {
         destinations = utils.PlayResultToJson.convertResultToJson(destinationResult);
     }
 
-
     @Then("{int} destinations should be returned")
     public void theListShouldBeTheSame(int numberOfDestinations) {
         Assert.assertEquals(numberOfDestinations, destinations.size());
     }
-
-
-
-
-
-
 }
