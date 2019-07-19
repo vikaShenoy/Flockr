@@ -36,11 +36,9 @@ import javax.inject.Inject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -59,8 +57,8 @@ public class TreasureHuntController extends Controller {
      * Dependency Injection.
      *
      * @param treasureHuntRepository the treasure hunt repository.
-     * @param userRepository the user repository.
-     * @param executionContext the context to execute the async functions.
+     * @param userRepository         the user repository.
+     * @param executionContext       the context to execute the async functions.
      */
     @Inject
     public TreasureHuntController(TreasureHuntRepository treasureHuntRepository, UserRepository userRepository, DatabaseExecutionContext executionContext) {
@@ -248,4 +246,51 @@ public class TreasureHuntController extends Controller {
                     }
                 }, executionContext);
     }
+
+    /**
+     * Endpoint to get all treasure hunts for a user
+     *
+     * @param request
+     * @param userId
+     * @return Returns one of the following HTTP responses:
+     * - 200 - Returns a list of treasure hunts
+     * - 401 - Not authorised
+     * - 403 - Forbidden
+     * - 404 - User Not found
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getTresureHuntsByUserId(Http.Request request, int userId) {
+        return userRepository.getUserById(userId)
+                .thenComposeAsync(optUser -> {
+                    if (!optUser.isPresent()) {
+                        throw new CompletionException(new NotFoundException("User not found"));
+                    }
+                    User userFromMiddleware = request.attrs().get(ActionState.USER);
+                    if (!userFromMiddleware.isAdmin() && userId != userFromMiddleware.getUserId()) {
+                        throw new CompletionException(new ForbiddenRequestException("Forbidden"));
+                    }
+
+                    return treasureHuntRepository.getTreasureHuntsByUserId(userId);
+                })
+                .thenApplyAsync(treasures -> {
+                    JsonNode treasureJson = Json.toJson(treasures);
+                    return ok(treasureJson);
+                }, executionContext)
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (NotFoundException notFoundExc) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", notFoundExc.getMessage());
+                        return notFound(message);
+                    } catch (ForbiddenRequestException forbiddenException) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", forbiddenException.getMessage());
+                        return forbidden(message);
+                    } catch (Throwable throwable) {
+                        return internalServerError();
+                    }
+                });
+    }
 }
+

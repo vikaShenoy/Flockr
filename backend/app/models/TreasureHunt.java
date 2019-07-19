@@ -112,6 +112,8 @@ public class TreasureHunt extends Model {
         this.owner = optionalUser.get();
     }
 
+
+
     /**
      * This is required by EBean to make queries on the database
      */

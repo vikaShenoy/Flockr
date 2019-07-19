@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -61,4 +62,21 @@ public class TreasureHuntRepository {
         return supplyAsync(() -> TreasureHunt.find.query().where()
                 .eq("treasure_hunt_id", treasureHuntId).findOneOrEmpty());
     }
+
+    /**
+     * Method to get a users treasure hunts from the database using their user ID
+     * @param userId the id of the user
+     * @return List of treasure hunts
+     */
+
+    public CompletionStage<List<TreasureHunt>> getTreasureHuntsByUserId(int userId) {
+        return supplyAsync(() -> {
+            List<TreasureHunt> treasureHunts = TreasureHunt.find.query().where()
+                    .eq("owner_user_id", userId).findList();
+            return treasureHunts;
+        }, executionContext);
+    }
 }
+
+
+
