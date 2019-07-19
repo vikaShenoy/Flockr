@@ -4,11 +4,11 @@
 GET          /                                                  controllers.Assets.at(path="/public/vue-front-end-goes-here", file="index.html")
 
 # Auth routes
-POST         /api/auth/users/signup               controllers.AuthController.signup(request: Request)
-POST         /api/auth/users/login                controllers.AuthController.login(request: Request)
-POST         /api/auth/users/logout               controllers.AuthController.logout(request: Request)
-POST        /api/auth/users/:userId/logout        controllers.AuthController.logoutById(userId: Int, request: Request)
-GET          /api/auth/users/:email/available     controllers.AuthController.checkEmailAvailable(email: String)
+POST         /api/auth/users/signup                             controllers.AuthController.signup(request: Request)
+POST         /api/auth/users/login                              controllers.AuthController.login(request: Request)
+POST         /api/auth/users/logout                             controllers.AuthController.logout(request: Request)
+POST        /api/auth/users/:userId/logout                      controllers.AuthController.logoutById(userId: Int, request: Request)
+GET          /api/auth/users/:email/available                   controllers.AuthController.checkEmailAvailable(email: String)
 
 # Traveller routes
 GET          /api/users/all                                     controllers.UserController.getAllTravellers()
@@ -26,7 +26,7 @@ PATCH        /api/users/:userId/roles                           controllers.User
 
 # Traveller photos routes
 GET          /api/users/photos/:photoId                         controllers.PhotoController.getPhoto(photoId: Int, request: Request)
-DELETE       /api/users/photos/:photoId                   controllers.PhotoController.deletePhoto(photoId: Int, request: Request)
+DELETE       /api/users/photos/:photoId                         controllers.PhotoController.deletePhoto(photoId: Int, request: Request)
 GET          /api/users/:userId/photos                          controllers.PhotoController.getPhotos(userId: Int, request: Request)
 POST         /api/users/:userId/photos                          controllers.PhotoController.uploadPhotoForUser(userId: Int, request: Request)
 PATCH        /api/users/photos/:photoId                         controllers.PhotoController.updatePermission(photoId: Int, request: Request)
@@ -51,16 +51,16 @@ DELETE      /api/destinations/:destinationId/photos/:photoId    controllers.Dest
 
 
 # Trip Routes
-GET         /api/users/:userId/trips                  controllers.TripController.getTrips(request: Request, userId: Int)
-POST        /api/users/:userId/trips                  controllers.TripController.addTrip(userId: Int, request: Request)
-DELETE      /api/users/:userId/trips/:tripId          controllers.TripController.deleteTrip(userId: Int, tripId : Int, request : Request)
-GET         /api/users/:userId/trips/:tripId          controllers.TripController.getTrip(userId: Int, tripId: Int, request: Request)
-PUT         /api/users/:userId/trips/:tripId          controllers.TripController.updateTrip(request: Request, userId: Int, tripId : Int)
+GET         /api/users/:userId/trips                            controllers.TripController.getTrips(request: Request, userId: Int)
+POST        /api/users/:userId/trips                            controllers.TripController.addTrip(userId: Int, request: Request)
+DELETE      /api/users/:userId/trips/:tripId                    controllers.TripController.deleteTrip(userId: Int, tripId : Int, request : Request)
+GET         /api/users/:userId/trips/:tripId                    controllers.TripController.getTrip(userId: Int, tripId: Int, request: Request)
+PUT         /api/users/:userId/trips/:tripId                    controllers.TripController.updateTrip(request: Request, userId: Int, tripId : Int)
 
 # Treasure Hunt Routes
-PUT         /treasurehunts/:treasureHuntId              controllers.TreasureHuntController.editTreasureHunt(request: Request, treasureHuntId: Int)
-DELETE      /treasurehunts/:treasureHuntId              controllers.TreasureHuntController.deleteTreasureHunt(request: Request, treasureHuntId: Int)
-POST        /api/users/:userId/treasurehunts          controllers.TreasureHuntController.addTreasureHunt(request: Request, userId: Int)
+PUT         /api/treasurehunts/:treasureHuntId                  controllers.TreasureHuntController.editTreasureHunt(request: Request, treasureHuntId: Int)
+DELETE      /api/treasurehunts/:treasureHuntId                  controllers.TreasureHuntController.deleteTreasureHunt(request: Request, treasureHuntId: Int)
+POST        /api/users/:userId/treasurehunts                    controllers.TreasureHuntController.addTreasureHunt(request: Request, userId: Int)
 
 
 

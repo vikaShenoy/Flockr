@@ -20,10 +20,10 @@ public class TreasureHunt extends Model {
     private String treasureHuntName;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    private User owner;
-
-    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
     private Destination treasureHuntDestination;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User owner;
 
     private String riddle;
 
@@ -32,9 +32,10 @@ public class TreasureHunt extends Model {
     private Date endDate;
 
 
-    public TreasureHunt(String treasureHuntName, int treasureHuntDestinationId, String riddle,
+    public TreasureHunt(String treasureHuntName, int ownerId, int treasureHuntDestinationId, String riddle,
                         Date startDate, Date endDate) throws NotFoundException {
         this.treasureHuntName = treasureHuntName;
+        setOwnerId(ownerId);
         setTreasureHuntDestinationId(treasureHuntDestinationId);
         this.riddle = riddle;
         this.startDate = startDate;

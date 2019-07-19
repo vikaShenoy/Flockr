@@ -111,9 +111,13 @@ public class TreasureHuntController extends Controller {
                             throw new CompletionException(e);
                         }
                     }
-                    if (jsonBody.has("destinationId")) {
-                        int destinationId = jsonBody.get("destinationId").asInt();
-                        //TODO: destination here
+                    if (jsonBody.has("treasureHuntDestinationId")) {
+                        int destinationId = jsonBody.get("treasureHuntDestinationId").asInt();
+                        try {
+                            treasureHunt.setTreasureHuntDestinationId(destinationId);
+                        } catch (NotFoundException e) {
+                            throw new CompletionException(e);
+                        }
                     }
                     if (jsonBody.has("riddle")) {
                         String riddle = jsonBody.get("riddle").asText();
@@ -166,6 +170,7 @@ public class TreasureHuntController extends Controller {
                         message.put("message", forbiddenRequestException.getMessage());
                         return forbidden(message);
                     } catch (Throwable throwable) {
+                        throwable.printStackTrace();
                         return internalServerError();
                     }
                 });
@@ -228,7 +233,7 @@ public class TreasureHuntController extends Controller {
                         Date startDate = new Date(jsonBody.get("startDate").asLong());
                         Date endDate = new Date(jsonBody.get("startDate").asLong());
                         int destinationId = jsonBody.get("destinationId").asInt();
-                        TreasureHunt treasureHunt = new TreasureHunt(treasureHuntName, destinationId, riddle, startDate,
+                        TreasureHunt treasureHunt = new TreasureHunt(treasureHuntName, userId, destinationId, riddle, startDate,
                                 endDate);
 
                         User user = optUser.get();
