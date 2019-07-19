@@ -491,29 +491,29 @@ public class UserController extends Controller {
         long ageMax;
         ageMax = -1;
         String gender = "";
-
-        // TODO: do not catch generic Exceptions, if this is a query method, not specifying all query parameters should not be logged as an error, it can be an info level log e.g. "no parameter nationality, omitting from search"
-
+        
         try {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())
                 nationality = Integer.parseInt(nationalityQuery);
-        } catch (Exception e){ log.error("No Parameter nationality");}
+        } catch (NullPointerException e){
+            log.info("No Parameter nationality, excluding from search");
+        }
         try {
             String ageMinQuery = request.getQueryString("ageMin");
             if (!ageMinQuery.isEmpty())
                 ageMin = Long.parseLong(ageMinQuery);
-        } catch (Exception e){ log.error("No Parameter ageMin");}
+        } catch (NullPointerException e){ log.info("No Parameter ageMin, excluding from search");}
         try {
             String ageMaxQuery = request.getQueryString("ageMax");
             if (!ageMaxQuery.isEmpty())
                 ageMax = Long.parseLong(ageMaxQuery);
-        } catch (Exception e){ log.error("No Parameter ageMax");}
+        } catch (NullPointerException e){ log.info("No Parameter ageMax, excluding from search");}
         try {
             String travellerTypeQuery = request.getQueryString("travellerType");
             if (!travellerTypeQuery.isEmpty())
                 travellerType = Integer.parseInt(travellerTypeQuery);
-        } catch (Exception e){ log.error("No Parameter travellerType");}
+        } catch (NullPointerException e){ log.error("No Parameter travellerType, excluding from search");}
         try {
             gender = request.getQueryString("gender");
         } catch (Exception e){ log.error("No Parameter gender");}
