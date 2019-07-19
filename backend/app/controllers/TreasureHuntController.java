@@ -3,6 +3,7 @@ package controllers;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
@@ -108,7 +109,7 @@ public class TreasureHuntController extends Controller {
                         int destinationId = jsonBody.get("treasureHuntDestinationId").asInt();
                         try {
                             treasureHunt.setTreasureHuntDestinationId(destinationId);
-                        } catch (BadRequestException e) {
+                        } catch (NotFoundException e) {
                             throw new CompletionException(e);
                         }
                     }
@@ -215,6 +216,16 @@ public class TreasureHuntController extends Controller {
                 });
     }
 
+    /**
+     * Endpoint to create a new treasure hunt for a destination which a user owns.
+     * @param request HTTP post request containing treasure hunt parameters
+     * @param userId user who creates (owns) the treasure hunt
+     * @return
+     *  - 201 for successful creation
+     *  - 400 for bad request (parameters not provided etc.)
+     *  - 401 if unauthorised
+     *  - 404 if the user or destination can't be found.
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> addTreasureHunt(Http.Request request, int userId) {
         return userRepository.getUserById(userId)
@@ -229,19 +240,28 @@ public class TreasureHuntController extends Controller {
                         JsonNode jsonBody = request.body().asJson();
                         String treasureHuntName = jsonBody.get("treasureHuntName").asText();
                         String riddle = jsonBody.get("riddle").asText();
-                        Date startDate = new Date(jsonBody.get("startDate").asLong());
-                        Date endDate = new Date(jsonBody.get("startDate").asLong());
-                        int destinationId = jsonBody.get("destinationId").asInt();
+                        String startDateString = jsonBody.get("startDate").asText();
+
+                        Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDateString);
+                        String endDateString = jsonBody.get("startDate").asText();
+                        Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDateString);
+                        int destinationId = jsonBody.get("treasureHuntDestinationId").asInt();
+
                         TreasureHunt treasureHunt = new TreasureHunt(treasureHuntName, userId, destinationId, riddle, startDate,
                                 endDate);
-
                         User user = optUser.get();
                         treasureHunt.setOwnerId(user.getUserId());
-
-                        return created();
-                    } catch (BadRequestException e) {
+                        treasureHunt.save();
+                        int treasureHuntId = treasureHunt.getTreasureHuntId();
+                        return created(Json.newObject().put("treasureHuntId", treasureHuntId));
+                    } catch (NotFoundException e) {
                         ObjectNode message = Json.newObject().put("message", "Destination not found");
-                        return badRequest(message);
+                        return notFound(message);
+                    } catch (NullPointerException e) {
+                        return badRequest(Json.newObject().put("Message", "Insufficient data provided."));
+                    } catch (Exception e) {
+                        System.out.println(e);
+                        return internalServerError();
                     }
                 }, executionContext);
     }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import exceptions.BadRequestException;
 import exceptions.FailedToSignUpException;
+import exceptions.NotFoundException;
 import exceptions.ServerErrorException;
 import models.*;
 import org.junit.After;
@@ -33,6 +34,7 @@ public class TreasureHuntControllerTest {
     @Inject
     private Application application;
     private User user;
+    private Destination destination;
     private User otherUser;
     private User adminUser;
     private FakeClient fakeClient;
@@ -40,7 +42,7 @@ public class TreasureHuntControllerTest {
     private Destination editedDestination;
 
     @Before
-    public void setUp() throws ServerErrorException, IOException, FailedToSignUpException, BadRequestException {
+    public void setUp() throws ServerErrorException, IOException, FailedToSignUpException, NotFoundException {
         Map<String, String> testSettings = new HashMap<>();
         testSettings.put("db.default.driver", "org.h2.Driver");
         testSettings.put("db.default.url", "jdbc:h2:mem:testdb;MODE=MySQL;");
@@ -70,7 +72,7 @@ public class TreasureHuntControllerTest {
         DestinationType destinationType = new DestinationType("city");
         Country country = new Country("Test Nation");
         District district = new District("Test District", country);
-        Destination destination = new Destination("Test City", destinationType, district, 0.0, 0.0, country, user.getUserId(), true);
+        destination = new Destination("Test City", destinationType, district, 0.0, 0.0, country, user.getUserId(), true);
         editedDestination = new Destination("Edited Destination", destinationType, district, 0.0, 0.0, country, user.getUserId(), false);
 
         destinationType.save();
@@ -249,7 +251,7 @@ public class TreasureHuntControllerTest {
         Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
                 "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
         //Assert response code is correct.
-        Assert.assertEquals(400, result.status());
+        Assert.assertEquals(404, result.status());
     }
 
     @Test
@@ -355,4 +357,43 @@ public class TreasureHuntControllerTest {
                 "treasure_hunt_id", this.treasureHunt.getTreasureHuntId()).findOneOrEmpty();
         Assert.assertFalse(optionalTreasureHunt.isPresent());
     }
+
+    @Test
+    public void createNewTreasureHuntGood() throws IOException, FailedToSignUpException, ServerErrorException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        ObjectNode body = Json.newObject();
+        body.put("treasureHuntName", "Pirate Treasure Hunt");
+        body.put("treasureHuntDestinationId", destination.getDestinationId());
+        body.put("riddle", "Test riddle");
+        body.put("startDate", "2016-01-01");
+        body.put("endDate", "2016-12-31");
+        User testUser = fakeClient.signUpUser("James", "Hetfield",
+                "jamesHet@tester.com", "abc123");
+
+        Result result = fakeClient.makeRequestWithToken("POST", body, "/api/users/" + testUser.getUserId() +
+                "/treasurehunts", user.getToken());
+        Assert.assertEquals(201, result.status());
+
+        JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
+        int treasureHuntId = jsonNode.get("treasureHuntId").asInt();
+
+        Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
+                "treasure_hunt_id", treasureHuntId).findOneOrEmpty();
+        Assert.assertTrue(optionalTreasureHunt.isPresent());
+    }
+
+    @Test
+    public void createNewTreasureHuntNoDestination() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        ObjectNode body = Json.newObject();
+        body.put("treasureHuntName", "Pirate Treasure Hunt");
+        body.put("riddle", "Test riddle");
+        body.put("startDate", "2016-01-01");
+        body.put("endDate", "2016-12-31");
+        Result result = fakeClient.makeRequestWithToken("POST", body, "/api/users/" + user.getUserId() +
+                "/treasurehunts", user.getToken());
+        Assert.assertEquals(400, result.status());
+    }
+
+    
 }

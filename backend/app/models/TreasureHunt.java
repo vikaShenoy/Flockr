@@ -1,5 +1,6 @@
 package models;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import exceptions.BadRequestException;
 import exceptions.NotFoundException;
 import io.ebean.Finder;
@@ -34,7 +35,7 @@ public class TreasureHunt extends Model {
 
 
     public TreasureHunt(String treasureHuntName, int ownerId, int treasureHuntDestinationId, String riddle,
-                        Date startDate, Date endDate) throws BadRequestException {
+                        Date startDate, Date endDate) throws NotFoundException {
         this.treasureHuntName = treasureHuntName;
         setOwnerId(ownerId);
         setTreasureHuntDestinationId(treasureHuntDestinationId);
@@ -63,10 +64,10 @@ public class TreasureHunt extends Model {
         return treasureHuntDestination.getDestinationId();
     }
 
-    public void setTreasureHuntDestinationId(int treasureHuntDestinationId) throws BadRequestException {
+    public void setTreasureHuntDestinationId(int treasureHuntDestinationId) throws NotFoundException {
         Optional<Destination> dest = Destination.find.query().where().eq("destination_id", treasureHuntDestinationId).findOneOrEmpty();
         if (!dest.isPresent()) {
-            throw new BadRequestException("Destination not found.");
+            throw new NotFoundException("Destination not found.");
         }
         this.treasureHuntDestination = dest.get();
     }
@@ -105,10 +106,10 @@ public class TreasureHunt extends Model {
      * @param ownerId the id of the owner.
      * @throws NotFoundException
      */
-    public void setOwnerId(int ownerId) throws BadRequestException {
+    public void setOwnerId(int ownerId) throws NotFoundException {
         Optional<User> optionalUser = User.find.query().where().eq("user_id", ownerId).findOneOrEmpty();
         if (!optionalUser.isPresent()) {
-            throw new BadRequestException("This user does not exist");
+            throw new NotFoundException("This user does not exist");
         }
         this.owner = optionalUser.get();
     }
