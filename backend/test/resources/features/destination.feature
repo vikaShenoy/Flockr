@@ -92,7 +92,7 @@ Feature: The user can manage destinations
     Then I get an error indicating that I am not allowed to make changes on the destination
 
   @UserPhoto
-  Scenario: A user updates a destination that has a duplicate and is linked to a private photo
+  Scenario: A user updates a destination that has a duplicate
     Given that user 0 logged in
     And that another user has the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
@@ -100,7 +100,6 @@ Feature: The user can manage destinations
     And the user has the following photos in the system:
       | filename      | isPrimary | isPublic |
       | monkey.png    | false     | false    |
-    And that destination is linked to the user's destination photo
     And that I have the following destinations:
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
       | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
@@ -108,7 +107,6 @@ Feature: The user can manage destinations
       | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
       | The Dairy Down The Street | 1                 | 1          | 40.0     | 184.9     | 1         | true     |
     Then the other user's private destination is deleted
-    And the photo is changed to link to the public destination
 
   # Test adding a photo to a destination
   Scenario: A user tries to add a photo to a destination with a photo that doesn't exist
@@ -128,9 +126,9 @@ Feature: The user can manage destinations
 
   Scenario: A user tries to add a photo to a destination with a destination that doesn't exist
     Given that user 0 logged in
-    And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+    And that I have the following destination that does not exist:
+      | destinationId | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
+      |  99999        | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
     And the user has the following photos in the system:
       | filename      | isPrimary | isPublic |
       | monkey.png    | false     | false    |

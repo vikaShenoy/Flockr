@@ -364,7 +364,10 @@ public class DestinationController extends Controller {
                         throw new CompletionException(new NotFoundException());
                     }
                     Destination destination = optionalDestination.get();
-                    if (!user.isAdmin() && destination.getDestinationOwner() != user.getUserId()) {
+                    if (destination.getDestinationOwner() == null && !user.isAdmin()) {
+                        throw new CompletionException(new ForbiddenRequestException("You are not permitted to delete this destination"));
+                    }
+                    if (destination.getDestinationOwner() != null && !user.isAdmin() && user.getUserId() != destination.getDestinationOwner()) {
                         throw new CompletionException(new ForbiddenRequestException("You are not permitted to delete this destination"));
                     }
                     ObjectNode success = Json.newObject();
