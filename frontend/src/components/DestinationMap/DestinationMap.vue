@@ -27,8 +27,6 @@
       }"
     >
 
-
-
       <GmapMarker
         :key="index"
         v-for="(marker, index) in mapDestinationsToMarkers(destinations)"
@@ -37,6 +35,31 @@
         @click="toggleInfoWindow(marker, index)"
         :icon="marker.icon"
       />
+
+      <div v-if="destinations.length">
+        <GmapPolyline
+          v-for="(marker, index) in mapDestinationsToMarkers(destinations).slice(0, destinations.length - 1)"
+          v-bind:key="index"
+          :path="[
+            {
+              lat: destinations[index].destinationLat,
+              lng: destinations[index].destinationLon
+            },
+            {
+              lat: destinations[index + 1].destinationLat,
+              lng: destinations[index + 1].destinationLon
+            }
+          ]"
+          :options="{
+            icons: [{
+              icon: {
+                path: forwardClosedArrow
+              },
+              offset: '100%'
+            }]
+          }"
+        />
+      </div>
 
       <GmapInfoWindow
         :options="infoOptions"
@@ -97,7 +120,8 @@ export default {
           width: 0,
           height: -35
         }
-      }
+      },
+      forwardClosedArrow: 1
     };
   },
   props: {

@@ -2,7 +2,7 @@
   <div id="destinations">
     <div id="map">
       <DestinationMap 
-        :destinations="[]"
+        :destinations="mapTripDestinationsToDestinations()"
       />
     </div>
 
@@ -37,6 +37,7 @@ export default {
   data() {
     return {
       trip: null,
+
       snackbarModel: {
         show: false,
         timeout: 3000,
@@ -59,6 +60,14 @@ export default {
       this.snackbarModel.text = successMessage;
       this.snackbarModel.color = "success";
       this.snackbarModel.show = true;
+    },
+    mapTripDestinationsToDestinations() {
+      if (!this.trip) {
+        return [];
+      } 
+      return this.trip.tripDestinations.map((tripDest) => {
+        return tripDest.destination;
+      })
     },
     async getTrip() {
       try {
@@ -131,7 +140,7 @@ export default {
   }
 
   #map {
-    width: calc(100% - 300px);
+    width: calc(100% - 555px);
     display: inline-block;
     height: 100%;
     position: fixed;
