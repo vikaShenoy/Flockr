@@ -519,7 +519,6 @@ public class UserController extends Controller {
         } catch (Exception e){ log.error("No Parameter gender");}
         Date dateMin = new Date(ageMin);
         Date dateMax = new Date(ageMax);
-
         log.debug("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
 
         return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType)  //Just for testing purposes
