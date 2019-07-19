@@ -54,7 +54,7 @@
               label="Nationalities" :rules="[rules.nonEmptyArray]" clearable multiple />
 
             <v-combobox v-model="selectedPassports" :items="this.allPassports" :item-text="p => p.passportCountry" label="Passports"
-              :rules="[rules.nonEmptyArray]" clearable multiple />
+              clearable multiple />
 
             <v-combobox v-model="selectedTravellerTypes" :items="this.allTravellerTypes" :item-text="t => t.travellerTypeName"
               label="Traveller types" :rules="[rules.nonEmptyArray]" clearable multiple />
@@ -146,8 +146,8 @@ export default {
      * Return true if all the required fields in the travelling info stepper are completed
      */
     isTravellingInfoStepperCompleted: function() {
-      const { selectedPassports, selectedNationalities, selectedTravellerTypes } = this;
-      return [selectedPassports, selectedNationalities, selectedTravellerTypes].every(array => array.length > 0);
+      const { selectedNationalities, selectedTravellerTypes } = this;
+      return [selectedNationalities, selectedTravellerTypes].every(array => array.length > 0);
     }
   },
   methods: {
