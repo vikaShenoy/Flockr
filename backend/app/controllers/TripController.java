@@ -88,7 +88,6 @@ public class TripController extends Controller {
 
                     User user = optionalUser.get();
 
-                    //TODO Test this.
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId, tripDestinations);
 
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
@@ -206,7 +205,6 @@ public class TripController extends Controller {
                         throw new CompletionException(new BadRequestException());
                     }
 
-                    //TODO Test this.
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId, tripDestinations);
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {

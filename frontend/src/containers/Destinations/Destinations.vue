@@ -122,7 +122,6 @@
           destinationLon: null,
           isPublic: false,
           index: null
-          // TODO: Add owner here when ready.
         },
         editMode: false,
         editIndex: null,
@@ -236,7 +235,6 @@
        * @param newDestination {POJO} the new destination to add to the list of destinations.
        */
       addNewDestinationCard: async function (newDestination) {
-        // TODO: change this to take public/private into account
         this.editedDestination = {
           destinationId: null,
           destinationName: null,

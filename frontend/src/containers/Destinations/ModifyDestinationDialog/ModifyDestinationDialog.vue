@@ -341,7 +341,6 @@ export default {
       destinationLat: Number,
       destinationLon: Number,
       isPublic: Boolean
-      // TODO: Add owner here when ready.
     },
     index: {
       type: Number,
