@@ -62,9 +62,9 @@ public class TreasureHuntControllerTest {
         Role role = new Role(RoleType.ADMIN);
         List<Role> roles = new ArrayList<>();
         roles.add(role);
-        adminUser.setRoles(roles);
         role.save();
         adminUser = User.find.byId(adminUser.getUserId());
+        adminUser.setRoles(roles);
         adminUser.save();
 
         DestinationType destinationType = new DestinationType("city");
@@ -338,6 +338,21 @@ public class TreasureHuntControllerTest {
 
     @Test
     public void deleteTreasureHuntGood() {
+        deleteTreasureHuntAsUser(user);
+    }
 
+    @Test
+    public void deleteTreasureHuntGoodAdmin() {
+        deleteTreasureHuntAsUser(adminUser);
+    }
+
+    private void deleteTreasureHuntAsUser(User adminUser) {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result result = fakeClient.makeRequestWithToken("DELETE", "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), adminUser.getToken());
+        Assert.assertEquals(200, result.status());
+
+        Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
+                "treasure_hunt_id", this.treasureHunt.getTreasureHuntId()).findOneOrEmpty();
+        Assert.assertFalse(optionalTreasureHunt.isPresent());
     }
 }
