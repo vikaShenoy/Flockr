@@ -256,7 +256,7 @@ public class DestinationController extends Controller {
                     }
 
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
-                    if (!user.isAdmin() && user.getUserId() != optionalDest.get().getDestinationOwner()) {
+                    if (!user.isAdmin() && (optionalDest.get().getDestinationOwner() == null || user.getUserId() != optionalDest.get().getDestinationOwner())) {
                         throw new CompletionException(new ForbiddenRequestException("You are unauthorised to update " +
                                 "this destination"));
                     }
@@ -526,8 +526,6 @@ public class DestinationController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int destinationId, Http.Request request) {
-        // TODO: check that the destination is not private once Story 13 is done
-        // TODO: if destination is private, check that the user has permission once Story 13 is done
 
         ObjectNode res = Json.newObject();
         String messageKey = "message";
@@ -541,7 +539,7 @@ public class DestinationController extends Controller {
             List<DestinationPhoto> destinationPhotos = destination.getDestinationPhotos();
 
             if (user.isAdmin() || user.isDefaultAdmin()) {
-                return ok(Json.toJson(destinationPhotos)); // TODO: find out why "isPrimary" is serialised as "primary" in JSON
+                return ok(Json.toJson(destinationPhotos));
             }
 
             List<DestinationPhoto> photosToReturn = new ArrayList<>();

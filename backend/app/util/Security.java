@@ -57,12 +57,11 @@ public class Security {
         return false;
     }
 
-// TODO: this javadoc needs updating.
     /**
      * Checks if an user has permission to run certain functionality
      * @param userFromMiddleware The user object inferred by the middleware
-     * @param userId The user retrieved from the url parameter
-     * @return True if the user
+     * @param userIdFromUrl The user retrieved from the url parameter
+     * @return True if the user from middleware is the same as the user provided in the url
      */
     public boolean userHasPermission(User userFromMiddleware, int userIdFromUrl) {
         if (checkRoleExists(userFromMiddleware, RoleType.ADMIN) || checkRoleExists(userFromMiddleware, RoleType.SUPER_ADMIN)) {

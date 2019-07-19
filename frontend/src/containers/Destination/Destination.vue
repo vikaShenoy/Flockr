@@ -40,6 +40,7 @@
           color="secondary"
           depressed
           @click="showingEditDestDialog = true"
+          v-if="userStore.methods.isAdmin() || destination.destinationOwner === userStore.data.userId"
         >
           <v-icon>edit</v-icon>
         </v-btn>
@@ -48,6 +49,7 @@
           color="error"
           depressed
           @click="isShowingDeleteDestDialog = true"
+          v-if="userStore.methods.isAdmin() || destination.destinationOwner === userStore.data.userId"
         >
           <v-icon>delete</v-icon>
         </v-btn>
@@ -113,6 +115,7 @@ import Carousel from "./Carousel/Carousel";
 import PromptDialog from "../../components/PromptDialog/PromptDialog";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import RequestTravellerTypes from "./RequestTravellerTypes/RequestTravellerTypes";
+import UserStore from '../../stores/UserStore';
 
 
 
@@ -128,6 +131,7 @@ export default {
   },
   data() {
     return {
+      userStore: UserStore,
       destination: null,
       destinationPhotos: [],
       hasOwnerRights: false,

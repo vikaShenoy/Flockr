@@ -491,7 +491,7 @@ public class UserController extends Controller {
         long ageMax;
         ageMax = -1;
         String gender = "";
-        
+
         try {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())

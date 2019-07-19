@@ -58,8 +58,6 @@
 
 <script>
 
-    //TODO Make way nicer
-
     import superagent from 'superagent';
     import {endpoint} from '../../../../utils/endpoint';
     export default {

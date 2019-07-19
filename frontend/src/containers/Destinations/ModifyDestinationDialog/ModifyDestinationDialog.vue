@@ -276,6 +276,27 @@ export default {
     },
     destinationToEdit: {
       type: Object,
+      required: false,
+      destinationId: Number,
+      destinationName: String,
+      destinationType: {
+        destinationTypeName: String,
+        destinationTypeId: Number
+      },
+      destinationDistrict: {
+        districtName: String,
+        districtId: Number
+      },
+      destinationCountry: {
+        countryName: String,
+        countryId: Number
+      },
+      destinationLat: Number,
+      destinationLon: Number,
+      isPublic: Boolean
+    },
+    index: {
+      type: Number,
       required: false
     },
     editMode: {

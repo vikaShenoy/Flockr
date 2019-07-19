@@ -215,7 +215,7 @@ public class PhotoController extends Controller {
      * @param request HTTP request object
      * @return binary photo data with status 200 if found
      * unauthorized with 401 if not authorized
-     * notFound with 404 if photo not found //TODO Add this to the API spec!
+     * notFound with 404 if photo not found
      * forbidden 403 if trying to get a photo that you do not have permission to
      * 500 server error for any other server related error
      */
@@ -295,7 +295,6 @@ public class PhotoController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> uploadPhotoForUser(int userId, Http.Request request) {
-        // TODO: On is Primary don't save to list of photos just set as primary photo, and delete old primary photo if exists.
         User userUploadingPhoto = request.attrs().get(ActionState.USER);
         ObjectNode response = Json.newObject();
         String messageKey = "message";
