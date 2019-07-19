@@ -317,7 +317,7 @@ export default {
           gender: gender,
           dateOfBirth: moment(dateOfBirth, 'DD/MM/YYYY').format('YYYY-DD-MM')
         });
-        this.$router.push(`/profile/${signedUpUserId}`);
+        this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
         this.loading = false;
       } catch (err) {
         console.error(`Could not add traveller info for user with id ${signedUpUserId}: ${err}`);
