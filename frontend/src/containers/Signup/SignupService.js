@@ -1,5 +1,6 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
+import moment from "moment";
 
 /**
  * Sign up a user.
@@ -30,4 +31,22 @@ export async function emailTaken(email) {
   }
 
   return false;
+}
+
+export const rules = {
+  required: field => !!field || "Field is required",
+  noNumbers: field => !/\d/.test(field) || "No Numbers Allowed",
+  nonEmptyArray: field => field.length > 0 || "Please select at least 1",
+  dateBeforeToday: field => moment(field, 'DD/MM/YYYY') < moment() || "Must be before today and in DD/MM/YYYY format"
+};
+
+/**
+ * Update the user's information
+ * @param {Number | String} userId the id of the user
+ * @param {Object} basicInfo object containing info being updated, as per API spec
+ */
+export function updateBasicInfo(userId, basicInfo) {
+  return superagent.patch(endpoint(`/users/${userId}`))
+  .set("Authorization", localStorage.getItem("authToken"))
+  .send(basicInfo);
 }
