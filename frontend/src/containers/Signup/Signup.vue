@@ -54,7 +54,7 @@
               label="Nationalities" :rules="[rules.nonEmptyArray]" clearable multiple />
 
             <v-combobox v-model="selectedPassports" :items="this.allPassports" :item-text="p => p.passportCountry" label="Passports"
-              :rules="[rules.nonEmptyArray]" clearable multiple />
+              clearable multiple />
 
             <v-combobox v-model="selectedTravellerTypes" :items="this.allTravellerTypes" :item-text="t => t.travellerTypeName"
               label="Traveller types" :rules="[rules.nonEmptyArray]" clearable multiple />
@@ -146,8 +146,8 @@ export default {
      * Return true if all the required fields in the travelling info stepper are completed
      */
     isTravellingInfoStepperCompleted: function() {
-      const { selectedPassports, selectedNationalities, selectedTravellerTypes } = this;
-      return [selectedPassports, selectedNationalities, selectedTravellerTypes].every(array => array.length > 0);
+      const { selectedNationalities, selectedTravellerTypes } = this;
+      return [selectedNationalities, selectedTravellerTypes].every(array => array.length > 0);
     }
   },
   methods: {
@@ -264,13 +264,20 @@ export default {
       this.loading = true;
       const validFields = await this.validate();
       if (!validFields) return;
+
+      const userInfo = {
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        password: this.password,
+      };
+
+      if (this.middleName.length > 0) {
+        userInfo.middleName = this.middleName;
+      }
+
       try {
-        const { token, userId } = await signup({
-          firstName: this.firstName,
-          lastName: this.lastName,
-          email: this.email,
-          password: this.password,
-        });
+        const { token, userId } = await signup(userInfo);
 
         // Only set local storage if user is not currently logged in
         if (!localStorage.getItem("authToken")) {
@@ -310,7 +317,7 @@ export default {
           gender: gender,
           dateOfBirth: moment(dateOfBirth, 'DD/MM/YYYY').format('YYYY-DD-MM')
         });
-        this.$router.push(`/profile/${signedUpUserId}`);
+        this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
         this.loading = false;
       } catch (err) {
         console.error(`Could not add traveller info for user with id ${signedUpUserId}: ${err}`);
