@@ -21,6 +21,8 @@ import utils.PlayResultToJson;
 import utils.TestState;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -128,11 +130,11 @@ public class TreasureHuntControllerTest {
     }
 
     @Test
-    public void editTreasureHuntGoodOwnerId() throws IOException {
+    public void editTreasureHuntGoodRiddle() throws IOException {
 
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         ObjectNode treasureHuntObject = Json.newObject();
-        treasureHuntObject.put("ownerId", otherUser.getUserId());
+        treasureHuntObject.put("riddle", "New Riddle");
         Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
                 "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
         //Assert response code is correct.
@@ -140,14 +142,38 @@ public class TreasureHuntControllerTest {
         JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
 
         //Assert response is correct.
-        Assert.assertTrue(jsonNode.has("treasureHuntDestinationId"));
-        Assert.assertEquals(editedDestination.getDestinationId(), jsonNode.get("treasureHuntDestinationId").asInt());
+        Assert.assertTrue(jsonNode.has("riddle"));
+        Assert.assertEquals("New Riddle", jsonNode.get("riddle").asText());
 
         //Assert database has been updated correctly.
         TreasureHunt editedTreasureHunt = TreasureHunt.find.byId(treasureHunt.getTreasureHuntId());
         Assert.assertNotNull(editedTreasureHunt);
-        Assert.assertEquals(editedDestination.getDestinationId(), editedTreasureHunt.getTreasureHuntDestinationId());
+        Assert.assertEquals("New Riddle", editedTreasureHunt.getRiddle());
     }
+
+//    @Test
+//    public void editTreasureHuntGoodStartDate() throws IOException {
+//
+//        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+//        ObjectNode treasureHuntObject = Json.newObject();
+//        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//        Date newDate = Date.from(Instant.now().minus(Duration.ofDays(365)));
+//        treasureHuntObject.put("startDate", dateFormat.format(newDate));
+//        Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
+//                "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
+//        //Assert response code is correct.
+//        Assert.assertEquals(200, result.status());
+//        JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
+//
+//        //Assert response is correct.
+//        Assert.assertTrue(jsonNode.has("startDate"));
+//        Assert.assertEquals(Instant.parse(dateFormat.format(newDate)).getEpochSecond(), jsonNode.get("startDate").asLong());
+//
+//        //Assert database has been updated correctly.
+//        TreasureHunt editedTreasureHunt = TreasureHunt.find.byId(treasureHunt.getTreasureHuntId());
+//        Assert.assertNotNull(editedTreasureHunt);
+//        Assert.assertEquals(newDate, editedTreasureHunt.getStartDate());
+//    }
 
     @Test
     public void deleteTreasureHuntGood() {

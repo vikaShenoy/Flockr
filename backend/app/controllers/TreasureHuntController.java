@@ -122,6 +122,7 @@ public class TreasureHuntController extends Controller {
                         if (riddle.length() == 0) {
                             throw new CompletionException(new BadRequestException("Riddle is required."));
                         }
+                        treasureHunt.setRiddle(riddle);
                     }
                     if (jsonBody.has("endDate")) {
                         String endDateString = jsonBody.get("endDate").asText();
@@ -142,7 +143,7 @@ public class TreasureHuntController extends Controller {
                         try {
                             Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDateString);
                             if (startDate.after(treasureHunt.getEndDate())) {
-                                throw new CompletionException(new BadRequestException("End date cannot be before start date."));
+                                throw new CompletionException(new BadRequestException("Start date cannot be before end date."));
                             }
                             treasureHunt.setStartDate(startDate);
                         } catch (ParseException e) {
