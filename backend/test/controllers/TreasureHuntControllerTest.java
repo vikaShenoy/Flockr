@@ -395,5 +395,69 @@ public class TreasureHuntControllerTest {
         Assert.assertEquals(400, result.status());
     }
 
+    @Test
+    public void getTreasureHuntsByUserIdRequestOk() throws IOException {
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        ObjectNode treasureHuntObject = Json.newObject();
+        treasureHuntObject.put("ownerId", user.getUserId());
+        Result result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/"+ user.getUserId() + "/treasurehunts", user.getToken());
+        Assert.assertEquals(200, result.status());
+        JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
+        Assert.assertEquals(user.getUserId(), jsonNode.get(0).get("ownerId").asInt());
+    }
+
+    @Test
+    public void getTreasureHuntsByUserIdForbidden() throws IOException {
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        ObjectNode treasureHuntObject = Json.newObject();
+        treasureHuntObject.put("ownerId", user.getUserId());
+        Result result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/"+ (user.getUserId() + 1) + "/treasurehunts", user.getToken());
+        Assert.assertEquals(403, result.status());
+
+    }
+
+    @Test
+    public void getTreasureHuntsByUserIdAdminRequestOk() throws IOException {
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        ObjectNode treasureHuntObject = Json.newObject();
+        treasureHuntObject.put("ownerId", user.getUserId());
+        Result result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/"+ user.getUserId() + "/treasurehunts", adminUser.getToken());
+        Assert.assertEquals(200, result.status());
+        JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
+        Assert.assertEquals(user.getUserId(), jsonNode.get(0).get("ownerId").asInt());
+        Assert.assertNotEquals(adminUser.getUserId(),jsonNode.get(0).get("ownerId").asInt());
+    }
+
+    @Test
+    public void getTreasureHuntsByUserIdNotFound() throws IOException {
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        ObjectNode treasureHuntObject = Json.newObject();
+        treasureHuntObject.put("ownerId", user.getUserId());
+        // This needs to be called by and admin to simulate correctly.
+        Result result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/" + (user.getUserId() + 1000) + "/treasurehunts", adminUser.getToken());
+        Assert.assertEquals(404, result.status());
+    }
+
+    @Test
+    public void getTreasureHuntsByUserIdUnauthorised() throws IOException {
+
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        ObjectNode treasureHuntObject = Json.newObject();
+        treasureHuntObject.put("ownerId", user.getUserId());
+        // This needs to be called by and admin to simulate correctly.
+        Result result = fakeClient.makeRequestWithToken("GET",
+                "/api/users/" + user.getUserId() + "/treasurehunts", "BAD-TOKEN");
+        Assert.assertEquals(401, result.status());
+    }
+
+
     
 }
