@@ -635,4 +635,14 @@ public class TreasureHuntControllerTest {
         }
         Assert.assertFalse(invalidHuntPresent);
     }
+
+    @Test
+    public void testCascadeWhenDeletingUsers() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result result = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + user.getUserId(),
+                user.getToken());
+        Assert.assertEquals(200, result.status());
+
+    }
+
 }
