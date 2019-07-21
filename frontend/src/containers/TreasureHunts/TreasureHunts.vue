@@ -1,4 +1,5 @@
 <template>
+
     <v-flex>
           <v-expansion-panel>
             <v-expansion-panel-content
@@ -13,14 +14,28 @@
             </v-card>
             </v-expansion-panel-content>
         </v-expansion-panel>
+        <v-btn color="secondary" style="margin: 20px; float: right" fab small
+        v-on:click="showDialog = true"
+        >
+            <v-icon>add</v-icon>
+        </v-btn>
+
+        <AddTreasureHunt
+                :toggle="showDialog"
+                @closeDialog="closeDialog"
+        ></AddTreasureHunt>
     </v-flex>
+
+
 </template>
 
 <script>
+import AddTreasureHunt from "./AddTreasureHunt";
 export default {
-
+    components: {AddTreasureHunt},
     data() {
         return {
+            showDialog: false,
             treasureHunts: [
                 {
                     name: "The curse of the Krusty Krab",
@@ -47,6 +62,11 @@ export default {
                     destination: "Erskine"
                 }
             ]
+        }
+    },
+    methods: {
+        closeDialog() {
+            this.showDialog = false
         }
     }
     
