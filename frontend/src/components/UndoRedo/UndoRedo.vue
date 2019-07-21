@@ -2,38 +2,59 @@
   <div>
     <v-icon @click="undo" class="action" color="secondary" :disabled="!undoStack.length">undo</v-icon>
     <v-icon @click="redo" class="action" color="secondary" :disabled="!redoStack.length">redo</v-icon>
+
+    <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show = false" />
  </div>
 </template>
 
 <script>
 import UndoRedoStack from "./UndoRedoStack";
+import Snackbar from "../Snackbars/Snackbar";
 
 export default {
+  components: {
+    Snackbar
+  },
   data() {
     return {
       undoStack: [],
-      redoStack: []
+      redoStack: [],
+      snackbarModel: {
+        text: "Hello world",
+        color: "success",
+        show: false,
+        timeout: 2000
+      }
     }
   },
-  mixins: [
-    UndoRedoStack
-  ],
   methods: {
     /**
      * Undo's last action and adds to redo stack
      */
-    undo() {
+    async undo() {
       const command = this.undoStack.pop();
-      command.unexecute();
-      this.addRedo(command);
+      try {
+        await command.unexecute();
+        this.addRedo(command);
+        this.showSuccessSnackbar("Successfully Un-did action");
+      } catch (e) {
+        this.showErrorSnackbar("Could not undo action");
+      }
     },
     /**
      * Redo's last action and adds to undo stack
      */
-    redo() {
+    async redo() {
       const command = this.redoStack.pop();
-      command.execute();
-      this.addUndo(command);
+      
+      try {
+        await command.execute();
+        this.addUndo(command);
+        this.showSuccessSnackbar("Successfully Re-did action");
+        console.log('I am showing success');
+      } catch (e) {
+        this.showErrorSnackbar("Could not undo action");
+      }
     },
     /**
      * Adds a command to the undo stack
@@ -46,6 +67,22 @@ export default {
      */
     addRedo(command) {
       this.redoStack.push(command);
+    },
+    /**
+     * Shows a success snackbar
+     */
+    showSuccessSnackbar(text) {
+      this.snackbarModel.text = text;
+      this.snackbarModel.color = "success";
+      this.snackbarModel.show = true;
+    },
+    /**
+     * Shows an error snackbar
+     */
+    showErrorSnackbar(text) {
+      this.snackbarModel.text = text;
+      this.snackbarModel.color = "error";
+      this.snackbarModel.show = true;
     }
   }
 }
@@ -55,6 +92,7 @@ export default {
 <style lang="scss" scoped>
 .action {
   cursor: pointer;
+  font-size: 2rem;
 }
 
 

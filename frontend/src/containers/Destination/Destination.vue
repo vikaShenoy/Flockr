@@ -1,6 +1,5 @@
 <template>
   <div id="destination">
-    <UndoRedo ref="undoRedo" />
     <div id="destination-map">
       <DestinationMap
         :destinations="destination ? [destination] : []"
@@ -70,6 +69,10 @@
         /> 
       </v-flex>
 
+      <div id="undo-redo-btns">
+        <UndoRedo ref="undoRedo" />
+      </div>
+
       <v-flex xs12 sm6 lg8 xl8 style="padding-bottom: 0px">
         <DestinationDetails
           :destination="destination"
@@ -117,6 +120,7 @@ import Carousel from "./Carousel/Carousel";
 import PromptDialog from "../../components/PromptDialog/PromptDialog";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import RequestTravellerTypes from "./RequestTravellerTypes/RequestTravellerTypes";
+import { sendUpdateDestination } from "../Destinations/DestinationsService";
 import UserStore from '../../stores/UserStore';
 import UndoRedo from "../../components/UndoRedo/UndoRedo"
 
@@ -176,15 +180,17 @@ export default {
     updateDestination(updatedDestination) {
       
 
-      const undoCommand = () => {
-        console.log("I am undoing");         
+      const undoCommand = async (destination) => {
+        await sendUpdateDestination(destination, this.destination.destinationId)
+        this.destination = destination;
       };
 
-      const redoCommand = () => {
-        console.log("I am redoing");
+      const redoCommand = async (destination) => {
+        await sendUpdateDestination(destination, updatedDestination.destinationId);
+        this.destination = destination;
       };
 
-       const updateDestCommand = new Command(undoCommand, redoCommand);
+      const updateDestCommand = new Command(undoCommand.bind(null, this.destination), redoCommand.bind(null, updatedDestination));
 
       this.$refs.undoRedo.addUndo(updateDestCommand);
       this.destination = updatedDestination;
@@ -298,6 +304,12 @@ export default {
   #destination {
     width: 100%; 
     background-color: #fafafa;
+  }
+
+  #undo-redo-btns {
+    right: 260px;
+    position: absolute;
+    margin-top: 18px;
   }
 </style>
 

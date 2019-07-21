@@ -479,24 +479,10 @@ export default {
       this.$refs.form.validate();
       if (this.isValidForm) {
         this.formIsLoading = true;
-        const destinationInfo = {
-          destinationName: this.destination.destinationName,
-          destinationTypeId: this.destination.destinationType.destinationTypeId,
-          countryId: this.destination.destinationCountry.countryId,
-          districtId: this.destination.destinationDistrict.districtId,
-          latitude: this.destination.destinationLat,
-          longitude: this.destination.destinationLon,
-          travellerTypeIds: this.destination.travellerTypes.map(travellerType => travellerType.travellerTypeId)
-        };
-
-        // Extra field that is only valid for editing destinations
-        if (this.editMode) {
-          destinationInfo.isPublic = this.destination.isPublic;
-        }
 
         if (!this.editMode) {
           try {
-            this.destination = await sendAddDestination(destinationInfo);
+            await sendAddDestination(this.destination);
             this.$emit("addNewDestination", this.destination);
             this.closeDialog();
             this.formIsLoading = false;
@@ -511,7 +497,7 @@ export default {
         } else {
           try {
             await sendUpdateDestination(
-              destinationInfo,
+              this.destination,
               this.destination.destinationId
             );
             const updatedDestination = await requestDestination(
@@ -520,6 +506,7 @@ export default {
             this.$emit("updateDestination", updatedDestination);
             this.formIsLoading = false;
           } catch (error) {
+            console.log(error);
             const message =
               error.status === 400
                 ? error.response.body.message

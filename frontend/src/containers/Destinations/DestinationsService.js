@@ -85,7 +85,18 @@ export async function sendAddDestination(destinationInfo) {
  * @param destinationId int id of the destination to update
  * @returns {Promise<>} contains nothing
  */
-export async function sendUpdateDestination(destinationInfo, destinationId) {
+export async function sendUpdateDestination(destination, destinationId) {
+  const destinationInfo = {
+    destinationName: destination.destinationName,
+    destinationTypeId: destination.destinationType.destinationTypeId,
+    countryId: destination.destinationCountry.countryId,
+    districtId: destination.destinationDistrict.districtId,
+    latitude: destination.destinationLat,
+    longitude: destination.destinationLon,
+    travellerTypeIds: destination.travellerTypes.map(travellerType => travellerType.travellerTypeId),
+    isPublic: destination.isPublic
+  };
+
   const res = await superagent.put(endpoint(`/destinations/${destinationId}`))
       .set("Authorization", localStorage.getItem("authToken"))
       .send(destinationInfo);
