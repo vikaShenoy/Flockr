@@ -3,28 +3,16 @@ package controllers;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import actions.ActionState;
-import actions.LoggedIn;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import exceptions.BadRequestException;
-import exceptions.NotFoundException;
-import io.ebean.Finder;
-import models.Destination;
-import models.TravellerType;
 import models.TreasureHunt;
 import models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
-import play.mvc.*;
 import play.mvc.Http.Request;
-import play.libs.concurrent.HttpExecutionContext;
-import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -32,17 +20,13 @@ import repository.DatabaseExecutionContext;
 import play.mvc.With;
 import repository.TreasureHuntRepository;
 import repository.UserRepository;
-
 import javax.inject.Inject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.Date;
 import java.util.concurrent.CompletionStage;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**
  * Contains all end points associated with treasure hunts.
