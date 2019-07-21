@@ -1,5 +1,6 @@
 <template>
   <div id="destination">
+    <UndoRedo ref="undoRedo" />
     <div id="destination-map">
       <DestinationMap
         :destinations="destination ? [destination] : []"
@@ -107,6 +108,7 @@
 </template>
 
 <script>
+import Command from "../../components/UndoRedo/Command";
 import { getDestination, getDestinationPhotos, deleteDestination, removePhotoFromDestination } from "./DestinationService";
 import ModifyDestinationDialog from "../Destinations/ModifyDestinationDialog/ModifyDestinationDialog";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
@@ -116,6 +118,7 @@ import PromptDialog from "../../components/PromptDialog/PromptDialog";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import RequestTravellerTypes from "./RequestTravellerTypes/RequestTravellerTypes";
 import UserStore from '../../stores/UserStore';
+import UndoRedo from "../../components/UndoRedo/UndoRedo"
 
 
 
@@ -127,7 +130,8 @@ export default {
     ModifyDestinationDialog,
     Snackbar,
     PromptDialog,
-    RequestTravellerTypes
+    RequestTravellerTypes,
+    UndoRedo
   },
   data() {
     return {
@@ -170,11 +174,27 @@ export default {
       this.showingEditDestDialog = dialogValue;
     },
     updateDestination(updatedDestination) {
+      
+
+      const undoCommand = () => {
+        console.log("I am undoing");         
+      };
+
+      const redoCommand = () => {
+        console.log("I am redoing");
+      };
+
+       const updateDestCommand = new Command(undoCommand, redoCommand);
+
+      this.$refs.undoRedo.addUndo(updateDestCommand);
       this.destination = updatedDestination;
       this.showingEditDestDialog = false;
       this.snackbarModel.color = "success";
       this.snackbarModel.text = "Updated destination";
       this.snackbarModel.show = true;
+
+     
+
     },
     showError(errorMessage) {
       this.snackbarModel.text = errorMessage;

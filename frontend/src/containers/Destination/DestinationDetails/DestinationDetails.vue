@@ -77,8 +77,9 @@
 
 
 <script>
+
 export default {
-  props: ["destination"] 
+  props: ["destination"]
 }
 </script>
 
