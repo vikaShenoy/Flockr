@@ -57,9 +57,12 @@ public class TreasureHuntControllerTest {
         TestState.getInstance().setFakeClient(new FakePlayClient(application));
 
         fakeClient = TestState.getInstance().getFakeClient();
-        user = fakeClient.signUpUser("Timmy", "Tester", "timmy@tester.com", "abc123");
-        otherUser = fakeClient.signUpUser("Tammy", "Tester", "tammy@tester.com", "abc123");
-        adminUser = fakeClient.signUpUser("Andy", "Admin", "andy@admin.com", "abc123");
+        user = fakeClient.signUpUser("Timmy", "Tester", "timmy@tester.com",
+                "abc123");
+        otherUser = fakeClient.signUpUser("Tammy", "Tester", "tammy@tester.com",
+                "abc123");
+        adminUser = fakeClient.signUpUser("Andy", "Admin", "andy@admin.com",
+                "abc123");
 
         Role role = new Role(RoleType.ADMIN);
         List<Role> roles = new ArrayList<>();
@@ -72,8 +75,10 @@ public class TreasureHuntControllerTest {
         DestinationType destinationType = new DestinationType("city");
         Country country = new Country("Test Nation");
         District district = new District("Test District", country);
-        destination = new Destination("Test City", destinationType, district, 0.0, 0.0, country, user.getUserId(), true);
-        editedDestination = new Destination("Edited Destination", destinationType, district, 0.0, 0.0, country, user.getUserId(), false);
+        destination = new Destination("Test City", destinationType, district,
+                0.0, 0.0, country, user.getUserId(), true);
+        editedDestination = new Destination("Edited Destination", destinationType, district,
+                0.0, 0.0, country, user.getUserId(), false);
 
         destinationType.save();
         country.save();
@@ -178,7 +183,8 @@ public class TreasureHuntControllerTest {
 
         //Assert response is correct.
         Assert.assertTrue(jsonNode.has("startDate"));
-        Assert.assertEquals((dateFormat.parse(newDate)).toInstant().getEpochSecond() * 1000, jsonNode.get("startDate").asLong());
+        Assert.assertEquals((
+                dateFormat.parse(newDate)).toInstant().getEpochSecond() * 1000, jsonNode.get("startDate").asLong());
 
         //Assert database has been updated correctly.
         TreasureHunt editedTreasureHunt = TreasureHunt.find.byId(treasureHunt.getTreasureHuntId());
@@ -202,7 +208,8 @@ public class TreasureHuntControllerTest {
 
         //Assert response is correct.
         Assert.assertTrue(jsonNode.has("endDate"));
-        Assert.assertEquals((dateFormat.parse(newDate)).toInstant().getEpochSecond() * 1000, jsonNode.get("endDate").asLong());
+        Assert.assertEquals((
+                dateFormat.parse(newDate)).toInstant().getEpochSecond() * 1000, jsonNode.get("endDate").asLong());
 
         //Assert database has been updated correctly.
         TreasureHunt editedTreasureHunt = TreasureHunt.find.byId(treasureHunt.getTreasureHuntId());
@@ -270,7 +277,8 @@ public class TreasureHuntControllerTest {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         ObjectNode treasureHuntObject = Json.newObject();
-        treasureHuntObject.put("startDate", dateFormat.format(Date.from(treasureHunt.getEndDate().toInstant().plus(Duration.ofDays(1)))));
+        treasureHuntObject.put("startDate", dateFormat.format(
+                Date.from(treasureHunt.getEndDate().toInstant().plus(Duration.ofDays(1)))));
         Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
                 "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
         //Assert response code is correct.
@@ -282,7 +290,8 @@ public class TreasureHuntControllerTest {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         ObjectNode treasureHuntObject = Json.newObject();
-        treasureHuntObject.put("endDate", dateFormat.format(Date.from(treasureHunt.getStartDate().toInstant().minus(Duration.ofDays(1)))));
+        treasureHuntObject.put("endDate", dateFormat.format(
+                Date.from(treasureHunt.getStartDate().toInstant().minus(Duration.ofDays(1)))));
         Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
                 "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
         //Assert response code is correct.
@@ -350,7 +359,8 @@ public class TreasureHuntControllerTest {
 
     private void deleteTreasureHuntAsUser(User adminUser) {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        Result result = fakeClient.makeRequestWithToken("DELETE", "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), adminUser.getToken());
+        Result result = fakeClient.makeRequestWithToken("DELETE", "/api/treasurehunts/" +
+                treasureHunt.getTreasureHuntId(), adminUser.getToken());
         Assert.assertEquals(200, result.status());
 
         Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
@@ -370,8 +380,8 @@ public class TreasureHuntControllerTest {
         User testUser = fakeClient.signUpUser("James", "Hetfield",
                 "jamesHet@tester.com", "abc123");
 
-        Result result = fakeClient.makeRequestWithToken("POST", body, "/api/users/" + testUser.getUserId() +
-                "/treasurehunts", user.getToken());
+        Result result = fakeClient.makeRequestWithToken("POST", body,
+                "/api/users/" + testUser.getUserId() + "/treasurehunts", user.getToken());
         Assert.assertEquals(201, result.status());
 
         JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
@@ -386,13 +396,55 @@ public class TreasureHuntControllerTest {
     public void createNewTreasureHuntNoDestination() throws IOException {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         ObjectNode body = Json.newObject();
-        body.put("treasureHuntName", "Pirate Treasure Hunt");
+        String name = "Pirate Treasure Hunt";
+        body.put("treasureHuntName", name);
         body.put("riddle", "Test riddle");
         body.put("startDate", "2016-01-01");
         body.put("endDate", "2016-12-31");
         Result result = fakeClient.makeRequestWithToken("POST", body, "/api/users/" + user.getUserId() +
                 "/treasurehunts", user.getToken());
         Assert.assertEquals(400, result.status());
+
+        Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
+                "treasure_hunt_name", name).findOneOrEmpty();
+        Assert.assertFalse(optionalTreasureHunt.isPresent());
+    }
+
+    @Test
+    public void createNewTreasureHuntNoAuth() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        ObjectNode body = Json.newObject();
+        String name = "Pirate Treasure Hunt";
+        body.put("treasureHuntName", name);
+        body.put("riddle", "Test riddle");
+        body.put("startDate", "2016-01-01");
+        body.put("endDate", "2016-12-31");
+        Result result = fakeClient.makeRequestWithNoToken("POST", body, "/api/users/" + user.getUserId() +
+                "/treasurehunts");
+        Assert.assertEquals(401, result.status());
+
+        Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
+                "treasure_hunt_name", name).findOneOrEmpty();
+        Assert.assertFalse(optionalTreasureHunt.isPresent());
+    }
+
+    @Test
+    public void createNewTreasureHuntNoUser() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        ObjectNode body = Json.newObject();
+        String name = "Pirate Treasure Hunt";
+        body.put("treasureHuntName", name);
+        body.put("riddle", "Test riddle");
+        body.put("startDate", "2016-01-01");
+        body.put("endDate", "2016-12-31");
+        int userIdNotPresent = 100;
+        Result result = fakeClient.makeRequestWithToken("POST", body, "/api/users/" + userIdNotPresent +
+                "/treasurehunts", user.getToken());
+        Assert.assertEquals(404, result.status());
+
+        Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
+                "treasure_hunt_name", name).findOneOrEmpty();
+        Assert.assertFalse(optionalTreasureHunt.isPresent());
     }
 
     @Test
@@ -457,7 +509,4 @@ public class TreasureHuntControllerTest {
                 "/api/users/" + user.getUserId() + "/treasurehunts", "BAD-TOKEN");
         Assert.assertEquals(401, result.status());
     }
-
-
-    
 }
