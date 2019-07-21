@@ -76,7 +76,7 @@
 </template>
 
 <script>
-    import {getPublicDestinations} from "./TreasureHuntsService"
+    import {getPublicDestinations, createTreasureHunt} from "./TreasureHuntsService"
     export default {
         name: "AddTreasureHunt",
         props: {
@@ -109,8 +109,19 @@
             async getDestinations() {
                 this.destinations = await getPublicDestinations()
             },
-            createTreasureHunt() {
+            async createTreasureHunt() {
                 console.log("Create the treasure hunt in this function");
+                let treasureHunt = {
+
+                    treasureHuntName: this.createTreasureHuntName,
+                    treasureHuntDestinationId: this.createTreasureHuntDestination,
+                    riddle: this.createTreasureHuntRiddle,
+                    startDate: this.startDate,
+                    endDate: this.endDate
+
+                };
+                await createTreasureHunt(treasureHunt);
+
                 this.closeDialog();
             }
         },

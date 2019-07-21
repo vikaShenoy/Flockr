@@ -11,3 +11,18 @@ export async function getPublicDestinations() {
 
     return res.body;
 }
+
+export async function getTreasureHunts() {
+
+}
+
+export async function createTreasureHunt(treasureHunt) {
+    let token = localStorage.getItem("authToken");
+    let userId = localStorage.getItem("userId");
+
+    const res = await superagent.post(endpoint(`/users/${userId}/treasurehunts`))
+        .set("Authorization", token)
+        .send(treasureHunt);
+
+    return res.body;
+}

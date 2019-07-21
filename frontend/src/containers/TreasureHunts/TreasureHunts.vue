@@ -67,6 +67,9 @@ export default {
     methods: {
         closeDialog() {
             this.showDialog = false
+        },
+        getTreasureHunts() {
+            console.log("getting all treasurehunts")
         }
     }
     
