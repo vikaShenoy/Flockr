@@ -1,7 +1,5 @@
 package models;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import exceptions.BadRequestException;
 import exceptions.NotFoundException;
 import io.ebean.Finder;
 import io.ebean.Model;
