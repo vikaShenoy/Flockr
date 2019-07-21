@@ -6,6 +6,7 @@
 create table country (
   country_id                    integer auto_increment not null,
   country_name                  varchar(255),
+  is_valid                      boolean default false not null,
   constraint pk_country primary key (country_id)
 );
 

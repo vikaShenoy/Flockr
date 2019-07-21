@@ -19,6 +19,8 @@ public class Country extends Model {
 
     private String countryName;
 
+    private boolean isValid;
+
     public Country(String countryName) {
         this.countryName = countryName;
     }
