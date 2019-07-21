@@ -4,8 +4,10 @@
       <v-list-tile
         v-for="item in itemsToShow"
         :key="item.title"
+        :to="item.url == '#' ? '' : item.url"
         @click="navClicked(item.url)"
         class="nav-item"
+        active-class="secondary-text"
       >
         <v-list-tile-action>
           <v-icon class="nav-icon">{{ item.icon }}</v-icon>
@@ -192,15 +194,19 @@ export default {
   }
 
   #title {
-    color:$darker-white;  
+    color:$darker-white;
   }
 
   .nav-icon {
-    color:$darker-white;  
+    color:$darker-white;
   }
 
   .nav-item {
     color: $darker-white;
+  }
+
+  .nav-item:hover {
+    background-color: $secondary !important;
   }
 
   .light-divider {
