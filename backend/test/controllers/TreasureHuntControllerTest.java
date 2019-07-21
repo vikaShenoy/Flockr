@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import exceptions.BadRequestException;
@@ -377,11 +378,9 @@ public class TreasureHuntControllerTest {
         body.put("riddle", "Test riddle");
         body.put("startDate", "2016-01-01");
         body.put("endDate", "2016-12-31");
-        User testUser = fakeClient.signUpUser("James", "Hetfield",
-                "jamesHet@tester.com", "abc123");
 
         Result result = fakeClient.makeRequestWithToken("POST", body,
-                "/api/users/" + testUser.getUserId() + "/treasurehunts", user.getToken());
+                "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
         Assert.assertEquals(201, result.status());
 
         JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
@@ -507,5 +506,98 @@ public class TreasureHuntControllerTest {
         Result result = fakeClient.makeRequestWithToken("GET",
                 "/api/users/" + user.getUserId() + "/treasurehunts", "BAD-TOKEN");
         Assert.assertEquals(401, result.status());
+    }
+
+    @Test
+    public void getAllTreasureHuntsGood() throws ServerErrorException, IOException, FailedToSignUpException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        // Create a new treasure hunt
+        ObjectNode body = Json.newObject();
+        body.put("treasureHuntName", "Pirate Treasure Hunt");
+        body.put("treasureHuntDestinationId", destination.getDestinationId());
+        body.put("riddle", "Test riddle");
+        body.put("startDate", "2016-01-01");
+        body.put("endDate", "2022-12-31");
+        Result result = fakeClient.makeRequestWithToken("POST", body,
+                "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
+        Assert.assertEquals(201, result.status());
+
+        // Test the get endpoint
+        Result getTreasureResult = fakeClient.makeRequestWithToken("GET",
+                "/api/treasurehunts", user.getToken());
+        JsonNode jsonNode = PlayResultToJson.convertResultToJson(getTreasureResult);
+        Assert.assertEquals(200, getTreasureResult.status());
+        Assert.assertEquals(user.getUserId(), jsonNode.get(0).get("ownerId").asInt());
+    }
+
+    @Test
+    public void getAllTreasureHuntsNoAuth() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result getTreasureResult = fakeClient.makeRequestWithNoToken("GET",
+                "/api/treasurehunts");
+        Assert.assertEquals(401, getTreasureResult.status());
+    }
+
+    @Test
+    public void getAllTreasureHuntsStartDateInvalid() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        // Create a new treasure hunt
+        ObjectNode body = Json.newObject();
+        body.put("treasureHuntName", "Invalid Treasure Hunt");
+        body.put("treasureHuntDestinationId", destination.getDestinationId());
+        body.put("riddle", "Test riddle");
+        body.put("startDate", "2026-01-01");
+        body.put("endDate", "2036-01-01");
+        Result result = fakeClient.makeRequestWithToken("POST", body,
+                "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
+        Assert.assertEquals(201, result.status());
+
+        // Test the get endpoint
+        Result getTreasureResult = fakeClient.makeRequestWithToken("GET",
+                "/api/treasurehunts", user.getToken());
+        JsonNode jsonNode = PlayResultToJson.convertResultToJson(getTreasureResult);
+        Assert.assertEquals(200, getTreasureResult.status());
+
+        // Check the invalid hunt was not returned
+        boolean invalidFlag = false;
+        for (JsonNode node : jsonNode) {
+            if (node.get("treasureHuntName").asText().equals("Invalid Treasure Hunt")) {
+                invalidFlag = true;
+            }
+        }
+        Assert.assertFalse(invalidFlag);
+    }
+
+    @Test
+    public void getAllTreasureHuntsEndDateInvalid() throws IOException {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+
+        // Create a new treasure hunt
+        ObjectNode body = Json.newObject();
+        body.put("treasureHuntName", "Invalid Treasure Hunt");
+        body.put("treasureHuntDestinationId", destination.getDestinationId());
+        body.put("riddle", "Test riddle");
+        body.put("startDate", "20166-01-01");
+        body.put("endDate", "2017-01-01");
+        Result result = fakeClient.makeRequestWithToken("POST", body,
+                "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
+        Assert.assertEquals(201, result.status());
+
+        // Test the get endpoint
+        Result getTreasureResult = fakeClient.makeRequestWithToken("GET",
+                "/api/treasurehunts", user.getToken());
+        JsonNode jsonNode = PlayResultToJson.convertResultToJson(getTreasureResult);
+        Assert.assertEquals(200, getTreasureResult.status());
+
+        // Check the invalid hunt was not returned
+        boolean invalidHuntPresent = false;
+        for (JsonNode node : jsonNode) {
+            if (node.get("treasureHuntName").asText().equals("Invalid Treasure Hunt")) {
+                invalidHuntPresent = true;
+            }
+        }
+        Assert.assertFalse(invalidHuntPresent);
     }
 }

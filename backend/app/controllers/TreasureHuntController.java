@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.LoggedIn;
+import akka.http.javadsl.model.HttpRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
@@ -20,12 +21,18 @@ import repository.DatabaseExecutionContext;
 import play.mvc.With;
 import repository.TreasureHuntRepository;
 import repository.UserRepository;
+import scala.reflect.internal.Trees;
+import util.TreasureHuntUtil;
+
 import javax.inject.Inject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.Date;
 import java.util.concurrent.CompletionStage;
+
+import static util.TreasureHuntUtil.validateTreasureHunts;
 
 
 /**
@@ -290,6 +297,33 @@ public class TreasureHuntController extends Controller {
                         ObjectNode message = Json.newObject();
                         message.put("message", forbiddenException.getMessage());
                         return forbidden(message);
+                    } catch (Throwable throwable) {
+                        return internalServerError();
+                    }
+                });
+    }
+
+    /**
+     * Endpoint to retrieve all treasure hunts in the system.
+     * @param request Http request object
+     * @return
+     * - 200 - success, body contains all treasure hunts
+     * - 401 - unauthorized
+     * - 500 - internal server error
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getAllTreasureHunts(Http.Request request) {
+        return treasureHuntRepository.getTreasureHunts()
+                .thenApplyAsync(treasureHunts -> {
+                    System.out.println(1);
+                    List<TreasureHunt> validTreasures = validateTreasureHunts(treasureHunts);
+                    System.out.println(2);
+                    JsonNode treasureJson = Json.toJson(validTreasures);
+                    return ok(treasureJson);
+                }, executionContext)
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
                     } catch (Throwable throwable) {
                         return internalServerError();
                     }

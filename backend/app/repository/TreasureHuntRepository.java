@@ -70,11 +70,17 @@ public class TreasureHuntRepository {
      */
 
     public CompletionStage<List<TreasureHunt>> getTreasureHuntsByUserId(int userId) {
-        return supplyAsync(() -> {
-            List<TreasureHunt> treasureHunts = TreasureHunt.find.query().where()
-                    .eq("owner_user_id", userId).findList();
-            return treasureHunts;
-        }, executionContext);
+        return supplyAsync(() ->
+                TreasureHunt.find.query().where().eq("owner_user_id", userId).findList(),
+                executionContext);
+    }
+
+    /**
+     * Get all treasure hunts from the database.
+     * @return a list of treasure hunts from the database.
+     */
+    public CompletionStage<List<TreasureHunt>> getTreasureHunts() {
+        return supplyAsync(() -> TreasureHunt.find.query().findList(), executionContext);
     }
 }
 
