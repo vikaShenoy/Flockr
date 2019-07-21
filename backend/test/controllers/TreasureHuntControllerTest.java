@@ -500,7 +500,6 @@ public class TreasureHuntControllerTest {
 
     @Test
     public void getTreasureHuntsByUserIdUnauthorised() throws IOException {
-
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         ObjectNode treasureHuntObject = Json.newObject();
         treasureHuntObject.put("ownerId", user.getUserId());
