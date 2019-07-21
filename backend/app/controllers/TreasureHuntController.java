@@ -234,7 +234,7 @@ public class TreasureHuntController extends Controller {
                         String startDateString = jsonBody.get("startDate").asText();
 
                         Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDateString);
-                        String endDateString = jsonBody.get("startDate").asText();
+                        String endDateString = jsonBody.get("endDate").asText();
                         Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDateString);
                         int destinationId = jsonBody.get("treasureHuntDestinationId").asInt();
 

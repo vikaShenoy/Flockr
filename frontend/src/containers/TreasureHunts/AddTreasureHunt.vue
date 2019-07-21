@@ -1,6 +1,6 @@
 <template>
     <v-dialog
-            v-model="toggle"
+            v-model="visible"
             width="500"
     >
 
@@ -87,7 +87,7 @@
         },
         data() {
             return {
-                visible: true,
+                visible: false,
                 destinations: [],
                 createTreasureHuntName: "",
                 createTreasureHuntDestination: -1,
@@ -123,11 +123,20 @@
                 await createTreasureHunt(treasureHunt);
 
                 this.closeDialog();
+                this.$emit("updateList");
             }
         },
         computed: {
             validTreasureHunt() {
                 return ! ( this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
+            }
+        },
+        watch: {
+            toggle(newVal, oldVal) {
+                this.visible = newVal
+            },
+            visible(newVal, oldVal) {
+                this.$emit("updateToggle", newVal)
             }
         }
     }

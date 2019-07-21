@@ -12,7 +12,13 @@ export async function getPublicDestinations() {
     return res.body;
 }
 
-export async function getTreasureHunts() {
+export async function getAllTreasureHunts() {
+    let token = localStorage.getItem("authToken");
+
+    const res = await superagent.get(endpoint("/treasurehunts"))
+        .set("Authorization", token)
+
+    return res.body;
 
 }
 
