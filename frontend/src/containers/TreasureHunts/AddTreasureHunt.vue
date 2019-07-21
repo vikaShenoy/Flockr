@@ -33,7 +33,7 @@
                                         <v-text-field v-model="createTreasureHuntName" label="Name" required ></v-text-field>
                                     </v-flex>
                                     <v-flex xs12>
-                                        <v-select v-model="createTreasureHuntDestination" required label="Destination" :items="destinatons" item-text="categoryName" item-value="categoryId">
+                                        <v-select v-model="createTreasureHuntDestination" required label="Destination" :items="destinations" item-text="destinationName" item-value="destinationId">
 
                                         </v-select>
                                     </v-flex>
@@ -63,7 +63,7 @@
                     <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn color="blue darken-1" flat @click="closeDialog">Close</v-btn>
-                        <v-btn color="blue darken-1" :disabled="!validVenue" flat v-on:click="createVenue()" >Create</v-btn>
+                        <v-btn color="blue darken-1" :disabled="validTreasureHunt" flat v-on:click="createTreasureHunt()" >Create</v-btn>
                     </v-card-actions>
                 </v-card>
 
@@ -76,19 +76,47 @@
 </template>
 
 <script>
+    import {getPublicDestinations} from "./TreasureHuntsService"
     export default {
         name: "AddTreasureHunt",
         props: {
             toggle: Boolean
         },
+        mounted() {
+          this.getDestinations();
+        },
         data() {
             return {
-                visible: true
+                visible: true,
+                destinations: [],
+                createTreasureHuntName: "",
+                createTreasureHuntDestination: -1,
+                createTreasureHuntRiddle: "",
+                startDate: null,
+                endDate: null,
+
             }
         },
         methods: {
             closeDialog() {
                 this.$emit("closeDialog");
+                this.createTreasureHuntName = "";
+                this.createTreasureHuntRiddle = "";
+                this.createTreasureHuntDestination = null;
+                this.startDate = null;
+                this.endDate = null;
+            },
+            async getDestinations() {
+                this.destinations = await getPublicDestinations()
+            },
+            createTreasureHunt() {
+                console.log("Create the treasure hunt in this function");
+                this.closeDialog();
+            }
+        },
+        computed: {
+            validTreasureHunt() {
+                return ! ( this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
             }
         }
     }
