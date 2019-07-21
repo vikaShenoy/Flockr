@@ -350,23 +350,58 @@ public class TreasureHuntControllerTest {
 
     @Test
     public void deleteTreasureHuntGood() {
-        deleteTreasureHuntAsUser(user);
+        int code = deleteTreasureHuntAsUser(user.getToken(), treasureHunt.getTreasureHuntId(), true);
+        Assert.assertEquals(200, code);
     }
 
     @Test
     public void deleteTreasureHuntGoodAdmin() {
-        deleteTreasureHuntAsUser(adminUser);
+        int code = deleteTreasureHuntAsUser(adminUser.getToken(), treasureHunt.getTreasureHuntId(), true);
+        Assert.assertEquals(200, code);
     }
 
-    private void deleteTreasureHuntAsUser(User adminUser) {
-        FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        Result result = fakeClient.makeRequestWithToken("DELETE", "/api/treasurehunts/" +
-                treasureHunt.getTreasureHuntId(), adminUser.getToken());
-        Assert.assertEquals(200, result.status());
+    @Test
+    public void deleteTreasureHuntNotFound() {
+        int code = deleteTreasureHuntAsUser(user.getToken(), 100000000, false);
+        Assert.assertEquals(404, code);
+    }
 
-        Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
-                "treasure_hunt_id", this.treasureHunt.getTreasureHuntId()).findOneOrEmpty();
-        Assert.assertFalse(optionalTreasureHunt.isPresent());
+    @Test
+    public void deleteTreasureHuntUnauthorized() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result result = fakeClient.makeRequestWithNoToken("DELETE",
+                "/api/treasurehunts/" + treasureHunt.getTreasureHuntId());
+
+        Assert.assertEquals(401, result.status());
+    }
+
+    @Test
+    public void deleteTreasureHuntForbidden() {
+        int code = deleteTreasureHuntAsUser(otherUser.getToken(), treasureHunt.getTreasureHuntId(), false);
+
+        Assert.assertEquals(403, code);
+    }
+
+    /**
+     * Sends a call to the delete treasure hunt endpoint and returns the response code.
+     * If goodTest is true, asserts that the treasure hunt has been deleted.
+     *
+     * @param token the authorization code to use.
+     * @param treasureHuntId the id of the treasure hunt.
+     * @param goodTest true if the test should successfully delete the treasure hunt.
+     * @return the status code of the response.
+     */
+    private int deleteTreasureHuntAsUser(String token, int treasureHuntId, boolean goodTest) {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result result = fakeClient.makeRequestWithToken("DELETE",
+                "/api/treasurehunts/" + treasureHuntId, token);
+
+        if (goodTest) {
+            Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
+                    "treasure_hunt_id", treasureHuntId).findOneOrEmpty();
+            Assert.assertFalse(optionalTreasureHunt.isPresent());
+        }
+        return result.status();
     }
 
     @Test
@@ -600,4 +635,14 @@ public class TreasureHuntControllerTest {
         }
         Assert.assertFalse(invalidHuntPresent);
     }
+
+    @Test
+    public void testCascadeWhenDeletingUsers() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result result = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + user.getUserId(),
+                user.getToken());
+        Assert.assertEquals(200, result.status());
+
+    }
+
 }

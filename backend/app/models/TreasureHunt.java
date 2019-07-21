@@ -22,7 +22,7 @@ public class TreasureHunt extends Model {
     @ManyToOne(cascade = CascadeType.ALL)
     private Destination treasureHuntDestination;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private User owner;
 
     private String riddle;

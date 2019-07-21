@@ -57,6 +57,9 @@ public class User extends Model {
     @OneToOne(cascade = CascadeType.ALL)
     private PersonalPhoto profilePhoto;
 
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
+    private List<TreasureHunt> treasureHunt;
+
     @Constraints.Required
     @CreatedTimestamp
     @Column(updatable=false)
