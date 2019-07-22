@@ -3,6 +3,10 @@ package repository;
 import models.PersonalPhoto;
 import javax.inject.Inject;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -63,6 +67,20 @@ public class PhotoRepository {
         }, executionContext);
     }
 
+    /**
+     * Gets the photo with the given photo Id including soft deleted photos.
+     *
+     * @param photoId the id of the photo to be retrieved
+     * @return the photo
+     */
+    public CompletionStage<Optional<PersonalPhoto>> getPhotoByIdWithSoftDelete(int photoId) {
+        return supplyAsync(() -> {
+            Optional<PersonalPhoto> photo = PersonalPhoto.find.query().setIncludeSoftDeletes().
+                    where().eq("photo_id", photoId).findOneOrEmpty();
+            return photo;
+        }, executionContext);
+    }
+
     public CompletionStage<Optional<PersonalPhoto>> getPhotoByFilename(String filenameHash) {
         return supplyAsync(() -> {
             Optional<PersonalPhoto> photo = PersonalPhoto.find.query()
@@ -86,13 +104,30 @@ public class PhotoRepository {
      * Delete a photo with the given hashed filename by finding the photo's id and deleting
      * it with the id found
      *
-     * @param photoId the id of the photo to be deleted
+     * @param photo the photo to be deleted
      * @return the id of the photo that was deleted
      */
-    public CompletionStage<Integer> deletePhoto(int photoId) {
+    public CompletionStage<Integer> deletePhoto(PersonalPhoto photo) {
         return supplyAsync(() -> {
-            PersonalPhoto.find.deleteById(photoId);
-            return photoId;
+            photo.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(24))));
+            photo.save();
+            photo.delete(); //Soft delete
+            return photo.getPhotoId();
         }, executionContext);
+    }
+
+    /**
+     * Undoes a personal photo deletion.
+     *
+     * @param personalPhoto the photo to undo deletion of.
+     * @return the photo after deletion is undone.
+     */
+    public CompletionStage<PersonalPhoto> undoPhotoDelete(PersonalPhoto personalPhoto) {
+        return supplyAsync(() -> {
+            personalPhoto.setDeleted(false);
+            personalPhoto.setDeletedExpiry(null);
+            personalPhoto.save();
+            return personalPhoto;
+        });
     }
 }

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.ebean.Model;
+import io.ebean.annotation.SoftDelete;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -39,6 +41,13 @@ public class PersonalPhoto extends Model {
     @OneToMany(cascade = CascadeType.ALL)
     private List<DestinationPhoto> destinationPhotos;
 
+    @SoftDelete
+    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean deleted;
+
+    @JsonIgnore
+    private Timestamp deletedExpiry;
+
     /**
      * Constructor
      * @param filenameHash the hashed filename of the photo
@@ -55,12 +64,28 @@ public class PersonalPhoto extends Model {
         this.thumbnailName = thumbnailName;
     }
 
+    public Timestamp getDeletedExpiry() {
+        return deletedExpiry;
+    }
+
+    public void setDeletedExpiry(Timestamp deletedExpiry) {
+        this.deletedExpiry = deletedExpiry;
+    }
+
     public boolean isPublic() {
         return this.isPublic;
     }
 
     public int getPhotoId() {
         return photoId;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     public String getFilenameHash() {return this.filenameHash;}

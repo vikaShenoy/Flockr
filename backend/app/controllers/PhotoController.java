@@ -4,6 +4,7 @@ import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import exceptions.UnauthorizedException;
@@ -45,6 +46,7 @@ public class PhotoController extends Controller {
     private final UserRepository userRepository;
     private final PhotoUtil photoUtil;
     private final HttpExecutionContext httpExecutionContext;
+
     final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
@@ -118,6 +120,60 @@ public class PhotoController extends Controller {
     }
 
     /**
+     * Endpoint controller method for undoing a personal photo deletion.
+     * return status codes are as follows:
+     * - 200 - OK - successful undo.
+     * - 400 - Bad Request - The photo has not been deleted.
+     * - 401 - Unauthorised - the user is not authorised.
+     * - 403 - Forbidden - The user does not have permission to undo this deletion.
+     * - 404 - Not Found - The photo cannot be found.
+     *
+     * @param photoId the id of the photo.
+     * @param request the http request.
+     * @return the completion stage containing the result.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> undoDelete(int photoId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        return photoRepository.getPhotoByIdWithSoftDelete(photoId)
+                .thenComposeAsync(optionalPhoto -> {
+                    if (!optionalPhoto.isPresent()) {
+                        throw new CompletionException(new NotFoundException("Photo not found"));
+                    }
+                    PersonalPhoto photo = optionalPhoto.get();
+                    if (!user.isAdmin() && user.getUserId() != photo.getOwnerId()) {
+                        throw new CompletionException(new ForbiddenRequestException(
+                                "You do not have permission to undo this deletion"));
+                    }
+                    if (!photo.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This photo has not been deleted"));
+                    }
+                    return photoRepository.undoPhotoDelete(photo);
+                })
+                .thenApplyAsync(photo -> ok(Json.toJson(photo)))
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (BadRequestException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", error.getMessage());
+                        return badRequest(message);
+                    } catch (NotFoundException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", error.getMessage());
+                        return notFound(message);
+                    } catch (ForbiddenRequestException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", error.getMessage());
+                        return forbidden(message);
+                    } catch (Throwable throwable) {
+                        log.error("500 - Internal Server Error", throwable);
+                        return internalServerError();
+                    }
+                });
+    }
+
+    /**
      * This function is responsible for deleting the photo with the given ID
      *
      * @param photoId       the id of the photo to be deleted
@@ -136,16 +192,7 @@ public class PhotoController extends Controller {
                     if (user.getUserId() != photo.getUser().getUserId() && !user.isAdmin()) {
                         throw new CompletionException(new ForbiddenRequestException("You are not permitted to do that"));
                     }
-                    File photoToDelete = new File("./storage/photos/" + photo.getFilenameHash());
-                    File thumbnailToDelete = new File("./storage/photos/" + photo.getThumbnailName());
-                    ObjectNode message = Json.newObject();
-
-                    if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
-                        message.put("message", "Your photo file was missing, photo has been removed from the system.");
-                    } else {
-                        message.put("message", "Successfully deleted the photo");
-                    }
-                    return this.photoRepository.deletePhoto(photo.getPhotoId());
+                    return this.photoRepository.deletePhoto(photo);
                 })
                 .thenApplyAsync(photo -> (Result) ok())
                 .exceptionally(e -> {

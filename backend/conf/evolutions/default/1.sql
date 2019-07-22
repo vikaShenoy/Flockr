@@ -134,6 +134,8 @@ create table personal_photo (
   is_primary                    tinyint(1) default 0 not null,
   filename_hash                 varchar(255),
   thumbnail_name                varchar(255),
+  deleted_expiry                datetime(6),
+  deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_personal_photo primary key (photo_id)
 );
 
