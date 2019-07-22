@@ -642,7 +642,21 @@ public class TreasureHuntControllerTest {
         Result result = fakeClient.makeRequestWithToken("DELETE", "/api/users/" + user.getUserId(),
                 user.getToken());
         Assert.assertEquals(200, result.status());
+        Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
+                "treasure_hunt_id", treasureHunt.getTreasureHuntId()).findOneOrEmpty();
+        Assert.assertFalse(optionalTreasureHunt.isPresent());
+    }
 
+    @Test
+    public void testCascadeWhenDeletingDestinations() {
+        FakeClient fakeClient = TestState.getInstance().getFakeClient();
+        Result result = fakeClient.makeRequestWithToken("DELETE", "/api/destinations/" +
+                        destination.getDestinationId(),
+                user.getToken());
+        Assert.assertEquals(200, result.status());
+        Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query().where().eq(
+                "treasure_hunt_id", treasureHunt.getTreasureHuntId()).findOneOrEmpty();
+        Assert.assertFalse(optionalTreasureHunt.isPresent());
     }
 
 }

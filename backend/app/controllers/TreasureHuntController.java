@@ -269,7 +269,7 @@ public class TreasureHuntController extends Controller {
      * - 404 - User Not found
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> getTresureHuntsByUserId(Http.Request request, int userId) {
+    public CompletionStage<Result> getTreasureHuntsByUserId(Http.Request request, int userId) {
         return userRepository.getUserById(userId)
                 .thenComposeAsync(optUser -> {
                     if (!optUser.isPresent()) {

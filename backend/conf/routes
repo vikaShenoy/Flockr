@@ -62,7 +62,7 @@ PUT           /api/users/:userId/trips/:tripId                        controller
 PUT           /api/treasurehunts/:treasureHuntId                      controllers.TreasureHuntController.editTreasureHunt(request: Request, treasureHuntId: Int)
 DELETE        /api/treasurehunts/:treasureHuntId                      controllers.TreasureHuntController.deleteTreasureHunt(request: Request, treasureHuntId: Int)
 POST          /api/users/:userId/treasurehunts                        controllers.TreasureHuntController.addTreasureHunt(request: Request, userId: Int)
-GET           /api/users/:userId/treasurehunts                        controllers.TreasureHuntController.getTresureHuntsByUserId(request: Request, userId: Int)
+GET           /api/users/:userId/treasurehunts                        controllers.TreasureHuntController.getTreasureHuntsByUserId(request: Request, userId: Int)
 GET           /api/treasurehunts                                      controllers.TreasureHuntController.getAllTreasureHunts(request: Request)
 
 

@@ -19,7 +19,7 @@ public class TreasureHunt extends Model {
 
     private String treasureHuntName;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private Destination treasureHuntDestination;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
