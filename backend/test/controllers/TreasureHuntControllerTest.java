@@ -77,9 +77,9 @@ public class TreasureHuntControllerTest {
         Country country = new Country("Test Nation");
         District district = new District("Test District", country);
         destination = new Destination("Test City", destinationType, district,
-                0.0, 0.0, country, user.getUserId(), true);
+                0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
         editedDestination = new Destination("Edited Destination", destinationType, district,
-                0.0, 0.0, country, user.getUserId(), false);
+                0.0, 0.0, country, user.getUserId(), new ArrayList<>(), false);
 
         destinationType.save();
         country.save();
