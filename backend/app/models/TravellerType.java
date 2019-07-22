@@ -18,6 +18,9 @@ public class TravellerType extends Model {
     @ManyToMany
     private List<User> users;
 
+    @ManyToMany
+    private List<Destination> destinations;
+
     @Id
     private int travellerTypeId;
 
@@ -43,6 +46,16 @@ public class TravellerType extends Model {
         this.travellerTypeId = travellerTypeId;
     }
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+
+        TravellerType comparedTravellerType = (TravellerType) obj;
+        return travellerTypeId == comparedTravellerType.travellerTypeId;
+    }
 
     /**
      * This is required by EBean to make queries on the database

@@ -37,7 +37,7 @@ public class AdminSteps {
 
         Assert.assertNotEquals(0, this.roleId);
 
-        Assert.assertEquals("TRAVELLER", roles.get(0).getRoleType().toString());
+        Assert.assertEquals("TRAVELLER", roles.get(0).getRoleType());
         Assert.assertEquals(1, roles.size());
 
         createUser(roles, false);
@@ -193,7 +193,7 @@ public class AdminSteps {
         Assert.assertEquals(roles.size(), this.roles.size());
 
         for (int i = 0; i < roles.size(); i++) {
-            Assert.assertEquals(roles.get(i).getRoleType().toString(), this.roles.get(i).get("roleType").asText());
+            Assert.assertEquals(roles.get(i).getRoleType(), this.roles.get(i).get("roleType").asText());
         }
     }
 

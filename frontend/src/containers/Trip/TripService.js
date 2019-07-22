@@ -7,55 +7,108 @@ import moment from "moment";
  * @param {number} userId 
  * @param {number} tripId 
  */
-export async function getTrip(userId, tripId) {
+export async function getTrip(tripId) {
+  const userId = localStorage.getItem("userId");
   const res = await superagent.get(endpoint(`/users/${userId}/trips/${tripId}`))
     .set("Authorization", localStorage.getItem("authToken"));
   return res.body;
 }
 
-/**
- * Formats a time duration as a string
- * @param {number} time 
- * @return {string} formatted time
- */
 function formatTime(time) {
-  return moment.utc(time.as('milliseconds')).format('HH:mm');
+  return moment.utc(time.as("milliseconds")).format("HH:mm");
 }
 
 /**
- * Formats arrival and departure date time
- * @param {number} date 
- * @param {number} time 
- */
-function formatDateTime(date, time) {
-  if (date === 0 && time === -1) {
-    return "";
-  } else if (date && time !== -1) {
-    return `${moment(date).format("DD/MM/YYYY")} at ${formatTime(moment.duration(time, "minutes"))}`
-  } else if (date) {
-    return moment(date).format("DD/MM/YYYY")
-  } else {
-    return formatTime(moment.duration(time, "minutes"))
-  }
-}
-
-/**
- * Transforms trip response into readable formats
- * @param {Object} trip 
- * @param {string} trip.tripName
- * @param {Object[]} trip.tripDestinations
- * @return {Object} transformed trip
- * 
- */
-export function transformTrip(trip) {
+ * Transform/format a trip response object.
+ * @param {Object} trip The trip to transform
+ * @param {string} trip.tripName The name of the trip
+ * @param {Object[]} trip.tripDestinations The destinations in a trip
+ * @param {number} trip.tripDestinations[].arrivalDate The arrival date of the destination
+ * @param {number} trip.tripDestinations[].arrivalTime The arrival time of the destination
+ * @param {number} trip.tripDestinations[].departureDate The departure date of the destination
+ * @param {number} trip.tripDestinations[].departureTime The departure time of the destination
+ * @return {Object} The transformed trip
+ */ 
+export function transformTripResponse(trip) {
   return {
     tripName: trip.tripName,
-      tripDestinations: trip.tripDestinations.map(tripDestination => {
-        return {
-          arrival: formatDateTime(tripDestination.arrivalDate, tripDestination.arrivalTime),
-          departure: formatDateTime(tripDestination.departureDate, tripDestination.departureTime),
-          destinationName: tripDestination.destination.destinationName
-        };
-    })
-  } 
+    tripDestinations: trip.tripDestinations.map(tripDestination => {
+      return {
+        tripDestinationId: tripDestination.tripDestinationId,
+        destination: tripDestination.destination,
+        arrivalDate: !tripDestination.arrivalDate ? null : moment(tripDestination.arrivalDate).format("YYYY-MM-DD"),
+        arrivalTime: !tripDestination.arrivalTime ? null : formatTime(moment.duration(tripDestination.arrivalTime, "minutes")),
+        departureDate: !tripDestination.departureDate ? null : moment(tripDestination.departureDate).format("YYYY-MM-DD"),
+        departureTime: !tripDestination.departureTime ? null : formatTime(moment.duration(tripDestination.departureTime, "minutes")),
+      };
+    }),
+  };
 }
+
+/**
+ * Checks if destinations are contiguious
+ * @param {Array} tripDestinations The list of destinations to swap
+ * @returns {boolean} True if the destinations are contigious, false otherwise
+ */
+export function contiguousDestinations(tripDestinations) {
+  let oldDestinationId = tripDestinations[0].destination.destinationId;
+  for (const tripDestination of tripDestinations.slice(1)) {
+    
+    if (tripDestination.destination.destinationId === oldDestinationId) {
+      return true;
+    }
+    oldDestinationId = tripDestination.destination.destinationId;
+  }
+
+  return false;
+}
+
+/**
+ * Checks if destinations are contiguous after they have been swapped
+ * @param {Array} tripDestinations list of destinations to swap and check
+ * @param {number} newIndex index to be swapped to
+ * @param {number} oldIndex index to be swapped by
+ * @returns {boolean} True if the trip destinations are contiguous, false otherwise
+ */
+export function contiguousReorderedDestinations(tripDestinations, newIndex, oldIndex) {
+
+  const copiedTripDestinations = [...tripDestinations];
+  //[copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
+  let temp = copiedTripDestinations[oldIndex];
+  copiedTripDestinations.splice(oldIndex, 1);
+  copiedTripDestinations.splice(newIndex, 0, temp);
+  return contiguousDestinations(copiedTripDestinations);
+}
+
+
+
+
+/**
+ * Edit a trip. Send a request to the edit trip backend endpoint with
+ * the trip data to edit.
+ * @param {number} tripId - The ID of the trip to edit
+ * @param {string} tripName - The edited trip name
+ * @param {Object[]} tripDestinations - The edited trip destinations
+ */
+export async function editTrip(tripId, tripName, tripDestinations) {
+   const userId = localStorage.getItem("userId");
+
+   const transformedTripDestinations = tripDestinations.map(tripDestination  => ({
+    destinationId: tripDestination.destination.destinationId,
+    arrivalDate: tripDestination.arrivalDate ? moment(tripDestination.arrivalDate).valueOf() : null,
+    arrivalTime: tripDestination.arrivalTime ? moment.duration(tripDestination.arrivalTime).asMinutes() : null,
+    departureDate: tripDestination.departureDate ? moment(tripDestination.departureDate).valueOf() : null,
+    departureTime: tripDestination.departureTime ? tripDestination.departureTime === null || tripDestination.departureTime === ""? null : moment.duration(tripDestination.departureTime).asMinutes() : null,
+   })); 
+
+  const authToken = localStorage.getItem("authToken");
+
+  await superagent.put(endpoint(`/users/${userId}/trips/${tripId}`))
+    .set("Authorization", authToken)
+    .send({
+      tripName,
+      tripDestinations: transformedTripDestinations
+    });
+
+}
+

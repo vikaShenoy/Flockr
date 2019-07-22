@@ -17,6 +17,7 @@ import play.test.Helpers;
 import utils.FakePlayClient;
 import utils.TestState;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -133,8 +134,8 @@ public class CommonTestSteps {
         newFarm.save();
 
 
-        Destination burningMan = new Destination("Burning Man",event, blackRockCity, 12.1234,12.1234, unitedStatesOfAmerica, null, false);
-        Destination brisbaneCity = new Destination("Brisbane City", city, newFarm, 11.1234,11.1234, australia, null, false);
+        Destination burningMan = new Destination("Burning Man",event, blackRockCity, 12.1234,12.1234, unitedStatesOfAmerica,  null, new ArrayList<>(), false);
+        Destination brisbaneCity = new Destination("Brisbane City", city, newFarm, 11.1234,11.1234, australia, null, new ArrayList<>(), false);
 
         burningMan.save();
         brisbaneCity.save();

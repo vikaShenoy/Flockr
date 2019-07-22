@@ -6,6 +6,8 @@ import exceptions.FailedToLoginException;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import io.cucumber.datatable.DataTable;
+import models.Role;
+import models.RoleType;
 import models.User;
 import org.junit.Assert;
 import play.Application;
@@ -15,6 +17,7 @@ import play.mvc.Result;
 import play.test.Helpers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -45,9 +48,18 @@ public class TestAuthenticationHelper {
                 Assert.assertNotEquals(0, user.getUserId());
 
                 user = testState.getFakeClient().loginMadeUpUser(user, plainTextPassword);
+                if (row.get("isAdmin") != null && row.get("isAdmin").equals("true")) {
+                    List<Role> roles = new ArrayList<>();
+                    Role adminRole = Role.find.query().where().eq("role_type", RoleType.ADMIN.toString()).findOne();
+                    roles.add(adminRole);
+                    user.setRoles(roles);
+                    user.save();
+                }
+
                 Assert.assertNotEquals("", user.getToken());
                 testState.addUser(user);
             } catch (IOException | FailedToSignUpException | ServerErrorException | FailedToLoginException e) {
+                e.printStackTrace();
                 Assert.fail(Arrays.toString(e.getStackTrace()));
             }
         }

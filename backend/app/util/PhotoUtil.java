@@ -7,10 +7,9 @@ import java.util.UUID;
  */
 public class PhotoUtil {
 
-    // TODO: this javadoc needs finishing
     /**
      *
-     * @return
+     * @return a random string to be used as a photo name
      */
     public String generatePhotoName() {
         String uuid = UUID.randomUUID().toString();

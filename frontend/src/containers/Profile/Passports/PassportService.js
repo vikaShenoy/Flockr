@@ -14,7 +14,10 @@ export function updatePassports(userId, passportIds) {
                               .send({passports: passportIds});
 }
 
-
+/**
+ * Get all the available passports
+ * @return {Promise<Array<Object>>} an array of passport objects, as per the API spec
+ */
 export async function getPassports() {
   const res = await superagent.get(endpoint("/users/passports"));
   return res.body;
