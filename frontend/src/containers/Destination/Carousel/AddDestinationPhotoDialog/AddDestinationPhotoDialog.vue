@@ -58,10 +58,8 @@
 
 <script>
 
-    //TODO Make way nicer
-
     import superagent from 'superagent';
-    import {endpoint} from '../../../../../utils/endpoint';
+    import {endpoint} from '../../../../utils/endpoint';
     export default {
         name: "AddPhotoDialog",
         props: {
@@ -133,8 +131,8 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../../../styles/_variables.scss";
-    @import "../../../../../styles/_defaults.scss";
+    @import "../../../../styles/_variables.scss";
+    @import "../../../../styles/_defaults.scss";
 
     .light-text {
         -webkit-text-fill-color: $darker-white;

@@ -120,7 +120,6 @@ public class UserRoleSteps {
     @When("ROLES - I request roles from the database")
     public void rIRequestRolesFromTheDatabase() throws IOException {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        // TODO - Can anyone request roles?
         Result roleResult = fakeClient.makeRequestWithToken("GET", "/api/users/" +
                 this.user.getUserId() + "/roles", this.currentAuthToken);
         Assert.assertEquals(200, roleResult.status());

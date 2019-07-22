@@ -133,17 +133,15 @@ public class FakePlayClient implements FakeClient {
                     userAsJsonNode.get("passwordHash").asText(), userAsJsonNode.get("token").asText());
             user.setUserId(userAsJsonNode.get("userId").asInt());
             return user;
-            // TODO: fix everything to use default admin instead of super admin so the following will work.
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            return objectMapper.treeToValue(userAsJsonNode, User.class);
         } else {
             throw new ServerErrorException();
         }
     }
 
     @Override
-    public Destination makeTestDestination(JsonNode destinationNode, String authToken) throws IOException, UnauthorizedException, ServerErrorException {
-        Result result = this.makeRequestWithToken("POST", (ObjectNode) destinationNode, "/api/destinations", authToken);
+    public Destination makeTestDestination(JsonNode destinationNode, String authToken, int userId) throws IOException, UnauthorizedException, ServerErrorException {
+        ((ObjectNode) destinationNode).set("travellerTypeIds", Json.toJson(new ArrayList<>()));
+        Result result = this.makeRequestWithToken("POST", (ObjectNode) destinationNode, "/api/users/" + userId + "/destinations", authToken);
         if (result.status() == 201) {
             JsonNode destinationAsJsonNode = PlayResultToJson.convertResultToJson(result);
             ObjectMapper objectMapper = new ObjectMapper();

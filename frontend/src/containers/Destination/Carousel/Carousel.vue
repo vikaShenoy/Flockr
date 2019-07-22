@@ -5,7 +5,7 @@
       :key="photo.photoId"
     >
       <v-img
-        :src="photo.thumbEndpoint"
+        :src="photo.endpoint"
         class="dest-image"
         alt="Some Image"
         @click="openPhotoDialog(photo, index)"/>
@@ -50,7 +50,7 @@ import DestinationPhotoPanel from "./DestinationPhotoPanel/DestinationPhotoPanel
 import AddPhotoDialog from "./AddDestinationPhotoDialog/AddDestinationPhotoDialog";
 import defaultDestinationPhoto from './defaultDestinationPhoto.png';
 import * as superagent from "superagent";
-import {endpoint} from "../../../../utils/endpoint";
+import {endpoint} from "../../../utils/endpoint";
 
 export default {
   components: {AddPhotoDialog, DestinationPhotoPanel},
@@ -78,14 +78,16 @@ export default {
     this.getUserPhotos();
   },
   methods: {
-    //TODO jsdoc this
+    /**
+     * Function to get all the photos of a user
+     * emits an event to the parent element if an error occurs
+     */
     getUserPhotos: async function () {
       let authToken = localStorage.getItem('authToken');
       let userFromUrl = this.$route.params.userId;
       let userId =  userFromUrl ? userFromUrl : localStorage.getItem("userId");
       try {
         this.userPhotos = [];
-        //TODO extract this to a service file
         const response  = await superagent(endpoint(`/users/${userId}/photos`))
             .set('Authorization', authToken);
         let userPhotos = response.body;

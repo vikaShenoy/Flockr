@@ -31,6 +31,9 @@ public class Destination extends Model {
     @OneToMany(mappedBy = "treasureHuntDestination", cascade = CascadeType.ALL)
     private List<TreasureHunt> treasureHunts;
 
+    @ManyToMany(mappedBy= "destinations" ,cascade = CascadeType.PERSIST)
+    private List<TravellerType> travellerTypes;
+
     @ManyToOne
     private District destinationDistrict;
 
@@ -63,6 +66,7 @@ public class Destination extends Model {
                 ", destinationLon=" + destinationLon +
                 ", destinationCountry=" + destinationCountry +
                 ", destinationOwner=" + destinationOwner +
+                ", travellerTypes=" + travellerTypes +
                 ", isPublic=" + isPublic +
                 '}';
     }
@@ -77,7 +81,19 @@ public class Destination extends Model {
         boolean sameDistrict = this.destinationDistrict.equals(destinationToCompare.getDestinationDistrict());
         boolean sameType = this.destinationType.equals(destinationToCompare.getDestinationType());
         boolean sameCountry = this.destinationCountry.equals(destinationToCompare.getDestinationCountry());
-        return (sameName && sameDistrict && sameType && sameCountry);
+
+        if (travellerTypes.size() != destinationToCompare.travellerTypes.size()) {
+            return false;
+        }
+
+        boolean sameTravellerTypes = true;
+        for (int i = 0; i < travellerTypes.size(); i++) {
+             if (!travellerTypes.get(i).equals(destinationToCompare.travellerTypes.get(i))) {
+                 sameTravellerTypes = false;
+             }
+        }
+
+        return (sameName && sameDistrict && sameType && sameCountry && sameTravellerTypes);
     }
 
     /**
@@ -91,7 +107,7 @@ public class Destination extends Model {
      * @param destinationOwner the owner of the destination
      * @param isPublic whether or not the destination is public
      */
-    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, Integer destinationOwner, boolean isPublic ) {
+    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, Integer destinationOwner, List<TravellerType> travellerTypes, boolean isPublic ) {
         this.destinationName = destinationName;
         this.destinationType = destinationType;
         this.destinationDistrict = destinationDistrict;
@@ -99,6 +115,7 @@ public class Destination extends Model {
         this.destinationLon = destinationLon;
         this.destinationCountry = destinationCountry;
         this.destinationOwner = destinationOwner;
+        this.travellerTypes = travellerTypes;
         this.isPublic = isPublic;
     }
 
@@ -166,6 +183,15 @@ public class Destination extends Model {
 
     public boolean getIsPublic() { return this.isPublic; }
 
+
+    public List<TravellerType> getTravellerTypes() {
+        return travellerTypes;
+    }
+
+    public void setTravellerTypes(List<TravellerType> travellerTypes) {
+        this.travellerTypes = travellerTypes;
+    }
+
     public void setDestinationPhotos(List<DestinationPhoto> destinationPhotos) {
         this.destinationPhotos = destinationPhotos;
     }
@@ -192,6 +218,10 @@ public class Destination extends Model {
             .filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().getUser().getUserId() == userId))
             .filter(destinationPhoto -> !destinationPhoto.getPersonalPhoto().isPublic())
             .collect(Collectors.toList());
+    }
+
+    public boolean canModifyDestination(User user) {
+        return user.isAdmin() || (destinationOwner != null && destinationOwner == user.getUserId());
     }
 
     /**

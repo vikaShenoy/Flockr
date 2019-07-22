@@ -4,11 +4,12 @@ import Home from "./containers/Home/Home.vue";
 import Signup from "./containers/Signup/Signup.vue";
 import Login from "./containers/Login/Login.vue";
 import Profile from "./containers/Profile/Profile.vue";
+import Destination from "./containers/Destination/Destination";
 import Destinations from "./containers/Destinations/Destinations.vue";
 import SearchTravellers from "./containers/SearchTravellers/SearchTravellers.vue";
-import Trips from "./containers/Trips/Trips.vue";
-import AddTrip from "./containers/AddTrip/AddTrip.vue";
 import Trip from "./containers/Trip/Trip.vue";
+import Trips from "./containers/Trips/OldTrips.vue";
+import AddTrip from "./containers/AddTrip/AddTrip.vue";
 import EditTrip from "./containers/EditTrip/EditTrip.vue";
 import AdminPanel from "./containers/AdminPanel/AdminPanel.vue";
 import TreasureHunts from "./containers/TreasureHunts/TreasureHunts.vue"
@@ -46,7 +47,7 @@ const routes = [
   {
     path: "/destinations",
     component: Destinations,
-    beforeEnter: loggedIn,
+    beforeEnter: loggedIn
   },
   {
     path: "/trips",
@@ -71,14 +72,9 @@ const routes = [
     beforeEnter: isAdmin
   },
   {
-    path: "/trips/:id",
+    path: "/trips/:tripId",
     component: Trip,
     beforeEnter: loggedIn
-  },
-  {
-    path: "/travellers/:travellerId/trips/:id",
-    component: Trip,
-    beforeEnter: isAdmin
   },
   {
     path: "/trips/:id/edit",
@@ -108,6 +104,11 @@ const routes = [
   {
     path: "/treasure-hunts",
     component: TreasureHunts,
+    beforeEnter: loggedIn
+  },
+  {
+    path: "/destinations/:destinationId",
+    component: Destination,
     beforeEnter: loggedIn
   }
 ];

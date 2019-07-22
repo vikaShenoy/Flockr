@@ -299,13 +299,9 @@ public class UserPhotoSteps {
         JsonNode jsonNode = PlayResultToJson.convertResultToJson(this.result);
         Assert.assertTrue(jsonNode.isArray());
         Iterator<JsonNode> iterator = jsonNode.iterator();
-        Iterator<Map<String, String>> rowsIterator = this.photoList.asMaps().iterator();
-        ObjectMapper objectMapper = new ObjectMapper();
 
-        while (iterator.hasNext()) {
-            JsonNode nextPhoto = iterator.next();
-            PersonalPhoto personalPhoto = objectMapper.treeToValue(nextPhoto, PersonalPhoto.class);
-            Assert.assertFalse(personalPhoto.isPrimary());
+        for (JsonNode personalPhoto : jsonNode) {
+            Assert.assertFalse(personalPhoto.get("isPrimary").asBoolean());
         }
     }
 

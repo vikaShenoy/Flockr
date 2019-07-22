@@ -34,6 +34,7 @@ export async function loggedIn(to, from, next) {
   }
 
   UserStore.methods.setData(res.body);
+  
   next();
 }
 
