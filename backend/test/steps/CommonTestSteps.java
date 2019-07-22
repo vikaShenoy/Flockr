@@ -120,8 +120,8 @@ public class CommonTestSteps {
         event.save();
         city.save();
 
-        Country unitedStatesOfAmerica = new Country("United States of America");
-        Country australia = new Country("Australia");
+        Country unitedStatesOfAmerica = new Country("United States of America", "USA", true);
+        Country australia = new Country("Australia", "AUS", true);
 
         unitedStatesOfAmerica.save();
         australia.save();
