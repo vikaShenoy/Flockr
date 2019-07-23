@@ -188,6 +188,8 @@ public class DestinationController extends Controller {
                 travellerTypeIds = jsonRequest.get("travellerTypeIds");
 
             } catch (NullPointerException exception) {
+                System.out.println(exception);
+                exception.printStackTrace();
                 throw new BadRequestException("One or more fields are missing.");
             }
 
@@ -230,6 +232,7 @@ public class DestinationController extends Controller {
 
                     });
         } catch (BadRequestException e) {
+            System.out.println(e);
             ObjectNode message = Json.newObject();
             message.put("message", "Please provide a valid Destination with complete data");
             return supplyAsync(() -> badRequest(message));
