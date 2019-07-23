@@ -108,6 +108,10 @@
             }
         },
         methods: {
+
+            /**
+             * Function that emits an event to the parent component to close the modal, and also resets all form data
+             */
             closeDialog() {
                 this.$emit("closeEditDialog");
                 this.editTreasureHuntName = "";
@@ -116,9 +120,17 @@
                 this.startDate = null;
                 this.endDate = null;
             },
+
+            /**
+             * Calls the treasure hunt service to get all public destinations required for the drop down in the form
+             */
             async getDestinations() {
                 this.destinations = await getPublicDestinations()
             },
+
+            /**
+             * Calls the treasure hunt service to update the given treasure hutn
+             */
             async editTreasureHunt() {
                 let treasureHunt = {
 
@@ -137,6 +149,10 @@
             }
         },
         computed: {
+            /**
+             * Returns true when all fields of the input form contain something
+             * @returns {boolean}
+             */
             validTreasureHunt() {
                 return ! ( this.editTreasureHuntName.length > 0 && this.editTreasureHuntDestination != null && this.editTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
             }

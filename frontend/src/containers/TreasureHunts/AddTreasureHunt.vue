@@ -98,6 +98,11 @@
             }
         },
         methods: {
+            /**
+             * Function called by the close button in the dialog,
+             *  emits an event to the parent to close the modal,
+             *  and also resets the local data
+             */
             closeDialog() {
                 this.$emit("closeDialog");
                 this.createTreasureHuntName = "";
@@ -106,9 +111,17 @@
                 this.startDate = null;
                 this.endDate = null;
             },
+
+            /**
+             * Calls the treasure hunt service to update the list of public destinations displayed in the dropdown box
+             */
             async getDestinations() {
                 this.destinations = await getPublicDestinations()
             },
+
+            /**
+             * Calls the treasure hunt service to create a treasure hunt
+             */
             async createTreasureHunt() {
                 let treasureHunt = {
 
@@ -126,6 +139,11 @@
             }
         },
         computed: {
+
+            /**
+             * Returns true when all fields of the input form contain something
+             * @returns {boolean}
+             */
             validTreasureHunt() {
                 return ! ( this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
             }

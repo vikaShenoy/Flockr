@@ -70,18 +70,42 @@ export default {
         }
     },
     methods: {
+
+        /**
+         * Hides the create treasure hunt modal
+         */
         closeDialog() {
             this.showDialog = false
         },
+
+        /**
+         * Hides the edit treasure hunt modal
+         */
         closeEditDialog() {
             this.showEditForm = false
         },
+
+        /**
+         * Calls the treasure hunt service to set the populate the list of treasure hunts with all valid treasure hunts
+         */
         async getTreasureHunts() {
             this.treasureHunts = await getAllTreasureHunts();
         },
+
+        /**
+         * Takes in a date number retrieved from the database and converts it into a displayable string
+         * @param date from treasure hunt object
+         * @returns {string} formatted by moment
+         */
         formatDate(date) {
             return moment(date).format("D/M/YYYY H:mm")
         },
+
+        /**
+         * Calculates the remaining time left to solve a treasure hunt, currently doesn't take into account the time zones
+         * @param date - the ending time of the treasure hunt
+         * @returns {string} A formatted string displaying the time remaining
+         */
         getTimeToGo(date) {
             let now  = moment();
             let then = moment(date);
@@ -90,19 +114,44 @@ export default {
             //let s = ms.format("hh:mm:ss");
             return d.years() + " years, " + d.months() + " months, " + d.days() + " days, " + d.hours() + " hours"
         },
+
+        /**
+         * UNDER CONSTRUCTION
+         * Function that takes a destinationId and returns the local timezone of that destination
+         * @param destinationId - Id of a destination present in the Travel EA database
+         */
         getTimeZone(destinationId) {
             console.log("getting time zone")
         },
+
+        /**
+         * Function to check if the logged in user is the owner of the treasure hunt
+         * @param ownerId
+         * @returns {boolean} true if the owner of the treasureHunt is the logged in user
+         */
         isOwner(ownerId) {
             return localStorage.getItem("userId") == ownerId
         },
+
+        /**
+         * Function to update the value of the toggle, emitted from child
+         * @param newVal
+         */
         updateToggle(newVal) {
             this.showDialog = newVal;
         },
+
+        /**
+         * Function called from child to update the list of treasure hunts
+         */
         updateList() {
-            console.log("in here")
             this.getTreasureHunts();
         },
+
+        /**
+         * Function to show the edit treasure hunt form
+         * @param treasureHunt
+         */
         showEditDialog(treasureHunt) {
             this.treasureHunt = treasureHunt;
             this.refreshEditForm += 1;
