@@ -230,19 +230,15 @@ export default {
         }
 
         const undoCommand = async (basicInfo) => {
-          console.log(basicInfo)
           await updateBasicInfo(userId, basicInfo);
           const oldUserProfile = {...userProfile, ...basicInfo};
-          console.log(oldUserProfile);
           UserStore.methods.setData(oldUserProfile);
           this.$emit("update:userProfile", oldUserProfile);
         };
 
         const redoCommand = async (basicInfo) => {
-          console.log(basicInfo)
           await updateBasicInfo(userId, basicInfo);
           const newUserProfile = {...userProfile, ...basicInfo};
-          console.log(newUserProfile);
           UserStore.methods.setData(newUserProfile);
           this.$emit("update:userProfile", newUserProfile);
         };
