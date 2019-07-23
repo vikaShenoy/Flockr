@@ -1,4 +1,6 @@
 import roleType from "./roleType";
+import superagent from "superagent";
+import { endpoint } from "../utils/endpoint";
 
 
 const UserStore = {
@@ -13,7 +15,8 @@ const UserStore = {
     passports: null,
     travellerTypes: null,
     gender: null,
-    timestamp: null
+    timestamp: null,
+    viewingAsAnotherUser: false
   },
   methods: {
     setData(user) {
@@ -29,6 +32,11 @@ const UserStore = {
       UserStore.data.gender = user.gender;
       UserStore.data.timestamp = user.timestamp; 
       UserStore.roles = user.roles;
+
+      const userId = localStorage.getItem("userId");
+      const ownUserId = localStorage.getItem("ownUserId");
+
+      UserStore.data.viewingAsAnotherUser = ownUserId !== userId;
     },
     /**
      * Check if a user is an admin
@@ -69,6 +77,9 @@ const UserStore = {
     hasPermission(userId) {
       return userId == UserStore.data.userId || UserStore.methods.isAdmin();
     },
+    /**
+     * Checks if user is logged in
+     */
     loggedIn() {
       return UserStore.data.userId;
     },
@@ -84,9 +95,42 @@ const UserStore = {
       UserStore.travellerTypes = null;
       UserStore.gender = null;
       UserStore.timestamp = null; 
+      localStorage.removeItem("userId");
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("ownUserId");
+      UserStore.data.viewingAsAnotherUser = false;
     },
+    /**
+     * Determines if the user's profile has been completed
+     * @returns {boolean} Whether profile has been completed
+     */
+
     profileCompleted() {
       return UserStore.data.middleName !== null && UserStore.data.dateOfBirth !== null && UserStore.data.gender !== null && UserStore.data.nationalities.length && UserStore.data.travellerTypes.length;
+    },
+    /**
+     * 
+     */
+    viewAsAnotherUser(userData) {
+      UserStore.methods.setData(userData);
+      UserStore.data.viewingAsAnotherUser = true;
+      localStorage.setItem("userId", userData.userId);
+    },
+    /**
+     * Allows admins to go back to their own accounts after viewing
+     * as a specific user
+     */
+    async backToOwnAccount() {
+      const ownUserId = localStorage.getItem("ownUserId");
+      const authToken = localStorage.getItem("authToken");
+      
+      const res = await superagent.get(endpoint(`/users/${ownUserId}`))
+        .set("Authorization", authToken)
+
+      UserStore.methods.setData(res.body);
+      localStorage.setItem("userId", ownUserId);
+      UserStore.data.viewingAsAnotherUser = false;
+      return res.body.userId;
     }
   }
 };

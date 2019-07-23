@@ -8,6 +8,11 @@
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
       v-on:logoutUsersByIds="handleLogoutUsersByIds"
     />
+    <DestinationProposals
+      v-on:showError="showErrorSnackbar"
+      v-on:showMessage="showSuccessSnackbar"
+     />
+
     <EditUserForm
       v-if="userBeingEdited"
       :showForm="this.showEditUserForm"
@@ -16,7 +21,7 @@
       v-on:submitForm="handleEditUserFormSubmission"
       v-on:incorrectData="handleEditUserFormError"
     />
-    <Snackbar :snackbarModel="this.snackbarModel" v-on:dismissSnackbar="errorSnackbar.show=false"/>
+    <Snackbar :snackbarModel="this.snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
 
@@ -29,12 +34,14 @@ import { patchUser } from "./AdminPanelService.js";
 import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
 import Snackbar from '../../components/Snackbars/Snackbar.vue';
+import DestinationProposals from "./DestinationProposals/DestinationProposals";
 
 export default {
   components: {
     ManageUsers,
     EditUserForm,
-    Snackbar
+    Snackbar,
+    DestinationProposals
   },
 
   mounted() {
@@ -84,43 +91,40 @@ export default {
     handleEditUserFormDismissal: function() {
       this.showEditUserForm = false; // close the edit user dialog
     },
-    handleEditUserFormError: function() {
-      this.snackbarModel.text = "Data Incorrect, Try Again";
+    showSuccessSnackbar(message) {
+      this.snackbarModel.text = message;
+      this.snackbarModel.color = 'green';
+      this.snackbarModel.show = true;
+    },
+    showErrorSnackbar(errorMessage) {
+      this.snackbarModel.text = errorMessage;
       this.snackbarModel.color = 'red';
       this.snackbarModel.show = true;
     },
     handleEditUserFormSubmission: async function(patchedUser) {
-      let userId = patchedUser.userId;
+      const userId = patchedUser.userId;
       try {
         await patchUser(userId, patchedUser);
         this.showEditUserForm = false;
         this.getAllUsers();
-        this.snackbarModel.text = 'Successfully edited user';
-        this.snackbarModel.color = 'green';
-        this.snackbarModel.show = true;
+        this.showSuccessSnackbar("Successfully edited user");
       } catch (e) {
-        this.snackbarModel.text = 'Could not edit the user';
-        this.snackbarModel.color = 'red';
-        this.snackbarModel.show = true;
-      }
+        this.showErrorSnackbar("Could not edit the user");
+     }
     },
-    handleDeleteUsersByIds: async function(userIds) {
-      const promises = [];
-      userIds.forEach(userId => {
+    async handleDeleteUsersByIds(userIds) {
+      const deleteUserPromises = userIds.map(userId => {
         const promise = superagent
           .delete(endpoint(`/users/${userId}`)).set('Authorization', localStorage.getItem('authToken'));
-        promises.push(promise);
+        return promise;
       });
+
       try {
-        await Promise.all(promises);
+        await Promise.all(deleteUserPromises);
         this.getAllUsers();
-        this.snackbarModel.text = 'Successfully deleted user(s)';
-        this.snackbarModel.color = 'green';
-        this.snackbarModel.show = true;
+        this.showSuccessSnackbar("Successfully deleted user(s)'");
       } catch(err) {
-        this.snackbarModel.text = 'Could not delete user(s)';
-        this.snackbarModel.color = 'red';
-        this.snackbarModel.show = true;
+        this.showErrorSnackbar("Could not delete user(s)");
       }
     },
 
@@ -138,13 +142,9 @@ export default {
       try {
         await Promise.all(promises);
         this.getAllUsers();
-        this.snackbarModel.text = 'Successfully logged out user(s)';
-        this.snackbarModel.color = 'green';
-        this.snackbarModel.show = true;
+        this.showSuccessSnackbar("Successfully logged out user(s)");
       } catch(err) {
-        this.snackbarModel.text = 'Could not logout user(s)';
-        this.snackbarModel.color = 'red';
-        this.snackbarModel.show = true;
+        this.showErrorSnackbar("Could not logout user(s)");
       }
     }
   }

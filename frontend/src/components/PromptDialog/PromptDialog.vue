@@ -7,7 +7,7 @@
     <v-card>
       <v-card-title class="warning headline">
         <v-spacer align="center">
-          <h2>Warning</h2>
+          <h2 style="color: #FFF">Warning</h2>
         </v-spacer>
       </v-card-title>
       <v-card-text>
@@ -18,7 +18,7 @@
       <v-responsive>
         <v-layout row>
           <v-spacer align="center">
-            <v-btn color="green" flat v-on:click="sendResponse(true)">Confirm</v-btn>
+            <v-btn color="green" flat v-on:click="sendResponse(true)" :loading="isLoading">Confirm</v-btn>
           </v-spacer>
           <v-spacer align="center">
             <v-btn color="red" flat v-on:click="sendResponse(false)">Cancel</v-btn>
@@ -34,7 +34,11 @@
   export default {
 
     name: "prompt-dialog",
-
+    data() {
+      return {
+        isLoading: false
+      };
+    },
     props: {
       dialog: {
         type: Boolean,
@@ -60,7 +64,9 @@
        */
       sendResponse: function (response) {
         if (response && this.onConfirm) {
+          this.isLoading = true;
           this.onConfirm();
+          this.isLoading = false;
         }
         this.$emit("promptEnded", response);
       }

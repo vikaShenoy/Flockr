@@ -310,7 +310,7 @@ public class UserController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteUser(int userId, Http.Request request) {
         User userDoingDeletion = request.attrs().get(ActionState.USER);
-        final ObjectNode message = Json.newObject();; // used in the response
+        final ObjectNode message = Json.newObject();// used in the response
 
         return userRepository.getUserById(userId)
                 .thenApplyAsync((optionalUserBeingDeleted) -> {
@@ -468,12 +468,9 @@ public class UserController extends Controller {
      * @param request unused request object
      * @return ok with status 200 if types obtained, 401 if no token is provided
      */
-    @With(LoggedIn.class)
     public CompletionStage<Result> getTravellerTypes(Http.Request request) {
         return userRepository.getAllTravellerTypes()
-                .thenApplyAsync((types) -> {
-                    return ok(Json.toJson(types));
-                }, httpExecutionContext.current());
+                .thenApplyAsync((types) -> ok(Json.toJson(types)), httpExecutionContext.current());
     }
 
 
@@ -495,34 +492,33 @@ public class UserController extends Controller {
         ageMax = -1;
         String gender = "";
 
-        // TODO: do not catch generic Exceptions, if this is a query method, not specifying all query parameters should not be logged as an error, it can be an info level log e.g. "no parameter nationality, omitting from search"
-
         try {
             String nationalityQuery = request.getQueryString("nationality");
             if (!nationalityQuery.isEmpty())
                 nationality = Integer.parseInt(nationalityQuery);
-        } catch (Exception e){ log.error("No Parameter nationality");}
+        } catch (NullPointerException e){
+            log.info("No Parameter nationality, excluding from search");
+        }
         try {
             String ageMinQuery = request.getQueryString("ageMin");
             if (!ageMinQuery.isEmpty())
                 ageMin = Long.parseLong(ageMinQuery);
-        } catch (Exception e){ log.error("No Parameter ageMin");}
+        } catch (NullPointerException e){ log.info("No Parameter ageMin, excluding from search");}
         try {
             String ageMaxQuery = request.getQueryString("ageMax");
             if (!ageMaxQuery.isEmpty())
                 ageMax = Long.parseLong(ageMaxQuery);
-        } catch (Exception e){ log.error("No Parameter ageMax");}
+        } catch (NullPointerException e){ log.info("No Parameter ageMax, excluding from search");}
         try {
             String travellerTypeQuery = request.getQueryString("travellerType");
             if (!travellerTypeQuery.isEmpty())
                 travellerType = Integer.parseInt(travellerTypeQuery);
-        } catch (Exception e){ log.error("No Parameter travellerType");}
+        } catch (NullPointerException e){ log.error("No Parameter travellerType, excluding from search");}
         try {
             gender = request.getQueryString("gender");
         } catch (Exception e){ log.error("No Parameter gender");}
         Date dateMin = new Date(ageMin);
         Date dateMax = new Date(ageMax);
-
         log.debug("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
 
         return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType)  //Just for testing purposes

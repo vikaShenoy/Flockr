@@ -25,9 +25,9 @@ public class TripDestination extends Model {
     private Destination destination;
 
     private Date arrivalDate;
-    private int arrivalTime;
+    private Integer arrivalTime;
     private Date departureDate;
-    private int departureTime;
+    private Integer departureTime;
 
     /**
      * Constructor to create a new trip destination.
@@ -37,7 +37,7 @@ public class TripDestination extends Model {
      * @param departureDate date on which this destination is left as part of the trip.
      * @param departureTime time on which this destination is left as part of the trip.
      */
-    public TripDestination(Destination destination, Date arrivalDate, int arrivalTime, Date departureDate, int departureTime) {
+    public TripDestination(Destination destination, Date arrivalDate, Integer arrivalTime, Date departureDate, Integer departureTime) {
         this.destination = destination;
         this.arrivalDate = arrivalDate;
         this.arrivalTime = arrivalTime;
@@ -65,7 +65,7 @@ public class TripDestination extends Model {
         return arrivalDate;
     }
 
-    public int getArrivalTime() {
+    public Integer getArrivalTime() {
         return arrivalTime;
     }
 
@@ -73,7 +73,7 @@ public class TripDestination extends Model {
         return departureDate;
     }
 
-    public int getDepartureTime() {
+    public Integer getDepartureTime() {
         return departureTime;
     }
 

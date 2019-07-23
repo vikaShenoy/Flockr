@@ -4,6 +4,7 @@ import actions.ActionState;
 import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.ConflictingRequestException;
@@ -30,6 +31,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import play.libs.concurrent.HttpExecutionContext;
 import repository.PhotoRepository;
+import util.DestinationUtil;
 
 
 /**
@@ -39,13 +41,15 @@ public class DestinationController extends Controller {
     private final DestinationRepository destinationRepository;
     private final PhotoRepository photoRepository;
     private HttpExecutionContext httpExecutionContext;
+    private final DestinationUtil destinationUtil;
     final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
-    public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext, PhotoRepository photoRepository) {
+    public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext, PhotoRepository photoRepository, DestinationUtil destinationUtil) {
         this.photoRepository = photoRepository;
         this.destinationRepository = destinationRepository;
         this.httpExecutionContext = httpExecutionContext;
+        this.destinationUtil = destinationUtil;
     }
 
     /**
@@ -119,7 +123,8 @@ public class DestinationController extends Controller {
         User loggedInUser = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinations()
                 .thenApplyAsync(destinations -> {
-                    if (loggedInUser.getUserId() == userId) {
+                    System.out.println("is the logged in user an admin: " +  loggedInUser.isAdmin());
+                    if (loggedInUser.getUserId() == userId || loggedInUser.isAdmin()) {
                         List<Destination> userDestinations = destinations.stream()
                                 .filter(destination -> {
                                     Integer ownerId = destination.getDestinationOwner();
@@ -151,14 +156,15 @@ public class DestinationController extends Controller {
      */
 
     @With(LoggedIn.class)
-    public CompletionStage<Result> addDestination(Http.Request request) {
+    public CompletionStage<Result> addDestination(int userId, Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
         User user = request.attrs().get(ActionState.USER);
-        boolean createDestForUser = user.isAdmin() && jsonRequest.has("userId");
+
+        if (!user.isAdmin() && user.getUserId() != userId) {
+            return supplyAsync(() -> forbidden("You don't have permission to create the destination"));
+        }
 
         try {
-            int userId = createDestForUser ? jsonRequest.get("userId").asInt() : user.getUserId();
-
             // check that the request has a body
             if (jsonRequest.isNull()) {
                 throw new BadRequestException("No details received, please send a valid request.");
@@ -167,9 +173,10 @@ public class DestinationController extends Controller {
             String destinationName;
             int destinationTypeId;
             int districtId;
-            Double latitude;
-            Double longitude;
+            double latitude;
+            double longitude;
             int countryId;
+            JsonNode travellerTypeIds;
 
             try {
                 destinationName = jsonRequest.get("destinationName").asText();
@@ -178,6 +185,8 @@ public class DestinationController extends Controller {
                 latitude = jsonRequest.get("latitude").asDouble();
                 longitude = jsonRequest.get("longitude").asDouble();
                 countryId = jsonRequest.get("countryId").asInt();
+                travellerTypeIds = jsonRequest.get("travellerTypeIds");
+
             } catch (NullPointerException exception) {
                 throw new BadRequestException("One or more fields are missing.");
             }
@@ -189,8 +198,11 @@ public class DestinationController extends Controller {
                 throw new BadRequestException("One of the fields you have selected does not exist.");
             }
 
+            List<TravellerType> allTravellerTypes = TravellerType.find.all();
+            List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
+
             Destination destinationToAdd = new Destination(destinationName, destinationTypeAdd, districtAdd,
-                    latitude, longitude, countryAdd, userId, false);
+                    latitude, longitude, countryAdd, userId, travellerTypes, false);
 
             return destinationRepository.getDestinations()
                     .thenComposeAsync(destinations -> {
@@ -235,7 +247,7 @@ public class DestinationController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> updateDestination(Http.Request request, int destinationId) {
-        JsonNode response = Json.newObject();
+        ObjectNode response = Json.newObject();
         User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinationById(destinationId)
                 .thenComposeAsync(optionalDest -> {
@@ -244,7 +256,7 @@ public class DestinationController extends Controller {
                     }
 
                     // Checks that the user is either the admin or the owner of the photo to change permission groups
-                    if (!user.isAdmin() && user.getUserId() != optionalDest.get().getDestinationOwner()) {
+                    if (!user.isAdmin() && (optionalDest.get().getDestinationOwner() == null || user.getUserId() != optionalDest.get().getDestinationOwner())) {
                         throw new CompletionException(new ForbiddenRequestException("You are unauthorised to update " +
                                 "this destination"));
                     }
@@ -258,13 +270,17 @@ public class DestinationController extends Controller {
                     double latitude = jsonBody.get("latitude").asDouble();
                     double longitude = jsonBody.get("longitude").asDouble();
                     boolean isPublic = jsonBody.get("isPublic").asBoolean();
+                    JsonNode travellerTypeIds = jsonBody.get("travellerTypeIds");
+                    List<TravellerType> allTravellerTypes = TravellerType.find.all();
+                    List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
+
 
                     Destination destination = optionalDest.get();
 
                     DestinationType destType = new DestinationType(null);
                     destType.setDestinationTypeId(destinationTypeId);
 
-                    Country country = new Country(null);
+                    Country country = new Country(null, null, true);
                     country.setCountryId(countryId);
 
                     District district = new District(null, null);
@@ -277,6 +293,7 @@ public class DestinationController extends Controller {
                     destination.setDestinationLat(latitude);
                     destination.setDestinationLon(longitude);
                     destination.setIsPublic(isPublic);
+                    destination.setTravellerTypes(travellerTypes);
 
                     List<Integer> duplicatedDestinationIds = new ArrayList<>();
                     // Checks if destination is a duplicate destination
@@ -317,16 +334,17 @@ public class DestinationController extends Controller {
                     try {
                         throw error.getCause();
                     } catch (NotFoundException notFoundE) {
-                        ((ObjectNode) response).put("message", "There is no destination with the given ID found");
+                        response.put("message", "There is no destination with the given ID found");
                         return notFound(response);
                     } catch (ForbiddenRequestException forbiddenRequest) {
-                        ((ObjectNode) response).put("message", forbiddenRequest.getMessage());
+                        response.put("message", forbiddenRequest.getMessage());
                         return forbidden(response);
                     } catch (BadRequestException badRequestE) {
-                        ((ObjectNode) response).put("message", badRequestE.getMessage());
+                        response.put("message", badRequestE.getMessage());
                         return badRequest(response);
                     } catch (Throwable ee) {
-                        ((ObjectNode) response).put("message", "Endpoint under development");
+                        ee.printStackTrace();
+                        response.put("message", "Endpoint under development");
                         return internalServerError(response);
                     }
                 });
@@ -348,9 +366,10 @@ public class DestinationController extends Controller {
                         throw new CompletionException(new NotFoundException());
                     }
                     Destination destination = optionalDestination.get();
-                    System.out.println(destination.getDestinationOwner());
-                    System.out.println(user.toString());
-                    if (!user.isAdmin() && destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
+                    if (destination.getDestinationOwner() == null && !user.isAdmin()) {
+                        throw new CompletionException(new ForbiddenRequestException("You are not permitted to delete this destination"));
+                    }
+                    if (destination.getDestinationOwner() != null && !user.isAdmin() && user.getUserId() != destination.getDestinationOwner()) {
                         throw new CompletionException(new ForbiddenRequestException("You are not permitted to delete this destination"));
                     }
                     ObjectNode success = Json.newObject();
@@ -423,6 +442,7 @@ public class DestinationController extends Controller {
 
     /**
      * Adds a photo to a destination
+     *
      * @param destinationId the destination to add a photo to
      * @param request the request object
      * @return - 400 If request body fields don't exist
@@ -499,14 +519,13 @@ public class DestinationController extends Controller {
 
     /**
      * Get all the photos linked to this destination
+     *
      * @param destinationId the id of the destination
      * @param request the HTTP request trying to get the destination photos
      * @return a response according to the API spec
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getPhotos(int destinationId, Http.Request request) {
-        // TODO: check that the destination is not private once Story 13 is done
-        // TODO: if destination is private, check that the user has permission once Story 13 is done
 
         ObjectNode res = Json.newObject();
         String messageKey = "message";
@@ -520,7 +539,7 @@ public class DestinationController extends Controller {
             List<DestinationPhoto> destinationPhotos = destination.getDestinationPhotos();
 
             if (user.isAdmin() || user.isDefaultAdmin()) {
-                return ok(Json.toJson(destinationPhotos)); // TODO: find out why "isPrimary" is serialised as "primary" in JSON
+                return ok(Json.toJson(destinationPhotos));
             }
 
             List<DestinationPhoto> photosToReturn = new ArrayList<>();
@@ -530,7 +549,6 @@ public class DestinationController extends Controller {
             photosToReturn.addAll(privatePhotosForUser);
 
             JsonNode photos = Json.toJson(photosToReturn);
-            System.out.println(photos);
 
             return ok(Json.toJson(photosToReturn));
         }), httpExecutionContext.current());
@@ -538,6 +556,7 @@ public class DestinationController extends Controller {
 
     /**
      * Remove the association between a personal photo and a destination
+     *
      * @param photoId the id of the photo
      * @param request the HTTP request
      * @return a response that complies with the API spec
@@ -575,6 +594,97 @@ public class DestinationController extends Controller {
             res.put(messageKey, String.format("User %d is not allowed to delete destination photo %d",user.getUserId(), photoId));
             return forbidden(res);
         }, httpExecutionContext.current());
+    }
+
+    /**
+     * Allows a user to add a proposal
+     *
+     * @param request Request object to get user object
+     * @param destinationId ID of destination to propose to
+     * @return A response that complies with the API spec
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> addProposal(Http.Request request, int destinationId) {
+        return destinationRepository.getDestinationById(destinationId)
+        .thenComposeAsync(optionalDestination -> {
+            if (!optionalDestination.isPresent()) {
+                throw new CompletionException(new BadRequestException("Destination not found"));
+            }
+
+            Destination destination = optionalDestination.get();
+
+            // Cannot make proposals for destinations that are not public
+            if (!destination.getIsPublic()) {
+                throw new CompletionException(new ForbiddenRequestException("Destination is not public"));
+            }
+
+            // Get traveller type objects from ID's
+            JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
+            List<TravellerType> allTravellerTypes = TravellerType.find.all();
+            List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
+
+            DestinationProposal proposal = new DestinationProposal(destination, travellerTypes);
+            return destinationRepository.createProposal(proposal);
+        })
+        .thenApplyAsync(proposal -> (Result) ok())
+        .exceptionally(e -> {
+            try {
+                throw e.getCause();
+            } catch (BadRequestException badRequestException) {
+                return badRequest(badRequestException.getMessage());
+            } catch (ForbiddenRequestException forbiddenException) {
+                return forbidden(forbiddenException.getMessage());
+            }
+            catch (Throwable throwableException) {
+                return internalServerError(throwableException.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Allows an admin to accept a traveller type proposal change
+     *
+     * @param destinationProposalId Id of destination prosposal to accept
+     * @return A response that complies with the API spec
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> acceptProposal(int destinationProposalId) {
+        return destinationRepository.getDestinationProposalById(destinationProposalId)
+        .thenApplyAsync(optionalDestinationProposal -> {
+            if (!optionalDestinationProposal.isPresent()) {
+                return notFound("Proposal could not be found");
+            }
+            DestinationProposal destinationProposal = optionalDestinationProposal.get();
+
+            Destination destination = destinationProposal.getDestination();
+            destination.setTravellerTypes(destinationProposal.getTravellerTypes());
+            destination.update();
+            destinationProposal.delete();
+            return ok();
+        });
+    }
+
+    /**
+     * Allows an admin to reject a destination proposal
+     *
+     * @param destinationProposalId the ID of the proposal to reject
+     * @return A response that complies with the API spec
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> rejectProposal(int destinationProposalId) {
+        return destinationRepository.deleteDestinationProposalById(destinationProposalId)
+                .thenApplyAsync((Void) -> ok());
+    }
+
+    /**
+     * Allows an admin to get all the destination proposals
+     *
+     * @return A response that complies with the API spec
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> getProposals() {
+        return destinationRepository.getDestinationProposals()
+        .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));
     }
 
 }

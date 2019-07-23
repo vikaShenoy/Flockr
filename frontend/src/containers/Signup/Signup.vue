@@ -1,98 +1,156 @@
 <template>
   <div id="signup-container">
-  <v-card
-    id="signup"
-    class="col-lg-6 offset-lg-3"
-  >
+    <v-stepper v-model="currStepperStep">
+      <v-stepper-header>
+        <v-stepper-step :complete="currStepperStep > 1" step="1">Basic Info</v-stepper-step>
+        <v-divider />
+        <v-stepper-step :complete="currStepperStep > 2" step="2">Login Info</v-stepper-step>
+        <v-divider />
+        <v-stepper-step step="3">Travelling Info</v-stepper-step>
+      </v-stepper-header>
 
-    <h2>Sign Up</h2>
+      <v-stepper-items>
+        <v-stepper-content step="1">
+          <v-card class="mb-5" flat>
+            <v-text-field v-model="firstName" color="secondary" label="First name" @blur="validateFirstName()"
+              :error-messages="firstNameErrors" :maxlength="50" />
 
-    <v-text-field
-      v-model="firstName"
-      color="secondary"
-      label="First Name"
-      @blur="validateFirstName()"
-      :error-messages="firstNameErrors"
-      :maxlength="50"
-    ></v-text-field>
+            <v-text-field v-model="middleName" color="secondary" label="Middle name (optional)" :maxlength="50" />
 
-    <v-text-field
-      v-model="lastName"
-      color="secondary"
-      label="Last Name"
-      @blur="validateLastName()"
-      :error-messages="lastNameErrors"
-      :maxlength="50"
-    >
-    </v-text-field>
+            <v-text-field v-model="lastName" color="secondary" label="Last name" @blur="validateLastName()"
+              :error-messages="lastNameErrors" :maxlength="50" />
 
-    <v-text-field
-      v-model="email"
-      color="secondary"
-      label="Email"
-      @blur="validateEmail()"
-      :error-messages="emailErrors"
-      autocomplete="off"
-      :maxlength="320"
-    >
-    </v-text-field>
+            <v-text-field v-model="dateOfBirth" mask="date" label="Birthday" hint="DD/MM/YYYY" persistent-hint
+            return-masked-value placeholder="12/04/2003" :rules="[rules.dateBeforeToday, rules.required]"
+            validate-on-blur />
 
+            <v-select :rules="[rules.required]" v-model="gender" :items="genderOptions" color="secondary"
+              label="Gender" />
+          </v-card>
 
-    <v-text-field
-      v-model="password"
-      type="password"
-      color="secondary"
-      label="Password"
-      @blur="validatePassword()"
-      :error-messages="passwordErrors"
-      :maxlength="50"
-    ></v-text-field>
+          <v-btn color="primary" @click="currStepperStep = 2" :disabled="!isBasicInfoStepperCompleted">Continue</v-btn>
+        </v-stepper-content>
 
-    <v-text-field
-      v-model="confirmPassword"
-      type="password"
-      color="secondary"
-      label="Confirm Password"
-      @blur="validateConfirmPassword()"
-      :error-messages="confirmPasswordErrors"
-      :maxlength="50"
-      v-on:keyup.enter="signup"
-    ></v-text-field>
+        <v-stepper-content step="2">
+          <v-card class="mb-5" flat>
+            <v-text-field v-model="email" color="secondary" label="Email" @blur="validateEmail()"
+              :error-messages="emailErrors" autocomplete="off" :maxlength="320" />
 
-    <v-btn
-      color="secondary"
-      depressed
-      class="col-sm-4 offset-sm-4" 
-      @click="signup()"
-    >Sign Up</v-btn>
-  </v-card>
+            <v-text-field v-model="password" type="password" color="secondary" label="Password"
+              @blur="validatePassword()" :error-messages="passwordErrors" :maxlength="50" />
 
+            <v-text-field v-model="confirmPassword" type="password" color="secondary" label="Confirm Password"
+              @blur="validateConfirmPassword()" :error-messages="confirmPasswordErrors" :maxlength="50"
+              v-on:keyup.enter="signup" />
+          </v-card>
+
+          <v-btn :loading="loading" :disabled="!isLoginInfoStepperCompleted" color="primary" @click="signup()">Continue</v-btn>
+          <v-btn flat @click="currStepperStep = 1">Go back</v-btn>
+        </v-stepper-content>
+
+        <v-stepper-content step="3">
+          <v-card class="mb-5" flat>
+            <v-combobox v-model="selectedNationalities" :items="this.allNationalities" :item-text="n => n.nationalityName"
+              label="Nationalities" :rules="[rules.nonEmptyArray]" clearable multiple />
+
+            <v-combobox v-model="selectedPassports" :items="this.allPassports" :item-text="p => p.passportCountry" label="Passports"
+              clearable multiple />
+
+            <v-combobox v-model="selectedTravellerTypes" :items="this.allTravellerTypes" :item-text="t => t.travellerTypeName"
+              label="Traveller types" :rules="[rules.nonEmptyArray]" clearable multiple />
+          </v-card>
+
+          <v-btn :loading="loading" :disabled="!isTravellingInfoStepperCompleted" color="primary" @click="sendTravellerInfo()">
+            Continue
+          </v-btn>
+        </v-stepper-content>
+      </v-stepper-items>
+    </v-stepper>
   </div>
 </template>
 
 <script>
 
-import { signup, emailTaken } from "./SignupService.js";
+import { signup, emailTaken, rules, updateBasicInfo } from "./SignupService.js";
+import { getNationalities } from "../Profile/Nationalities/NationalityService.js";
+import { getPassports } from "../Profile/Passports/PassportService.js";
+import { getTravellerTypes, getAllTravellerTypes } from "../Profile/TravellerTypes/TravellerTypesService.js";
 import { validate } from "email-validator";
+import moment from "moment";
 
 export default {
-  name: "sign-up",
+  props: {
+    shouldGoToProfile: {
+      type: Boolean,
+      required: false
+    }
+  },
+  async mounted() {
+    try {
+      this.allNationalities = await getNationalities();
+      this.allPassports = await getPassports();
+      this.allTravellerTypes = await getAllTravellerTypes();
+    } catch (err) {
+      console.error(`Could not get info from server needed to sign up: ${err}`);
+    }
+  },
   data() {
     return {
       firstName: "",
+      middleName: "",
       lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
+      gender: "",
+      genderOptions: ["Other", "Female", "Male"],
       firstNameErrors: [],
       lastNameErrors: [],
       emailErrors: [],
       passwordErrors: [],
-      confirmPasswordErrors: []
+      confirmPasswordErrors: [],
+      allNationalities: [],
+      selectedNationalities: [],
+      allPassports: [],
+      selectedPassports: [],
+      allTravellerTypes: [],
+      selectedTravellerTypes: [],
+      dateOfBirth: "",
+      currStepperStep: 1,
+      rules: rules,
+      loading: false,
+      signedUpUserId: 0 // used to cache the id of the signed up user, used when admin signs up another user
     };
   },
+  computed: {
+    selectedNationalityIds: function() { return this.selectedNationalities.map(n => n.nationalityId) },
+    selectedPassportIds: function() { return this.selectedPassports.map(p => p.passportId) },
+    selectedTravellerTypeIds: function() { return this.selectedTravellerTypes.map(t => t.travellerTypeId) },
+    /**
+     * Return true if all the required fields in the basic info stepper are completed
+     */
+    isBasicInfoStepperCompleted: function() {
+      const { firstName, lastName, gender, dateOfBirth } = this;
+      const fieldsAreNotEmpty = [firstName, lastName, gender, dateOfBirth].every(field => field.length > 0);
+      const dateOfBirthBeforeToday = moment(dateOfBirth, 'DD/MM/YYYY') < moment();
+      return fieldsAreNotEmpty;
+    },
+    /**
+     * Return true if all the required fields in the login info stepper are completed
+     */
+    isLoginInfoStepperCompleted: function() {
+      const { email, password, confirmPassword } = this;
+      return [email, password].every(s => s.length > 0) && password === confirmPassword;
+    },
+    /**
+     * Return true if all the required fields in the travelling info stepper are completed
+     */
+    isTravellingInfoStepperCompleted: function() {
+      const { selectedNationalities, selectedTravellerTypes } = this;
+      return [selectedNationalities, selectedTravellerTypes].every(array => array.length > 0);
+    }
+  },
   methods: {
-    
     /**
      * Checks if the first name field is empty and renders error if it is
      * @returns {number} If there are errors or not
@@ -101,26 +159,11 @@ export default {
       this.firstNameErrors = [];
 
       if (!this.firstName) {
-        this.firstNameErrors = ["First Name is required"]; 
+        this.firstNameErrors = ["First name is required"]; 
       } else {
-        this.lastNameErrors = [];
+        this.firstNameErrors = [];
       }
       return this.firstNameErrors.length === 0;
-    },
-    /**
-     * Set all fields and errors to empty.
-     */
-    clearData() {
-      this.firstName =  "",
-      this.lastName =  "",
-      this.email =  "",
-      this.password =  "",
-      this.confirmPassword = "",
-      this.firstNameErrors = [],
-      this.lastNameErrors = [],
-      this.emailErrors = [],
-      this.passwordErrors = [],
-      this.confirmPasswordErrors = []
     },
     /**
      * Checks if the last name field is empty and renders error if it is
@@ -130,7 +173,7 @@ export default {
       this.lastNameErrors = [];
 
       if (!this.lastName) {
-        this.lastNameErrors = ["Last Name is required"];
+        this.lastNameErrors = ["Last name is required"];
       } else {
         this.lastNameErrors = [];
       }
@@ -162,11 +205,10 @@ export default {
      * @returns {Promise<boolean>} True if there are no errors, false otherwise 
      */
     validatePassword() {
-
       if (!this.password) {
         this.passwordErrors = ["Password is required"];
       } else if (this.password.length < 6) {
-        this.passwordErrors = ["Password has to be atleast 6 characters long"];
+        this.passwordErrors = ["Password has to be at least 6 characters long"];
       } else if (this.confirmPassword && (this.password !== this.confirmPassword)) {
         this.passwordErrors = ["Passwords are not identical"];
         this.confirmPasswordErrors = ["Passwords are not identical"];
@@ -219,28 +261,66 @@ export default {
      * Check if fields are valid. Send a request to sign the user up if so.
      */
     async signup() {
+      this.loading = true;
       const validFields = await this.validate();
       if (!validFields) return;
-      try {
-        const { token, userId } = await signup({
-          firstName: this.firstName,
-          lastName: this.lastName,
-          email: this.email,
-          password: this.password,
-        });
 
-        // Only set fields and redirect if they are
-        // NOT currently logged in. (Useful for admin panel).
+      const userInfo = {
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        password: this.password,
+      };
+
+      if (this.middleName.length > 0) {
+        userInfo.middleName = this.middleName;
+      }
+
+      try {
+        const { token, userId } = await signup(userInfo);
+
+        // Only set local storage if user is not currently logged in
         if (!localStorage.getItem("authToken")) {
           localStorage.setItem("authToken", token);
           localStorage.setItem("userId", userId);
-          this.$router.push(`/profile/${userId}`);
+
+          /* Used so if user is admin and wants to view as another user,
+          then we'll know what ID to go back to once they are done
+          */
+          localStorage.setItem("ownUserId", userId);
+          
+          
         } else {
-          this.clearData();
           this.$emit('exit', true);
         }
+        this.signedUpUserId = userId;
+        this.loading = false;
+        this.currStepperStep = 3; // go to next stepper in sign up sequence
       } catch (e) {
         console.log(e);
+      }
+    },
+    async sendTravellerInfo() {
+      this.loading = true;
+      const { signedUpUserId, 
+        selectedNationalityIds, 
+        selectedPassportIds, 
+        selectedTravellerTypeIds, 
+        gender ,
+        dateOfBirth
+      } = this;
+      try {
+        await updateBasicInfo(signedUpUserId, {
+          nationalities: selectedNationalityIds,
+          passports: selectedPassportIds,
+          travellerTypes: selectedTravellerTypeIds,
+          gender: gender,
+          dateOfBirth: moment(dateOfBirth, 'DD/MM/YYYY').format('YYYY-DD-MM')
+        });
+        this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
+        this.loading = false;
+      } catch (err) {
+        console.error(`Could not add traveller info for user with id ${signedUpUserId}: ${err}`);
       }
     }
   }
@@ -263,6 +343,8 @@ export default {
   background-image: url("../../assets/background.jpg");
   background-size: cover;
   width: 100%;
+  align-items: center;
+  justify-content: center;
 }
 </style>
 

@@ -18,9 +18,14 @@ public class Country extends Model {
     private int countryId;
 
     private String countryName;
+    private String ISOCode;
 
-    public Country(String countryName) {
+    private boolean isValid;
+
+    public Country(String countryName, String ISOCode, boolean isValid) {
         this.countryName = countryName;
+        this.ISOCode = ISOCode;
+        this.isValid = isValid;
     }
 
     public int getCountryId() {
@@ -39,6 +44,22 @@ public class Country extends Model {
         this.countryName = countryName;
     }
 
+    public String getISOCode() {
+        return ISOCode;
+    }
+
+    public void setISOCode(String ISOCode) {
+        this.ISOCode = ISOCode;
+    }
+
+    public boolean getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(boolean isValid) {
+        this.isValid = isValid;
+    }
+
     /**
      * This is required by EBean to make queries on the database.
      */
@@ -50,6 +71,7 @@ public class Country extends Model {
             return false;
         }
         Country countryToCompare = (Country) obj;
-        return this.countryId == countryToCompare.getCountryId();
+        boolean sameCountryId = this.getCountryId() == countryToCompare.getCountryId();
+        return sameCountryId;
     }
 }

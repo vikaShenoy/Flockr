@@ -20,10 +20,9 @@ function formatTime(time) {
 export function transformTripResponse(trip) {
   return {
     tripName: trip.tripName,
-    tripDestinations: trip.tripDestinations.map((tripDestination, index) => {
+    tripDestinations: trip.tripDestinations.map(tripDestination => {
       return {
-        id: index,
-        destinationId: tripDestination.destination.destinationId,
+        destination: tripDestination.destination,
         arrivalDate: tripDestination.arrivalDate === 0 ? null : moment(tripDestination.arrivalDate).format("YYYY-MM-DD"),
         arrivalTime: tripDestination.arrivalTime === -1 ? null : formatTime(moment.duration(tripDestination.arrivalTime, "minutes")),
         departureDate: tripDestination.departureDate === 0 ? null : moment(tripDestination.departureDate).format("YYYY-MM-DD"),
@@ -45,34 +44,4 @@ export async function getTrip(tripId, userId) {
   return res.body;
 }
 
-/**
- * Edit a trip. Send a request to the edit trip backend endpoint with
- * the trip data to edit.
- * @param {number} tripId - The ID of the trip to edit
- * @param {string} tripName - The edited trip name
- * @param {Object[]} tripDestinations - The edited trip destinations
- */
-export function editTrip(tripId, userId, tripName, tripDestinations) {
 
-   const transformedTripDestinations = tripDestinations.map((tripDestination, index)  => {
-    const transformedTripDestination = {};
-    transformedTripDestination.id = index;
-    transformedTripDestination.destinationId = tripDestination.destinationId;
-    transformedTripDestination.arrivalDate = moment(tripDestination.arrivalDate).valueOf();
-    transformedTripDestination.arrivalTime = tripDestination.arrivalTime === null || tripDestination.arrivalTime === "" ? null : moment.duration(tripDestination.arrivalTime).asMinutes();
-    transformedTripDestination.departureDate = moment(tripDestination.departureDate).valueOf(); 
-    transformedTripDestination.departureTime = tripDestination.departureTime === null || tripDestination.departureTime === ""? null : moment.duration(tripDestination.departureTime).asMinutes();
-
-    return transformedTripDestination;
-  }); 
-
-
-  const authToken = localStorage.getItem("authToken");
-
-  return superagent.put(endpoint(`/users/${userId}/trips/${tripId}`))
-    .set("Authorization", authToken)
-    .send({
-      tripName,
-      tripDestinations: transformedTripDestinations
-    });
-}
