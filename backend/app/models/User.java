@@ -64,10 +64,12 @@ public class User extends Model {
     private java.sql.Timestamp timestamp;
 
     @Constraints.Required
+    @JsonIgnore
     private String passwordHash;
 
     private String token;
 
+    @JsonIgnore
     @SoftDelete
     @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean deleted;
