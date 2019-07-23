@@ -8,7 +8,6 @@
 </template>
 
 <script>
-import UndoRedoStack from "./UndoRedoStack";
 import Snackbar from "../Snackbars/Snackbar";
 
 export default {
