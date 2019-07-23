@@ -7,6 +7,10 @@
       />
     </div>
 
+    <div id="undo-redo-btns">
+      <UndoRedo ref="undoRedo" color="white" />
+    </div>
+
     <TripItemSidebar 
       :trip="trip"      
       v-on:destinationOrderChanged="destinationOrderChanged"
@@ -27,13 +31,15 @@ import DestinationMap from "../../components/DestinationMap/DestinationMap";
 import { getYourDestinations, getPublicDestinations } from "../Destinations/DestinationsService";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import { getTrip, transformTripResponse, contiguousDestinations, editTrip, contiguousReorderedDestinations } from "./TripService";
+import UndoRedo from "../../components/UndoRedo/UndoRedo";
 
 
 export default {
   components: {
     TripItemSidebar,
     DestinationMap,
-    Snackbar
+    Snackbar,
+    UndoRedo
   },
   data() {
     return {
@@ -93,6 +99,7 @@ export default {
 
           this.showError("Cannot have contiguous destinations");
           const tripDestinations = [...this.trip.tripDestinations];
+
           this.trip.tripDestinations = [];
           setTimeout(() => {
             this.trip.tripDestinations = tripDestinations;
@@ -100,6 +107,20 @@ export default {
           
           return
         }
+
+          const oldTripDestinations = {
+            tripId: this.trip.tripId,
+            tripName: this.trip.tripName,
+            tripDestinations: this.trip.tripDestinations
+          };
+
+          const newTripDestinations = {
+            tripId: this.trip.tripId,
+            tripName: this.trip.tripName,
+            tripDestinations: this.trip.tripDestinations
+          };
+
+          this.addEditTripCommand(oldTrip, newTrip);
 
         // Reorder elements
         const temp = {...this.trip.tripDestinations[indexes.oldIndex]};
@@ -112,6 +133,25 @@ export default {
         console.log(e);
         this.showError("Could not changed order");
       }
+    },
+    /**
+     * Adds an edit trip command to the undo stack
+     */
+    addEditTripCommand(oldTrip, newTrip) {
+      const undoCommand = async (oldTrip) => {
+        await editTrip(oldTrip.tripId, oldTrip.tripName, oldTrip.tripDestinations)
+        this.trip = oldTrip;
+      };
+
+      const redoCommand = async (newTrip) => {
+        await editTrip(newTrip.tripId, newTrip.tripName, newTrip.tripDestinations);
+        this.trip = newTrip;
+      };
+
+      const updateTripCommand = new Command(undoCommand.bind(null, oldTrip), redoCommand.bind(null, newTrip));
+      console.log("I should've added to stack");
+      this.$refs.undoRedo.addUndo(updateTripCommand);
+  
     },
     updatedTripDestinations(tripDestinations) {
       this.$set(this.trip, "tripDestinations", tripDestinations);
@@ -153,6 +193,13 @@ export default {
     display: inline-block;
     height: 100%;
     position: fixed;
+  }
+
+  #undo-redo-btns {
+    position: absolute;
+    right: 23px;
+    margin-top: 10px;
+    z-index: 1000;
   }
 
 </style>
