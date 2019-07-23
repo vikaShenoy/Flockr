@@ -150,9 +150,21 @@ export default {
 
       const updateTripCommand = new Command(undoCommand.bind(null, oldTrip), redoCommand.bind(null, newTrip));
       this.$refs.undoRedo.addUndo(updateTripCommand);
-  
     },
     updatedTripDestinations(tripDestinations) {
+        const oldTrip = {
+          tripId: this.trip.tripId,
+          tripName: this.trip.tripName,
+          tripDestinations: this.trip.tripDestinations
+        };
+
+        const newTrip = {
+          tripId: this.trip.tripId,
+          tripName: this.trip.tripName,
+          tripDestinations: tripDestinations
+        };
+
+      this.addEditTripCommand(oldTrip, newTrip);
       this.$set(this.trip, "tripDestinations", tripDestinations);
     },
     async deleteTripDestination(tripDestination) {
