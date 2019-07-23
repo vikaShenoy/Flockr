@@ -63,7 +63,7 @@
                     <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn color="blue darken-1" flat @click="closeDialog">Close</v-btn>
-                        <v-btn color="blue darken-1" :disabled="false" flat v-on:click="createTreasureHunt()" >Update</v-btn>
+                        <v-btn color="blue darken-1" :disabled="validTreasureHunt" flat v-on:click="editTreasureHunt()" >Update</v-btn>
                     </v-card-actions>
                 </v-card>
 
@@ -76,7 +76,8 @@
 </template>
 
 <script>
-    import {getPublicDestinations, createTreasureHunt} from "./TreasureHuntsService"
+    import moment from "moment";
+    import {getPublicDestinations, editTreasureHunt} from "./TreasureHuntsService"
     export default {
         name: "EditTreasureHunt",
         props: {
@@ -88,8 +89,8 @@
             this.editTreasureHuntName = this.data.treasureHuntName;
             this.editTreasureHuntRiddle = this.data.riddle;
             this.editTreasureHuntDestination = this.data.treasureHuntDestinationId;
-            this.startDate = this.data.startDate;
-            this.endDate = this.data.endDate;
+            this.startDate = moment(this.data.startDate).format("YYYY-MM-DD");;
+            this.endDate = moment(this.data.endDate).format("YYYY-MM-DD");
             this.visible = this.toggle;
 
 
@@ -119,26 +120,26 @@
                 this.destinations = await getPublicDestinations()
             },
             async editTreasureHunt() {
-                console.log("Create the treasure hunt in this function");
                 let treasureHunt = {
 
-                    treasureHuntName: this.createTreasureHuntName,
-                    treasureHuntDestinationId: this.createTreasureHuntDestination,
-                    riddle: this.createTreasureHuntRiddle,
+                    treasureHuntId: this.data.treasureHuntId,
+                    treasureHuntName: this.editTreasureHuntName,
+                    treasureHuntDestinationId: this.editTreasureHuntDestination,
+                    riddle: this.editTreasureHuntRiddle,
                     startDate: this.startDate,
                     endDate: this.endDate
 
                 };
-                await createTreasureHunt(treasureHunt);
+                await editTreasureHunt(treasureHunt);
 
                 this.closeDialog();
                 this.$emit("updateList");
             }
         },
         computed: {
-            /*validTreasureHunt() {
+            validTreasureHunt() {
                 return ! ( this.editTreasureHuntName.length > 0 && this.editTreasureHuntDestination != null && this.editTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
-            }*/
+            }
         },
         watch: {
             toggle(newVal, oldVal) {

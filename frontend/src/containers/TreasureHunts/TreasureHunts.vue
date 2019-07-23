@@ -42,6 +42,7 @@
                 :data="treasureHunt"
                 :key="refreshEditForm"
                 @closeEditDialog="closeEditDialog"
+                @updateList="updateList"
         ></EditTreasureHunt>
     </v-flex>
 
@@ -77,7 +78,6 @@ export default {
         },
         async getTreasureHunts() {
             this.treasureHunts = await getAllTreasureHunts();
-            console.log(this.treasureHunts)
         },
         formatDate(date) {
             return moment(date).format("D/M/YYYY H:mm")
@@ -100,6 +100,7 @@ export default {
             this.showDialog = newVal;
         },
         updateList() {
+            console.log("in here")
             this.getTreasureHunts();
         },
         showEditDialog(treasureHunt) {

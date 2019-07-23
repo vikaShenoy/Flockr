@@ -32,3 +32,15 @@ export async function createTreasureHunt(treasureHunt) {
 
     return res.body;
 }
+
+export async function editTreasureHunt(treasureHunt) {
+    console.log(treasureHunt)
+    let token = localStorage.getItem("authToken");
+    let treasureHuntId = treasureHunt.treasureHuntId;
+
+    const res = await superagent.put(endpoint(`/treasurehunts/${treasureHuntId}`))
+        .set("Authorization", token)
+        .send(treasureHunt);
+
+    return res.body;
+}

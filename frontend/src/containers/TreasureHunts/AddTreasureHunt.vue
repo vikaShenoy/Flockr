@@ -110,7 +110,6 @@
                 this.destinations = await getPublicDestinations()
             },
             async createTreasureHunt() {
-                console.log("Create the treasure hunt in this function");
                 let treasureHunt = {
 
                     treasureHuntName: this.createTreasureHuntName,
