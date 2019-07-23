@@ -65,7 +65,17 @@ export async function sendDeleteDestination(destinationId) {
  * @param destinationInfo.longitude float longitude of the destination
  * @returns {Promise<>} contains nothing
  */
-export async function sendAddDestination(destinationInfo) {
+export async function sendAddDestination(destination) {
+  const destinationInfo = {
+    destinationName: destination.destinationName,
+    destinationTypeId: destination.destinationType.destinationTypeId,
+    countryId: destination.destinationCountry.countryId,
+    districtId: destination.destinationDistrict.districtId,
+    latitude: destination.destinationLat,
+    longitude: destination.destinationLon,
+    travellerTypeIds: destination.travellerTypes.map(travellerType => travellerType.travellerTypeId),
+  };
+
   const userId = localStorage.getItem("userId");
   const res = await superagent.post(endpoint(`/users/${userId}/destinations`))
       .set("Authorization", localStorage.getItem("authToken"))
