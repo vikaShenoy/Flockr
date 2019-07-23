@@ -154,7 +154,6 @@ public class DestinationController extends Controller {
      * @param request the HTTP post request.
      * @return a completion stage with a 200 status code and the new json object or a status code 400.
      */
-
     @With(LoggedIn.class)
     public CompletionStage<Result> addDestination(int userId, Http.Request request) {
         JsonNode jsonRequest = request.body().asJson();
@@ -188,8 +187,6 @@ public class DestinationController extends Controller {
                 travellerTypeIds = jsonRequest.get("travellerTypeIds");
 
             } catch (NullPointerException exception) {
-                System.out.println(exception);
-                exception.printStackTrace();
                 throw new BadRequestException("One or more fields are missing.");
             }
 
@@ -232,7 +229,6 @@ public class DestinationController extends Controller {
 
                     });
         } catch (BadRequestException e) {
-            System.out.println(e);
             ObjectNode message = Json.newObject();
             message.put("message", "Please provide a valid Destination with complete data");
             return supplyAsync(() -> badRequest(message));

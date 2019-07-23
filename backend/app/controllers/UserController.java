@@ -334,7 +334,6 @@ public class UserController extends Controller {
                             try {
                                 return completableFuture.get();
                             } catch (InterruptedException | ExecutionException e) {
-                                System.out.println(e);
                                 System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
                                 message.put("message", "Something went wrong deleting that user, try again");
                                 return internalServerError(message);
@@ -352,7 +351,6 @@ public class UserController extends Controller {
                             try {
                                 return completableFuture.get();
                             } catch (InterruptedException | ExecutionException e) {
-                                System.out.println(e);
                                 System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
                                 message.put("message", "Something went wrong deleting that user, try again");
                                 return internalServerError(message);
@@ -364,7 +362,6 @@ public class UserController extends Controller {
                             try {
                                 return completableFuture.get();
                             } catch (InterruptedException | ExecutionException e) {
-                                System.out.println(e);
                                 System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
                                 message.put("message", "Something went wrong deleting that user, try again");
                                 return internalServerError(message);

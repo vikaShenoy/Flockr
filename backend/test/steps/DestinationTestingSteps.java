@@ -95,7 +95,6 @@ public class DestinationTestingSteps {
         for (int i = 0; i < destinationList.size(); i++) {
 
                 ObjectNode currentDestination = (ObjectNode) Json.toJson(destinationList.get(i));
-                System.out.println(currentDestination);
    /*             if (currentDestination.has("isPublic")) {
                     destination1.setIsPublic(Boolean.parseBoolean(currentDestination.get("isPublic").asText()));
                 }*/
