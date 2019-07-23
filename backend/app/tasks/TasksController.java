@@ -2,11 +2,11 @@ package tasks;
 
 import com.google.inject.AbstractModule;
 
-public class TasksModule extends AbstractModule {
+public class TasksController extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(DeleteExpiredPhotos.class).asEagerSingleton();
+        bind(DeleteExpiredPhotosTask.class).asEagerSingleton();
         //TODO: add more for other model types.
     }
 }

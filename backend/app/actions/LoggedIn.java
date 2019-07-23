@@ -44,7 +44,7 @@ public class LoggedIn extends Action.Simple {
                 return supplyAsync(() -> unauthorized(response));
             }
             return authRepository.getByToken(token)
-            .thenCompose((user) -> {
+            .thenCompose(user -> {
                if (!user.isPresent()) {
                    JsonNode response = Json.newObject().put("error", "Unauthorized");
                    return supplyAsync(() -> unauthorized(response));
