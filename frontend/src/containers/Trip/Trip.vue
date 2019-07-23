@@ -32,6 +32,7 @@ import { getYourDestinations, getPublicDestinations } from "../Destinations/Dest
 import Snackbar from "../../components/Snackbars/Snackbar";
 import { getTrip, transformTripResponse, contiguousDestinations, editTrip, contiguousReorderedDestinations } from "./TripService";
 import UndoRedo from "../../components/UndoRedo/UndoRedo";
+import Command from "../../components/UndoRedo/Command"
 
 
 export default {
@@ -96,10 +97,8 @@ export default {
 
         if (contiguousReorderedDestinations(this.trip.tripDestinations, indexes.newIndex, indexes.oldIndex)) {
 
-
           this.showError("Cannot have contiguous destinations");
           const tripDestinations = [...this.trip.tripDestinations];
-
           this.trip.tripDestinations = [];
           setTimeout(() => {
             this.trip.tripDestinations = tripDestinations;
@@ -107,31 +106,32 @@ export default {
           
           return
         }
-
-          const oldTripDestinations = {
-            tripId: this.trip.tripId,
-            tripName: this.trip.tripName,
-            tripDestinations: this.trip.tripDestinations
-          };
-
-          const newTripDestinations = {
-            tripId: this.trip.tripId,
-            tripName: this.trip.tripName,
-            tripDestinations: this.trip.tripDestinations
-          };
-
-          this.addEditTripCommand(oldTrip, newTrip);
-
-        // Reorder elements
+        const oldTripDestinations = [...this.trip.tripDestinations];
+        
+        // Reorder elements for new trip destinations
         const temp = {...this.trip.tripDestinations[indexes.oldIndex]};
         this.trip.tripDestinations.splice(indexes.oldIndex, 1);
         this.trip.tripDestinations.splice(indexes.newIndex, 0, temp);
+
+        const oldTrip = {
+          tripId: this.trip.tripId,
+          tripName: this.trip.tripName,
+          tripDestinations: oldTripDestinations
+        };
+
+        const newTrip = {
+          tripId: this.trip.tripId,
+          tripName: this.trip.tripName,
+          tripDestinations: this.trip.tripDestinations
+        };
+
+        this.addEditTripCommand(oldTrip, newTrip);
 
         await editTrip(tripId, this.trip.tripName, this.trip.tripDestinations);
         this.showSuccessMessage("Successfully changed order");
       } catch (e) {
         console.log(e);
-        this.showError("Could not changed order");
+        this.showError("Could not change order");
       }
     },
     /**
@@ -149,7 +149,6 @@ export default {
       };
 
       const updateTripCommand = new Command(undoCommand.bind(null, oldTrip), redoCommand.bind(null, newTrip));
-      console.log("I should've added to stack");
       this.$refs.undoRedo.addUndo(updateTripCommand);
   
     },

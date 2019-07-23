@@ -1,7 +1,7 @@
 <template>
   <div>
-    <v-icon @click="undo" class="action" :color="color || 'secondary'" :disabled="!undoStack.length">undo</v-icon>
-    <v-icon @click="redo" class="action" :color="color || 'secondary'" :disabled="!redoStack.length">redo</v-icon>
+    <v-icon @click="undo" class="action" color="secondary" :disabled="!undoStack.length">undo</v-icon>
+    <v-icon @click="redo" class="action" color="secondary" :disabled="!redoStack.length">redo</v-icon>
 
     <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show = false" />
  </div>
