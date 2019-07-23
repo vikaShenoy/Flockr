@@ -129,7 +129,7 @@
             },
 
             /**
-             * Calls the treasure hunt service to update the given treasure hutn
+             * Calls the treasure hunt service to update the given treasure hunt
              */
             async editTreasureHunt() {
                 let treasureHunt = {

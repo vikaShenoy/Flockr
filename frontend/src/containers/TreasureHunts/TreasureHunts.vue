@@ -10,7 +10,7 @@
             <template v-slot:header>
                 <div id="header">{{item.treasureHuntName}}
                     <v-btn :visible="true" color="secondary" style="" fab small
-                           v-if="isOwner(item.ownerId)" v-on:click="showEditDialog(item)"
+                           v-if="isOwner(item.ownerId) || isAdmin()" v-on:click="showEditDialog(item)"
                     >
                         <v-icon>edit</v-icon>
                     </v-btn>
@@ -21,6 +21,7 @@
             <v-card class="card">
                 <v-card-text>Riddle: {{item.riddle}}</v-card-text>
                 <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}<br>Time Zone: {{getTimeZone(item.treasureHuntDestinationId)}}</v-card-text>
+                <v-card-text v-if="isOwner(item.ownerId) || isAdmin()">{{getDestination(item.treasureHuntDestinationId)}}</v-card-text>
             </v-card>
             </v-expansion-panel-content>
         </v-expansion-panel>
@@ -54,6 +55,7 @@ import AddTreasureHunt from "./AddTreasureHunt";
 import EditTreasureHunt from "./EditTreasureHunt"
 import {getAllTreasureHunts} from "./TreasureHuntsService";
 import moment from "moment";
+import UserStore from "../../stores/UserStore";
 
 export default {
     components: {AddTreasureHunt, EditTreasureHunt},
@@ -121,7 +123,16 @@ export default {
          * @param destinationId - Id of a destination present in the Travel EA database
          */
         getTimeZone(destinationId) {
-            console.log("getting time zone")
+            console.log("getting time zone");
+        },
+
+        /**
+         * UNDER CONSTRUCTION
+         * Function that takes a destination id and returns the name of that destination to be displayed to
+         * the owner of the treasure hunt and any admin users
+         */
+        getDestination(destinationId) {
+            console.log("getting destination name");
         },
 
         /**
@@ -131,6 +142,13 @@ export default {
          */
         isOwner(ownerId) {
             return localStorage.getItem("userId") == ownerId
+        },
+
+        /**
+         * Function to that checks if the user is an admin or not
+         */
+        isAdmin() {
+            return UserStore.methods.isAdmin()
         },
 
         /**
