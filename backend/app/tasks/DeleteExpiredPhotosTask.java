@@ -53,38 +53,36 @@ public class DeleteExpiredPhotosTask {
     }
 
     private void initialise() {
-        try {
-            this.actorSystem
-                    .scheduler()
-                    .schedule(
-                            Duration.create(50, TimeUnit.MINUTES), // initialDelay
-                            Duration.create(24, TimeUnit.HOURS), // interval
-                            () -> {
-                                log.info("-----------Cleaning up deleted photos-------------");
-                                System.out.println("-----------Cleaning up deleted photos-------------");
-                                getDeletedPhotos()
-                                    .thenApplyAsync(personalPhotos -> {
-                                        for (PersonalPhoto personalPhoto : personalPhotos) {
-                                            File photoToDelete = new File(
-                                                    "./storage/photos/" + personalPhoto.getFilenameHash());
-                                            File thumbnailToDelete = new File(
-                                                    "./storage/photos/" + personalPhoto.getThumbnailName());
-                                            ObjectNode message = Json.newObject();
+        this.actorSystem
+                .scheduler()
+                .schedule(
+                        Duration.create(50, TimeUnit.MINUTES), // initialDelay
+                        Duration.create(24, TimeUnit.HOURS), // interval
+                        () -> {
+                            log.info("-----------Cleaning up deleted photos-------------");
+                            System.out.println("-----------Cleaning up deleted photos-------------");
+                            getDeletedPhotos()
+                                .thenApplyAsync(personalPhotos -> {
+                                    for (PersonalPhoto personalPhoto : personalPhotos) {
+                                        File photoToDelete = new File(
+                                                "./storage/photos/" + personalPhoto.getFilenameHash());
+                                        File thumbnailToDelete = new File(
+                                                "./storage/photos/" + personalPhoto.getThumbnailName());
+                                        ObjectNode message = Json.newObject();
 
-                                            if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
-                                                log.error("Could not delete photo or thumbnail for file " +
-                                                        personalPhoto.getFilenameHash());
-                                            } else {
-                                                log.info("Successfully deleted the photo " +
-                                                        personalPhoto.getFilenameHash());
-                                            }
-                                            personalPhoto.deletePermanent();
+                                        if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
+                                            log.error("Could not delete photo or thumbnail for file " +
+                                                    personalPhoto.getFilenameHash());
+                                        } else {
+                                            log.info("Successfully deleted the photo " +
+                                                    personalPhoto.getFilenameHash());
                                         }
-                                        return personalPhotos;
-                                });
-                            },
-                            this.executionContext);
-        } catch (Exception ignore) {}
+                                        personalPhoto.deletePermanent();
+                                    }
+                                    return personalPhotos;
+                            });
+                        },
+                        this.executionContext);
     }
 }
 
