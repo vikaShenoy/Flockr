@@ -2,12 +2,16 @@
   <div>
     <div id="header">
       <h3>Nationalities</h3>
-      <div>
+
+      <div id="undo-redo-buttons">
+        <UndoRedo ref="undoRedo" />
+      </div>
+
+      <div id="edit-btn">
         <v-btn
           v-if="userStore.userId === userId"
           small
           flat
-          id="edit-btn"
           color="secondary"
           @click="toggleEditSave"
         >
@@ -59,16 +63,21 @@
 
 <script>
 import UserStore from "../../../stores/UserStore";
-import { getNationalities, updateNationalities } from "./NationalityService.js";
+import { getNationalities, updateNationalities } from "./NationalityService";
+import UndoRedo from "../../../components/UndoRedo/UndoRedo";
+import Command from "../../../components/UndoRedo/Command";
 
 export default {
+  props: ["userNationalities", "userId"],
   mounted() {
     this.getNationalities();
+  },
+  components: {
+    UndoRedo
   },
   data() {
     return {
       userStore: UserStore.data,
-      // These would be retreived from the request
       userNat: [...this.userNationalities],
       allNationalities: [],
       isEditing: false,
@@ -93,6 +102,7 @@ export default {
      */
     async toggleEditSave() {
       if (this.isEditing) {
+        // if user was editing and has now submitted their changes
         if (this.userNat.length === 0) {
           this.nationalityErrors = ["Please select a nationality"];
           return;
@@ -101,16 +111,20 @@ export default {
         this.nationalityErrors = [];
 
         const userId = this.$route.params.id;
-        const nationalityIds = this.getNationalityIds;
-        try {
-          await updateNationalities(userId, nationalityIds);
-        } catch (e) {
-          // Add error handling later
-        }
 
-        // Set nationalities state of UserStore
-        UserStore.data.nationalities = this.userNat;
-        this.$emit("update:userNationalities", this.userNat);
+        const command = async(nationalities) => {
+          console.log(nationalities);
+          const nationalityIds = nationalities.map(nationality => nationality.nationalityId);
+          await updateNationalities(userId, nationalityIds);
+          UserStore.data.nationalities = nationalities;
+          this.$emit("update:userNationalities", nationalities);
+        };
+
+        const undoCommand = command.bind(null, this.userNationalities);
+        const redoCommand = command.bind(null, this.userNat);
+        const updateNationalitiesCommand = new Command(undoCommand, redoCommand);
+        this.$refs.undoRedo.addUndo(updateNationalitiesCommand);
+        redoCommand(); // perform the update
       }
       this.isEditing = !this.isEditing;
     },
@@ -125,17 +139,7 @@ export default {
       this.userNat.splice(this.userNat.indexOf(item), 1);
       this.userNat = [...this.userNat];
     }
-  },
-
-  computed: {
-    /**
-     * Gets nationality ID's from nationality objects
-     */
-    getNationalityIds() {
-      return this.userNat.map(nationality => nationality.nationalityId);
-    }
-  },
-  props: ["userNationalities", "userId"]
+  }
 };
 </script>
 
@@ -150,19 +154,12 @@ export default {
   margin-top: 20px;
   display: flex;
   flex-flow: row nowrap;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  > * {
-    flex-grow: 1;
-  }
 
   h3 {
     text-align: left;
   }
-}
-
-#edit-btn {
-  float: right;
 }
 </style>
 

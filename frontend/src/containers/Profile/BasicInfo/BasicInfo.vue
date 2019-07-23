@@ -3,11 +3,15 @@
     <div id="header">
       <h3>Basic Info</h3>
       <!--Only show edit/save btn if user is logged in-->
-      <div v-if="userStore.userId === userProfile.userId">
+
+      <div id="undo-redo-buttons">
+        <UndoRedo ref="undoRedo" />
+      </div>
+
+      <div v-if="userStore.userId === userProfile.userId" id="edit-btn">
         <v-btn
           small
           flat
-          id="edit-btn"
           color="secondary"
           @click="toggleEditSave"
         >
@@ -164,9 +168,14 @@
 import UserStore from "../../../stores/UserStore";
 import { rules, updateBasicInfo } from "./BasicInfoService.js";
 import moment from "moment";
+import UndoRedo from "../../../components/UndoRedo/UndoRedo";
+import Command from "../../../components/UndoRedo/Command";
 
 export default {
   props: ["userProfile", "userId"],
+  components: {
+    UndoRedo
+  },
   data() {
     return {
       userStore: UserStore.data,
@@ -196,42 +205,52 @@ export default {
      */
    toggleEditSave() {
       if (this.isEditing) {
+        // if user was editing and has now submitted their changes
         if (!this.$refs.form.validate()) {
-          return; 
+          return;
         }
 
-        this.sendUserDataToServer();
-        const userProfile = this.userProfile;
+        const userId = localStorage.getItem("userId");
+        const { userProfile } = this;
 
-        userProfile.firstName = this.firstName;
-        userProfile.middleName = this.middleName;
-        userProfile.lastName = this.lastName;
-        userProfile.dateOfBirth = this.dateOfBirth;
-        userProfile.gender = this.gender;
+        const oldBasicInfo = {
+          firstName: userProfile.firstName,
+          middleName: userProfile.middleName,
+          lastName: userProfile.lastName,
+          dateOfBirth: userProfile.dateOfBirth,
+          gender: userProfile.gender
+        };
 
-        UserStore.methods.setData(userProfile);
-        this.$emit("update:userProfile", userProfile);
+        const newBasicInfo = {
+          firstName: this.firstName,
+          middleName: this.middleName,
+          lastName: this.lastName,
+          dateOfBirth: this.dateOfBirth,
+          gender: this.gender
+        }
+
+        const undoCommand = async (basicInfo) => {
+          await updateBasicInfo(userId, basicInfo);
+          const oldUserProfile = {...userProfile, ...basicInfo};
+          UserStore.methods.setData(oldUserProfile);
+          this.$emit("update:userProfile", oldUserProfile);
+        };
+
+        const redoCommand = async (basicInfo) => {
+          await updateBasicInfo(userId, basicInfo);
+          const newUserProfile = {...userProfile, ...basicInfo};
+          UserStore.methods.setData(newUserProfile);
+          this.$emit("update:userProfile", newUserProfile);
+        };
+
+        redoCommand(newBasicInfo); // actually make the update
+
+        const updateBasicInfoCommand = new Command(undoCommand.bind(null, oldBasicInfo), redoCommand.bind(null, newBasicInfo));
+        this.$refs.undoRedo.addUndo(updateBasicInfoCommand);
+
         this.isEditing = false;
       } else {
         this.isEditing = true;
-      }
-    },
-
-    /**
-     * Update users info
-     */
-    async sendUserDataToServer() {
-      const userId = localStorage.getItem("userId");
-      try {
-        await updateBasicInfo(userId, {
-            firstName: this.firstName,
-            middleName: this.middleName,
-            lastName: this.lastName,
-            dateOfBirth: this.dateOfBirth,
-            gender: this.gender
-        });
-     } catch (err) {
-        // Add errors here later
       }
     },
     /**
@@ -288,32 +307,16 @@ b {
   width: 50%;
 }
 
-#basic-info-header {
-  width: 40%;
-  display: inline-block;
-
-  h3 {
-    margin-bottom: 0 !important;
-  }
-}
-
 #header {
   width: 100%;
   display: flex;
   flex-flow: row nowrap;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  > * {
-    flex-grow: 1;
-  }
 
   h3 {
     text-align: left;
   }
-}
-
-#edit-btn {
-  float: right;
 }
 </style>
 

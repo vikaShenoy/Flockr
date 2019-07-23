@@ -2,12 +2,16 @@
   <div>
     <div id="header">
       <h3>Passports</h3>
-      <div>
-      <v-btn v-if="userStore.userId === userId" small flat id="edit-btn" color="secondary" @click="toggleEditSave">
-        <v-icon v-if="!isEditing">edit</v-icon>
-        <span v-else>Save</span>
-      </v-btn>
 
+      <div id="undo-redo-buttons">
+        <UndoRedo ref="undoRedo" />
+      </div>
+
+      <div id="edit-btn">
+        <v-btn v-if="userStore.userId === userId" small flat color="secondary" @click="toggleEditSave">
+          <v-icon v-if="!isEditing">edit</v-icon>
+          <span v-else>Save</span>
+        </v-btn>
       </div>
     </div>
     
@@ -55,29 +59,29 @@
 </template>
 
 <script>
-
 import superagent from "superagent";
 import { endpoint } from "../../../utils/endpoint";
 import UserStore from "../../../stores/UserStore";
-
 import { getPassports, updatePassports } from "./PassportService.js";
+import UndoRedo from "../../../components/UndoRedo/UndoRedo";
+import Command from "../../../components/UndoRedo/Command";
 
 export default {
-  // otherNationalities specifies nationalities that a user doesn't have
+  props: ["userPassports", "userId"],
   mounted() {
     this.getPassports();
   },
-
+  components: {
+    UndoRedo
+  },
   data() {
     return {
       userStore: UserStore.data,
-      // These would be retreived from the request
-      allPassports: [],
+      allPassports: [], // retrieved from API
       isEditing: false,
       userPass: [...this.userPassports]
     };
   },
-
   methods: {
     /**
      * Gets all passports
@@ -95,16 +99,22 @@ export default {
      */
     async toggleEditSave() {
       if (this.isEditing) {
+        // user was editing and has now submitted their changes
         const userId = this.$route.params.id;
         const passportIds = this.getPassportIds;
-        try {
+
+        const command = async (passports) => {
+          const passportIds = passports.map(passport => passport.passportId);
           await updatePassports(userId, passportIds);
-        } catch (e) {
-          // Add error handling later
-        }
-        // Set nationalities state of UserStore
-        UserStore.data.passports = this.userPass;
-        this.$emit("update:userPassports", this.userPass);
+          UserStore.data.passports = passports;
+          this.$emit("update:userPassports", passports);
+        };
+
+        const undoCommand = command.bind(null, this.userPassports);
+        const redoCommand = command.bind(null, this.userPass);
+        const updatePassportsCommand = new Command(undoCommand, redoCommand);
+        this.$refs.undoRedo.addUndo(updatePassportsCommand);
+        redoCommand(); // perform update
       }
 
       this.isEditing = !this.isEditing;
@@ -118,17 +128,7 @@ export default {
       this.userPass = [...this.userPass];
     }
 
-  },
-  computed: {
-    /**
-     * Get passport ID's from passport objects
-     */
-    getPassportIds() {
-      return this.userPass.map(passport => passport.passportId);
-    }
-  },
-
-  props: ["userPassports", "userId"]
+  }
 }
 </script>
 
@@ -142,19 +142,12 @@ export default {
   width: 100%;
   display: flex;
   flex-flow: row nowrap;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  > * {
-    flex-grow: 1;
-  }
 
   h3 {
     text-align: left;
   }
-}
-
-#edit-btn {
-  float: right;
 }
 
 </style>

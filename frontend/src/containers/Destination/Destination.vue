@@ -170,7 +170,7 @@ export default {
       const destinationId = this.$route.params.destinationId;
       const destinationPromise = getDestination(destinationId);
       const destinationPhotosPromise = getDestinationPhotos(destinationId); 
-      const [destination, destinationPhotos] = await Promise.all([destinationPromise, destinationPhotosPromise]);; 
+      const [destination, destinationPhotos] = await Promise.all([destinationPromise, destinationPhotosPromise]);
       this.hasOwnerRights = destination.destinationOwner === Number(localStorage.getItem("userId"));
       this.destination = destination;
       this.destinationPhotos = destinationPhotos;
