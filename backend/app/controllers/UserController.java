@@ -5,6 +5,10 @@ import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.ForbiddenRequestException;
+import exceptions.NotFoundException;
+import exceptions.UnauthorizedException;
+import jdk.nashorn.internal.codegen.CompilationException;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +29,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
@@ -165,7 +170,6 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
-
     /**
      * A function that gets a list of all the passports and returns a 200 ok code to the HTTP client
      *
@@ -178,7 +182,6 @@ public class UserController extends Controller {
                     return ok(Json.toJson(passports));
                 }, httpExecutionContext.current());
     }
-
 
     /**
      * Gets a list of all the nationalities and returns it with a 200 ok code to the HTTP client
@@ -273,7 +276,6 @@ public class UserController extends Controller {
                 });
     }
 
-
     /**
      * A function that adds a passport to a user based on the given user ID
      *
@@ -309,6 +311,7 @@ public class UserController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteUser(int userId, Http.Request request) {
+        //TODO:: Issue #42 when deleting a user the profile photo file is never deleted.
         User userDoingDeletion = request.attrs().get(ActionState.USER);
         final ObjectNode message = Json.newObject();// used in the response
 
@@ -374,6 +377,55 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
+    /**
+     * Undoes a user deletion.
+     * Response codes used.
+     * - 200 - OK - Successful operation.
+     * - 401 - Unauthorised - User requesting is not authenticated.
+     * - 403 - Forbidden - User requesting does not have permission.
+     * - 404 - Not Found - Deleted user does not exist.
+     *
+     * @param userId the id of the deleted user to be undone.
+     * @param request the http request.
+     * @return the async method to make the changes.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> undoDeleteUser(int userId, Http.Request request) {
+        User userFromMiddleWare = request.attrs().get(ActionState.USER);
+        return userRepository.getUserByIdIncludingDeleted(userId)
+                .thenComposeAsync(optionalDeletedUser -> {
+                    if (!optionalDeletedUser.isPresent()) {
+                        throw new CompletionException(new NotFoundException("This user does not exist"));
+                    }
+                    User deletedUser = optionalDeletedUser.get();
+                    if (!userFromMiddleWare.isAdmin() && deletedUser.getUserId() != userFromMiddleWare.getUserId()) {
+                        throw new CompletionException(new ForbiddenRequestException(
+                                "You do not have permission to undo this user deletion"));
+                    }
+                    return userRepository.undoDeleteUser(deletedUser);
+                })
+                .thenApplyAsync(user -> ok(Json.toJson(user)))
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (UnauthorizedException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", e.getMessage());
+                        return unauthorized(message);
+                    } catch (ForbiddenRequestException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", e.getMessage());
+                        return forbidden(message);
+                    } catch (NotFoundException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", e.getMessage());
+                        return notFound(message);
+                    } catch (Throwable throwable) {
+                        log.error("Error while undoing user deletion", throwable);
+                        return internalServerError();
+                    }
+                });
+    }
 
     /**
      * A function that deletes a passport from a user based on the given user ID
@@ -400,7 +452,6 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
-
     /**
      * A function that adds a nationality to the user based on the user ID given
      *
@@ -425,7 +476,6 @@ public class UserController extends Controller {
                     return ok();
                 }, httpExecutionContext.current());
     }
-
 
     /**
      * Deletes a nationality for a logged in user given a nationality id in the request body
@@ -469,7 +519,6 @@ public class UserController extends Controller {
         return userRepository.getAllTravellerTypes()
                 .thenApplyAsync((types) -> ok(Json.toJson(types)), httpExecutionContext.current());
     }
-
 
     /**
      * Allows the front-end to search for a traveller.
@@ -528,5 +577,4 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
 
     }
-
 }

@@ -10,6 +10,9 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -187,16 +190,38 @@ public class UserRepository {
      */
     public CompletionStage<Void> deleteUserById(Integer userId) {
         return runAsync(() -> {
-            /* Cannot figure out correct annotations to delete profile photo so currently
-               setting profile photo to null first before deleting */
-
             User userToDelete = User.find.byId(userId);
-            userToDelete.setProfilePhoto(null);
-            userToDelete.update();
-            User.find.deleteById(userId);
+            userToDelete.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+            userToDelete.save();
+            userToDelete.delete();
         }, executionContext);
     }
 
+    /**
+     * Gets a user by the user id includes soft deleted users.
+     *
+     * @param userId the id of the user.
+     * @return the optional user in an async funvction.
+     */
+    public CompletionStage<Optional<User>> getUserByIdIncludingDeleted(int userId) {
+        return supplyAsync(() -> User.find.query().setIncludeSoftDeletes()
+                .where().eq("user_id", userId).findOneOrEmpty());
+    }
+
+    /**
+     * Undoes the deletion of a user.
+     *
+     * @param user the user to be undeleted.
+     * @return the user after undoing the deletion.
+     */
+    public CompletionStage<User> undoDeleteUser(User user) {
+        return supplyAsync(() -> {
+            user.setDeletedExpiry(null);
+            user.setDeleted(false);
+            user.save();
+            return user;
+        });
+    }
 
     /**
      * Function to search through the user database

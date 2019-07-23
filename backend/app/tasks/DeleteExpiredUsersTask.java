@@ -3,6 +3,7 @@ package tasks;
 import akka.actor.ActorSystem;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.PersonalPhoto;
+import models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -20,10 +21,9 @@ import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**
- * Task to delete all personal photos in the database that have been soft deleted if their
- * expiry has passed.
+ * Task to delete all users that are deleted and have expired.
  */
-public class DeleteExpiredPhotosTask {
+public class DeleteExpiredUsersTask {
 
     private final ActorSystem actorSystem;
     private final ExecutionContext executionContext;
@@ -31,7 +31,7 @@ public class DeleteExpiredPhotosTask {
     final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
-    public DeleteExpiredPhotosTask(ActorSystem actorSystem, ExecutionContext executionContext) {
+    public DeleteExpiredUsersTask(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
 
@@ -43,10 +43,10 @@ public class DeleteExpiredPhotosTask {
      *
      * @return the list of expired deleted photos.
      */
-    private CompletionStage<List<PersonalPhoto>> getDeletedPhotos() {
+    private CompletionStage<List<User>> getDeletedUsers() {
         return supplyAsync(() -> {
             Timestamp now = Timestamp.from(Instant.now());
-            return PersonalPhoto.find.query().setIncludeSoftDeletes()
+            return User.find.query().setIncludeSoftDeletes()
                     .where().eq("deleted", true).and()
                     .ge("deleted_expiry", now).findList(); //TODO:: not sure if this part is right???
         });
@@ -56,32 +56,19 @@ public class DeleteExpiredPhotosTask {
         this.actorSystem
                 .scheduler()
                 .schedule(
-                        Duration.create(1, TimeUnit.MINUTES), // initialDelay
+                        Duration.create(2, TimeUnit.MINUTES), // initialDelay
                         Duration.create(24, TimeUnit.HOURS), // interval
                         () -> {
                             log.info("-----------Cleaning up deleted photos-------------");
                             System.out.println("-----------Cleaning up deleted photos-------------");
-                            getDeletedPhotos()
-                                .thenApplyAsync(personalPhotos -> {
-                                    for (PersonalPhoto personalPhoto : personalPhotos) {
-                                        File photoToDelete = new File(
-                                                "./storage/photos/" + personalPhoto.getFilenameHash());
-                                        File thumbnailToDelete = new File(
-                                                "./storage/photos/" + personalPhoto.getThumbnailName());
-
-                                        if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
-                                            log.error("Could not delete photo or thumbnail for file " +
-                                                    personalPhoto.getFilenameHash());
-                                        } else {
-                                            log.info("Successfully deleted the photo " +
-                                                    personalPhoto.getFilenameHash());
+                            getDeletedUsers()
+                                    .thenApplyAsync(users -> {
+                                        for (User user : users) {
+                                            user.deletePermanent();
                                         }
-                                        personalPhoto.deletePermanent();
-                                    }
-                                    return personalPhotos;
-                            });
+                                        return users;
+                                    });
                         },
                         this.executionContext);
     }
 }
-

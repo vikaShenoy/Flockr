@@ -23,6 +23,7 @@ GET           /api/users/:userId                                        controll
 PATCH         /api/users/:userId                                        controllers.UserController.updateTraveller(userId: Int, request: Request)
 DELETE        /api/users/:userId                                        controllers.UserController.deleteUser(userId: Int, request: Request)
 PATCH         /api/users/:userId/roles                                  controllers.UserController.updateTravellerRole(userId: Int, request: Request)
+PUT           /api/users/:userId/undodelete                             controllers.UserController.undoDeleteUser(userId: Int, request: Request)
 
 # Traveller photos routes
 GET           /api/users/photos/:photoId                                controllers.PhotoController.getPhoto(photoId: Int, request: Request)

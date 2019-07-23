@@ -9,6 +9,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.*;
 import io.ebean.annotation.CreatedTimestamp;
+import io.ebean.annotation.SoftDelete;
 import play.data.validation.Constraints;
 /**
  * A traveller, who may wish to create trips, go to destinations, book hotels, book flights, etc
@@ -65,8 +66,14 @@ public class User extends Model {
     @Constraints.Required
     private String passwordHash;
 
-
     private String token;
+
+    @SoftDelete
+    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean deleted;
+
+    @JsonIgnore
+    private Timestamp deletedExpiry;
 
     @Override
     public String toString() {
@@ -172,6 +179,22 @@ public class User extends Model {
             }
         }
         return false;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public Timestamp getDeletedExpiry() {
+        return deletedExpiry;
+    }
+
+    public void setDeletedExpiry(Timestamp deletedExpiry) {
+        this.deletedExpiry = deletedExpiry;
     }
 
     public int getUserId() {
