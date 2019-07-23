@@ -19,7 +19,9 @@ public class Nationality extends Model {
 
     @ManyToMany
     private List<User> users;
+    private Country country;
     private String nationalityName;
+
 
     /**
      * Constructor.
@@ -35,6 +37,14 @@ public class Nationality extends Model {
                 "nationalityId=" + nationalityId +
                 ", nationalityName='" + nationalityName + '\'' +
                 '}';
+    }
+
+    public void setCountry(Country country) {
+        this.country = country;
+    }
+
+    public Country getCountry() {
+        return country;
     }
 
     public int getNationalityId() {

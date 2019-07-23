@@ -20,6 +20,8 @@ public class Passport extends Model {
 
     private String passportCountry;
 
+    private Country country;
+
     /**
      * Constructor.
      * @param passportCountry country the passport is for.
@@ -38,6 +40,14 @@ public class Passport extends Model {
 
     public String getPassportCountry() {
         return passportCountry;
+    }
+
+    public void setCountry(Country country) {
+        this.country = country;
+    }
+
+    public Country getCountry() {
+        return country;
     }
 
     /**
