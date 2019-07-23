@@ -50,7 +50,6 @@ export default {
         await command.execute();
         this.addUndo(command);
         this.showSuccessSnackbar("Successfully Re-did action");
-        console.log('I am showing success');
       } catch (e) {
         this.showErrorSnackbar("Could not undo action");
       }
