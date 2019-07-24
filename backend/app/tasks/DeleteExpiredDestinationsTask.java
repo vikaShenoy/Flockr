@@ -58,8 +58,8 @@ public class DeleteExpiredDestinationsTask {
                         Duration.create(24, TimeUnit.HOURS), // interval
                         () -> getDeletedDestinations()
                                 .thenApplyAsync(destinations -> {
-                                    log.info("-----------Cleaning up deleted photos-------------");
-                                    System.out.println("-----------Cleaning up deleted photos-------------");
+                                    log.info("-----------Cleaning up deleted destinations-------------");
+                                    System.out.println("-----------Cleaning up deleted destinations-------------");
                                     for (Destination destination : destinations) {
                                         destination.deletePermanent();
                                     }
