@@ -6,6 +6,7 @@ import io.ebean.Model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import java.util.List;
 
 /**
@@ -19,6 +20,7 @@ public class Nationality extends Model {
 
     @ManyToMany
     private List<User> users;
+    @OneToMany
     private Country country;
     private String nationalityName;
 
