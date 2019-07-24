@@ -39,7 +39,7 @@ public class DeleteExpiredUsersTask {
     }
 
     /**
-     * Async function to get a list of all expired & deleted photos in the database.
+     * Async function to get a list of all expired & deleted users in the database.
      *
      * @return the list of expired deleted photos.
      */

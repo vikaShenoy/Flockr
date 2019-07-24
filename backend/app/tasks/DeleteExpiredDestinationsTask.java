@@ -37,7 +37,7 @@ public class DeleteExpiredDestinationsTask {
     }
 
     /**
-     * Async function to get a list of all expired & deleted photos in the database.
+     * Async function to get a list of all expired & deleted destinations in the database.
      *
      * @return the list of expired deleted photos.
      */
