@@ -78,6 +78,8 @@ public class DeleteExpiredPhotosTask {
                                         }
                                         personalPhoto.deletePermanent();
                                     }
+                                    log.info(String.format("%d Photos deleted successfully", personalPhotos.size()));
+                                    System.out.printf("%d Photos deleted successfully%n", personalPhotos.size());
                                     return personalPhotos;
                             });
                         },

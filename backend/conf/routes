@@ -32,7 +32,7 @@ GET           /api/users/:userId/photos                                 controll
 POST          /api/users/:userId/photos                                 controllers.PhotoController.uploadPhotoForUser(userId: Int, request: Request)
 PATCH         /api/users/photos/:photoId                                controllers.PhotoController.updatePermission(photoId: Int, request: Request)
 GET           /api/users/photos/:photoId/thumbnail                      controllers.PhotoController.getThumbnail(photoId: Int, request: Request)
-PUT           /users/photos/:photoId/undodelete                         controllers.PhotoController.undoDelete(photoId: Int, request: Request)
+PUT           /api/users/photos/:photoId/undodelete                     controllers.PhotoController.undoDelete(photoId: Int, request: Request)
 
 # Destination Proposal endpoints
 GET           /api/destinations/proposals                               controllers.DestinationController.getProposals
