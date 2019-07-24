@@ -50,6 +50,7 @@ GET           /api/destinations/:destinationId                          controll
 DELETE        /api/destinations/:destinationId                          controllers.DestinationController.deleteDestination(destinationId: Int, request: Request)
 POST          /api/users/:userId/destinations                           controllers.DestinationController.addDestination(userId: Int, request: Request)
 PUT           /api/destinations/:destinationId                          controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
+PUT           /api/destinations/:destinationId/undodelete               controllers.DestinationController.undoDeleteDestination(destinationId: Int, request: Request)
 
 
 
