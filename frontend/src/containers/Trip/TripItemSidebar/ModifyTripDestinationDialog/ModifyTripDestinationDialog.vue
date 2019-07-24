@@ -276,7 +276,6 @@ export default {
       } else {
           newTripDestinations = [...this.trip.tripDestinations, this.tripDestination];
       }
-
         const unformattedTrip = transformFormattedTrip({...this.trip, tripDestinations: newTripDestinations});
         const tripId = this.$route.params.tripId;
         this.isLoading = true;

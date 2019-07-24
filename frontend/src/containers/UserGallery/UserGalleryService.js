@@ -36,7 +36,18 @@ export async function deleteUserPhoto(photo) {
   const response = await superAgent.delete(endpoint(`/users/photos/${photo.photoId}`))
       .set("authorization", localStorage.getItem("authToken"));
   return response.body;
-}
+};
+
+/**
+ * Undo delete function for a photo.
+ * Send a request to the server to undo the soft delete for a user photo.
+ * @param {*} photo photo to be un-soft deleted. 
+ */
+export async function undoDeleteUserPhoto(photo) {
+  const response = await superAgent.put(endpoint(`/users/photos/${photo.photoId}/undodelete`))
+      .set("authorization", localStorage.getItem("authToken"));
+  return response.body;
+};
 
 /**
  * Sends a request to the server to update the permission of the photo

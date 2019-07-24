@@ -138,6 +138,7 @@ public class PhotoController extends Controller {
         return photoRepository.getPhotoByIdWithSoftDelete(photoId)
                 .thenComposeAsync(optionalPhoto -> {
                     if (!optionalPhoto.isPresent()) {
+                        System.out.println(1);
                         throw new CompletionException(new NotFoundException("Photo not found"));
                     }
                     PersonalPhoto photo = optionalPhoto.get();
@@ -159,6 +160,7 @@ public class PhotoController extends Controller {
                         message.put("message", error.getMessage());
                         return badRequest(message);
                     } catch (NotFoundException error) {
+                        System.out.println(2);
                         ObjectNode message = Json.newObject();
                         message.put("message", error.getMessage());
                         return notFound(message);
@@ -603,4 +605,6 @@ public class PhotoController extends Controller {
         ImageIO.write(image, photoContentType, thumbFileDestination);
 
     }
+
+
 }

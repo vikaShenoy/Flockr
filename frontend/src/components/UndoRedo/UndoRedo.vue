@@ -91,6 +91,7 @@ export default {
 .action {
   cursor: pointer;
   font-size: 2rem;
+  z-index: 5;
 }
 
 
