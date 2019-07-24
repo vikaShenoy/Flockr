@@ -20,8 +20,8 @@
             </template>
             <v-card class="card">
                 <v-card-text>Riddle: {{item.riddle}}</v-card-text>
-                <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}<br>Time Zone: {{getTimeZone(item.treasureHuntDestinationId)}}</v-card-text>
-                <v-card-text v-if="isOwner(item.ownerId) || isAdmin()">{{getDestination(item.treasureHuntDestinationId)}}</v-card-text>
+                <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}<br>Time Zone: {{getTimeZoneYa(item.treasureHuntDestinationId)}}</v-card-text>
+                <v-card-text v-if="isOwner(item.ownerId) || isAdmin()">{{getDestinationName(item.treasureHuntDestinationId)}}</v-card-text>
             </v-card>
             </v-expansion-panel-content>
         </v-expansion-panel>
@@ -53,7 +53,7 @@
 <script>
 import AddTreasureHunt from "./AddTreasureHunt";
 import EditTreasureHunt from "./EditTreasureHunt"
-import {getAllTreasureHunts} from "./TreasureHuntsService";
+import {getAllTreasureHunts, getDestination, getTimeZone} from "./TreasureHuntsService";
 import moment from "moment";
 import UserStore from "../../stores/UserStore";
 
@@ -122,8 +122,9 @@ export default {
          * Function that takes a destinationId and returns the local timezone of that destination
          * @param destinationId - Id of a destination present in the Travel EA database
          */
-        getTimeZone(destinationId) {
-            console.log("getting time zone");
+        async getTimeZoneYa(destinationId) {
+            let timezone = await getTimeZone(destinationId);
+            return timezone;
         },
 
         /**
@@ -131,8 +132,10 @@ export default {
          * Function that takes a destination id and returns the name of that destination to be displayed to
          * the owner of the treasure hunt and any admin users
          */
-        getDestination(destinationId) {
-            console.log("getting destination name");
+        async getDestinationName(destinationId) {
+            let destination = await getDestination(destinationId);
+            console.log(destination);
+            return destination.destinationName;
         },
 
         /**

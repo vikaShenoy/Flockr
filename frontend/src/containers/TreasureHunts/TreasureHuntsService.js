@@ -58,3 +58,26 @@ export async function editTreasureHunt(treasureHunt) {
 
     return res.body;
 }
+
+/**
+ * Calls the backend api to retrieve the destination object and return the json body
+ * @param destinationId of the destination to be retrieved
+ * @returns {Promise<*>} the destination given by the destination id
+ */
+export async function getDestination(destinationId) {
+    let token = localStorage.getItem("authToken");
+
+    const res = await superagent.get(endpoint(`/destinations/${destinationId}`)).set("Authorization", token);
+
+    return res.body;
+}
+
+export async function getTimeZone(destinationId) {
+    let token = localStorage.getItem("authToken");
+    const res = await superagent.get(endpoint(`/destinations/${destinationId}`)).set("Authorization", token);
+    let lat = res.body.destinationLat;
+    let long = res.body.destinationLon;
+    const google = await superagent.get(`http://api.timezonedb.com/v2.1/get-time-zone?key=1SNL8B7MWI5C&lat=${lat}&lng=${long}&by=position&format=json`);
+    return google.body.abbreviation;
+
+}
