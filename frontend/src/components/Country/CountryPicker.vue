@@ -1,31 +1,31 @@
 <template>
-    <v-select :items='countries' :item-text='name' :v-model='selectedValue'></v-select>
+    <v-select :items="countries" item-text="countryName" item-value="countryId" v-model="selectedValue" label="Country"></v-select>
 </template>
 
 <script>
 import { getCountries } from './CountryService';
 export default {
+    props: {
+      country: {
+        type: Number
+      }
+    },
     data() {
         return {
             countries: null,
-            selectedValue: null
+            selectedValue: this.country
         }
     },
     methods: {
-        async setCountries() {
-            try {
-                const countries = await getCountries();
-                this.countries = countries;
-            } catch (e) {
-                // add handling later
-            }
-        },
-        async emitChange() {
-            this.$emit('change', this.selectedValue);
-        }
     },
-    mounted() {
-        await setCountries();
+    async mounted() {
+      const countryPromise = getCountries();
+      this.countries = await Promise.resolve(countryPromise);
+    },
+    watch: {
+      selectedValue: function (newValue) {
+        this.$emit('change', newValue)
+      }
     }
 }
 </script>

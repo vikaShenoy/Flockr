@@ -1,8 +1,11 @@
 <template>
-    <span>{{ this.country }}</span>
+    <span v-if="isValid"> {{ this.country }}</span>
+    <span class="invalid" v-else>Formerly {{ this.country }}</span>
 </template>
 
 <script>
+import {getCountries} from "./CountryService";
+
 export default {
     props: {
         country: {
@@ -11,32 +14,32 @@ export default {
     },
     data() {
         return {
-            countries: null
+            countries: null,
+            isValid: false
         }
     },
     methods: {
-        async setCountries() {
-            try {
-                const countries = await getCountries();
-                this.countries = countries;
-            } catch (e) {
-                // add handling later
-            }
-        }
+      countryIsValid() {
+        const foundCountry = this.countries.find((c) => {
+          return c.countryName === this.country
+        });
+        this.isValid = foundCountry.isValid;
+      }
     },
     computed: {
-        countryName() {
-            return this.countries.find((c) => {
-                return c.alpha2Code === this.country
-            })
-        }
     },
-    mounted() {
-        await setCountries();
+    async mounted() {
+        const countryPromise = getCountries();
+        this.countries = await Promise.resolve(countryPromise);
+        this.countryIsValid();
     }
 }
 </script>
 
-<style>
-
+<style scoped>
+    .invalid {
+        color: red;
+        font-weight: bold;
+        font-style: italic;
+    }
 </style>
