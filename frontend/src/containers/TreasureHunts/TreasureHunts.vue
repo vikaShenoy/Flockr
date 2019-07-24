@@ -69,7 +69,7 @@ export default {
             treasureHunts: [],
             treasureHunt: {},
             refreshEditForm: 0,
-            refreshList: 0
+            refreshList: 1337
         }
     },
     methods: {
@@ -129,7 +129,7 @@ export default {
          * @returns {boolean} true if the owner of the treasureHunt is the logged in user
          */
         isOwner(ownerId) {
-            return localStorage.getItem("userId") == ownerId
+            return localStorage.getItem("userId") == ownerId;
         },
 
         /**

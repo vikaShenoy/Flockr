@@ -154,7 +154,7 @@
              * @returns {boolean}
              */
             validTreasureHunt() {
-                return ! ( this.editTreasureHuntName.length > 0 && this.editTreasureHuntDestination != null && this.editTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
+                return ! ( (this.editTreasureHuntName != null && this.editTreasureHuntName.length > 0) && this.editTreasureHuntDestination != null && (this.editTreasureHuntRiddle != null && this.editTreasureHuntRiddle.length > 0) && this.startDate != null && this.endDate != null)
             }
         },
         watch: {
