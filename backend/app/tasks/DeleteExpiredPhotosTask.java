@@ -56,7 +56,7 @@ public class DeleteExpiredPhotosTask {
         this.actorSystem
                 .scheduler()
                 .schedule(
-                        Duration.create(2, TimeUnit.SECONDS), // initialDelay
+                        Duration.create(5, TimeUnit.SECONDS), // initialDelay
                         Duration.create(24, TimeUnit.HOURS), // interval
                         () -> {
                             getDeletedPhotos()

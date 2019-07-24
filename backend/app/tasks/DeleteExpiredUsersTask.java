@@ -56,7 +56,7 @@ public class DeleteExpiredUsersTask {
         this.actorSystem
                 .scheduler()
                 .schedule(
-                        Duration.create(4, TimeUnit.SECONDS), // initialDelay
+                        Duration.create( 5, TimeUnit.SECONDS), // initialDelay
                         Duration.create(24, TimeUnit.HOURS), // interval
                         () -> {
                             getDeletedUsers()
