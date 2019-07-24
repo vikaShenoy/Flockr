@@ -3,12 +3,16 @@
 
     <div class="header">
       <h3>Traveller Types</h3>
-      <div>
+
+      <div id="undo-redo-buttons">
+        <UndoRedo ref="undoRedo" />
+      </div>
+
+      <div id="edit-btn">
         <v-btn
 					v-if="userStore.userId === userId"
           small
           flat
-          id="edit-btn"
           color="secondary"
           @click="toggleEditSave"
         >
@@ -64,6 +68,8 @@
 <script>
 import UserStore from "../../../stores/UserStore";
 import { getAllTravellerTypes, updateTravellerTypes } from "./TravellerTypesService";
+import UndoRedo from "../../../components/UndoRedo/UndoRedo";
+import Command from "../../../components/UndoRedo/Command";
 
 export default {
 	props: {
@@ -75,7 +81,10 @@ export default {
 			type: Number,
 			required: true
 		}
-	},
+  },
+  components: {
+    UndoRedo
+  },
 	data() {
 		return {
 			userStore: UserStore.data,
@@ -105,26 +114,27 @@ export default {
 		 */
 		async toggleEditSave() {
 			if (this.isEditing) {
+        // user was editing and has now submitted their changes
 				if (this.editingTravellerTypes.length === 0) {
 					this.travellerTypeErrors = ["Please select a traveller type"];
 					return;
 				} 
 
 				this.travellerTypeErrors = [];
+        const userId = this.$route.params.id;
 
-				const travellerTypeIds = this.editingTravellerTypes.map(t => t.travellerTypeId);
-
-				try {
-					const userId = this.$route.params.id;
-					await updateTravellerTypes(userId, travellerTypeIds);
-				} catch (e) {
-					// Add error handling later
-				}
-
-				// Set traveller types in global user state
-				UserStore.data.travellerTypes = this.editingTravellerTypes;
-				this.$emit("update:userTravellerTypes", this.editingTravellerTypes);
-
+        const command = async (travellerTypes) => {
+          const travellerTypeIds = travellerTypes.map(t => t.travellerTypeId);
+          await updateTravellerTypes(userId, travellerTypeIds);
+          UserStore.data.travellerTypes = travellerTypes;
+				  this.$emit("update:userTravellerTypes", travellerTypes);
+        };
+        
+        const undoCommand = command.bind(null, this.userTravellerTypes);
+        const redoCommand = command.bind(null, this.editingTravellerTypes);
+        const updateTravellerTypesCommand = new Command(undoCommand, redoCommand);
+        this.$refs.undoRedo.addUndo(updateTravellerTypesCommand);
+        redoCommand(); // perform update
 			}
 			this.isEditing = !this.isEditing;
 		},
@@ -148,12 +158,8 @@ export default {
   width: 100%;
   display: flex;
   flex-flow: row nowrap;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-
-  > * {
-    flex-grow: 1;
-  }
 
   h3 {
     text-align: left;
@@ -162,10 +168,6 @@ export default {
 
 .traveller-types-card {
   padding: 10px;
-}
-
-#edit-btn {
-  float: right;
 }
 </style>
 
