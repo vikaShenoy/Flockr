@@ -60,18 +60,23 @@ export async function editTreasureHunt(treasureHunt) {
 }
 
 /**
- * Calls the backend api to retrieve the destination object and return the json body
+ * Calls the backend api to retrieve the destination name and return it
  * @param destinationId of the destination to be retrieved
- * @returns {Promise<*>} the destination given by the destination id
+ * @returns {Promise<*>} the destination name given by the destination id
  */
 export async function getDestination(destinationId) {
     let token = localStorage.getItem("authToken");
 
     const res = await superagent.get(endpoint(`/destinations/${destinationId}`)).set("Authorization", token);
 
-    return res.body;
+    return res.body.destinationName;
 }
 
+/**
+ * Calls an API, Google Maps in future, to get the timezone of a given destination
+ * @param destinationId of the destination to get the timezone for
+ * @returns {Promise<*>} the abbreviation of the timezone
+ */
 export async function getTimeZone(destinationId) {
     let token = localStorage.getItem("authToken");
     const res = await superagent.get(endpoint(`/destinations/${destinationId}`)).set("Authorization", token);

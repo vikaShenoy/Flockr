@@ -1,7 +1,7 @@
 <template>
 
     <v-flex>
-          <v-expansion-panel class="panel">
+          <v-expansion-panel class="panel" :key="refreshList">
             <v-expansion-panel-content
             v-for="(item, i) in treasureHunts"
             :key="i"
@@ -20,8 +20,8 @@
             </template>
             <v-card class="card">
                 <v-card-text>Riddle: {{item.riddle}}</v-card-text>
-                <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}<br>Time Zone: {{getTimeZoneYa(item.treasureHuntDestinationId)}}</v-card-text>
-                <v-card-text v-if="isOwner(item.ownerId) || isAdmin()">{{getDestinationName(item.treasureHuntDestinationId)}}</v-card-text>
+                <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}<br>Time Zone: {{item.timezone}}</v-card-text>
+                <v-card-text v-if="isOwner(item.ownerId) || isAdmin()">Destination: {{item.destinationName}}</v-card-text>
             </v-card>
             </v-expansion-panel-content>
         </v-expansion-panel>
@@ -68,7 +68,8 @@ export default {
             showEditForm: false,
             treasureHunts: [],
             treasureHunt: {},
-            refreshEditForm: 0
+            refreshEditForm: 0,
+            refreshList: 0
         }
     },
     methods: {
@@ -92,6 +93,11 @@ export default {
          */
         async getTreasureHunts() {
             this.treasureHunts = await getAllTreasureHunts();
+            for (let i = 0; i < this.treasureHunts.length; i++) {
+                this.treasureHunts[i].timezone = await getTimeZone(this.treasureHunts[i].treasureHuntDestinationId);
+                this.treasureHunts[i].destinationName = await getDestination(this.treasureHunts[i].treasureHuntDestinationId);
+            }
+            this.refreshList += 1
         },
 
         /**
@@ -115,27 +121,6 @@ export default {
             let d = moment.duration(ms);
             //let s = ms.format("hh:mm:ss");
             return d.years() + " years, " + d.months() + " months, " + d.days() + " days, " + d.hours() + " hours"
-        },
-
-        /**
-         * UNDER CONSTRUCTION
-         * Function that takes a destinationId and returns the local timezone of that destination
-         * @param destinationId - Id of a destination present in the Travel EA database
-         */
-        async getTimeZoneYa(destinationId) {
-            let timezone = await getTimeZone(destinationId);
-            return timezone;
-        },
-
-        /**
-         * UNDER CONSTRUCTION
-         * Function that takes a destination id and returns the name of that destination to be displayed to
-         * the owner of the treasure hunt and any admin users
-         */
-        async getDestinationName(destinationId) {
-            let destination = await getDestination(destinationId);
-            console.log(destination);
-            return destination.destinationName;
         },
 
         /**
