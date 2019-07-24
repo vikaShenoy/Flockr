@@ -31,6 +31,7 @@ function formatTime(time) {
  */ 
 export function transformTripResponse(trip) {
   return {
+    tripId: trip.tripId,
     tripName: trip.tripName,
     tripDestinations: trip.tripDestinations.map(tripDestination => {
       return {

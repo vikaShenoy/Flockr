@@ -109,7 +109,7 @@ public class PhotoRepository {
      */
     public CompletionStage<Integer> deletePhoto(PersonalPhoto photo) {
         return supplyAsync(() -> {
-            photo.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(24))));
+            photo.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
             photo.save();
             photo.delete(); //Soft delete
             return photo.getPhotoId();

@@ -5,6 +5,7 @@ import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import exceptions.UnauthorizedException;
@@ -381,6 +382,7 @@ public class UserController extends Controller {
      * Undoes a user deletion.
      * Response codes used.
      * - 200 - OK - Successful operation.
+     * - 400 - Bad Request - When the user to undo has not been deleted.
      * - 401 - Unauthorised - User requesting is not authenticated.
      * - 403 - Forbidden - User requesting does not have permission.
      * - 404 - Not Found - Deleted user does not exist.
@@ -395,12 +397,15 @@ public class UserController extends Controller {
         return userRepository.getUserByIdIncludingDeleted(userId)
                 .thenComposeAsync(optionalDeletedUser -> {
                     if (!optionalDeletedUser.isPresent()) {
-                        throw new CompletionException(new NotFoundException("This user does not exist"));
+                        throw new CompletionException(new NotFoundException("This user does not exist."));
                     }
                     User deletedUser = optionalDeletedUser.get();
                     if (!userFromMiddleWare.isAdmin() && deletedUser.getUserId() != userFromMiddleWare.getUserId()) {
                         throw new CompletionException(new ForbiddenRequestException(
-                                "You do not have permission to undo this user deletion"));
+                                "You do not have permission to undo this user deletion."));
+                    }
+                    if (!deletedUser.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This user has not been deleted."));
                     }
                     return userRepository.undoDeleteUser(deletedUser);
                 })
@@ -408,10 +413,10 @@ public class UserController extends Controller {
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
-                    } catch (UnauthorizedException error) {
+                    } catch (BadRequestException error) {
                         ObjectNode message = Json.newObject();
                         message.put("message", e.getMessage());
-                        return unauthorized(message);
+                        return badRequest(message);
                     } catch (ForbiddenRequestException error) {
                         ObjectNode message = Json.newObject();
                         message.put("message", e.getMessage());

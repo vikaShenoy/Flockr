@@ -19,8 +19,8 @@ export default {
       undoStack: [],
       redoStack: [],
       snackbarModel: {
-        text: "Hello world",
-        color: "success",
+        text: "",
+        color: "",
         show: false,
         timeout: 2000
       }
@@ -91,6 +91,7 @@ export default {
 .action {
   cursor: pointer;
   font-size: 2rem;
+  z-index: 5;
 }
 
 

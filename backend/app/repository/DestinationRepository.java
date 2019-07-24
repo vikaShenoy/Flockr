@@ -8,9 +8,10 @@ import play.db.ebean.EbeanConfig;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
-import javax.annotation.processing.Completion;
 import javax.inject.Inject;
-import java.sql.SQLOutput;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -45,7 +46,6 @@ public class DestinationRepository {
         }, executionContext);
     }
 
-
     /**
      * Gets a destination by it's ID
      *
@@ -61,6 +61,35 @@ public class DestinationRepository {
     }
 
     /**
+     * Gets a destination by it's ID including soft deleted destinations.
+     *
+     * @param destinationId The ID of the destination to get
+     * @return the destination object
+     */
+    public CompletionStage<Optional<Destination>> getDestinationByIdIncludingSoftDelete(int destinationId) {
+        return supplyAsync(() -> {
+            Optional<Destination> destination = Destination.find.query().setIncludeSoftDeletes()
+                    .where().eq("destination_id", destinationId).findOneOrEmpty();
+            return destination;
+        }, executionContext);
+    }
+
+    /**
+     * Undoes a destination deletion.
+     *
+     * @param destination the destination to be undeleted.
+     * @return the destination after being restored.
+     */
+    public CompletionStage<Destination> undoDeletion(Destination destination) {
+        return supplyAsync(() -> {
+            destination.setDeleted(false);
+            destination.setDeletedExpiry(null);
+            destination.save();
+            return destination;
+        });
+    }
+
+    /**
      * Gets a list of all destinations that a user has created
      * @return List of destinations
      */
@@ -70,7 +99,6 @@ public class DestinationRepository {
             return destinations;
         }, executionContext);
     }
-
 
     /**
      * Get a destination photo associated with a destination given both ids
@@ -161,7 +189,12 @@ public class DestinationRepository {
      */
     public CompletionStage<Integer> deleteDestination(int destinationId) {
         return supplyAsync(() -> {
-            Destination.find.deleteById(destinationId);
+            Destination destination = Destination.find.byId(destinationId);
+            // Set the expiry time for an hour from now.
+            destination.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+            destination.save();
+
+            destination.delete(); //Soft delete.
             return destinationId;
         }, executionContext);
     }

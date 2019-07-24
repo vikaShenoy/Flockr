@@ -198,7 +198,7 @@ export default {
 
         map.fitBounds(bounds);
         const zoomLevel = map.getZoom();
-        map.setZoom(zoomLevel > 6 ? 6 : zoom);
+        map.setZoom(zoomLevel > 6 ? 6 : zoomLevel);
       });
     }
   }
