@@ -479,20 +479,11 @@ export default {
       this.$refs.form.validate();
       if (this.isValidForm) {
         this.formIsLoading = true;
-        const destinationInfo = {
-          destinationName: this.destination.destinationName,
-          destinationTypeId: this.destination.destinationType.destinationTypeId,
-          districtId: this.destination.destinationDistrict.districtId,
-          latitude: this.destination.destinationLat,
-          longitude: this.destination.destinationLon,
-          countryId: this.destination.destinationCountry.countryId,
-          travellerTypeIds: this.destination.travellerTypes.map(travellerType => travellerType.travellerTypeId) 
-        }
-
         if (!this.editMode) {
           try {
-            await sendAddDestination(destinationInfo);
-            this.$emit("addNewDestination", this.destination);
+            const insertedDestination = await sendAddDestination(this.destination);
+            this.$emit("addNewDestination", insertedDestination);
+
             this.closeDialog();
             this.formIsLoading = false;
           } catch (error) {
@@ -506,7 +497,7 @@ export default {
         } else {
           try {
             await sendUpdateDestination(
-              destinationInfo,
+              this.destination,
               this.destination.destinationId
             );
             const updatedDestination = await requestDestination(

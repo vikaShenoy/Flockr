@@ -48,10 +48,11 @@ export default {
     getDestinationPhoto: async function(destinationId) {
       const res = await superagent.get(endpoint(`/destinations/${destinationId}/photos`))
         .set("Authorization", localStorage.getItem("authToken"));
-      console.log(res.body)
-      let photoId = res.body[0].personalPhoto.photoId;
-      this.imageSrc = endpoint(`/users/photos/${photoId}`) + '?Authorization=' + localStorage.getItem("authToken");
-    }
+        if (res.body.length) {
+          const photoId = res.body[0].personalPhoto.photoId;
+          this.imageSrc = endpoint(`/users/photos/${photoId}`) + '?Authorization=' + localStorage.getItem("authToken");
+        }
+     }
   }
 };
 </script>
@@ -64,6 +65,7 @@ export default {
   width: 160px;
   display: inline-block;
   margin-top: 5px;
+  margin-left: 5px;
 }
 
 .destination-summary {

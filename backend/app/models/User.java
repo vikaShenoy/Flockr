@@ -68,6 +68,7 @@ public class User extends Model {
 
     private String token;
 
+    @JsonIgnore
     @SoftDelete
     @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean deleted;

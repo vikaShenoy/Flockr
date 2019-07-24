@@ -25,7 +25,13 @@
     <v-container grid-list-lg style="padding-top: 0px"> 
     <v-layout row wrap>
       <v-flex xs12 style="padding-bottom: 0px">
+
         <div style="float: right">
+
+        <div id="undo-redo-btns">
+          <UndoRedo ref="undoRedo" />
+        </div>
+
         <v-btn
           color="secondary" 
           depressed          
@@ -34,6 +40,8 @@
         >
          Request Traveller Types 
         </v-btn>
+
+
  
 
         <v-btn
@@ -69,9 +77,6 @@
         /> 
       </v-flex>
 
-      <div id="undo-redo-btns">
-        <UndoRedo ref="undoRedo" />
-      </div>
 
       <v-flex xs12 sm6 lg8 xl8 style="padding-bottom: 0px">
         <DestinationDetails
@@ -165,7 +170,7 @@ export default {
       const destinationId = this.$route.params.destinationId;
       const destinationPromise = getDestination(destinationId);
       const destinationPhotosPromise = getDestinationPhotos(destinationId); 
-      const [destination, destinationPhotos] = await Promise.all([destinationPromise, destinationPhotosPromise]);; 
+      const [destination, destinationPhotos] = await Promise.all([destinationPromise, destinationPhotosPromise]);
       this.hasOwnerRights = destination.destinationOwner === Number(localStorage.getItem("userId"));
       this.destination = destination;
       this.destinationPhotos = destinationPhotos;
@@ -272,7 +277,6 @@ export default {
     },
 
     permissionUpdated(newValue, index) {
-      
       this.destinationPhotos[index].personalPhoto.isPublic = newValue;
       if (newValue) {
         this.displayMessage("This photo is now public", "green");
@@ -307,9 +311,8 @@ export default {
   }
 
   #undo-redo-btns {
-    right: 260px;
-    position: absolute;
-    margin-top: 18px;
+    float: left;
+    margin-top: 10px;
   }
 </style>
 

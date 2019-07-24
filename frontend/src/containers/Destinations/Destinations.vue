@@ -94,6 +94,8 @@ export default {
     },
     addNewDestination(destination) {
       this.yourDestinations.push(destination); 
+      this.showCreateDestDialog = false;
+      
     },
     addDestDialogChanged(dialogValue) {
       this.showCreateDestDialog = dialogValue; 

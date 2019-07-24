@@ -8,7 +8,6 @@
 </template>
 
 <script>
-import UndoRedoStack from "./UndoRedoStack";
 import Snackbar from "../Snackbars/Snackbar";
 
 export default {
@@ -20,8 +19,8 @@ export default {
       undoStack: [],
       redoStack: [],
       snackbarModel: {
-        text: "Hello world",
-        color: "success",
+        text: "",
+        color: "",
         show: false,
         timeout: 2000
       }
@@ -51,7 +50,6 @@ export default {
         await command.execute();
         this.addUndo(command);
         this.showSuccessSnackbar("Successfully Re-did action");
-        console.log('I am showing success');
       } catch (e) {
         this.showErrorSnackbar("Could not undo action");
       }

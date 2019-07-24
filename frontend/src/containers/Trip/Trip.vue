@@ -7,6 +7,10 @@
       />
     </div>
 
+    <div id="undo-redo-btns">
+      <UndoRedo ref="undoRedo" color="white" />
+    </div>
+
     <TripItemSidebar 
       :trip="trip"      
       v-on:destinationOrderChanged="destinationOrderChanged"
@@ -27,13 +31,16 @@ import DestinationMap from "../../components/DestinationMap/DestinationMap";
 import { getYourDestinations, getPublicDestinations } from "../Destinations/DestinationsService";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import { getTrip, transformTripResponse, contiguousDestinations, editTrip, contiguousReorderedDestinations } from "./TripService";
+import UndoRedo from "../../components/UndoRedo/UndoRedo";
+import Command from "../../components/UndoRedo/Command"
 
 
 export default {
   components: {
     TripItemSidebar,
     DestinationMap,
-    Snackbar
+    Snackbar,
+    UndoRedo
   },
   data() {
     return {
@@ -90,7 +97,6 @@ export default {
 
         if (contiguousReorderedDestinations(this.trip.tripDestinations, indexes.newIndex, indexes.oldIndex)) {
 
-
           this.showError("Cannot have contiguous destinations");
           const tripDestinations = [...this.trip.tripDestinations];
           this.trip.tripDestinations = [];
@@ -100,20 +106,65 @@ export default {
           
           return
         }
-
-        // Reorder elements
+        const oldTripDestinations = [...this.trip.tripDestinations];
+        
+        // Reorder elements for new trip destinations
         const temp = {...this.trip.tripDestinations[indexes.oldIndex]};
         this.trip.tripDestinations.splice(indexes.oldIndex, 1);
         this.trip.tripDestinations.splice(indexes.newIndex, 0, temp);
+
+        const oldTrip = {
+          tripId: this.trip.tripId,
+          tripName: this.trip.tripName,
+          tripDestinations: oldTripDestinations
+        };
+
+        const newTrip = {
+          tripId: this.trip.tripId,
+          tripName: this.trip.tripName,
+          tripDestinations: this.trip.tripDestinations
+        };
+
+        this.addEditTripCommand(oldTrip, newTrip);
 
         await editTrip(tripId, this.trip.tripName, this.trip.tripDestinations);
         this.showSuccessMessage("Successfully changed order");
       } catch (e) {
         console.log(e);
-        this.showError("Could not changed order");
+        this.showError("Could not change order");
       }
     },
+    /**
+     * Adds an edit trip command to the undo stack
+     */
+    addEditTripCommand(oldTrip, newTrip) {
+      const undoCommand = async (oldTrip) => {
+        await editTrip(oldTrip.tripId, oldTrip.tripName, oldTrip.tripDestinations)
+        this.trip = oldTrip;
+      };
+
+      const redoCommand = async (newTrip) => {
+        await editTrip(newTrip.tripId, newTrip.tripName, newTrip.tripDestinations);
+        this.trip = newTrip;
+      };
+
+      const updateTripCommand = new Command(undoCommand.bind(null, oldTrip), redoCommand.bind(null, newTrip));
+      this.$refs.undoRedo.addUndo(updateTripCommand);
+    },
     updatedTripDestinations(tripDestinations) {
+        const oldTrip = {
+          tripId: this.trip.tripId,
+          tripName: this.trip.tripName,
+          tripDestinations: this.trip.tripDestinations
+        };
+
+        const newTrip = {
+          tripId: this.trip.tripId,
+          tripName: this.trip.tripName,
+          tripDestinations: tripDestinations
+        };
+
+      this.addEditTripCommand(oldTrip, newTrip);
       this.$set(this.trip, "tripDestinations", tripDestinations);
     },
     async deleteTripDestination(tripDestination) {
@@ -153,6 +204,13 @@ export default {
     display: inline-block;
     height: 100%;
     position: fixed;
+  }
+
+  #undo-redo-btns {
+    position: absolute;
+    right: 23px;
+    margin-top: 10px;
+    z-index: 1000;
   }
 
 </style>
