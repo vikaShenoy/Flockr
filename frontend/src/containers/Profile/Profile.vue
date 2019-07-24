@@ -26,6 +26,7 @@
         <Photos
           :photos="userProfile.personalPhotos"
           @deletePhoto="deletePhoto"
+          @undoDeletePhoto="undoDeletePhoto"
           @showError="showError"
           v-on:addImage="addImage"/>
       </div>
@@ -103,13 +104,28 @@ export default {
      *
      * @param index {Number} the index of the photo to be removed.
      */
-    deletePhoto(index) {
+    deletePhoto(index, shouldShowSnackbar) {
       this.userProfile.personalPhotos.splice(index, 1);
-      this.errorSnackbar.color = "success";
-      this.errorSnackbar.text = "Photo deleted successfully";
-      this.errorSnackbar.show = true;
+      if (shouldShowSnackbar) {
+        this.errorSnackbar.color = "success";
+        this.errorSnackbar.text = "Photo deleted successfully";
+        this.errorSnackbar.show = true;
+      }
+
 
     },
+
+    /**
+     * Called when a undoDeletePhoto event is emitted from the photos component. 
+     * Adds the photo back to the list at the given index.
+     * 
+     * @param index {number} the index where the photo should be added.
+     * @param photo {} the photo to add.
+     */
+    undoDeletePhoto(index, photo) {
+      this.userProfile.personalPhotos.splice(index, 0, photo);
+    },
+
     /**
      * Gets a users info and sets the users state
      */

@@ -1,6 +1,9 @@
 <template>
   <div>
-    <h3 style="margin-bottom: 4px;margin-top: 4px;text-align:left">Photos</h3>
+    <div id="undo-redo">
+      <UndoRedo ref="undoRedo" />
+    </div>
+    <h3 style="margin-bottom: 4px;margin-top: 4px;text-align:left; width: 50%">Photos</h3>
 
     <v-card id="photos">
       <v-card-actions>
@@ -65,7 +68,11 @@
   import PhotoPanel from "../../UserGallery/PhotoPanel/PhotoPanel";
   import PromptDialog from "../../../components/PromptDialog/PromptDialog";
   import Snackbar from "../../../components/Snackbars/Snackbar";
-  import {deleteUserPhoto} from "../../UserGallery/UserGalleryService";
+  import {deleteUserPhoto, undoDeleteUserPhoto} from "../../UserGallery/UserGalleryService";
+  import UndoRedo from "../../../components/UndoRedo/UndoRedo";
+  import Command from "../../../components/UndoRedo/Command";
+
+  console.log(undoDeleteUserPhoto);
 
   export default {
     props: {
@@ -75,7 +82,8 @@
       Snackbar,
       PromptDialog,
       PhotoPanel,
-      AddPhotoDialog
+      AddPhotoDialog,
+      UndoRedo
     },
 
     data() {
@@ -149,18 +157,31 @@
         this.photos[index].public = newValue;
       },
       /**
-       * Creates and retruns a delete function for the given photo and index.
+       * Creates and returns a delete function for the given photo and index.
        *
        * @param photo {Object} the photo to be deleted.
        * @param index {Number} the index of the photo in the photos list.
        */
       getDeleteFunction(photo, index) {
-        const deleteCall = deleteUserPhoto;
         return async () => {
           try {
-            await deleteCall(photo);
+            const undoCommand = async (index, photo) => {
+              await undoDeleteUserPhoto(photo);
+              this.$emit("undoDeletePhoto", index, photo);
+            };
+
+            const redoCommand = async (index, photo) => {
+              await deleteUserPhoto(photo);
+              this.$emit("deletePhoto", index);
+            };
+
+            await deleteUserPhoto(photo);
             this.updatePhotoDialog(false);
-            this.$emit("deletePhoto", index);
+            this.$emit("deletePhoto", index, true);
+
+            const deleteCommand = new Command(undoCommand.bind(null, index, photo), redoCommand.bind(null, index, photo));
+            this.$refs.undoRedo.addUndo(deleteCommand);
+            
           } catch (error) {
             this.$emit("showError", error.message);
           }
@@ -233,6 +254,8 @@
     cursor: pointer;
   }
 
+  #undo-redo {
+    float: right;
+  }
+
 </style>
-
-
