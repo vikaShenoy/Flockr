@@ -56,13 +56,13 @@ public class DeleteExpiredPhotosTask {
         this.actorSystem
                 .scheduler()
                 .schedule(
-                        Duration.create(1, TimeUnit.MINUTES), // initialDelay
+                        Duration.create(2, TimeUnit.SECONDS), // initialDelay
                         Duration.create(24, TimeUnit.HOURS), // interval
                         () -> {
-                            log.info("-----------Cleaning up deleted photos-------------");
-                            System.out.println("-----------Cleaning up deleted photos-------------");
                             getDeletedPhotos()
                                 .thenApplyAsync(personalPhotos -> {
+                                    log.info("-----------Cleaning up deleted photos-------------");
+                                    System.out.println("-----------Cleaning up deleted photos-------------");
                                     for (PersonalPhoto personalPhoto : personalPhotos) {
                                         File photoToDelete = new File(
                                                 "./storage/photos/" + personalPhoto.getFilenameHash());
