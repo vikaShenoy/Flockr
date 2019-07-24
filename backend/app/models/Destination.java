@@ -2,8 +2,11 @@ package models;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.*;
+import io.ebean.annotation.SoftDelete;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +46,14 @@ public class Destination extends Model {
     private Integer destinationOwner;
 
     private boolean isPublic;
+
+    @JsonIgnore
+    @SoftDelete
+    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean deleted;
+
+    @JsonIgnore
+    private Timestamp deletedExpiry;
 
 
     @Override
@@ -114,6 +125,22 @@ public class Destination extends Model {
         this.destinationOwner = destinationOwner;
         this.travellerTypes = travellerTypes;
         this.isPublic = isPublic;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public Timestamp getDeletedExpiry() {
+        return deletedExpiry;
+    }
+
+    public void setDeletedExpiry(Timestamp deletedExpiry) {
+        this.deletedExpiry = deletedExpiry;
     }
 
     public int getDestinationId() {

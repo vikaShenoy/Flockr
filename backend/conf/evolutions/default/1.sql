@@ -19,6 +19,8 @@ create table destination (
   destination_country_country_id integer,
   destination_owner             integer,
   is_public                     boolean default false not null,
+  deleted_expiry                timestamp,
+  deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_destination primary key (destination_id)
 );
 

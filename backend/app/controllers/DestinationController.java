@@ -4,24 +4,17 @@ import actions.ActionState;
 import actions.Admin;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import exceptions.BadRequestException;
-import exceptions.ConflictingRequestException;
-import exceptions.ForbiddenRequestException;
-import exceptions.NotFoundException;
+import exceptions.*;
 import models.*;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.*;
 import repository.DestinationRepository;
 
-import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -389,6 +382,60 @@ public class DestinationController extends Controller {
                         return forbidden(message);
                     } catch (Throwable serverError) {
                         serverError.printStackTrace();
+                        return internalServerError();
+                    }
+                });
+    }
+
+    /**
+     * Endpoint controller method for undoing a destination deletion.
+     * Return status codes are as follows:
+     * - 200 - OK - successful undo.
+     * - 400 - Bad Request - The destination has not been deleted.
+     * - 401 - Unauthorised - the user is not authorised.
+     * - 403 - Forbidden - The destination does not have permission to undo this deletion.
+     * - 404 - Not Found - The destination cannot be found.
+     *
+     * @param destinationId the id of the destination.
+     * @param request the http request.
+     * @return the completion stage containing the result.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> undoDeleteDestination(int destinationId, Http.Request request) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
+        return destinationRepository.getDestinationByIdIncludingSoftDelete(destinationId)
+                .thenComposeAsync(optionalDestination -> {
+                    if (!optionalDestination.isPresent()) {
+                        throw new CompletionException(new NotFoundException("The destination you are undoing does not exist."));
+                    }
+                    Destination destination = optionalDestination.get();
+                    if (!userFromMiddleware.isAdmin() && userFromMiddleware.getUserId() != destination.getDestinationOwner()) {
+                        throw new CompletionException(new ForbiddenRequestException("You do not have permission to undo this deletion."));
+                    }
+                    if (!destination.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This destination has not been deleted."));
+                    }
+                    return destinationRepository.undoDeletion(destination);
+                })
+                .thenApplyAsync(destination -> ok(Json.toJson(destination)))
+                .exceptionally(error -> {
+                    ObjectNode message = Json.newObject();
+                    try {
+                        throw error.getCause();
+                    } catch (BadRequestException e) {
+                        message.put("message", e.getMessage());
+                        return badRequest(message);
+                    } catch (UnauthorizedException e) {
+                        message.put("message", e.getMessage());
+                        return unauthorized(message);
+                    } catch (ForbiddenRequestException e) {
+                        message.put("message", e.getMessage());
+                        return forbidden(message);
+                    } catch (NotFoundException e) {
+                        message.put("message", e.getMessage());
+                        return notFound(message);
+                    } catch (Throwable e) {
+                        log.error("An unexpected error has occurred", e);
                         return internalServerError();
                     }
                 });
