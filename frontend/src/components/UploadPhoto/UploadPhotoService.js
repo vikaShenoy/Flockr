@@ -18,3 +18,23 @@ export async function uploadImage(imageFile, isPublic, userId) {
 
   return res.body;
 }
+
+/**
+ * Undo an image upload by calling soft delete endpoint.
+ * @param {*} imageId id of the image to soft delete. 
+ */
+export async function undoImageUpload(image) {
+  const response = await superAgent.delete(endpoint(`/users/photos/${image.imageId}`))
+      .set("authorization", localStorage.getItem("authToken"));
+  return response.body;
+}
+
+/**
+ * Bring back image by undoing soft delete.
+ * @param {*} imageId image to un-soft delete (re-upload)
+ */
+export async function redoImageUpload(image) {
+  const response = await superAgent.put(endpoint(`/users/photos/${image.imageId}/undodelete`))
+        .set("authorization", localStorage.getItem("authToken"));
+  return response.body;
+}

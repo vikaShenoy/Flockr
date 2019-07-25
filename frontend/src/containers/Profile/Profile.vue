@@ -38,8 +38,10 @@
           :photos="userProfile.personalPhotos"
           @deletePhoto="deletePhoto"
           @undoDeletePhoto="undoDeletePhoto"
+          @addPhoto="addImage"
+          @undoAddPhoto="undoAddPhoto"
           @showError="showError"
-          v-on:addImage="addImage"/>
+          />
       </div>
 
       <div class="col-lg-8">
@@ -208,6 +210,11 @@ export default {
       image.endpoint = endpoint(`/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
       image.thumbEndpoint = endpoint(`/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
       this.userProfile.personalPhotos.push(image);
+    },
+    undoAddPhoto(image) {
+      this.userProfile.personalPhotos = this.userProfile.personalPhotos.filter(e => {
+        return e.photoId !== image.photoId;
+      })
     }
   }
 };

@@ -229,7 +229,20 @@
         return endpoint(`/users/photos/${photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
       },
       addImage(image) {
-        this.$emit("addImage", image);
+        const undoCommand = async (image) => {
+          await deleteUserPhoto(image);
+          this.$emit("undoAddPhoto", image);
+        };
+
+        const redoCommand = async (image) => {
+          await undoDeleteUserPhoto(image);
+          this.$emit("addPhoto", image);
+        };
+
+        const undoUploadCommand = new Command(undoCommand.bind(null, image), redoCommand.bind(null, image));
+        console.log("Undo upload photo command added to the stack.");
+        this.$refs.undoRedo.addUndo(undoUploadCommand);
+        this.$emit("addPhoto", image);
       }
     },
 
