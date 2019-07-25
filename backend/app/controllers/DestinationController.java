@@ -92,7 +92,7 @@ public class DestinationController extends Controller {
                     Destination destination = optionalDestination.get();
 
                     try {
-                        if (!user.isAdmin() && destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId()) {
+                        if (!user.isAdmin() && destination.getDestinationOwner() != null && destination.getDestinationOwner() != user.getUserId() && !destination.getIsPublic()) {
                             ObjectNode message = Json.newObject();
                             message.put("message", "You are not authorised to get this destination");
                             return forbidden(message);

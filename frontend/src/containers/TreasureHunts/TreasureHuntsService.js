@@ -82,7 +82,19 @@ export async function getTimeZone(destinationId) {
     const res = await superagent.get(endpoint(`/destinations/${destinationId}`)).set("Authorization", token);
     let lat = res.body.destinationLat;
     let long = res.body.destinationLon;
-    const google = await superagent.get(`http://api.timezonedb.com/v2.1/get-time-zone?key=1SNL8B7MWI5C&lat=${lat}&lng=${long}&by=position&format=json`);
+    const google = await superagent.get(`https://api.timezonedb.com/v2.1/get-time-zone?key=1SNL8B7MWI5C&lat=${lat}&lng=${long}&by=position&format=json`);
+    return google.body.abbreviation;
+
+}
+
+/**
+ * Calls an API, Google Maps in future, to get the timezone of a given destination
+ * @param destinationId of the destination to get the timezone for
+ * @returns {Promise<*>} the abbreviation of the timezone
+ */
+export async function getTimeZone2(lat, long) {
+    let token = localStorage.getItem("authToken");
+    const google = await superagent.get(`https://api.timezonedb.com/v2.1/get-time-zone?key=1SNL8B7MWI5C&lat=${lat}&lng=${long}&by=position&format=json`);
     return google.body.abbreviation;
 
 }

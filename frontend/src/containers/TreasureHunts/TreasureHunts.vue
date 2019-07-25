@@ -1,7 +1,7 @@
 <template>
 
     <v-flex>
-          <v-expansion-panel class="panel" :key="refreshList">
+          <v-expansion-panel class="panel">
             <v-expansion-panel-content
             v-for="(item, i) in treasureHunts"
             :key="i"
@@ -9,10 +9,15 @@
             >
             <template v-slot:header>
                 <div id="header">{{item.treasureHuntName}}
-                    <v-btn :visible="true" color="secondary" style="" fab small
+                    <v-btn color="secondary" style="" fab small
                            v-if="isOwner(item.ownerId) || isAdmin()" v-on:click="showEditDialog(item)"
                     >
                         <v-icon>edit</v-icon>
+                    </v-btn>
+                    <v-btn color="secondary" style="" fab small
+                           v-if="isOwner(item.ownerId) || isAdmin()" v-on:click="deleteTreasureHunt(item.treasureHuntId)"
+                    >
+                        <v-icon>delete</v-icon>
                     </v-btn>
                 </div>
                 <v-spacer></v-spacer>
@@ -21,7 +26,7 @@
             <v-card class="card">
                 <v-card-text>Riddle: {{item.riddle}}</v-card-text>
                 <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}<br>Time Zone: {{item.timezone}}</v-card-text>
-                <v-card-text v-if="isOwner(item.ownerId) || isAdmin()">Destination: {{item.destinationName}}</v-card-text>
+                <v-card-text v-if="isOwner(item.ownerId) || isAdmin()">Destination: {{item.destination}}</v-card-text>
             </v-card>
             </v-expansion-panel-content>
         </v-expansion-panel>
@@ -41,7 +46,6 @@
         <EditTreasureHunt
                 :toggle="showEditForm"
                 :data="treasureHunt"
-                :key="refreshEditForm"
                 @closeEditDialog="closeEditDialog"
                 @updateList="updateList"
         ></EditTreasureHunt>
@@ -53,7 +57,7 @@
 <script>
 import AddTreasureHunt from "./AddTreasureHunt";
 import EditTreasureHunt from "./EditTreasureHunt"
-import {getAllTreasureHunts, getDestination, getTimeZone} from "./TreasureHuntsService";
+import {getAllTreasureHunts, getDestination, getTimeZone2} from "./TreasureHuntsService";
 import moment from "moment";
 import UserStore from "../../stores/UserStore";
 
@@ -61,6 +65,8 @@ export default {
     components: {AddTreasureHunt, EditTreasureHunt},
     mounted() {
         this.getTreasureHunts();
+        this.setUserTimeZone();
+
     },
     data() {
         return {
@@ -68,8 +74,9 @@ export default {
             showEditForm: false,
             treasureHunts: [],
             treasureHunt: {},
-            refreshEditForm: 0,
-            refreshList: 1337
+            timezone: "",
+            userLat: 0,
+            userLong: 0
         }
     },
     methods: {
@@ -92,13 +99,21 @@ export default {
          * Calls the treasure hunt service to set the populate the list of treasure hunts with all valid treasure hunts
          */
         async getTreasureHunts() {
-            this.treasureHunts = await getAllTreasureHunts();
-            for (let i = 0; i < this.treasureHunts.length; i++) {
-                this.treasureHunts[i].timezone = await getTimeZone(this.treasureHunts[i].treasureHuntDestinationId);
-                this.treasureHunts[i].destinationName = await getDestination(this.treasureHunts[i].treasureHuntDestinationId);
-            }
-            this.refreshList += 1
+            const rawTreasureHunts = await getAllTreasureHunts();
+
+            const treasureHuntsPromises = rawTreasureHunts.map(async treasureHunt => {
+                return {
+                  ...treasureHunt,
+                  timezone: this.timezone,
+                  destination: await getDestination(treasureHunt.treasureHuntDestinationId)
+                };
+            });
+
+            this.treasureHunts = await Promise.all(treasureHuntsPromises);
+
+
         },
+
 
         /**
          * Takes in a date number retrieved from the database and converts it into a displayable string
@@ -160,8 +175,27 @@ export default {
          */
         showEditDialog(treasureHunt) {
             this.treasureHunt = treasureHunt;
-            this.refreshEditForm += 1;
             this.showEditForm = true;
+        },
+
+        deleteTreasureHunt(treasureHuntId) {
+            console.log("deleting treasure hunt");
+        },
+
+        async setUserTimeZone() {
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async position => {
+                        this.userLat = position.coords.latitude;
+                        this.userLong = position.coords.longitude;
+                        this.timezone = await getTimeZone2(this.userLat, this.userLong)
+                    },
+                    error => {
+                        console.log("error")
+                    }
+                );
+            }
         }
     }
 
