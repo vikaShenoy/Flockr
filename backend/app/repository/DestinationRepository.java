@@ -122,7 +122,7 @@ public class DestinationRepository {
      */
     public CompletionStage<List<Country>> getCountries() {
         return supplyAsync(() -> {
-            List<Country> countries = Country.find.query().findList();
+            List<Country> countries = Country.find.query().orderBy().asc("country_name").findList();
             return countries;
         }, executionContext);
     }

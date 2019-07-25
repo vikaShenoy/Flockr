@@ -7,7 +7,7 @@
       </v-flex>
 
       <v-flex class="destination-value" xs9>
-        {{ destination.destinationDistrict.districtName }}, {{ destination.destinationCountry.countryName }}
+        {{ destination.destinationDistrict.districtName }},&nbsp;<CountryDisplay v-bind:country="destination.destinationCountry.countryName" />
       </v-flex>
 
 
@@ -77,8 +77,10 @@
 
 
 <script>
+import CountryDisplay from "../../../components/Country/CountryDisplay";
 export default {
-  props: ["destination"] 
+  components: {CountryDisplay},
+  props: ["destination"]
 }
 </script>
 

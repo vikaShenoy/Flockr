@@ -55,6 +55,8 @@ $$
 create table country (
   country_id                    integer auto_increment not null,
   country_name                  varchar(255),
+  isocode                       varchar(255),
+  is_valid                      tinyint(1) default 0 not null,
   constraint pk_country primary key (country_id)
 );
 
@@ -105,7 +107,9 @@ create table district (
 
 create table nationality (
   nationality_id                integer auto_increment not null,
+  nationality_country_country_id integer,
   nationality_name              varchar(255),
+  constraint uq_nationality_nationality_country_country_id unique (nationality_country_country_id),
   constraint pk_nationality primary key (nationality_id)
 );
 
@@ -118,6 +122,8 @@ create table nationality_user (
 create table passport (
   passport_id                   integer auto_increment not null,
   passport_country              varchar(255),
+  country_country_id            integer,
+  constraint uq_passport_country_country_id unique (country_country_id),
   constraint pk_passport primary key (passport_id)
 );
 
@@ -248,11 +254,15 @@ alter table destination_proposal_traveller_type add constraint fk_destination_pr
 create index ix_district_country_country_id on district (country_country_id);
 alter table district add constraint fk_district_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
 
+alter table nationality add constraint fk_nationality_nationality_country_country_id foreign key (nationality_country_country_id) references country (country_id) on delete restrict on update restrict;
+
 create index ix_nationality_user_nationality on nationality_user (nationality_nationality_id);
 alter table nationality_user add constraint fk_nationality_user_nationality foreign key (nationality_nationality_id) references nationality (nationality_id) on delete restrict on update restrict;
 
 create index ix_nationality_user_user on nationality_user (user_user_id);
 alter table nationality_user add constraint fk_nationality_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
+alter table passport add constraint fk_passport_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
 
 create index ix_passport_user_passport on passport_user (passport_passport_id);
 alter table passport_user add constraint fk_passport_user_passport foreign key (passport_passport_id) references passport (passport_id) on delete restrict on update restrict;
@@ -328,11 +338,15 @@ drop index ix_destination_proposal_traveller_type_traveller_type on destination_
 alter table district drop foreign key fk_district_country_country_id;
 drop index ix_district_country_country_id on district;
 
+alter table nationality drop foreign key fk_nationality_nationality_country_country_id;
+
 alter table nationality_user drop foreign key fk_nationality_user_nationality;
 drop index ix_nationality_user_nationality on nationality_user;
 
 alter table nationality_user drop foreign key fk_nationality_user_user;
 drop index ix_nationality_user_user on nationality_user;
+
+alter table passport drop foreign key fk_passport_country_country_id;
 
 alter table passport_user drop foreign key fk_passport_user_passport;
 drop index ix_passport_user_passport on passport_user;
