@@ -121,6 +121,8 @@ export default {
       try{
         this.imageUploading = true;
         const image = await uploadImage(imageFile, isPublic, userId);
+        const imageId = image.imageId;
+
 
         // Reset values to initial state
         this.imageFile = null;
