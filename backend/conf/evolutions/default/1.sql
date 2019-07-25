@@ -71,6 +71,8 @@ create table nationality_user (
 create table passport (
   passport_id                   integer auto_increment not null,
   passport_country              varchar(255),
+  country_country_id            integer,
+  constraint uq_passport_country_country_id unique (country_country_id),
   constraint pk_passport primary key (passport_id)
 );
 
@@ -207,6 +209,8 @@ alter table nationality_user add constraint fk_nationality_user_nationality fore
 create index ix_nationality_user_user on nationality_user (user_user_id);
 alter table nationality_user add constraint fk_nationality_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
+alter table passport add constraint fk_passport_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
+
 create index ix_passport_user_passport on passport_user (passport_passport_id);
 alter table passport_user add constraint fk_passport_user_passport foreign key (passport_passport_id) references passport (passport_id) on delete restrict on update restrict;
 
@@ -286,6 +290,8 @@ drop index if exists ix_nationality_user_nationality;
 
 alter table nationality_user drop constraint if exists fk_nationality_user_user;
 drop index if exists ix_nationality_user_user;
+
+alter table passport drop constraint if exists fk_passport_country_country_id;
 
 alter table passport_user drop constraint if exists fk_passport_user_passport;
 drop index if exists ix_passport_user_passport;
