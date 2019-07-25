@@ -123,6 +123,13 @@ export async function loggedOut(to, from, next) {
   const userToken = localStorage.getItem("authToken");
 
   if (userId || userToken) {
+    try {
+      let res = await  superagent.get(endpoint(`/users/${userId}`))
+          .set("Authorization", userToken)
+    } catch (e) {
+      next();
+      return;
+    }
     next("/");
     return;
   } else {
