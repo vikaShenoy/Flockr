@@ -229,24 +229,18 @@ export default {
           gender: this.gender
         }
 
-        const undoCommand = async (basicInfo) => {
+        const command = async (basicInfo) => {
           await updateBasicInfo(userId, basicInfo);
-          const oldUserProfile = {...userProfile, ...basicInfo};
-          UserStore.methods.setData(oldUserProfile);
-          this.$emit("update:userProfile", oldUserProfile);
+          const mergedUserProfile = {...userProfile, ...basicInfo};
+          UserStore.methods.setData(mergedUserProfile);
+          this.$emit("update:userProfile", mergedUserProfile);
         };
 
-        const redoCommand = async (basicInfo) => {
-          await updateBasicInfo(userId, basicInfo);
-          const newUserProfile = {...userProfile, ...basicInfo};
-          UserStore.methods.setData(newUserProfile);
-          this.$emit("update:userProfile", newUserProfile);
-        };
-
-        redoCommand(newBasicInfo); // actually make the update
-
-        const updateBasicInfoCommand = new Command(undoCommand.bind(null, oldBasicInfo), redoCommand.bind(null, newBasicInfo));
+        const undoCommand = command.bind(null, oldBasicInfo);
+        const redoCommand = command.bind(null, newBasicInfo);
+        const updateBasicInfoCommand = new Command(undoCommand, redoCommand);
         this.$refs.undoRedo.addUndo(updateBasicInfoCommand);
+        redoCommand(newBasicInfo); // actually make the update
 
         this.isEditing = false;
       } else {
