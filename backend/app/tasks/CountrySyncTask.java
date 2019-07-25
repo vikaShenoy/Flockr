@@ -127,7 +127,7 @@ public class CountrySyncTask {
         this.actorSystem
             .scheduler()
             .schedule(
-                Duration.create(1, TimeUnit.HOURS), // initial delay
+                Duration.create(5, TimeUnit.SECONDS), // initial delay
                 Duration.create(1, TimeUnit.HOURS), // interval
                 () -> {
                     log.info("Country Schedule started");
