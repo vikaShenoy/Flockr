@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.inject.Inject;
 import models.Country;
+import models.Nationality;
 import models.Passport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +88,7 @@ public class CountrySyncTask {
     /**
      * Gets all the passports that is already stored in the database and returns a map of all the current
      * passports
-     * @return current passports as a map
+     * @return current passports in the database as a map
      */
     public Map<String, Passport> getCurrentPassports() {
         Map<String, Passport> currentPassportsMap = new HashMap<>();
@@ -97,6 +98,21 @@ public class CountrySyncTask {
             currentPassportsMap.put(passport.getPassportCountry(), passport);
         }
         return currentPassportsMap;
+    }
+
+    /**
+     * Gets all the nationalities that is already stored in the database and returns a map of all the
+     * current nationalities
+     * @return the current nationalities in the database as a map
+     */
+    public Map<String, Nationality> getCurrentNationalities() {
+        Map<String, Nationality> currentNationalitiesMap = new HashMap<>();
+        List<Nationality> currentNationalities = Nationality.find.all();
+
+        for (Nationality nationality : currentNationalities) {
+            currentNationalitiesMap.put(nationality.getNationalityName(), nationality);
+        }
+        return currentNationalitiesMap;
     }
 
     /**
@@ -110,12 +126,23 @@ public class CountrySyncTask {
     }
 
     /**
-     * Saves all the countries that needs to be updated or inserted in the database
+     * Saves all the country passports that needs to be updated or inserted in the database
      * @param passports the passports that either needs to be inserted or updated
      */
     public void savePassports(List<Passport> passports) {
         for (Passport passport : passports) {
             passport.save();
+        }
+    }
+
+    /**
+     * Saves all the country nationality that needs to be updated or inserted in the
+     * database
+     * @param nationalities the nationalities that either needs to be inserted or updated
+     */
+    public void saveNationalities(List<Nationality> nationalities) {
+        for (Nationality nationality : nationalities) {
+            nationality.save();
         }
     }
 
@@ -134,12 +161,16 @@ public class CountrySyncTask {
                     long startTime = System.currentTimeMillis();
                     fetchCountryApi()
                             .thenApplyAsync(newCountries -> {
+                                System.out.println("HI");
                                 Map<String, Country> oldCountries = getCurrentCountries();
                                 Map<String, Passport> oldPassports = getCurrentPassports();
+                                Map<String, Nationality> oldNationalities = getCurrentNationalities();
                                 List<Country> countriesToSave = countrySchedulerUtil.getCountriesToSave(oldCountries, newCountries);
                                 List<Passport> passportsToSave = countrySchedulerUtil.getPassportsToSave(newCountries, oldPassports);
+                                List<Nationality> nationalitiesToSave = countrySchedulerUtil.getNationalitiesToSave(newCountries, oldNationalities);
                                 saveCountries(countriesToSave);
                                 savePassports(passportsToSave);
+                                saveNationalities(nationalitiesToSave);
                                 long endTime = System.currentTimeMillis();
                                 long duration = (endTime - startTime) / 1000;
                                 log.info("Country schedule finished, took: " + duration + " seconds");

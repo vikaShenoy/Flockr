@@ -3,10 +3,7 @@ package models;
 import io.ebean.Finder;
 import io.ebean.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.List;
 
 /**
@@ -20,10 +17,11 @@ public class Nationality extends Model {
 
     @ManyToMany
     private List<User> users;
-    @OneToMany
-    private Country country;
-    private String nationalityName;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private Country nationalityCountry;
+
+    private String nationalityName;
 
     /**
      * Constructor.
@@ -41,12 +39,12 @@ public class Nationality extends Model {
                 '}';
     }
 
-    public void setCountry(Country country) {
-        this.country = country;
+    public Country getNationalityCountry() {
+        return nationalityCountry;
     }
 
-    public Country getCountry() {
-        return country;
+    public void setNationalityCountry(Country nationalityCountry) {
+        this.nationalityCountry = nationalityCountry;
     }
 
     public int getNationalityId() {

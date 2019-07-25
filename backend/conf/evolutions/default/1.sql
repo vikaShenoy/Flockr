@@ -107,7 +107,9 @@ create table district (
 
 create table nationality (
   nationality_id                integer auto_increment not null,
+  nationality_country_country_id integer,
   nationality_name              varchar(255),
+  constraint uq_nationality_nationality_country_country_id unique (nationality_country_country_id),
   constraint pk_nationality primary key (nationality_id)
 );
 
@@ -241,6 +243,8 @@ alter table destination_proposal_traveller_type add constraint fk_destination_pr
 create index ix_district_country_country_id on district (country_country_id);
 alter table district add constraint fk_district_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
 
+alter table nationality add constraint fk_nationality_nationality_country_country_id foreign key (nationality_country_country_id) references country (country_id) on delete restrict on update restrict;
+
 create index ix_nationality_user_nationality on nationality_user (nationality_nationality_id);
 alter table nationality_user add constraint fk_nationality_user_nationality foreign key (nationality_nationality_id) references nationality (nationality_id) on delete restrict on update restrict;
 
@@ -316,6 +320,8 @@ drop index ix_destination_proposal_traveller_type_traveller_type on destination_
 
 alter table district drop foreign key fk_district_country_country_id;
 drop index ix_district_country_country_id on district;
+
+alter table nationality drop foreign key fk_nationality_nationality_country_country_id;
 
 alter table nationality_user drop foreign key fk_nationality_user_nationality;
 drop index ix_nationality_user_nationality on nationality_user;

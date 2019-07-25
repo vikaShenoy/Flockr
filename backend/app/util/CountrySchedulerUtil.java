@@ -1,6 +1,7 @@
 package util;
 
 import models.Country;
+import models.Nationality;
 import models.Passport;
 
 import java.util.ArrayList;
@@ -74,5 +75,27 @@ public class CountrySchedulerUtil {
             }
         }
         return passportsToSave;
+    }
+
+    public List<Nationality> getNationalitiesToSave(Map<String, Country> newCountries, Map<String, Nationality> currentNationalities) {
+        List<Nationality> nationalitiesToSave = new ArrayList<>();
+        List<Nationality> nationalities = Nationality.find.all();
+
+        for (String ISOCode : newCountries.keySet()) {
+            Country newCountry = newCountries.get(ISOCode);
+            if (!currentNationalities.containsKey(newCountry.getCountryName())) {
+                Nationality nationality = new Nationality(newCountry.getCountryName());
+                nationality.setNationalityCountry(newCountry);
+                nationalitiesToSave.add(nationality);
+            }
+
+            for (Nationality nationality : nationalities) {
+                if (nationality.getNationalityName().equalsIgnoreCase(newCountry.getCountryName())) {
+                    nationality.setNationalityCountry(newCountry);
+                    nationalitiesToSave.add(nationality);
+                }
+            }
+        }
+        return nationalitiesToSave;
     }
 }
