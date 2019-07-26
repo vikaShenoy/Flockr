@@ -7,6 +7,7 @@ Feature: As a registered user, I can make proposals for public destinations
       | Phillip   | Phototaker | ppta@phillipsphotos.com | say-cheese | false   |
       | Angelo    | Admin      | aaa@admin.com           | its-ya-boi | true    |
     And An admin user exists
+
     @DestinationProposal
     Scenario: A user can create a proposal for a public destination
       Given that I have the following destinations:

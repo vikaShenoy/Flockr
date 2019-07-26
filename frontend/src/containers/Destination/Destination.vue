@@ -117,7 +117,7 @@
 
 <script>
 import Command from "../../components/UndoRedo/Command";
-import { getDestination, getDestinationPhotos, deleteDestination, removePhotoFromDestination } from "./DestinationService";
+import { getDestination, getDestinationPhotos, deleteDestination, removePhotoFromDestination, rejectProposal, undeleteProposal } from "./DestinationService";
 import ModifyDestinationDialog from "../Destinations/ModifyDestinationDialog/ModifyDestinationDialog";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
 import DestinationDetails from "./DestinationDetails/DestinationDetails";
@@ -216,9 +216,20 @@ export default {
       this.snackbarModel.show = false;
     },
     async sendingProposal(travellerTypeIds) {
+      const proposal = await sendProposal(this.destination.destinationId, travellerTypeIds);
+      console.log("it is: ", proposal);
 
-      const undoCommand = async ()
-      await sendProposal(this.destination.destinationId, travellerTypeIds);
+      const undoCommand = async (destinationProposalId) => {
+        await rejectProposal(destinationProposalId);
+      }
+
+      const redoCommand = async (destinationProposalId) => {
+        await undeleteProposal(destinationProposalId);
+      };
+
+      const sendProposalCommand = new Command(undoCommand.bind(null, proposal.destinationProposalId), redoCommand.bind(null, proposal.destinationProposalId));
+      this.$refs.undoRedo.addUndo(sendProposalCommand);
+
       this.snackbarModel.color = "success";
       this.snackbarModel.text = "Proposal Sent";
       this.snackbarModel.show = true;

@@ -113,3 +113,4 @@ export async function sendUpdateDestination(destination, destinationId) {
 
   return res.body;
 }
+
