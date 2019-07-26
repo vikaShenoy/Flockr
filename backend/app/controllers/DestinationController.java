@@ -717,7 +717,7 @@ public class DestinationController extends Controller {
      * @return A response that complies with the API spec
      */
     @With({LoggedIn.class, Admin.class})
-    public CompletionStage<Result> rejectProposals(int destinationProposalId, Http.Request request) {
+    public CompletionStage<Result> rejectProposal(int destinationProposalId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinationProposalById(destinationProposalId)
                 .thenComposeAsync(optionalDestinationProposal -> {

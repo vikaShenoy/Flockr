@@ -83,6 +83,8 @@ create table destination_photo (
 create table destination_proposal (
   destination_proposal_id       integer auto_increment not null,
   destination_destination_id    integer,
+  deleted_expiry                datetime(6),
+  deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_destination_proposal primary key (destination_proposal_id)
 );
 

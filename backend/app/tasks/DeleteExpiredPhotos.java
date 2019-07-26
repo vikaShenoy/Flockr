@@ -6,6 +6,7 @@ import models.PersonalPhoto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
+import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
 import javax.inject.Inject;
@@ -22,12 +23,12 @@ import java.util.concurrent.TimeUnit;
 public class DeleteExpiredPhotos {
 
     private final ActorSystem actorSystem;
-    private final TasksCustomExecutionContext executionContext;
+    private final ExecutionContext executionContext;
 
     final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
-    public DeleteExpiredPhotos(ActorSystem actorSystem, TasksCustomExecutionContext executionContext) {
+    public DeleteExpiredPhotos(ActorSystem actorSystem, ExecutionContext executionContext) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
 

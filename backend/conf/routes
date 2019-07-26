@@ -40,7 +40,8 @@ PUT           /api/users/:userId/profilephoto/:photoId/undo             controll
 GET           /api/destinations/proposals                               controllers.DestinationController.getProposals
 POST          /api/destinations/:destinationId/proposals                controllers.DestinationController.addProposal(request: Request, destinationId: Int)
 PATCH         /api/destinations/proposals/:destinationProposalId        controllers.DestinationController.acceptProposal(destinationProposalId: Int)
-DELETE        /api/destinations/proposals/:destinationProposalId        controllers.DestinationController.rejectProposal(destinationProposalId: Int)
+DELETE        /api/destinations/proposals/:destinationProposalId        controllers.DestinationController.rejectProposal(destinationProposalId: Int, request: Request)
+PUT           /api/destinations/proposals/:destinationProposalId/undoReject   controllers.DestinationController.undoDeleteDestinationProposal(destinationProposalId: Int, request: Request)
 
 # Destination Routes
 GET           /api/destinations                                         controllers.DestinationController.getDestinations(request: Request)
