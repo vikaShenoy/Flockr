@@ -25,6 +25,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import play.libs.concurrent.HttpExecutionContext;
 import repository.PhotoRepository;
 import util.DestinationUtil;
+import util.Security;
 
 
 /**
@@ -36,13 +37,15 @@ public class DestinationController extends Controller {
     private HttpExecutionContext httpExecutionContext;
     private final DestinationUtil destinationUtil;
     final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final Security security;
 
     @Inject
-    public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext, PhotoRepository photoRepository, DestinationUtil destinationUtil) {
+    public DestinationController(DestinationRepository destinationRepository, HttpExecutionContext httpExecutionContext, PhotoRepository photoRepository, DestinationUtil destinationUtil, Security security) {
         this.photoRepository = photoRepository;
         this.destinationRepository = destinationRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.destinationUtil = destinationUtil;
+        this.security = security;
     }
 
     /**
@@ -650,7 +653,20 @@ public class DestinationController extends Controller {
      * @return A response that complies with the API spec
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> addProposal(Http.Request request, int destinationId) {
+    public CompletionStage<Result> addProposal(int userId, Http.Request request, int destinationId) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+        User user = User.find.byId(userId);
+
+        if (!security.userHasPermission(userFromMiddleware, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
+
+        if (user == null) {
+            return supplyAsync(() -> notFound("User not found"));
+        }
+
         return destinationRepository.getDestinationById(destinationId)
         .thenComposeAsync(optionalDestination -> {
             if (!optionalDestination.isPresent()) {
@@ -669,10 +685,10 @@ public class DestinationController extends Controller {
             List<TravellerType> allTravellerTypes = TravellerType.find.all();
             List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
 
-            DestinationProposal proposal = new DestinationProposal(destination, travellerTypes);
+            DestinationProposal proposal = new DestinationProposal(destination, travellerTypes, user);
             return destinationRepository.createProposal(proposal);
         })
-        .thenApplyAsync(proposal -> (Result) ok())
+        .thenApplyAsync(proposal -> ok(Json.toJson(proposal)))
         .exceptionally(e -> {
             try {
                 throw e.getCause();
@@ -717,18 +733,30 @@ public class DestinationController extends Controller {
      * @param destinationProposalId the ID of the proposal to reject
      * @return A response that complies with the API spec
      */
-    @With({LoggedIn.class, Admin.class})
-    public CompletionStage<Result> rejectProposal(int destinationProposalId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
+    @With({LoggedIn.class})
+    public CompletionStage<Result> rejectProposal(int userId, int destinationProposalId, Http.Request request) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+        User user = User.find.byId(userId);
+        if (!security.userHasPermission(userFromMiddleware, userId)) {
+            return supplyAsync(() -> forbidden("Not authorized to reject proposal"));
+        }
+
+        if (user == null) {
+            return supplyAsync(() -> notFound("User not found"));
+        }
+
         return destinationRepository.getDestinationProposalById(destinationProposalId)
                 .thenComposeAsync(optionalDestinationProposal -> {
                     if (!optionalDestinationProposal.isPresent()) {
                         throw new CompletionException(new NotFoundException("The destination proposal you want to reject does not exist."));
                     }
                     DestinationProposal destinationProposal = optionalDestinationProposal.get();
-                    if (!user.isAdmin()) {
-                        throw new CompletionException(new ForbiddenRequestException("You are not permitted to reject this destination proposal."));
+
+                    if (!user.isAdmin() && destinationProposal.getUser().getUserId() != user.getUserId()) {
+                        throw new CompletionException(new ForbiddenRequestException("User is not permitted to reject other proposals"));
                     }
+
                     ObjectNode success = Json.newObject();
                     success.put("message", "Successfully rejected the given destination proposal");
                     return this.destinationRepository.deleteDestinationProposal(destinationProposal);
@@ -785,9 +813,11 @@ public class DestinationController extends Controller {
                         throw new CompletionException(new NotFoundException("The destination proposal you are undoing does not exist."));
                     }
                     DestinationProposal destinationProposal = optionalDestinationProposal.get();
-                    if (!user.isAdmin()) {
-                        throw  new CompletionException(new ForbiddenRequestException("You do not have the permission to undo the deletion."));
+
+                    if (!user.isAdmin() && destinationProposal.getUser().getUserId() != user.getUserId())  {
+                        throw new CompletionException(new ForbiddenRequestException("You do not have the permission to undo the deletion."));
                     }
+
                     if (!destinationProposal.isDeleted()) {
                         throw new CompletionException(new BadRequestException("This destination proposal has not been deleted."));
                     }
