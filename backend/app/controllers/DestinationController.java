@@ -275,7 +275,7 @@ public class DestinationController extends Controller {
                     DestinationType destType = new DestinationType(null);
                     destType.setDestinationTypeId(destinationTypeId);
 
-                    Country country = new Country(null);
+                    Country country = new Country(null, null, true);
                     country.setCountryId(countryId);
 
                     District district = new District(null, null);

@@ -3,9 +3,7 @@ package models;
 import io.ebean.Finder;
 import io.ebean.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.List;
 
 /**
@@ -19,6 +17,10 @@ public class Nationality extends Model {
 
     @ManyToMany
     private List<User> users;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private Country nationalityCountry;
+
     private String nationalityName;
 
     /**
@@ -35,6 +37,14 @@ public class Nationality extends Model {
                 "nationalityId=" + nationalityId +
                 ", nationalityName='" + nationalityName + '\'' +
                 '}';
+    }
+
+    public Country getNationalityCountry() {
+        return nationalityCountry;
+    }
+
+    public void setNationalityCountry(Country nationalityCountry) {
+        this.nationalityCountry = nationalityCountry;
     }
 
     public int getNationalityId() {
