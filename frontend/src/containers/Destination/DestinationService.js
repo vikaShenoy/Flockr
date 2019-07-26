@@ -65,4 +65,21 @@ export async function removePhotoFromDestination(destinationId, photoId) {
   return response.body;
 }
 
+/**
+ * Undo's creation of a proposal
+ * @param {number} destinationProposalId ID of proposal to undo
+ */
+export async function rejectProposal(destinationProposalId) {
+  const userId = localStorage.getItem("userId");
+  await superagent.delete(endpoint(`/users/${userId}/destinations/proposals/${destinationProposalId}`))
+    .set("Authorization", localStorage.getItem("authToken"));
+}
+
+export async function undeleteProposal(destinationProposalId) {
+  await superagent.put(endpoint(`/destinations/proposals/${destinationProposalId}/undoReject`))
+    .set("Authorization", localStorage.getItem("authToken"));
+}
+
+
+
 

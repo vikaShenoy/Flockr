@@ -79,15 +79,8 @@
               offset-sm1
               offset-xs0
             >
-              <v-combobox
-                v-model="destination.destinationCountry.countryId"
-                :value="destination.destinationCountry.countryId"
-                :items="countries"
-                item-value="countryId"
-                item-text="countryName"
-                label="Country"
-                :rules="requiredRule"
-              />
+              <CountryPicker v-if="destinationToEdit" v-bind:country="destinationToEdit.destinationCountry.countryId" v-on:change="updateCountry"></CountryPicker>
+              <CountryPicker v-else v-on:change="updateCountry"></CountryPicker>
             </v-flex>
 
             <v-flex
@@ -267,8 +260,13 @@ import {
 import ErrorSnackbar from "../../../components/Snackbars/ErrorSnackbar";
 
 import UserStore from "../../../stores/UserStore";
+
+import CountryPicker from "../../../components/Country/CountryPicker"
 export default {
   name: "add-destination-dialog",
+  components: {
+    CountryPicker
+  },
   props: {
     dialog: {
       type: Boolean,
@@ -516,6 +514,9 @@ export default {
           }
         }
       }
+    },
+    updateCountry(newValue) {
+      this.destination.destinationCountry.countryId = newValue;
     }
   },
 

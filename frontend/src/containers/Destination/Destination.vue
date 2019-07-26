@@ -102,7 +102,7 @@
   <RequestTravellerTypes 
     :isShowingTravellerTypesDialog.sync="isShowingTravellerTypesDialog" 
     :destination="destination"
-    v-on:proposalSent="proposalSent"
+    v-on:sendingProposal="sendingProposal"
     v-on:showError="showError"
   />
 
@@ -117,7 +117,7 @@
 
 <script>
 import Command from "../../components/UndoRedo/Command";
-import { getDestination, getDestinationPhotos, deleteDestination, removePhotoFromDestination } from "./DestinationService";
+import { getDestination, getDestinationPhotos, deleteDestination, removePhotoFromDestination, rejectProposal, undeleteProposal } from "./DestinationService";
 import ModifyDestinationDialog from "../Destinations/ModifyDestinationDialog/ModifyDestinationDialog";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
 import DestinationDetails from "./DestinationDetails/DestinationDetails";
@@ -128,7 +128,7 @@ import RequestTravellerTypes from "./RequestTravellerTypes/RequestTravellerTypes
 import { sendUpdateDestination } from "../Destinations/DestinationsService";
 import UserStore from '../../stores/UserStore';
 import UndoRedo from "../../components/UndoRedo/UndoRedo"
-
+import { sendProposal } from "./RequestTravellerTypes/RequestTravellerTypesService";
 
 
 export default {
@@ -215,7 +215,21 @@ export default {
     dismissSnackbar() {
       this.snackbarModel.show = false;
     },
-    proposalSent() {
+    async sendingProposal(travellerTypeIds) {
+      const proposal = await sendProposal(this.destination.destinationId, travellerTypeIds);
+      console.log("it is: ", proposal);
+
+      const undoCommand = async (destinationProposalId) => {
+        await rejectProposal(destinationProposalId);
+      }
+
+      const redoCommand = async (destinationProposalId) => {
+        await undeleteProposal(destinationProposalId);
+      };
+
+      const sendProposalCommand = new Command(undoCommand.bind(null, proposal.destinationProposalId), redoCommand.bind(null, proposal.destinationProposalId));
+      this.$refs.undoRedo.addUndo(sendProposalCommand);
+
       this.snackbarModel.color = "success";
       this.snackbarModel.text = "Proposal Sent";
       this.snackbarModel.show = true;

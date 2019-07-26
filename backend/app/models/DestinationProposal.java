@@ -28,10 +28,15 @@ public class DestinationProposal extends Model {
     @JsonIgnore
     private Timestamp deletedExpiry;
 
+    @JsonIgnore
+    @ManyToOne
+    private User user;
 
-    public DestinationProposal(Destination destination, List<TravellerType> travellerTypes) {
+
+    public DestinationProposal(Destination destination, List<TravellerType> travellerTypes, User user) {
         this.destination = destination;
         this.travellerTypes = travellerTypes;
+        this.user = user;
     }
 
     public void setDeletedExpiry(Timestamp deletedExpiry) {
@@ -48,6 +53,14 @@ public class DestinationProposal extends Model {
 
     public boolean isDeleted() {
         return deleted;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public List<TravellerType> getTravellerTypes() {

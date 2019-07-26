@@ -72,8 +72,6 @@
   import UndoRedo from "../../../components/UndoRedo/UndoRedo";
   import Command from "../../../components/UndoRedo/Command";
 
-  console.log(undoDeleteUserPhoto);
-
   export default {
     props: {
       photos: Array 

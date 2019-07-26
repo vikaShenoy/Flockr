@@ -32,6 +32,9 @@ libraryDependencies += "io.cucumber" % "cucumber-junit" % "4.2.0" % Test
 libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test->default"
 testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
 libraryDependencies += evolutions
+libraryDependencies ++= Seq(
+  javaWs
+)
 
 // Jacoco Settings
 configs(IntegrationTest)
@@ -82,6 +85,8 @@ val `build-frontend` = TaskKey[Unit]("run frontend build")
 dist := (dist dependsOn `build-frontend`).value
 
 javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
+
+
 
 
 

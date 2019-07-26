@@ -12,9 +12,12 @@ export async function getTravellerTypes() {
 }
 
 export async function sendProposal(destinationId, travellerTypeIds) {
-  await superagent.post(endpoint(`/destinations/${destinationId}/proposals`))
+  const userId = localStorage.getItem("userId");
+  const res =  await superagent.post(endpoint(`/users/${userId}/destinations/${destinationId}/proposals`))
     .send({
       travellerTypeIds 
     })
     .set("Authorization", localStorage.getItem("authToken"))
+
+  return res.body;
 }

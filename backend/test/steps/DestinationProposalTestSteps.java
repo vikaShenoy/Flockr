@@ -39,7 +39,8 @@ public class DestinationProposalTestSteps {
                                             .collect(Collectors.toList());
         ObjectNode body = Json.newObject();
         body.set("travellerTypeIds", Json.toJson(travellerTypeIds));
-        String endpoint = "/api/destinations/" + destination.getDestinationId() + "/proposals";
+        String endpoint = "/api/users/" + testUser.getUserId() + "/destinations/" + destination.getDestinationId() + "/proposals";
+        System.out.println(endpoint);
         result = fakeClient.makeRequestWithToken("POST", body, endpoint, testUser.getToken());
     }
 

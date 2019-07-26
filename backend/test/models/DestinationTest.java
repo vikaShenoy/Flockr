@@ -23,7 +23,7 @@ public class DestinationTest {
 
     @Before
     public void setUp() throws Exception {
-        destinationCountry = new Country("New Zealand");
+        destinationCountry = new Country("New Zealand", "NZL", true);
         destinationCountry.setCountryId(1);
         destinationType = new DestinationType("Backpacker");
         destinationType.setDestinationTypeId(2);
@@ -90,8 +90,8 @@ public class DestinationTest {
      */
     @Test
     public void twoDestinationsHaveDifferentCountries() {
-        Country country1 = new Country("India");
-        Country country2 = new Country("China");
+        Country country1 = new Country("India", "IND", true);
+        Country country2 = new Country("China", "CHN", true);
         country2.setCountryId(5);
         Destination destination1 = new Destination("Atlantis", destinationType, destinationDistrict,
                 destinationLat, destinationLon, country1, destinationOwner, travellerTypes, isPublic);

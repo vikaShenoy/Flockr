@@ -25,7 +25,8 @@ export async function acceptProposal(destinationProposalId) {
  * Declines a proposal
  */
 export async function declineProposal(destinationProposalId) {
-   await superagent.delete(endpoint(`/destinations/proposals/${destinationProposalId}`))
+   const userId = localStorage.getItem("userId");
+   await superagent.delete(endpoint(`/users/${userId}/destinations/proposals/${destinationProposalId}`))
                 .set("Authorization", localStorage.getItem("authToken"));
 
 }
