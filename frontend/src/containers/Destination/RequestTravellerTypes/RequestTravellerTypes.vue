@@ -105,14 +105,14 @@ export default {
       const validForm = this.$refs.form.validate();
       if (!validForm) return;
       try {
-        const destinationId = this.destination.destinationId;
         const travellerTypeIds = this.selectedTravellerTypes
                                   .map(selectedTravellerType => selectedTravellerType.travellerTypeId);
 
+
         
-        await sendProposal(destinationId, travellerTypeIds); 
+
         this.isDialogShowing = false;
-        this.$emit("proposalSent");
+        this.$emit("sendingProposal", travellerTypeIds);
       } catch (e) {
         console.log(e);
         this.$emit("showError", "Could not send proposal");

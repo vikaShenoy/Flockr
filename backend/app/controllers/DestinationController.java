@@ -682,6 +682,7 @@ public class DestinationController extends Controller {
                 return forbidden(forbiddenException.getMessage());
             }
             catch (Throwable throwableException) {
+                throwableException.printStackTrace();
                 return internalServerError(throwableException.getMessage());
             }
         });

@@ -102,7 +102,7 @@
   <RequestTravellerTypes 
     :isShowingTravellerTypesDialog.sync="isShowingTravellerTypesDialog" 
     :destination="destination"
-    v-on:proposalSent="proposalSent"
+    v-on:sendingProposal="sendingProposal"
     v-on:showError="showError"
   />
 
@@ -128,7 +128,7 @@ import RequestTravellerTypes from "./RequestTravellerTypes/RequestTravellerTypes
 import { sendUpdateDestination } from "../Destinations/DestinationsService";
 import UserStore from '../../stores/UserStore';
 import UndoRedo from "../../components/UndoRedo/UndoRedo"
-
+import { sendProposal } from "./RequestTravellerTypes/RequestTravellerTypesService";
 
 
 export default {
@@ -215,7 +215,10 @@ export default {
     dismissSnackbar() {
       this.snackbarModel.show = false;
     },
-    proposalSent() {
+    async sendingProposal(travellerTypeIds) {
+
+      const undoCommand = async ()
+      await sendProposal(this.destination.destinationId, travellerTypeIds);
       this.snackbarModel.color = "success";
       this.snackbarModel.text = "Proposal Sent";
       this.snackbarModel.show = true;
