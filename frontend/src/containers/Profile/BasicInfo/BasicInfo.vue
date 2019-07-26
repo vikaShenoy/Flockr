@@ -4,10 +4,6 @@
       <h3>Basic Info</h3>
       <!--Only show edit/save btn if user is logged in-->
 
-      <div id="undo-redo-buttons">
-        <UndoRedo ref="undoRedo" />
-      </div>
-
       <div v-if="userStore.userId === userProfile.userId" id="edit-btn">
         <v-btn
           small
@@ -166,16 +162,11 @@
 </template>
 <script>
 import UserStore from "../../../stores/UserStore";
-import { rules, updateBasicInfo } from "./BasicInfoService.js";
+import { rules } from "./BasicInfoService.js";
 import moment from "moment";
-import UndoRedo from "../../../components/UndoRedo/UndoRedo";
-import Command from "../../../components/UndoRedo/Command";
 
 export default {
   props: ["userProfile", "userId"],
-  components: {
-    UndoRedo
-  },
   data() {
     return {
       userStore: UserStore.data,
@@ -229,25 +220,7 @@ export default {
           gender: this.gender
         }
 
-        const undoCommand = async (basicInfo) => {
-          await updateBasicInfo(userId, basicInfo);
-          const oldUserProfile = {...userProfile, ...basicInfo};
-          UserStore.methods.setData(oldUserProfile);
-          this.$emit("update:userProfile", oldUserProfile);
-        };
-
-        const redoCommand = async (basicInfo) => {
-          await updateBasicInfo(userId, basicInfo);
-          const newUserProfile = {...userProfile, ...basicInfo};
-          UserStore.methods.setData(newUserProfile);
-          this.$emit("update:userProfile", newUserProfile);
-        };
-
-        redoCommand(newBasicInfo); // actually make the update
-
-        const updateBasicInfoCommand = new Command(undoCommand.bind(null, oldBasicInfo), redoCommand.bind(null, newBasicInfo));
-        this.$refs.undoRedo.addUndo(updateBasicInfoCommand);
-
+        this.$emit("update-basic-info", oldBasicInfo, newBasicInfo);
         this.isEditing = false;
       } else {
         this.isEditing = true;

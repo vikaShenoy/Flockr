@@ -13,6 +13,7 @@
 
     <div class="row">
       <div class="col-lg-4">
+
         <ProfilePic
           :profilePhoto="userProfile.profilePhoto"
           :photos="userProfile.personalPhotos"
@@ -21,8 +22,18 @@
           v-on:showError="showError"
         />
 
-        <BasicInfo :userProfile.sync="userProfile" />
+        <v-card id="undo-redo-card">
+          <p>You can undo and redo your changes.</p>
 
+          <UndoRedo ref="undoRedo" />
+        </v-card>
+
+        <BasicInfo
+          :userProfile="userProfile"
+          @update-basic-info="this.updateBasicInfo"
+        />
+
+        <!-- TODO: move undo redo to unified component -->
         <Photos
           :photos="userProfile.personalPhotos"
           @deletePhoto="deletePhoto"
@@ -34,14 +45,17 @@
       </div>
 
       <div class="col-lg-8">
+        <!-- TODO: move undo redo to unified component -->
         <Nationalities
           :userNationalities.sync="userProfile.nationalities"
           :userId="userProfile.userId"
         />
+        <!-- TODO: move undo redo to unified component -->
         <Passports
           :userPassports.sync="userProfile.passports"
           :userId="userProfile.userId"
         />
+        <!-- TODO: move undo redo to unified component -->
         <TravellerTypes
           :userTravellerTypes.sync="userProfile.travellerTypes"
           :userId="userProfile.userId"
@@ -66,9 +80,12 @@ import TravellerTypes from "./TravellerTypes/TravellerTypes";
 import BasicInfo from "./BasicInfo/BasicInfo";
 import Trips from "./Trips/Trips";
 import Photos from "./Photos/Photos";
-
+import UndoRedo from "../../components/UndoRedo/UndoRedo";
+import Command from "../../components/UndoRedo/Command";
+import UserStore from "../../stores/UserStore";
 import moment from "moment";
 import { getUser } from "./ProfileService";
+import { updateBasicInfo } from "./BasicInfo/BasicInfoService";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import {endpoint} from "../../utils/endpoint";
 
@@ -81,7 +98,8 @@ export default {
     BasicInfo,
     TravellerTypes,
     Trips,
-    Photos
+    Photos,
+    UndoRedo
   },
   data() {
     return {
@@ -100,6 +118,26 @@ export default {
     this.getUserInfo();
   },
   methods: {
+    updateBasicInfo(oldBasicInfo, newBasicInfo) {
+      console.log(oldBasicInfo);
+      console.log(newBasicInfo);
+      
+      const userId = localStorage.getItem("userId");
+      const { userProfile } = this;
+
+      const command = async (basicInfo) => {
+        await updateBasicInfo(userId, basicInfo);
+        const mergedUserProfile = {...userProfile, ...basicInfo};
+        UserStore.methods.setData(mergedUserProfile);
+        this.userProfile = mergedUserProfile;
+      };
+
+      const undoCommand = command.bind(null, oldBasicInfo);
+      const redoCommand = command.bind(null, newBasicInfo);
+      const updateBasicInfoCommand = new Command(undoCommand, redoCommand);
+      this.$refs.undoRedo.addUndo(updateBasicInfoCommand);
+      redoCommand(newBasicInfo); // actually make the update
+    },
     /**
      * Called when a deletePhoto event is emitted from the photos component.
      * Removes the photo at the given index.
@@ -113,10 +151,7 @@ export default {
         this.errorSnackbar.text = "Photo deleted successfully";
         this.errorSnackbar.show = true;
       }
-
-
     },
-
     /**
      * Called when a undoDeletePhoto event is emitted from the photos component. 
      * Adds the photo back to the list at the given index.
@@ -127,7 +162,6 @@ export default {
     undoDeletePhoto(index, photo) {
       this.userProfile.personalPhotos.splice(index, 0, photo);
     },
-
     /**
      * Gets a users info and sets the users state
      */
@@ -155,7 +189,6 @@ export default {
         this.userProfile.travellerTypes.length
       );
     },
-
     /**
      * Updates the profile picture of a user after it has been changed.
      *
@@ -194,6 +227,15 @@ export default {
   width: 100%;
   margin-left: 15px;
   margin-right: 15px;
+
+  #undo-redo-card {
+    margin-top: 10px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
 }
 </style>
 
