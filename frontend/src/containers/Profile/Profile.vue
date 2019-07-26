@@ -56,9 +56,9 @@
           @update-user-passports="updateUserPassports"
           :userId="userProfile.userId"
         />
-        <!-- TODO: move undo redo to unified component -->
         <TravellerTypes
-          :userTravellerTypes.sync="userProfile.travellerTypes"
+          :userTravellerTypes="userProfile.travellerTypes"
+          @update-user-traveller-types="updateUserTravellerTypes"
           :userId="userProfile.userId"
         />
         <div>
@@ -89,6 +89,7 @@ import { getUser } from "./ProfileService";
 import { updateBasicInfo } from "./BasicInfo/BasicInfoService";
 import { updateNationalities } from "./Nationalities/NationalityService";
 import { updatePassports } from "./Passports/PassportService";
+import { updateTravellerTypes } from "./TravellerTypes/TravellerTypesService";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import {endpoint} from "../../utils/endpoint";
 
@@ -121,6 +122,22 @@ export default {
     this.getUserInfo();
   },
   methods: {
+    updateUserTravellerTypes(oldTravellerTypes, newTravellerTypes) {
+      const userId = localStorage.getItem("userId");
+
+      const command = async (travellerTypes) => {
+        const travellerTypeIds = travellerTypes.map(t => t.travellerTypeId);
+        await updateTravellerTypes(userId, travellerTypeIds);
+        UserStore.data.travellerTypes = travellerTypes;
+        this.userProfile.travellerTypes = travellerTypes;
+      };
+
+      const undoCommand = command.bind(null, oldTravellerTypes);
+      const redoCommand = command.bind(null, newTravellerTypes);
+      const updateTravellerTypesCommand = new Command(undoCommand, redoCommand);
+      this.$refs.undoRedo.addUndo(updateTravellerTypesCommand);
+      redoCommand(); // perform update
+    },
     updateUserPassports(oldPassports, newPassports) {
       const userId = localStorage.getItem("userId");
 

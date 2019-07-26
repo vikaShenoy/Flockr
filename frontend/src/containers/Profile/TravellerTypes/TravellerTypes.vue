@@ -4,10 +4,6 @@
     <div class="header">
       <h3>Traveller Types</h3>
 
-      <div id="undo-redo-buttons">
-        <UndoRedo ref="undoRedo" />
-      </div>
-
       <div id="edit-btn">
         <v-btn
 					v-if="userStore.userId === userId"
@@ -67,7 +63,7 @@
 
 <script>
 import UserStore from "../../../stores/UserStore";
-import { getAllTravellerTypes, updateTravellerTypes } from "./TravellerTypesService";
+import { getAllTravellerTypes } from "./TravellerTypesService";
 import UndoRedo from "../../../components/UndoRedo/UndoRedo";
 import Command from "../../../components/UndoRedo/Command";
 
@@ -81,9 +77,6 @@ export default {
 			type: Number,
 			required: true
 		}
-  },
-  components: {
-    UndoRedo
   },
 	data() {
 		return {
@@ -120,21 +113,11 @@ export default {
 					return;
 				} 
 
-				this.travellerTypeErrors = [];
-        const userId = this.$route.params.id;
+        this.travellerTypeErrors = [];
 
-        const command = async (travellerTypes) => {
-          const travellerTypeIds = travellerTypes.map(t => t.travellerTypeId);
-          await updateTravellerTypes(userId, travellerTypeIds);
-          UserStore.data.travellerTypes = travellerTypes;
-				  this.$emit("update:userTravellerTypes", travellerTypes);
-        };
-        
-        const undoCommand = command.bind(null, this.userTravellerTypes);
-        const redoCommand = command.bind(null, this.editingTravellerTypes);
-        const updateTravellerTypesCommand = new Command(undoCommand, redoCommand);
-        this.$refs.undoRedo.addUndo(updateTravellerTypesCommand);
-        redoCommand(); // perform update
+        const oldTravellerTypes = this.userTravellerTypes;
+        const newTravellerTypes = this.editingTravellerTypes;
+        this.$emit("update-user-traveller-types", oldTravellerTypes, newTravellerTypes);
 			}
 			this.isEditing = !this.isEditing;
 		},
