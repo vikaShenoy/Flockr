@@ -717,9 +717,38 @@ public class DestinationController extends Controller {
      * @return A response that complies with the API spec
      */
     @With({LoggedIn.class, Admin.class})
-    public CompletionStage<Result> rejectProposal(int destinationProposalId) {
-        return destinationRepository.deleteDestinationProposalById(destinationProposalId)
-                .thenApplyAsync((Void) -> ok());
+    public CompletionStage<Result> rejectProposals(int destinationProposalId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        return destinationRepository.getDestinationProposalById(destinationProposalId)
+                .thenComposeAsync(optionalDestinationProposal -> {
+                    if (!optionalDestinationProposal.isPresent()) {
+                        throw new CompletionException(new NotFoundException("The destination proposal you want to reject does not exist."));
+                    }
+                    DestinationProposal destinationProposal = optionalDestinationProposal.get();
+                    if (!user.isAdmin()) {
+                        throw new CompletionException(new ForbiddenRequestException("You are not permitted to reject this destination proposal."));
+                    }
+                    ObjectNode success = Json.newObject();
+                    success.put("message", "Successfully rejected the given destination proposal");
+                    return this.destinationRepository.deleteDestinationProposal(destinationProposal);
+                }, httpExecutionContext.current())
+                .thenApplyAsync(destinationProposal -> (Result) ok(), httpExecutionContext.current())
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (ForbiddenRequestException forbiddenReqE) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", forbiddenReqE.getMessage());
+                        return forbidden(message);
+                    } catch (NotFoundException notFoundE) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", notFoundE.getMessage());
+                        return notFound(message);
+                    } catch (Throwable serverError) {
+                        serverError.printStackTrace();
+                        return internalServerError();
+                    }
+                });
     }
 
     /**
@@ -731,6 +760,60 @@ public class DestinationController extends Controller {
     public CompletionStage<Result> getProposals() {
         return destinationRepository.getDestinationProposals()
         .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));
+    }
+
+    /**
+     * The method that undoes the deletion of a destination proposal
+     * The following are the status codes:
+     * - 200 - OK - successful undo.
+     * - 400 - Bad Request - The destination proposal has not been deleted.
+     * - 401 - Unauthorised - the user is not authorised.
+     * - 403 - Forbidden - The user does not have permission to undo this deletion.
+     * - 404 - Not Found - The destination proposal cannot be found.
+     *
+     * @param destinationProposalId the id of the destination proposal to undo deletion of
+     * @param request the http request
+     * @return the completion stage containing the result
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> undoDeleteDestinationProposal(int destinationProposalId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        return destinationRepository.getDestinationProposalByIdWithSoftDelete(destinationProposalId)
+                .thenComposeAsync(optionalDestinationProposal -> {
+                    if (!optionalDestinationProposal.isPresent()) {
+                        throw new CompletionException(new NotFoundException("The destination proposal you are undoing does not exist."));
+                    }
+                    DestinationProposal destinationProposal = optionalDestinationProposal.get();
+                    if (!user.isAdmin()) {
+                        throw  new CompletionException(new ForbiddenRequestException("You do not have the permission to undo the deletion."));
+                    }
+                    if (!destinationProposal.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This destination proposal has not been deleted."));
+                    }
+                    return destinationRepository.undoDestinationProposalDelete(destinationProposal);
+                })
+                .thenApplyAsync(destinationProposal -> ok(Json.toJson(destinationProposal)))
+                .exceptionally(error -> {
+                    ObjectNode message = Json.newObject();
+                    try {
+                        throw error.getCause();
+                    } catch (BadRequestException e) {
+                        message.put("message", e.getMessage());
+                        return badRequest(message);
+                    } catch (ForbiddenRequestException e) {
+                        message.put("message", e.getMessage());
+                        return forbidden(message);
+                    } catch (NotFoundException e) {
+                        message.put("message", e.getMessage());
+                        return notFound(message);
+                    } catch (UnauthorizedException e) {
+                        message.put("message", e.getMessage());
+                        return unauthorized(message);
+                    } catch (Throwable e) {
+                        log.error("An unexpected error has occurred", e);
+                        return internalServerError();
+                    }
+                });
     }
 
 }

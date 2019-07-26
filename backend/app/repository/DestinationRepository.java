@@ -5,7 +5,6 @@ import io.ebean.EbeanServer;
 import models.*;
 import play.db.ebean.EbeanConfig;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
@@ -254,13 +253,19 @@ public class DestinationRepository {
     }
 
     /**
-     * Deletes a destination proposal with the given ID
+     * Deletes a destination proposal by finding the destination proposal's ID and deleting it with the
+     * ID found
      *
-     * @param destinationProposalId the ID of the destination proposal to be search
-     * @return void as nothing needs to be returned
+     * @param destinationProposal the destination proposal to be deleted
+     * @return the ID of the destination proposal that was deleted
      */
-    public CompletionStage<Void> deleteDestinationProposalById(int destinationProposalId) {
-         return runAsync(() -> DestinationProposal.find.deleteById(destinationProposalId));
+    public CompletionStage<Integer> deleteDestinationProposal(DestinationProposal destinationProposal) {
+         return supplyAsync(() -> {
+             destinationProposal.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+             destinationProposal.save();
+             destinationProposal.delete(); // Soft delete
+             return destinationProposal.getDestinationProposalId();
+         }, executionContext);
     }
 
     /**
@@ -270,6 +275,35 @@ public class DestinationRepository {
      */
     public CompletionStage<List<DestinationProposal>> getDestinationProposals() {
         return supplyAsync(DestinationProposal.find::all);
+    }
+
+    /**
+     * Gets the destination proposal with the given proposal ID including soft deleted proposals
+     *
+     * @param destinationProposalId the ID of the destination proposal to be searched
+     * @return the proposal
+     */
+    public CompletionStage<Optional<DestinationProposal>> getDestinationProposalByIdWithSoftDelete(int destinationProposalId) {
+        return supplyAsync(() -> {
+            Optional<DestinationProposal> proposal = DestinationProposal.find.query().setIncludeSoftDeletes()
+                    .where().eq("destination_proposal_id", destinationProposalId).findOneOrEmpty();
+            return proposal;
+        }, executionContext);
+    }
+
+    /**
+     * Undoes the deletion of the destination proposal
+     *
+     * @param destinationProposal the destination proposal to deletion to be undone
+     * @return the destination proposal after the deletion is undone
+     */
+    public CompletionStage<DestinationProposal> undoDestinationProposalDelete(DestinationProposal destinationProposal) {
+        return supplyAsync(() -> {
+            destinationProposal.setDeleted(false);
+            destinationProposal.setDeletedExpiry(null);
+            destinationProposal.save();
+            return destinationProposal;
+        });
     }
 
 }
