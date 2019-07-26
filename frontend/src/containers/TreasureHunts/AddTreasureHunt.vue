@@ -46,6 +46,7 @@
                                                 label="Start Date"
                                                 prepend-icon="event"
                                                 type="date"
+                                                :max="today"
                                         ></v-text-field>
                                     </v-flex>
                                     <v-flex xs12>
@@ -54,6 +55,7 @@
                                                 label="End Date"
                                                 prepend-icon="event"
                                                 type="date"
+                                                :min="today"
                                         ></v-text-field>
                                     </v-flex>
                                 </v-layout>
@@ -94,6 +96,7 @@
                 createTreasureHuntRiddle: "",
                 startDate: null,
                 endDate: null,
+                today: new Date().toISOString().split("T")[0]
 
             }
         },

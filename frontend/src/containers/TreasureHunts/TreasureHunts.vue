@@ -25,7 +25,7 @@
             </template>
             <v-card class="card">
                 <v-card-text>Riddle: {{item.riddle}}</v-card-text>
-                <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}<br>Time Zone: {{item.timezone}}</v-card-text>
+                <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}<br>Date and times are in your local timezone</v-card-text>
                 <v-card-text v-if="isOwner(item.ownerId) || isAdmin()">Destination: {{item.destination}}</v-card-text>
             </v-card>
             </v-expansion-panel-content>
@@ -102,7 +102,6 @@ export default {
             const treasureHuntsPromises = rawTreasureHunts.map(async treasureHunt => {
                 return {
                   ...treasureHunt,
-                  timezone: "Your local timezone",
                   destination: await getDestination(treasureHunt.treasureHuntDestinationId)
                 };
             });
