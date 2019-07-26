@@ -79,7 +79,7 @@
               offset-sm1
               offset-xs0
             >
-              <v-select
+              <v-combobox
                 v-model="destination.destinationCountry.countryId"
                 :value="destination.destinationCountry.countryId"
                 :items="countries"

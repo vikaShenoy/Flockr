@@ -1,5 +1,6 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
+import {async} from "q";
 
 
 /**
@@ -49,6 +50,13 @@ export async function requestDestination(destinationId) {
  */
 export async function sendDeleteDestination(destinationId) {
   const res = await superagent.delete(endpoint(`/destinations/${destinationId}`))
+      .set("Authorization", localStorage.getItem("authToken"));
+
+  return res.body;
+}
+
+export async function sendUndoDeleteDestination(destinationId) {
+  const res = await superagent.put(endpoint(`/destinations/${destinationId}/undodelete`))
       .set("Authorization", localStorage.getItem("authToken"));
 
   return res.body;
