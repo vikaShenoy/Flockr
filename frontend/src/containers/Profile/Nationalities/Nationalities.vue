@@ -3,10 +3,6 @@
     <div id="header">
       <h3>Nationalities</h3>
 
-      <div id="undo-redo-buttons">
-        <UndoRedo ref="undoRedo" />
-      </div>
-
       <div id="edit-btn">
         <v-btn
           v-if="userStore.userId === userId"
@@ -63,7 +59,7 @@
 
 <script>
 import UserStore from "../../../stores/UserStore";
-import { getNationalities, updateNationalities } from "./NationalityService";
+import { getNationalities } from "./NationalityService";
 import UndoRedo from "../../../components/UndoRedo/UndoRedo";
 import Command from "../../../components/UndoRedo/Command";
 
@@ -109,22 +105,9 @@ export default {
         }
 
         this.nationalityErrors = [];
-
-        const userId = this.$route.params.id;
-
-        const command = async(nationalities) => {
-          console.log(nationalities);
-          const nationalityIds = nationalities.map(nationality => nationality.nationalityId);
-          await updateNationalities(userId, nationalityIds);
-          UserStore.data.nationalities = nationalities;
-          this.$emit("update:userNationalities", nationalities);
-        };
-
-        const undoCommand = command.bind(null, this.userNationalities);
-        const redoCommand = command.bind(null, this.userNat);
-        const updateNationalitiesCommand = new Command(undoCommand, redoCommand);
-        this.$refs.undoRedo.addUndo(updateNationalitiesCommand);
-        redoCommand(); // perform the update
+        const oldNationalities = this.userNationalities;
+        const newNationalities = this.userNat;
+        this.$emit("update-user-nationalities", oldNationalities, newNationalities);
       }
       this.isEditing = !this.isEditing;
     },

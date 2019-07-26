@@ -45,9 +45,9 @@
       </div>
 
       <div class="col-lg-8">
-        <!-- TODO: move undo redo to unified component -->
         <Nationalities
-          :userNationalities.sync="userProfile.nationalities"
+          :userNationalities="userProfile.nationalities"
+          @update-user-nationalities="updateUserNationalities"
           :userId="userProfile.userId"
         />
         <!-- TODO: move undo redo to unified component -->
@@ -86,6 +86,7 @@ import UserStore from "../../stores/UserStore";
 import moment from "moment";
 import { getUser } from "./ProfileService";
 import { updateBasicInfo } from "./BasicInfo/BasicInfoService";
+import { updateNationalities } from "./Nationalities/NationalityService";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import {endpoint} from "../../utils/endpoint";
 
@@ -118,10 +119,23 @@ export default {
     this.getUserInfo();
   },
   methods: {
+    updateUserNationalities(oldNationalities, newNationalities) {
+      const userId = localStorage.getItem("userId");
+
+      const command = async(nationalities) => {
+        const nationalityIds = nationalities.map(nationality => nationality.nationalityId);
+        await updateNationalities(userId, nationalityIds);
+        UserStore.data.nationalities = nationalities;
+        this.userProfile.nationalities = nationalities;
+      };
+
+      const undoCommand = command.bind(null, oldNationalities);
+      const redoCommand = command.bind(null, newNationalities);
+      const updateNationalitiesCommand = new Command(undoCommand, redoCommand);
+      this.$refs.undoRedo.addUndo(updateNationalitiesCommand);
+      redoCommand(); // perform the update
+    },
     updateBasicInfo(oldBasicInfo, newBasicInfo) {
-      console.log(oldBasicInfo);
-      console.log(newBasicInfo);
-      
       const userId = localStorage.getItem("userId");
       const { userProfile } = this;
 
