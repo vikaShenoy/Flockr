@@ -14,6 +14,7 @@
     <div class="row">
       <div class="col-lg-4">
 
+        <!-- TODO: move undo redo to unified component -->
         <ProfilePic
           :profilePhoto="userProfile.profilePhoto"
           :photos="userProfile.personalPhotos"
@@ -50,9 +51,9 @@
           @update-user-nationalities="updateUserNationalities"
           :userId="userProfile.userId"
         />
-        <!-- TODO: move undo redo to unified component -->
         <Passports
-          :userPassports.sync="userProfile.passports"
+          :userPassports="userProfile.passports"
+          @update-user-passports="updateUserPassports"
           :userId="userProfile.userId"
         />
         <!-- TODO: move undo redo to unified component -->
@@ -87,6 +88,7 @@ import moment from "moment";
 import { getUser } from "./ProfileService";
 import { updateBasicInfo } from "./BasicInfo/BasicInfoService";
 import { updateNationalities } from "./Nationalities/NationalityService";
+import { updatePassports } from "./Passports/PassportService";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import {endpoint} from "../../utils/endpoint";
 
@@ -119,6 +121,22 @@ export default {
     this.getUserInfo();
   },
   methods: {
+    updateUserPassports(oldPassports, newPassports) {
+      const userId = localStorage.getItem("userId");
+
+      const command = async (passports) => {
+        const passportIds = passports.map(p => p.passportId);
+        await updatePassports(userId, passportIds);
+        UserStore.data.passports = passports;
+        this.userProfile.passports = passports;
+      };
+
+      const undoCommand = command.bind(null, oldPassports);
+      const redoCommand = command.bind(null, newPassports);
+      const updatePassportsCommand = new Command(undoCommand, redoCommand);
+      this.$refs.undoRedo.addUndo(updatePassportsCommand);
+      redoCommand(); // actually perform the update
+    },
     updateUserNationalities(oldNationalities, newNationalities) {
       const userId = localStorage.getItem("userId");
 
