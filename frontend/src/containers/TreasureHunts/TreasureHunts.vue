@@ -46,6 +46,7 @@
         <EditTreasureHunt
                 :toggle="showEditForm"
                 :data="treasureHunt"
+                :key="refreshEditDialog"
                 @closeEditDialog="closeEditDialog"
                 @updateList="updateList"
         ></EditTreasureHunt>
@@ -57,7 +58,7 @@
 <script>
 import AddTreasureHunt from "./AddTreasureHunt";
 import EditTreasureHunt from "./EditTreasureHunt"
-import {getAllTreasureHunts, getDestination, getTimeZone2} from "./TreasureHuntsService";
+import {getAllTreasureHunts, getDestination, deleteTreasureHuntData} from "./TreasureHuntsService";
 import moment from "moment";
 import UserStore from "../../stores/UserStore";
 
@@ -65,7 +66,6 @@ export default {
     components: {AddTreasureHunt, EditTreasureHunt},
     mounted() {
         this.getTreasureHunts();
-        this.setUserTimeZone();
 
     },
     data() {
@@ -74,9 +74,7 @@ export default {
             showEditForm: false,
             treasureHunts: [],
             treasureHunt: {},
-            timezone: "",
-            userLat: 0,
-            userLong: 0
+            refreshEditDialog: 50
         }
     },
     methods: {
@@ -104,7 +102,7 @@ export default {
             const treasureHuntsPromises = rawTreasureHunts.map(async treasureHunt => {
                 return {
                   ...treasureHunt,
-                  timezone: this.timezone,
+                  timezone: "Your local timezone",
                   destination: await getDestination(treasureHunt.treasureHuntDestinationId)
                 };
             });
@@ -176,26 +174,12 @@ export default {
         showEditDialog(treasureHunt) {
             this.treasureHunt = treasureHunt;
             this.showEditForm = true;
+            this.refreshEditDialog += 1;
         },
 
-        deleteTreasureHunt(treasureHuntId) {
-            console.log("deleting treasure hunt");
-        },
-
-        async setUserTimeZone() {
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async position => {
-                        this.userLat = position.coords.latitude;
-                        this.userLong = position.coords.longitude;
-                        this.timezone = await getTimeZone2(this.userLat, this.userLong)
-                    },
-                    error => {
-                        console.log("error")
-                    }
-                );
-            }
+        async deleteTreasureHunt(treasureHuntId) {
+            await deleteTreasureHuntData(treasureHuntId);
+            this.updateList();
         }
     }
 
