@@ -63,7 +63,7 @@ public class DestinationControllerTest {
 
         // Add some destinations
         DestinationType destinationType = new DestinationType("city");
-        Country country = new Country("Test Nation");
+        Country country = new Country("Peru", "PE", true);
         District district = new District("Test District", country);
         destination = new Destination("Test City", destinationType, district,
                 0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);

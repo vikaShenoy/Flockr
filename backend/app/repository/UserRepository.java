@@ -3,6 +3,7 @@ package repository;
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
+import io.ebean.OrderBy;
 import models.*;
 import play.db.ebean.EbeanConfig;
 
@@ -89,7 +90,7 @@ public class UserRepository {
      */
     public CompletionStage<List<Passport>> getAllPassports() {
         return supplyAsync(() -> {
-            List<Passport> passports = Passport.find.query().findList();
+            List<Passport> passports = Passport.find.query().orderBy().asc("passport_country").findList();
             return passports;
         }, executionContext);
     }
@@ -114,7 +115,7 @@ public class UserRepository {
      * @return List of nationalities
      */
     public CompletionStage<List<Nationality>> getAllNationalities() {
-        return supplyAsync(() -> Nationality.find.query().findList(), executionContext);
+        return supplyAsync(() -> Nationality.find.query().orderBy().asc("nationality_name").findList(), executionContext);
     }
 
     /**

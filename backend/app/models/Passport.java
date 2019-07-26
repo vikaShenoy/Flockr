@@ -20,6 +20,9 @@ public class Passport extends Model {
 
     private String passportCountry;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private Country country;
+
     /**
      * Constructor.
      * @param passportCountry country the passport is for.
@@ -34,6 +37,14 @@ public class Passport extends Model {
 
     public void setPassportId(int passportId) {
         this.passportId = passportId;
+    }
+
+    public Country getCountry() {
+        return country;
+    }
+
+    public void setCountry(Country country) {
+        this.country = country;
     }
 
     public String getPassportCountry() {

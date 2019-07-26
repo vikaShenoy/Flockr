@@ -2,6 +2,9 @@ package tasks;
 
 import com.google.inject.AbstractModule;
 
+/**
+ * Registers the tasks that need to be handled by the application.
+ */
 public class TasksController extends AbstractModule {
 
     @Override
@@ -9,6 +12,7 @@ public class TasksController extends AbstractModule {
         bind(DeleteExpiredPhotosTask.class).asEagerSingleton();
         bind(DeleteExpiredUsersTask.class).asEagerSingleton();
         bind(DeleteExpiredDestinationsTask.class).asEagerSingleton();
-        //TODO: add more for other model types.
+        bind(CountrySyncTask.class).asEagerSingleton();
+        // you may add more tasks here
     }
 }
