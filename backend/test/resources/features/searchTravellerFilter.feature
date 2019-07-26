@@ -14,11 +14,11 @@ Feature: The user can search travellers
     When I want all types of nationalities from the database
     Then I get a list of all nationalities as follows:
       | nationalityId | nationalityName |
+      | 5             | Afghanistan     |
+      | 4             | Australia       |
       | 1             | Chile           |
       | 2             | Mexico          |
       | 3             | New Zealand     |
-      | 4             | Australia       |
-      | 5             | Afghanistan     |
       | 6             | Peru            |
 
   Scenario Outline: The user can search a traveller by nationality id

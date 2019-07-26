@@ -79,7 +79,8 @@
               offset-sm1
               offset-xs0
             >
-              <CountryPicker v-bind:country="destinationToEdit.destinationCountry.countryId" v-on:change="updateCountry"></CountryPicker>
+              <CountryPicker v-if="destinationToEdit" v-bind:country="destinationToEdit.destinationCountry.countryId" v-on:change="updateCountry"></CountryPicker>
+              <CountryPicker v-else v-on:change="updateCountry"></CountryPicker>
             </v-flex>
 
             <v-flex

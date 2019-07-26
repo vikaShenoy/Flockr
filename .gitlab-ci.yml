@@ -51,50 +51,50 @@ run-tests:
     - "cd backend && sbt test"
   stage: test
 
-staging-run:
-  dependencies:
-    - staging-artifacts-backend
-  script: 
-    - "cd backend/target/universal"
-    - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-    - pm2 delete dev-server || true
-    - sudo rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT
-    - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
-    - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
-    - pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
-  only:
-    - dev
-  stage: deploy
+# staging-run:
+#   dependencies:
+#     - staging-artifacts-backend
+#   script: 
+#     - "cd backend/target/universal"
+#     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+#     - pm2 delete dev-server || true
+#     - sudo rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT
+#     - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
+#     - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
+#     - pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
+#   only:
+#     - dev
+#   stage: deploy
 
-production-run:
-  dependencies:
-    - release-artifacts-backend
-  script: 
-    - "cd backend/target/universal"
-    - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-    - pm2 delete prod-server || true
-    - sudo rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT
-    - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
-    - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/conf
-    - sudo mv application.prod.conf application.conf
-    - cd ../bin
-    - pm2 start "sudo bash seng302-team-500 -Dhttp.port=443" --name=prod-server
+# production-run:
+#   dependencies:
+#     - release-artifacts-backend
+#   script: 
+#     - "cd backend/target/universal"
+#     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+#     - pm2 delete prod-server || true
+#     - sudo rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT
+#     - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
+#     - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/conf
+#     - sudo mv application.prod.conf application.conf
+#     - cd ../bin
+#     - pm2 start "sudo bash seng302-team-500 -Dhttp.port=443" --name=prod-server
 
-  only:
-    - master
-  stage: deploy
+#   only:
+#     - master
+#   stage: deploy
 
-
+#  Add sudo back to the start of this command when using VM
 
 after_script:
-  - "sudo chown -R gitlab-runner:gitlab-runner ."
+  - "chown -R gitlab-runner:gitlab-runner ."
 
-update-sonar:
- stage: test
- script:
-    - cd backend && sbt jacoco
-    - cd .. && export PATH=$PATH:/opt/sonarqubeScanner/bin
-    - sonar-scanner  --debug
- only:
-    - master@seng302-2019/team-500
-    - dev@seng302-2019/team-500
+# update-sonar:
+#  stage: test
+#  script:
+#     - cd backend && sbt jacoco
+#     - cd .. && export PATH=$PATH:/opt/sonarqubeScanner/bin
+#     - sonar-scanner  --debug
+#  only:
+#     - master@seng302-2019/team-500
+#     - dev@seng302-2019/team-500

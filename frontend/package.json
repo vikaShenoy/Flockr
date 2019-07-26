@@ -12,6 +12,7 @@
     "axios": "^0.18.0",
     "bootstrap": "^4.3.1",
     "email-validator": "^2.0.4",
+    "eslint-loader": "^2.2.1",
     "i": "^0.3.6",
     "jest": "^24.8.0",
     "moment": "^2.24.0",
