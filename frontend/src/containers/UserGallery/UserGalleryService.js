@@ -36,7 +36,7 @@ export async function deleteUserPhoto(photo) {
   const response = await superAgent.delete(endpoint(`/users/photos/${photo.photoId}`))
       .set("authorization", localStorage.getItem("authToken"));
   return response.body;
-};
+}
 
 /**
  * Undo delete function for a photo.

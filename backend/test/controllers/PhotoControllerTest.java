@@ -142,6 +142,7 @@ public class PhotoControllerTest {
         );
     }
 
+
     @Test
     public void undoDeleteNotFound() {
         undoDeletePhotoWithToken(
@@ -150,6 +151,25 @@ public class PhotoControllerTest {
                 10000000,
                 false
         );
+    }
+
+    @Test
+    public void iCanUndoAProfilePhoto() {
+        // Set profile photo and delete "old" photo
+        PersonalPhoto personalPhoto = new PersonalPhoto("abc", true, user, true, "thumb");
+        personalPhoto.save();
+        user.setProfilePhoto(personalPhoto);
+
+        photo.delete();
+        String endpoint = "/api/users/" + user.getUserId() + "/profilephoto/" + photo.getPhotoId() +  "/undo";
+
+        Result result = fakeClient.makeRequestWithToken("PUT", endpoint, user.getToken());
+        Assert.assertEquals(200, result.status());
+        User retrievedUser = User.find.byId(user.getUserId());
+        Assert.assertNotNull(retrievedUser);
+        Assert.assertNotNull(retrievedUser.getProfilePhoto());
+        Assert.assertEquals(retrievedUser.getProfilePhoto().getPhotoId(), photo.getPhotoId());
+
     }
 
     /**
@@ -174,4 +194,6 @@ public class PhotoControllerTest {
             Assert.assertTrue(optionalPhoto.isPresent());
         }
     }
+
+
 }

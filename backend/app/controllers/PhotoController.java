@@ -10,6 +10,7 @@ import exceptions.NotFoundException;
 import exceptions.UnauthorizedException;
 import models.PersonalPhoto;
 import models.User;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Files;
@@ -23,6 +24,7 @@ import util.Security;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
+import javax.xml.ws.Response;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -33,6 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -138,7 +141,6 @@ public class PhotoController extends Controller {
         return photoRepository.getPhotoByIdWithSoftDelete(photoId)
                 .thenComposeAsync(optionalPhoto -> {
                     if (!optionalPhoto.isPresent()) {
-                        System.out.println(1);
                         throw new CompletionException(new NotFoundException("Photo not found"));
                     }
                     PersonalPhoto photo = optionalPhoto.get();
@@ -474,16 +476,12 @@ public class PhotoController extends Controller {
                                                 // If old profile photo exists, delete thumbnail and photo of old profile photo
                                                 if (receivingUser.getProfilePhoto() != null) {
                                                     PersonalPhoto oldProfilePhoto = receivingUser.getProfilePhoto();
-                                                    String profilePicturePath = System.getProperty("user.dir") + "/storage/photos";
-                                                    File photoFile = new File(profilePicturePath, oldProfilePhoto.getFilenameHash());
-                                                    File thumbnailFile = new File(profilePicturePath, oldProfilePhoto.getThumbnailName());
 
-                                                    if (!photoFile.delete() || !thumbnailFile.delete()) {
-                                                        String photoErrorMessage = "Error deleting old profile photo and thumbnail";
-                                                        System.err.println(photoErrorMessage);
-                                                        throw new CompletionException(new FileNotFoundException(photoErrorMessage));
+                                                    // Soft delete profile photo row in db
+                                                    if (oldProfilePhoto != null) {
+                                                        oldProfilePhoto.delete();
                                                     }
-                                                }
+                                               }
 
                                                 receivingUser.setProfilePhoto(insertedPhoto);
                                                 receivingUser.save();
@@ -568,6 +566,59 @@ public class PhotoController extends Controller {
                 });
     }
 
+    @With(LoggedIn.class)
+    public CompletionStage<Result> undoProfilePhoto(int userId, int photoId, Http.Request request) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+        if (!security.userHasPermission(userFromMiddleware, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+        User user = User.find.byId(userId);
+
+        if (user == null) {
+            return supplyAsync(() -> notFound("Could not find "));
+        }
+
+       return photoRepository.getPhotoByIdWithSoftDelete(photoId)
+               .thenComposeAsync(optionalPhoto -> {
+                    if (!optionalPhoto.isPresent()) {
+                        throw new CompletionException(new NotFoundException("Photo not found"));
+                    }
+
+                    PersonalPhoto photo = optionalPhoto.get();
+                    if (!user.isAdmin() && user.getUserId() != photo.getOwnerId()) {
+                        throw new CompletionException(new ForbiddenRequestException("You can't undo photo"));
+                    }
+                    if (!photo.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This photo has not been deleted"));
+                    }
+                    return photoRepository.undoPhotoDelete(photo);
+                })
+                .thenApplyAsync(photo -> {
+                    PersonalPhoto personalPhoto = user.getProfilePhoto();
+                    user.setProfilePhoto(photo);
+                    user.save();
+                    // Only delete personal photo if it is already set
+                    if (personalPhoto != null) {
+                        personalPhoto.delete();
+                    }
+                    return (Result) ok();
+                })
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (ForbiddenRequestException forbiddenError) {
+                        return forbidden(e.getMessage());
+                    } catch (NotFoundException notFoundError) {
+                        return notFound(notFoundError.getMessage());
+                    } catch (BadRequestException badRequest) {
+                        return badRequest(e.getMessage());
+                    } catch (Throwable serverError) {
+                        return internalServerError();
+                    }
+                });
+    }
+
     /**
      * Saves a thumbnail of the given image file in the given destination.
      *
@@ -603,8 +654,10 @@ public class PhotoController extends Controller {
         BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
         image.createGraphics().drawImage(img, 0, 0, null);
         ImageIO.write(image, photoContentType, thumbFileDestination);
-
     }
+
+
+
 
 
 }
