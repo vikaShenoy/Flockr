@@ -728,6 +728,26 @@ public class DestinationController extends Controller {
     }
 
     /**
+     * A function that allows an admin to get the destination proposal by the given ID
+     *
+     * @param destinationProposalId the ID of the destination proposal to be retrieved
+     * @return A response that complies with the API spec
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> getProposalById(int destinationProposalId) {
+        return destinationRepository.getDestinationProposalById(destinationProposalId)
+                .thenApplyAsync(optionalDestinationProposal -> {
+                    if (!optionalDestinationProposal.isPresent()) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", "The proposal with the given ID does not exist.");
+                        return notFound(message);
+                    }
+                    DestinationProposal destinationProposal = optionalDestinationProposal.get();
+                    return ok(Json.toJson(destinationProposal));
+                });
+    }
+
+    /**
      * Allows an admin to reject a destination proposal
      *
      * @param destinationProposalId the ID of the proposal to reject

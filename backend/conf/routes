@@ -37,11 +37,12 @@ PUT           /api/users/:userId/profilephoto/:photoId/undo             controll
 
 
 # Destination Proposal endpoints
-GET           /api/destinations/proposals                               controllers.DestinationController.getProposals
-POST          /api/users/:userId/destinations/:destinationId/proposals  controllers.DestinationController.addProposal(userId: Int, request: Request, destinationId: Int)
-PATCH         /api/destinations/proposals/:destinationProposalId        controllers.DestinationController.acceptProposal(destinationProposalId: Int)
-DELETE        /api/users/:userId/destinations/proposals/:destinationProposalId        controllers.DestinationController.rejectProposal(userId: Int, destinationProposalId: Int, request: Request)
-PUT           /api/destinations/proposals/:destinationProposalId/undoReject   controllers.DestinationController.undoDeleteDestinationProposal(destinationProposalId: Int, request: Request)
+GET           /api/destinations/proposals                                           controllers.DestinationController.getProposals
+GET           /api/destinations/proposals/:destinationProposalId                    controllers.DestinationController.getProposalById(destinationProposalId: Int)
+POST          /api/users/:userId/destinations/:destinationId/proposals              controllers.DestinationController.addProposal(userId: Int, request: Request, destinationId: Int)
+PATCH         /api/destinations/proposals/:destinationProposalId                    controllers.DestinationController.acceptProposal(destinationProposalId: Int)
+DELETE        /api/users/:userId/destinations/proposals/:destinationProposalId      controllers.DestinationController.rejectProposal(userId: Int, destinationProposalId: Int, request: Request)
+PUT           /api/destinations/proposals/:destinationProposalId/undoReject         controllers.DestinationController.undoDeleteDestinationProposal(destinationProposalId: Int, request: Request)
 
 # Destination Routes
 GET           /api/destinations                                         controllers.DestinationController.getDestinations(request: Request)

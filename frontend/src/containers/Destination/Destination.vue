@@ -217,11 +217,10 @@ export default {
     },
     async sendingProposal(travellerTypeIds) {
       const proposal = await sendProposal(this.destination.destinationId, travellerTypeIds);
-      console.log("it is: ", proposal);
 
       const undoCommand = async (destinationProposalId) => {
         await rejectProposal(destinationProposalId);
-      }
+      };
 
       const redoCommand = async (destinationProposalId) => {
         await undeleteProposal(destinationProposalId);

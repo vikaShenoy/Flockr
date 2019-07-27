@@ -2,6 +2,7 @@
   <v-card id="destination-proposals">
     <v-subheader>
       Destination Proposals
+        <UndoRedo id="undo-redo-btns" ref="undoRedo" />
     </v-subheader>
     <v-divider></v-divider>
 
@@ -50,9 +51,16 @@
 </template>
 
 <script>
-import { getDestinationProposals, acceptProposal, declineProposal } from "./DestinationProposalsService";
+import { getDestinationProposals, getDestinationProposal, acceptProposal, declineProposal } from "./DestinationProposalsService";
+import UndoRedo from "../../../components/UndoRedo/UndoRedo.vue"
+import Command from "../../../components/UndoRedo/Command";
+import {sendUpdateDestination } from "../../Destinations/DestinationsService";
+import { undeleteProposal } from "../../Destination/DestinationService";
 
 export default {
+  components: {
+    UndoRedo
+  },
   data() {
     return {
       headers: [
@@ -76,6 +84,8 @@ export default {
         }
       ],
       destinationProposals: null,
+      oldDestination: null,
+      destinationId: null,
     };
   },
   /**
@@ -95,8 +105,23 @@ export default {
      */
     async acceptProposal(destinationProposalId) {
       try {
-        await acceptProposal(destinationProposalId); 
-        this.filterOutDestinationProposalId(destinationProposalId); 
+        const destinationProposal = await getDestinationProposal(destinationProposalId);
+        await acceptProposal(destinationProposalId);
+        this.oldDestination = destinationProposal.destination;
+        this.destinationId = destinationProposal.destination.destinationId;
+
+        const undoCommand = async () => {
+          await undeleteProposal(destinationProposalId);
+          await sendUpdateDestination(this.oldDestination, this.destinationId);
+        };
+
+        const redoCommand = async () => {
+          await acceptProposal(destinationProposalId);
+        };
+
+        const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, this.destinationProposal));
+        this.$refs.undoRedo.addUndo(acceptProposalCommand);
+        this.filterOutDestinationProposalId(destinationProposalId);
         this.$emit("showMessage", "Accepted Proposal");
       } catch (e) {
         this.$emit("showError", "Could not accept proposal");
@@ -133,6 +158,11 @@ export default {
 <style lang="scss" scoped>
 #destination-proposals {
   margin-top: 10px;
+}
+
+#undo-redo-btns {
+  float: right;
+  padding-left: 920px;
 }
 </style>
 
