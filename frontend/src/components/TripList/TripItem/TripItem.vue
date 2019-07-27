@@ -33,15 +33,16 @@
 </template>
 
 <script>
-  import {deleteTripFromList} from "../TripListService";
+  import {deleteTripFromList, getTripData} from "../TripListService";
 
   export default {
     props: ["trip"],
     methods: {
       async deleteTrip() {
+        const tripData = await getTripData(this.trip.tripId)
         await deleteTripFromList(this.trip.tripId);
         this.$emit("refreshList");
-        this.$emit("handleDelete", this.trip);
+        this.$emit("handleDelete", tripData);
       }
     }
     }

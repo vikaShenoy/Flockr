@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { getTrips, sortTrips, transformTrips } from "./TripListService.js";
+import { getTrips, sortTrips, transformTrips, getTripData } from "./TripListService.js";
 import TripItem from "./TripItem/TripItem";
 import UndoRedo from "../UndoRedo/UndoRedo";
 import Command from "../UndoRedo/Command";
@@ -46,10 +46,11 @@ export default {
               // Handle errors later
           }
       },
-        handleDelete(trip) {
+        async handleDelete(trip) {
             const undoCommand = async () => {
                 console.log("Undo the delete here")
                 console.log(trip)
+
             };
 
             const redoCommand = async () => {

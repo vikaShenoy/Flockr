@@ -35,6 +35,13 @@ public class Trip extends Model {
         this.tripName = tripName;
     }
 
+    public Trip(List<TripDestination> tripDestinations, User user, String tripName, int tripId) {
+        this.tripDestinations = tripDestinations;
+        this.user = user;
+        this.tripName = tripName;
+        this.tripId = tripId;
+    }
+
     public int getTripId() {
         return tripId;
     }

@@ -150,6 +150,14 @@ export async function deleteTripFromList(tripId) {
   return res.body;
 }
 
+export async function getTripData(tripId) {
+  const authToken = localStorage.getItem("authToken");
+  const userId = localStorage.getItem("userId");
+
+  const res = await superagent.get(endpoint(`/users/${userId}/trips/${tripId}`)).set("Authorization", authToken);
+
+  return res.body;
+}
 
 
 
