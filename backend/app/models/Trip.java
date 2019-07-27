@@ -15,12 +15,12 @@ public class Trip extends Model {
     @Id
     private int tripId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne()
     private User user;
 
     private String tripName;
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "trip")
     private List<TripDestination> tripDestinations;
 
     /**

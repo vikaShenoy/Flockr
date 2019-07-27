@@ -2,7 +2,7 @@
   <div id="trip-list-container">
      <div v-if="trips" class="col-md-12">
        <h3 v-if="!trips.length"><v-icon>directions_walk</v-icon> No Trips Available</h3>
-      <TripItem class="trip-card" v-else v-for="trip in trips" v-bind:key="trip.tripId" :trip="trip"/>
+      <TripItem @refreshList="refreshList" class="trip-card" v-else v-for="trip in trips" v-bind:key="trip.tripId" :trip="trip"/>
     </div>
 
     <div v-else>
@@ -29,15 +29,20 @@ export default {
     };
   },
   async mounted() {
-    try {
-      const trips = await getTrips(this.userId);
-      const sortedTrips = sortTrips(trips);
-      this.trips = transformTrips(sortedTrips);
-    } catch (e) {
-      console.log(e);
-      // Handle errors later
+    this.refreshList();
+  },
+    methods: {
+      async refreshList() {
+          try {
+              const trips = await getTrips(this.userId);
+              const sortedTrips = sortTrips(trips);
+              this.trips = transformTrips(sortedTrips);
+          } catch (e) {
+              console.log(e);
+              // Handle errors later
+          }
+      }
     }
-  }
 }
 </script>
 
