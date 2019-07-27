@@ -2,7 +2,7 @@
   <div id="trip-list-container">
      <div v-if="trips" class="col-md-12">
        <h3 v-if="!trips.length"><v-icon>directions_walk</v-icon> No Trips Available</h3>
-      <TripItem @refreshList="refreshList" class="trip-card" v-else v-for="trip in trips" v-bind:key="trip.tripId" :trip="trip"/>
+      <TripItem @handleDelete="handleDelete" @refreshList="refreshList" class="trip-card" v-else v-for="trip in trips" v-bind:key="trip.tripId" :trip="trip"/>
     </div>
 
     <div v-else>
@@ -11,15 +11,19 @@
         color="secondary"
       ></v-progress-circular>
     </div>
+      <UndoRedo ref="undoRedo" id="undo-redo"></UndoRedo>
     </div>
 </template>
 
 <script>
 import { getTrips, sortTrips, transformTrips } from "./TripListService.js";
 import TripItem from "./TripItem/TripItem";
+import UndoRedo from "../UndoRedo/UndoRedo";
+import Command from "../UndoRedo/Command";
 
 export default {
   components: {
+      UndoRedo,
     TripItem
   },
   props: ["userId"],
@@ -41,7 +45,20 @@ export default {
               console.log(e);
               // Handle errors later
           }
-      }
+      },
+        handleDelete(trip) {
+            const undoCommand = async () => {
+                console.log("Undo the delete here")
+                console.log(trip)
+            };
+
+            const redoCommand = async () => {
+                console.log("redo the delete here");
+            };
+
+            const deleteTripCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
+            this.$refs.undoRedo.addUndo(deleteTripCommand);
+        }
     }
 }
 </script>
@@ -56,6 +73,11 @@ export default {
     justify-content: center;
     margin-left: 10px;
     }
+  #undo-redo {
+      position: fixed;
+      right: 1000px;
+      bottom: 45px;
+  }
 </style>
 
 

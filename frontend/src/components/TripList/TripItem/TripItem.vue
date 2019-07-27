@@ -41,6 +41,7 @@
       async deleteTrip() {
         await deleteTripFromList(this.trip.tripId);
         this.$emit("refreshList");
+        this.$emit("handleDelete", this.trip);
       }
     }
     }
