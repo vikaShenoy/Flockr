@@ -39,6 +39,7 @@
           @undoDeletePhoto="undoDeletePhoto"
           @addPhoto="addImage"
           @showError="showError"
+		  @addPhotoCommand="addPhotoCommand"
           />
       </div>
 
@@ -121,6 +122,12 @@ export default {
     this.getUserInfo();
   },
   methods: {
+    /**
+	 * Add an undo/redo command to the stack.
+	 * */
+  	addPhotoCommand(command) {
+        this.$refs.undoRedo.addUndo(command);
+	},
     updateUserTravellerTypes(oldTravellerTypes, newTravellerTypes) {
       const userId = localStorage.getItem("userId");
 
