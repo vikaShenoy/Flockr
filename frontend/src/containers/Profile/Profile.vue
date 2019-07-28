@@ -13,8 +13,6 @@
 
     <div class="row">
       <div class="col-lg-4">
-
-        <!-- TODO: move undo redo to unified component -->
         <ProfilePic
           :profilePhoto="userProfile.profilePhoto"
           :photos="userProfile.personalPhotos"
@@ -40,7 +38,6 @@
           @deletePhoto="deletePhoto"
           @undoDeletePhoto="undoDeletePhoto"
           @addPhoto="addImage"
-          @undoAddPhoto="undoAddPhoto"
           @showError="showError"
           />
       </div>
@@ -93,6 +90,7 @@ import { updateTravellerTypes } from "./TravellerTypes/TravellerTypesService";
 import { setProfilePictureToOldPicture } from "./ProfilePic/ProfilePicService";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import {endpoint} from "../../utils/endpoint";
+import { undoDeleteUserPhoto, deleteUserPhoto } from '../UserGallery/UserGalleryService';
 
 export default {
   components: {
@@ -272,15 +270,35 @@ export default {
       this.errorSnackbar.show = true;
       this.errorSnackbar.color = "error";
     },
+    /**
+     * Update an image in the front end and create and store undo/redo commands
+     * for it.
+     */
     addImage(image) {
       image.endpoint = endpoint(`/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
       image.thumbEndpoint = endpoint(`/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
       this.userProfile.personalPhotos.push(image);
+
+      const undoCommand = (
+        async (image) => {
+          await deleteUserPhoto(image);
+          this.undoAddPhoto(image);
+        }
+      ).bind(null, image);
+      const redoCommand = (
+        async (image) => {
+          await undoDeleteUserPhoto(image);
+          image.endpoint = endpoint(`/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
+          image.thumbEndpoint = endpoint(`/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+          this.userProfile.personalPhotos.push(image);
+        }
+      ).bind(null, image);
+
+      const undoUploadCommand = new Command(undoCommand, redoCommand);
+      this.$refs.undoRedo.addUndo(undoUploadCommand);
     },
     undoAddPhoto(image) {
-      this.userProfile.personalPhotos = this.userProfile.personalPhotos.filter(e => {
-        return e.photoId !== image.photoId;
-      })
+      this.userProfile.personalPhotos = this.userProfile.personalPhotos.filter(e => e.photoId !== image.photoId);
     }
   }
 };

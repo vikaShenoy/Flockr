@@ -11,8 +11,6 @@
 import UserStore from "../../../stores/UserStore";
 import ProfilePhotoDialog from "./ProfilePhotoDialog/ProfilePhotoDialog";
 import { endpoint } from "../../../utils/endpoint";
-import UndoRedo from "../../../components/UndoRedo/UndoRedo";
-import Command from "../../../components/UndoRedo/Command";
 
 export default {
   components: {
