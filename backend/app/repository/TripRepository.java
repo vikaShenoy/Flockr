@@ -3,6 +3,9 @@ package repository;
 import models.Trip;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -54,7 +57,8 @@ public class TripRepository {
      */
     public CompletionStage<Trip> deleteTrip(Trip trip) {
         return supplyAsync(() -> {
-            trip.delete();
+            trip.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+            trip.delete(); // Soft delete
             return trip;
         }, executionContext);
     }
