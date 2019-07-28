@@ -156,7 +156,7 @@ export default {
      */
     async addAdminPriviledge(selectedUserId) {
       const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
-      const roleTypes = [...selectedUser.roles.map(role => role.roleType)]
+      const roleTypes = selectedUser.roles.map(role => role.roleType)
       roleTypes.push(roleType.ADMIN);
 
       try {
