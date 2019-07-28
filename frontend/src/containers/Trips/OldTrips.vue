@@ -14,6 +14,8 @@
         @click="goToAddTrip"
       >add</v-icon>
     </v-btn>
+
+
   </div>
 </template>
 

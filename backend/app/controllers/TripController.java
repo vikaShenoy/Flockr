@@ -144,7 +144,10 @@ public class TripController extends Controller {
     public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (security.userHasPermission(user, userId)) {
+        System.out.println("User is: " + user);
+        System.out.println("User ID is: " + userId);
+        System.out.println(security.userHasPermission(user, userId));
+        if (!security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 

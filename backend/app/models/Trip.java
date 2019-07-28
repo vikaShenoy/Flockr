@@ -15,7 +15,7 @@ public class Trip extends Model {
     @Id
     private int tripId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne()
     private User user;
 
     private String tripName;
@@ -33,6 +33,13 @@ public class Trip extends Model {
         this.tripDestinations = tripDestinations;
         this.user = user;
         this.tripName = tripName;
+    }
+
+    public Trip(List<TripDestination> tripDestinations, User user, String tripName, int tripId) {
+        this.tripDestinations = tripDestinations;
+        this.user = user;
+        this.tripName = tripName;
+        this.tripId = tripId;
     }
 
     public int getTripId() {

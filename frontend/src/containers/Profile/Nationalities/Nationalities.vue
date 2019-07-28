@@ -68,9 +68,6 @@ export default {
   mounted() {
     this.getNationalities();
   },
-  components: {
-    UndoRedo
-  },
   data() {
     return {
       userStore: UserStore.data,

@@ -12,6 +12,12 @@ export async function getDestinationProposals() {
   return res.body;
 }
 
+export async function getDestinationProposal(destinationProposalId) {
+   const res = await superagent.get(endpoint(`/destinations/proposals/${destinationProposalId}`))
+                 .set("Authorization", localStorage.getItem("authToken"));
+   return res.body;
+}
+
 /**
  * Accepts a proposal
  */
@@ -28,7 +34,6 @@ export async function declineProposal(destinationProposalId) {
    const userId = localStorage.getItem("userId");
    await superagent.delete(endpoint(`/users/${userId}/destinations/proposals/${destinationProposalId}`))
                 .set("Authorization", localStorage.getItem("authToken"));
-
 }
 
 

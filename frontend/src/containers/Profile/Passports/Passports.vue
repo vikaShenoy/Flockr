@@ -3,10 +3,6 @@
     <div id="header">
       <h3>Passports</h3>
 
-      <div id="undo-redo-buttons">
-        <UndoRedo ref="undoRedo" />
-      </div>
-
       <div id="edit-btn">
         <v-btn v-if="userStore.userId === userId" small flat color="secondary" @click="toggleEditSave">
           <v-icon v-if="!isEditing">edit</v-icon>
@@ -62,7 +58,7 @@
 import superagent from "superagent";
 import { endpoint } from "../../../utils/endpoint";
 import UserStore from "../../../stores/UserStore";
-import { getPassports, updatePassports } from "./PassportService.js";
+import { getPassports } from "./PassportService.js";
 import UndoRedo from "../../../components/UndoRedo/UndoRedo";
 import Command from "../../../components/UndoRedo/Command";
 
@@ -70,9 +66,6 @@ export default {
   props: ["userPassports", "userId"],
   mounted() {
     this.getPassports();
-  },
-  components: {
-    UndoRedo
   },
   data() {
     return {
@@ -100,21 +93,9 @@ export default {
     async toggleEditSave() {
       if (this.isEditing) {
         // user was editing and has now submitted their changes
-        const userId = this.$route.params.id;
-        const passportIds = this.getPassportIds;
-
-        const command = async (passports) => {
-          const passportIds = passports.map(passport => passport.passportId);
-          await updatePassports(userId, passportIds);
-          UserStore.data.passports = passports;
-          this.$emit("update:userPassports", passports);
-        };
-
-        const undoCommand = command.bind(null, this.userPassports);
-        const redoCommand = command.bind(null, this.userPass);
-        const updatePassportsCommand = new Command(undoCommand, redoCommand);
-        this.$refs.undoRedo.addUndo(updatePassportsCommand);
-        redoCommand(); // perform update
+        const oldPassports = this.userPassports;
+        const newPassports = this.userPass;
+        this.$emit("update-user-passports", oldPassports, newPassports);
       }
 
       this.isEditing = !this.isEditing;

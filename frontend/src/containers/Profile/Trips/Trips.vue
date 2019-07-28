@@ -6,9 +6,8 @@
     <v-card
       id="trips-card"
       max-height="320px"
-      class="scroll"
     >
-      <TripList :userId="userId" />
+      <TripList :userId="userId" :viewOnly="true"/>
     </v-card>
   </div>
 </template>

@@ -31,6 +31,9 @@ public class Destination extends Model {
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
     private List<DestinationPhoto> destinationPhotos;
 
+    @OneToMany(mappedBy = "treasureHuntDestination", cascade = CascadeType.ALL)
+    private List<TreasureHunt> treasureHunts;
+
     @ManyToMany(mappedBy= "destinations" ,cascade = CascadeType.PERSIST)
     private List<TravellerType> travellerTypes;
 

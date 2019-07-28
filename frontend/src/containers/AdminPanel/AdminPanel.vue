@@ -1,26 +1,23 @@
 <template>
   <div class="admin-panel">
+    <div style="float: right">
+      <UndoRedo ref="undoRedo"/>
+    </div>
+
     <h2>Admin Panel</h2>
     <ManageUsers
       v-bind:adminSearch.sync="adminSearch"
       :users="getFilteredUsers"
-      v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
       v-on:logoutUsersByIds="handleLogoutUsersByIds"
+      @addAdminPriviledge="addAdminPriviledge"
+      @removeAdminPriviledge="removeAdminPriviledge"
     />
     <DestinationProposals
       v-on:showError="showErrorSnackbar"
       v-on:showMessage="showSuccessSnackbar"
      />
 
-    <EditUserForm
-      v-if="userBeingEdited"
-      :showForm="this.showEditUserForm"
-      :initialUserData="this.userBeingEdited"
-      v-on:dismissForm="handleEditUserFormDismissal"
-      v-on:submitForm="handleEditUserFormSubmission"
-      v-on:incorrectData="handleEditUserFormError"
-    />
     <Snackbar :snackbarModel="this.snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
@@ -29,19 +26,23 @@
 <script>
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 import EditUserForm from "./EditUserForm/EditUserForm.vue";
-import { getUsers, getAllUsers } from "./AdminPanelService.js";
+import { getUsers, getAllUsers, deleteUsers, undoDeleteUsers, updateRoles } from "./AdminPanelService.js";
 import { patchUser } from "./AdminPanelService.js";
 import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
 import Snackbar from '../../components/Snackbars/Snackbar.vue';
 import DestinationProposals from "./DestinationProposals/DestinationProposals";
+import UndoRedo from "../../components/UndoRedo/UndoRedo";
+import Command from "../../components/UndoRedo/Command";
+import roleType from '../../stores/roleType';
 
 export default {
   components: {
     ManageUsers,
     EditUserForm,
     Snackbar,
-    DestinationProposals
+    DestinationProposals,
+    UndoRedo
   },
 
   mounted() {
@@ -82,15 +83,6 @@ export default {
       const allUsers = await getAllUsers();
       this.users = allUsers;
     },
-    // event handler for when a child component wants to edit a user by id
-    handleWantToEditUserById: async function(userId) {
-      const res = await superagent.get(endpoint(`/users/${userId}`)).set("Authorization", localStorage.getItem("authToken"));
-      this.userBeingEdited = res.body;
-      this.showEditUserForm = true; // show the edit user dialog
-    },
-    handleEditUserFormDismissal: function() {
-      this.showEditUserForm = false; // close the edit user dialog
-    },
     showSuccessSnackbar(message) {
       this.snackbarModel.text = message;
       this.snackbarModel.color = 'green';
@@ -101,26 +93,23 @@ export default {
       this.snackbarModel.color = 'red';
       this.snackbarModel.show = true;
     },
-    handleEditUserFormSubmission: async function(patchedUser) {
-      const userId = patchedUser.userId;
-      try {
-        await patchUser(userId, patchedUser);
-        this.showEditUserForm = false;
-        this.getAllUsers();
-        this.showSuccessSnackbar("Successfully edited user");
-      } catch (e) {
-        this.showErrorSnackbar("Could not edit the user");
-     }
-    },
     async handleDeleteUsersByIds(userIds) {
-      const deleteUserPromises = userIds.map(userId => {
-        const promise = superagent
-          .delete(endpoint(`/users/${userId}`)).set('Authorization', localStorage.getItem('authToken'));
-        return promise;
-      });
+
+      const undoCommand = async (userIds) => {
+        await undoDeleteUsers(userIds);
+        this.getAllUsers();
+      };
+
+      const redoCommand = async (userIds) => {
+        await deleteUsers(userIds);
+        this.getAllUsers();
+      }
+
+      const deleteUsersCommand = new Command(undoCommand.bind(null, userIds), redoCommand.bind(null, userIds));
+      this.$refs.undoRedo.addUndo(deleteUsersCommand);
 
       try {
-        await Promise.all(deleteUserPromises);
+        await deleteUsers(userIds);
         this.getAllUsers();
         this.showSuccessSnackbar("Successfully deleted user(s)'");
       } catch(err) {
@@ -146,6 +135,75 @@ export default {
       } catch(err) {
         this.showErrorSnackbar("Could not logout user(s)");
       }
+    },
+    /**
+     * Adds admin priviledge to a user
+     * @param {number} selectedUserId ID of user to give admin priviledges to
+     */
+    async addAdminPriviledge(selectedUserId) {
+      const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
+      const roleTypes = selectedUser.roles.map(role => role.roleType)
+      const newRoleTypes = [...roleTypes, roleType.ADMIN];
+
+      const undoCommand = async (selectedUserId, roleTypes) => {
+        await updateRoles(selectedUserId, roleTypes);
+        this.getAllUsers();
+      }
+
+      const redoCommand = async (selectedUserId, roleTypes) => {
+        await updateRoles(selectedUserId, roleTypes);
+        this.getAllUsers();
+      }
+
+      const addAdminPriviledgeCommand = new Command(undoCommand.bind(null, selectedUserId, roleTypes), redoCommand.bind(null, selectedUserId, newRoleTypes));
+      
+      this.$refs.undoRedo.addUndo(addAdminPriviledgeCommand);
+
+      try {
+        await updateRoles(selectedUserId, newRoleTypes);
+        this.showSuccessSnackbar("Added admin priviledges");
+        this.getAllUsers();
+      } catch (e) {
+        this.showErrorSnackbar("Error adding admin priviledges");
+      }
+    },
+    /**
+     * Removes admin priviledge from a user
+     * @param {number} selectedUserId ID of user to remove admin priviledges for
+     */
+    async removeAdminPriviledge(selectedUserId) {
+      const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
+      const oldRoleTypes = selectedUser.roles.map(role => role.roleType);
+      // Remove admin role from user
+      const roleTypes = selectedUser.roles
+        .filter(role => role.roleType !== roleType.ADMIN)
+        .map(role => role.roleType);
+
+      const undoCommand = async (selectedUserId, roleTypes) => {
+        await updateRoles(selectedUserId, roleTypes);
+        this.getAllUsers();
+      }
+
+      const redoCommand = async (selectedUserId, roleTypes) => {
+        await updateRoles(selectedUserId, roleTypes);
+        this.getAllUsers();
+      }
+
+
+      
+      const removeAdminPriviledgeCommand = new Command(undoCommand.bind(null, selectedUserId, oldRoleTypes), redoCommand.bind(null, selectedUserId, roleTypes));
+      
+      this.$refs.undoRedo.addUndo(removeAdminPriviledgeCommand);
+
+
+
+      try {
+        await updateRoles(selectedUserId, roleTypes);
+        this.showSuccessSnackbar("Removed admin priviledges");
+        this.getAllUsers();
+      } catch (e) {
+        this.showErrorSnackbar("Error removing admin priviledges");
+      }
     }
   }
 };
@@ -158,4 +216,10 @@ export default {
     height: 100%;
     padding: 10px;
   }
+
+  h2 {
+    width: 130px;
+    margin: 0 auto;
+  }
+
 </style>
