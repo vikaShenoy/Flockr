@@ -6,8 +6,7 @@
           <div class="manage-users-text">
             <p>Manage users</p>
           </div>
-          <v-text-field label="Search User" color="secondary" @input="searchAdminChange">
-          </v-text-field>
+          <v-text-field label="Search User" color="secondary" @input="searchAdminChange"/>
 
           <v-btn
             class="action-button"
@@ -45,8 +44,7 @@
             depressed
             color="secondary"
           >
-          
-          Make Admin
+            Make Admin
           </v-btn>
 
           <v-btn
@@ -56,8 +54,7 @@
             depressed
             color="secondary"
           >
-          
-          Remove admin
+            Remove admin
           </v-btn>
 
 
@@ -69,12 +66,8 @@
             depressed
             color="secondary"
           >
-          
             Delete users
           </v-btn>
-
-          
-
         </v-subheader>
       </v-list>
     </v-card>
@@ -329,6 +322,7 @@ export default {
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
+    height: auto;
 
     .manage-users-text {
       p {
