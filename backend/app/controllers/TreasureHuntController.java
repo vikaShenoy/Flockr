@@ -131,7 +131,7 @@ public class TreasureHuntController extends Controller {
                         try {
                             Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDateString);
                             if (startDate.after(treasureHunt.getEndDate())) {
-                                throw new CompletionException(new BadRequestException("Start date cannot be before end date."));
+                                throw new CompletionException(new BadRequestException("Start date cannot be after end date."));
                             }
                             treasureHunt.setStartDate(startDate);
                         } catch (ParseException e) {

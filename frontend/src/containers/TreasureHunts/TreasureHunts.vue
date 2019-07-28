@@ -2,6 +2,9 @@
 
     <v-flex>
           <v-expansion-panel class="panel">
+			  <v-spacer align="right">
+				  <UndoRedo ref=undoRedo style="padding: 20px"/>
+			  </v-spacer>
             <v-expansion-panel-content
             v-for="(item, i) in treasureHunts"
             :key="i"
@@ -25,7 +28,8 @@
             </template>
             <v-card class="card">
                 <v-card-text>Riddle: {{item.riddle}}</v-card-text>
-                <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}<br>Date and times are in your local timezone</v-card-text>
+                <v-card-text>Start Date: {{formatDate(item.startDate)}}<br>End Date: {{formatDate(item.endDate)}}
+					<br>Date and times are in your local timezone.</v-card-text>
                 <v-card-text v-if="isOwner(item.ownerId) || isAdmin()">Destination: {{item.destination}}</v-card-text>
             </v-card>
             </v-expansion-panel-content>
@@ -35,7 +39,6 @@
         >
             <v-icon>add</v-icon>
         </v-btn>
-
         <AddTreasureHunt
                 :toggle="showDialog"
                 @closeDialog="closeDialog"
@@ -49,6 +52,7 @@
                 :key="refreshEditDialog"
                 @closeEditDialog="closeEditDialog"
                 @updateList="updateList"
+				@addCommand="addCommand"
         ></EditTreasureHunt>
     </v-flex>
 
@@ -61,9 +65,10 @@ import EditTreasureHunt from "./EditTreasureHunt"
 import {getAllTreasureHunts, getDestination, deleteTreasureHuntData} from "./TreasureHuntsService";
 import moment from "moment";
 import UserStore from "../../stores/UserStore";
+import UndoRedo from "../../components/UndoRedo/UndoRedo";
 
 export default {
-    components: {AddTreasureHunt, EditTreasureHunt},
+    components: {UndoRedo, AddTreasureHunt, EditTreasureHunt},
     mounted() {
         this.getTreasureHunts();
 
@@ -78,6 +83,10 @@ export default {
         }
     },
     methods: {
+
+        addCommand(editCommand) {
+          this.$refs.undoRedo.addUndo(editCommand);
+		},
 
         /**
          * Hides the create treasure hunt modal
@@ -107,8 +116,6 @@ export default {
             });
 
             this.treasureHunts = await Promise.all(treasureHuntsPromises);
-
-
         },
 
 
@@ -163,6 +170,7 @@ export default {
          * Function called from child to update the list of treasure hunts
          */
         updateList() {
+            console.log(2);
             this.getTreasureHunts();
         },
 
