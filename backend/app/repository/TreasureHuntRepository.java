@@ -82,6 +82,35 @@ public class TreasureHuntRepository {
     public CompletionStage<List<TreasureHunt>> getTreasureHunts() {
         return supplyAsync(() -> TreasureHunt.find.query().findList(), executionContext);
     }
+
+    /**
+     * Gets the treasure hunt with the given ID including soft deleted proposals
+     *
+     * @param treasureHuntId the ID of the treasure hunt to be retrieved
+     * @return the treasure hunt
+     */
+    public CompletionStage<Optional<TreasureHunt>> getTreasureHuntByIdWithSoftDelete(int treasureHuntId) {
+        return supplyAsync(() -> {
+            Optional<TreasureHunt> treasureHunt = TreasureHunt.find.query().setIncludeSoftDeletes()
+                    .where().eq("treasure_hunt_id", treasureHuntId).findOneOrEmpty();
+            return treasureHunt;
+        }, executionContext);
+    }
+
+    /**
+     * Undoes the deletion of the treasure hunt
+     *
+     * @param treasureHunt the treasure hunt to that the deletion is to be undone
+     * @return the treasure hunt after the deletion is undone
+     */
+    public CompletionStage<TreasureHunt> undoTreasureHuntDelete(TreasureHunt treasureHunt) {
+        return supplyAsync(() -> {
+            treasureHunt.setDeleted(false);
+            treasureHunt.setDeletedExpiry(null);
+            treasureHunt.save();
+            return treasureHunt;
+        });
+    }
 }
 
 

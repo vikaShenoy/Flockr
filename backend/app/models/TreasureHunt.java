@@ -1,10 +1,13 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import exceptions.NotFoundException;
 import io.ebean.Finder;
 import io.ebean.Model;
+import io.ebean.annotation.SoftDelete;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Optional;
 
@@ -30,6 +33,13 @@ public class TreasureHunt extends Model {
     private Date startDate;
 
     private Date endDate;
+
+    @SoftDelete
+    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean deleted;
+
+    @JsonIgnore
+    private Timestamp deletedExpiry;
 
 
     public TreasureHunt(String treasureHuntName, int ownerId, int treasureHuntDestinationId, String riddle,
@@ -96,6 +106,22 @@ public class TreasureHunt extends Model {
 
     public int getOwnerId() {
         return owner.getUserId();
+    }
+
+    public void setDeletedExpiry(Timestamp deletedExpiry) {
+        this.deletedExpiry = deletedExpiry;
+    }
+
+    public Timestamp getDeletedExpiry() {
+        return deletedExpiry;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
     }
 
     /**
