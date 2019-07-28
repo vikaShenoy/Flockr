@@ -40,6 +40,30 @@
 
           <v-btn
             class="action-button"
+            :disabled="!this.canAddAdminPriviledge"
+            @click="showPrompt('Are you sure?', addAdminPriviledge)"
+            depressed
+            color="secondary"
+          >
+          
+          Make Admin
+          </v-btn>
+
+          <v-btn
+            class="action-button"
+            :disabled="!this.canRemoveAdminPriviledge"
+            @click="showPrompt('Are you sure?', removeAdminPriviledge)"
+            depressed
+            color="secondary"
+          >
+          
+          Remove admin
+          </v-btn>
+
+
+
+          <v-btn
+            class="action-button"
             :disabled="this.selectedUsers.length === 0"
             @click="showPrompt('Are you sure?', deleteUsersButtonClicked)"
             depressed
@@ -48,6 +72,8 @@
           
             Delete users
           </v-btn>
+
+          
 
         </v-subheader>
       </v-list>
@@ -98,6 +124,7 @@ import moment from "moment";
 import SignUp from "../../Signup/Signup";
 import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
 import UserStore from "../../../stores/UserStore";
+import roleType from '../../../stores/roleType';
 
 export default {
   components: {
@@ -125,7 +152,36 @@ export default {
      */
     selectedUsers: function() {
       return this.items.filter((item) => item.selected).map((user) => user.userId);
-    }
+    },
+    canAddAdminPriviledge() {
+      if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
+        return false;
+      }
+      const user = this.items.filter(user => user.userId === this.selectedUsers[0])[0];
+
+      for (const role of user.roles) {
+        if (role.roleType === roleType.ADMIN || roleType.DEFAULT_ADMIN) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+    canRemoveAdminPriviledge() {
+      if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
+        return false;
+      }
+      const user = this.items.filter(user => user.userId === this.selectedUsers[0])[0];
+
+      for (const role of user.roles) {
+        if (role.roleType === roleType.ADMIN) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+    
   },
   methods: {
 
@@ -206,7 +262,8 @@ export default {
         userId: user.userId,
         title: user.firstName + ' ' + user.lastName,
         subtitle: 'Joined on ' + moment(user.timestamp).format("D/M/YYYY H:mm"),
-        selected: false
+        selected: false,
+        roles: user.roles
     }));
     },
     /**
@@ -227,6 +284,18 @@ export default {
       const user = this.users.filter(user => user.userId == this.selectedUsers[0])[0];
       UserStore.methods.viewAsAnotherUser(user);
       this.$router.push(`/profile/${user.userId}`);
+    },
+    /**
+     * Emits event to add admin priviledge to a user
+     */
+    addAdminPriviledge() {
+      this.$emit("addAdminPriviledge", this.selectedUsers[0]);
+    },
+    /**
+     * Emits event to remove admin priviledge from a user
+     */
+    removeAdminPriviledge() {
+      this.$emit('removeAdminPriviledge', this.selectedUsers[0]);
     }
   },
   props: ["users"],

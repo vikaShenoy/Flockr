@@ -7,6 +7,8 @@
       v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
       v-on:logoutUsersByIds="handleLogoutUsersByIds"
+      @addAdminPriviledge="addAdminPriviledge"
+      @removeAdminPriviledge="removeAdminPriviledge"
     />
     <DestinationProposals
       v-on:showError="showErrorSnackbar"
@@ -29,12 +31,13 @@
 <script>
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 import EditUserForm from "./EditUserForm/EditUserForm.vue";
-import { getUsers, getAllUsers } from "./AdminPanelService.js";
+import { getUsers, getAllUsers, updateRoles } from "./AdminPanelService.js";
 import { patchUser } from "./AdminPanelService.js";
 import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
 import Snackbar from '../../components/Snackbars/Snackbar.vue';
 import DestinationProposals from "./DestinationProposals/DestinationProposals";
+import roleType from '../../stores/roleType';
 
 export default {
   components: {
@@ -145,6 +148,44 @@ export default {
         this.showSuccessSnackbar("Successfully logged out user(s)");
       } catch(err) {
         this.showErrorSnackbar("Could not logout user(s)");
+      }
+    },
+    /**
+     * Adds admin priviledge to a user
+     * @param {number} selectedUserId ID of user to give admin priviledges to
+     */
+    async addAdminPriviledge(selectedUserId) {
+      const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
+      const roleTypes = [...selectedUser.roles.map(role => role.roleType)]
+      roleTypes.push(roleType.ADMIN);
+
+      try {
+        await updateRoles(selectedUserId, roleTypes);
+        this.showSuccessSnackbar("Added admin priviledges");
+        this.getAllUsers();
+      } catch (e) {
+        this.showErrorSnackbar("Error adding admin priviledges");
+      }
+    },
+    /**
+     * Removes admin priviledge from a user
+     * @param {number} selectedUserId ID of user to remove admin priviledges for
+     */
+    async removeAdminPriviledge(selectedUserId) {
+      console.log("I made it here");
+      const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
+      // Remove admin role from user
+      const roleTypes = selectedUser.roles
+        .filter(role => role.roleType !== roleType.ADMIN)
+        .map(role => role.roleType);
+
+
+      try {
+        await updateRoles(selectedUserId, roleTypes);
+        this.showSuccessSnackbar("Removed admin priviledges");
+        this.getAllUsers();
+      } catch (e) {
+        this.showErrorSnackbar("Error removing admin priviledges");
       }
     }
   }
