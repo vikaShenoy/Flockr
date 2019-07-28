@@ -277,7 +277,6 @@ export default {
         await deleteDestination(destinationId);
         this.$router.push("/destinations");
       } catch (e) {
-        console.log(e);
         this.showError("Could not delete destination");
       }
     },

@@ -10,6 +10,11 @@
 <script>
 import Snackbar from "../Snackbars/Snackbar";
 
+const Z_KEY_CODE = 90;
+const Y_KEY_CODE = 89;
+
+
+
 export default {
   components: {
     Snackbar
@@ -26,7 +31,28 @@ export default {
       }
     }
   },
+  mounted() {
+    this._keyDownListener = document.addEventListener("keydown", this.keyDown)
+  },
+  beforeDestroy() {
+    
+    document.removeEventListener("keydown", this.keyDown); 
+  },
   methods: {
+    keyDown(event) {
+      const shouldUndo = event.keyCode === Z_KEY_CODE && event.ctrlKey && !event.shiftKey;
+      const shouldRedo = (event.keyCode === Y_KEY_CODE && event.ctrlKey) || (event.keyCode === Z_KEY_CODE && event.shiftKey && event.ctrlKey);
+      
+      if (shouldUndo) {
+        if (this.undoStack.length) {
+          this.undo();
+        }
+      } else if (shouldRedo) {
+        if (this.redoStack.length) {
+          this.redo();
+        }
+      }
+    },
     /**
      * Undo's last action and adds to redo stack
      */
@@ -37,6 +63,7 @@ export default {
         this.addRedo(command);
         this.showSuccessSnackbar("Successfully Un-did action");
       } catch (e) {
+        // eslint-disable-next-line
         console.log(e);
         this.showErrorSnackbar("Could not undo action");
       }
