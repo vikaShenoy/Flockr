@@ -294,7 +294,7 @@ public class DestinationRepository {
     /**
      * Undoes the deletion of the destination proposal
      *
-     * @param destinationProposal the destination proposal to deletion to be undone
+     * @param destinationProposal the destination proposal that the deletion is undone
      * @return the destination proposal after the deletion is undone
      */
     public CompletionStage<DestinationProposal> undoDestinationProposalDelete(DestinationProposal destinationProposal) {

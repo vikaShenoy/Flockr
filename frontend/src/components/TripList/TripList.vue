@@ -2,17 +2,26 @@
   <div id="trip-list-container">
      <div v-if="trips" class="col-md-12">
        <h3 v-if="!trips.length"><v-icon>directions_walk</v-icon> No Trips Available</h3>
-      <TripItem @handleDelete="handleDelete" @refreshList="refreshList" class="trip-card" v-else v-for="trip in trips" v-bind:key="trip.tripId" :trip="trip"/>
+      <TripItem
+        @handleDelete="handleDelete"
+        @refreshList="refreshList"
+        class="trip-card"
+        v-else v-for="trip in trips"
+        :key="trip.tripId"
+        :trip="trip"
+        :viewOnly="true"
+      />
     </div>
 
     <div v-else>
       <v-progress-circular
         indeterminate
         color="secondary"
-      ></v-progress-circular>
+      />
     </div>
-      <UndoRedo ref="undoRedo" id="undo-redo"></UndoRedo>
-    </div>
+
+    <UndoRedo v-if="!viewOnly" ref="undoRedo" id="undo-redo"/>
+  </div>
 </template>
 
 <script>
@@ -26,7 +35,16 @@ export default {
       UndoRedo,
     TripItem
   },
-  props: ["userId"],
+  props: {
+    userId: {
+      type: Number | String,
+      required: true
+    },
+    viewOnly: {
+      type: Boolean, // hides action buttons and undo redo
+      required: false
+    }
+  },
   data() {
     return {
       trips: null
@@ -46,20 +64,20 @@ export default {
               // Handle errors later
           }
       },
-        async handleDelete(trip) {
-            const undoCommand = async () => {
-                console.log("Undo the delete here")
-                console.log(trip)
+      async handleDelete(trip) {
+          const undoCommand = async () => {
+              console.log("Undo the delete here")
+              console.log(trip)
 
-            };
+          };
 
-            const redoCommand = async () => {
-                console.log("redo the delete here");
-            };
+          const redoCommand = async () => {
+              console.log("redo the delete here");
+          };
 
-            const deleteTripCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
-            this.$refs.undoRedo.addUndo(deleteTripCommand);
-        }
+          const deleteTripCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
+          this.$refs.undoRedo.addUndo(deleteTripCommand);
+      }
     }
 }
 </script>

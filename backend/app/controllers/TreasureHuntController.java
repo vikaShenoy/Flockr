@@ -8,6 +8,7 @@ import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import actions.ActionState;
+import exceptions.UnauthorizedException;
 import models.TreasureHunt;
 import models.User;
 import org.slf4j.Logger;
@@ -315,9 +316,7 @@ public class TreasureHuntController extends Controller {
     public CompletionStage<Result> getAllTreasureHunts(Http.Request request) {
         return treasureHuntRepository.getTreasureHunts()
                 .thenApplyAsync(treasureHunts -> {
-                    System.out.println(1);
                     List<TreasureHunt> validTreasures = validateTreasureHunts(treasureHunts);
-                    System.out.println(2);
                     JsonNode treasureJson = Json.toJson(validTreasures);
                     return ok(treasureJson);
                 }, executionContext)
@@ -325,6 +324,60 @@ public class TreasureHuntController extends Controller {
                     try {
                         throw e.getCause();
                     } catch (Throwable throwable) {
+                        return internalServerError();
+                    }
+                });
+    }
+
+    /**
+     * The method that undoes the deletion of a treasure hunt
+     * The following are the status codes:
+     * - 200 - OK - successful undo.
+     * - 400 - Bad Request - The treasure hunt has not been deleted.
+     * - 401 - Unauthorised - the user is not authorised.
+     * - 403 - Forbidden - The user does not have permission to undo this deletion.
+     * - 404 - Not Found - The treasure hunt cannot be found.
+     *
+     * @param treasureHuntId the Id of the treasure hunt to undo deletion for
+     * @param request the http request
+     * @return the completion stage containing the result
+     */
+    public CompletionStage<Result> undoDeleteTreasureHunt(int treasureHuntId, Http.Request request) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
+        return treasureHuntRepository.getTreasureHuntByIdWithSoftDelete(treasureHuntId)
+                .thenComposeAsync(optionalTreasureHunt -> {
+                    if (!optionalTreasureHunt.isPresent()) {
+                        throw new CompletionException(new NotFoundException("The treasure hunt you are undoing does not exist"));
+                    }
+                    TreasureHunt treasureHunt = optionalTreasureHunt.get();
+
+                    if (!userFromMiddleware.isAdmin() && treasureHunt.getOwnerId() != userFromMiddleware.getUserId()) {
+                        throw new CompletionException(new ForbiddenRequestException("You do not have the permission to undo the deletion."));
+                    }
+
+                    if (!treasureHunt.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This treasure hunt has not been deleted"));
+                    }
+                    return treasureHuntRepository.undoTreasureHuntDelete(treasureHunt);
+                }).thenApplyAsync(treasureHunt -> ok(Json.toJson(treasureHunt)))
+                .exceptionally(error -> {
+                    ObjectNode message = Json.newObject();
+                    try {
+                        throw error.getCause();
+                    } catch (ForbiddenRequestException e) {
+                        message.put("message", e.getMessage());
+                        return forbidden(message);
+                    } catch (BadRequestException e) {
+                        message.put("message", e.getMessage());
+                        return badRequest(message);
+                    } catch (NotFoundException e) {
+                        message.put("message", e.getMessage());
+                        return notFound(message);
+                    } catch (UnauthorizedException e) {
+                        message.put("message", e.getMessage());
+                        return unauthorized(message);
+                    } catch (Throwable e) {
+                        log.error("An unexpected error has occurred", e);
                         return internalServerError();
                     }
                 });
