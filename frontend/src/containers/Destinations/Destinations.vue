@@ -1,12 +1,12 @@
 <template>
   <div id="destinations">
     <div id="map">
-      <DestinationMap 
+      <DestinationMap
         :destinations="getDestinationsCurrentlyViewing()"
       />
     </div>
 
-    <DestinationSidebar 
+    <DestinationSidebar
       :viewOption="viewOption"
       :yourDestinations="yourDestinations"
       :publicDestinations="publicDestinations"
@@ -22,20 +22,25 @@
     >
 
     </ModifyDestinationDialog>
-
   </div>
-
-  
 </template>
 
 <script>
 import DestinationSidebar from "./DestinationSidebar/DestinationSidebar";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
 import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
-import { getYourDestinations, getPublicDestinations } from "./DestinationsService";
+import {
+  getYourDestinations,
+  getPublicDestinations,
+  sendDeleteDestination,
+  sendUndoDeleteDestination
+} from "./DestinationsService";
+import Command from "../../components/UndoRedo/Command";
+import Snackbar from "../../components/Snackbars/Snackbar";
 
 export default {
   components: {
+    Snackbar,
     DestinationSidebar,
     DestinationMap,
     ModifyDestinationDialog
@@ -57,7 +62,7 @@ export default {
      */
     async getYourDestinations() {
       try {
-        const yourDestinations = await getYourDestinations(); 
+        const yourDestinations = await getYourDestinations();
         this.yourDestinations = yourDestinations;
       } catch (e) {
         console.log("Could not get your destinations");
@@ -90,15 +95,36 @@ export default {
      * Shows create destination dialog
      */
     addDestinationClicked() {
-      this.showCreateDestDialog = true;      
+      this.showCreateDestDialog = true;
     },
     addNewDestination(destination) {
-      this.yourDestinations.push(destination); 
+      this.yourDestinations.push(destination);
+
+      const undoCommand = async (destination) => {
+        try {
+          await sendDeleteDestination(destination.destinationId);
+          this.yourDestinations.remove(destination);
+        } catch (error) {
+          //TODO: this
+        }
+      };
+
+      const redoCommand = async (destination) => {
+        try {
+          await sendUndoDeleteDestination(destination.destinationId);
+          this.yourDestinations.push(destination);
+        } catch (error) {
+          //TODO: this
+        }
+      };
+
+      const updateDestCommand = new Command(undoCommand.bind(null, destination), redoCommand.bind(null, destination));
+      this.$refs.undoRedo.addUndo(updateDestCommand);
       this.showCreateDestDialog = false;
-      
+
     },
     addDestDialogChanged(dialogValue) {
-      this.showCreateDestDialog = dialogValue; 
+      this.showCreateDestDialog = dialogValue;
     },
     getDestinationsCurrentlyViewing() {
       const destinations = this.viewOption === "your" ? this.yourDestinations : this.publicDestinations;

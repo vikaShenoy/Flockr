@@ -44,12 +44,7 @@ export default {
             }
         });
         }
-   },
-    watch: {
-        data(newData)  {
-            console.log(newData);
-        }
-    }
+   }
 }
 </script>
 

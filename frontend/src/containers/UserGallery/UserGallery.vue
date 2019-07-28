@@ -106,8 +106,7 @@
      */
     methods: {
 	  addPhotoCommand(command) {
-	      console.log(1);
-          this.$refs.undoRedo.addUndo(command);
+      this.$refs.undoRedo.addUndo(command);
 	  },
       /**
        * Called when the show value in the photo dialog is changed.
