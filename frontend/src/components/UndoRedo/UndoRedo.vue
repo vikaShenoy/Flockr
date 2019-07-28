@@ -41,16 +41,13 @@ export default {
   methods: {
     keyDown(event) {
       const shouldUndo = event.keyCode === Z_KEY_CODE && event.ctrlKey && !event.shiftKey;
-      // console.log(event);
       const shouldRedo = (event.keyCode === Y_KEY_CODE && event.ctrlKey) || (event.keyCode === Z_KEY_CODE && event.shiftKey && event.ctrlKey);
       
       if (shouldUndo) {
-        console.log("I should undo");
         if (this.undoStack.length) {
           this.undo();
         }
       } else if (shouldRedo) {
-        console.log("I should redo");
         if (this.redoStack.length) {
           this.redo();
         }
