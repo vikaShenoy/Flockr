@@ -37,7 +37,7 @@ export default {
   },
   props: {
     userId: {
-      type: Number | String,
+      type: [Number, String],
       required: true
     },
     viewOnly: {
@@ -55,14 +55,9 @@ export default {
   },
     methods: {
       async refreshList() {
-          try {
-              const trips = await getTrips(this.userId);
-              const sortedTrips = sortTrips(trips);
-              this.trips = transformTrips(sortedTrips);
-          } catch (e) {
-              console.log(e);
-              // Handle errors later
-          }
+        const trips = await getTrips(this.userId);
+        const sortedTrips = sortTrips(trips);
+        this.trips = transformTrips(sortedTrips);
       },
       async handleDelete(tripId) {
           const undoCommand = async () => {
@@ -75,8 +70,8 @@ export default {
               this.refreshList();
           };
 
-          const deleteTripCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
-          this.$refs.undoRedo.addUndo(deleteTripCommand);
+        const deleteTripCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
+        this.$refs.undoRedo.addUndo(deleteTripCommand);
       }
     }
 }

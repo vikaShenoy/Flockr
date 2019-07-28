@@ -256,11 +256,7 @@ import {
   requestTravellerTypes,
   requestDistricts
 } from "./ModifyDestinationDialogService";
-
 import ErrorSnackbar from "../../../components/Snackbars/ErrorSnackbar";
-
-import UserStore from "../../../stores/UserStore";
-
 import CountryPicker from "../../../components/Country/CountryPicker"
 export default {
   name: "add-destination-dialog",
@@ -402,12 +398,8 @@ export default {
      * Gets destination types to populate destination types with and sets it as state
      */
     async getDestinationTypes() {
-      try {
-        const destinationTypes = await requestDestinationTypes();
-        this.destinationTypes = destinationTypes;
-      } catch (e) {
-
-      }
+      const destinationTypes = await requestDestinationTypes();
+      this.destinationTypes = destinationTypes;
     },
     /**
      * Gets districts in a specific country and sets it as state
@@ -493,25 +485,25 @@ export default {
             this.showError(errorMessage);
           }
         } else {
-          try {
-            await sendUpdateDestination(
-              this.destination,
-              this.destination.destinationId
-            );
-            const updatedDestination = await requestDestination(
-              this.destination.destinationId
-            );
-            this.$emit("updateDestination", updatedDestination);
-            this.formIsLoading = false;
-          } catch (error) {
-            console.log(error);
-            const message =
-              error.status === 400
-                ? error.response.body.message
-                : "Something went wrong";
-            this.formIsLoading = false;
-            this.showError(message);
-          }
+            try {
+              await sendUpdateDestination(
+                this.destination,
+                this.destination.destinationId
+              );
+              const updatedDestination = await requestDestination(
+                this.destination.destinationId
+              );
+              this.$emit("updateDestination", updatedDestination);
+              this.formIsLoading = false;
+            } catch (error) {
+              console.log(error);
+              const message =
+                error.status === 400
+                  ? error.response.body.message
+                  : "Something went wrong";
+              this.formIsLoading = false;
+              this.showError(message);
+            }
         }
       }
     },
