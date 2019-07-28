@@ -493,25 +493,25 @@ export default {
             this.showError(errorMessage);
           }
         } else {
-          try {
-            await sendUpdateDestination(
-              this.destination,
-              this.destination.destinationId
-            );
-            const updatedDestination = await requestDestination(
-              this.destination.destinationId
-            );
-            this.$emit("updateDestination", updatedDestination);
-            this.formIsLoading = false;
-          } catch (error) {
-            console.log(error);
-            const message =
-              error.status === 400
-                ? error.response.body.message
-                : "Something went wrong";
-            this.formIsLoading = false;
-            this.showError(message);
-          }
+            try {
+              await sendUpdateDestination(
+                this.destination,
+                this.destination.destinationId
+              );
+              const updatedDestination = await requestDestination(
+                this.destination.destinationId
+              );
+              this.$emit("updateDestination", updatedDestination);
+              this.formIsLoading = false;
+            } catch (error) {
+              console.log(error);
+              const message =
+                error.status === 400
+                  ? error.response.body.message
+                  : "Something went wrong";
+              this.formIsLoading = false;
+              this.showError(message);
+            }
         }
       }
     },

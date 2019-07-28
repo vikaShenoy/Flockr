@@ -23,7 +23,6 @@ export default {
   },
   methods: {
     showError(errorMessage) {
-      console.log('I made it here');
       this.snackbarModel.text = errorMessage;
       this.snackbarModel.show = true; 
     },

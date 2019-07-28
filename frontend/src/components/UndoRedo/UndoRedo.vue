@@ -37,6 +37,7 @@ export default {
         this.addRedo(command);
         this.showSuccessSnackbar("Successfully Un-did action");
       } catch (e) {
+        // eslint-disable-next-line
         console.log(e);
         this.showErrorSnackbar("Could not undo action");
       }
