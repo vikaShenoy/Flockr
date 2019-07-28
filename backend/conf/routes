@@ -78,7 +78,7 @@ DELETE        /api/treasurehunts/:treasureHuntId                      controller
 POST          /api/users/:userId/treasurehunts                        controllers.TreasureHuntController.addTreasureHunt(request: Request, userId: Int)
 GET           /api/users/:userId/treasurehunts                        controllers.TreasureHuntController.getTreasureHuntsByUserId(request: Request, userId: Int)
 GET           /api/treasurehunts                                      controllers.TreasureHuntController.getAllTreasureHunts(request: Request)
-PUT           /api/treasurehunts/:treasureHuntId/undodelete           controllers.TreasureHuntController.undoDeleteTreasureHunt(treasureHuntId: Int, request: Reuqest)
+PUT           /api/treasurehunts/:treasureHuntId/undodelete           controllers.TreasureHuntController.undoDeleteTreasureHunt(treasureHuntId: Int, request: Request)
 
 
 # Map static resources from the /public folder to the /assets URL path
