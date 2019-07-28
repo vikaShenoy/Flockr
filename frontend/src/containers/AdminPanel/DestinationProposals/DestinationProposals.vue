@@ -119,7 +119,7 @@ export default {
           await acceptProposal(destinationProposalId);
         };
 
-        const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, this.destinationProposal));
+        const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, destinationProposalId));
         this.$refs.undoRedo.addUndo(acceptProposalCommand);
         this.filterOutDestinationProposalId(destinationProposalId);
         this.$emit("showMessage", "Accepted Proposal");
@@ -128,11 +128,22 @@ export default {
       }
     },
     /**
-     * Declines proposal for treaveller type change
+     * Declines proposal for traveller type change
      */
     async declineProposal(destinationProposalId) {
       try {
         await declineProposal(destinationProposalId);
+
+        const undoCommand = async () => {
+          await undeleteProposal(destinationProposalId);
+        };
+
+        const redoCommand = async () => {
+          await declineProposal(destinationProposalId);
+        };
+
+        const declineProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, destinationProposalId));
+        this.$refs.undoRedo.addUndo(declineProposalCommand);
         this.filterOutDestinationProposalId(destinationProposalId);
         this.$emit("showMessage", "Rejected Proposal");
       } catch (e) {
