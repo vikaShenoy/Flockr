@@ -143,10 +143,24 @@ export default {
     async addAdminPriviledge(selectedUserId) {
       const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
       const roleTypes = selectedUser.roles.map(role => role.roleType)
-      roleTypes.push(roleType.ADMIN);
+      const newRoleTypes = [...roleTypes, roleType.ADMIN];
+
+      const undoCommand = async (selectedUserId, roleTypes) => {
+        await updateRoles(selectedUserId, roleTypes);
+        this.getAllUsers();
+      }
+
+      const redoCommand = async (selectedUserId, roleTypes) => {
+        await updateRoles(selectedUserId, roleTypes);
+        this.getAllUsers();
+      }
+
+      const addAdminPriviledgeCommand = new Command(undoCommand.bind(null, selectedUserId, roleTypes), redoCommand.bind(null, selectedUserId, newRoleTypes));
+      
+      this.$refs.undoRedo.addUndo(addAdminPriviledgeCommand);
 
       try {
-        await updateRoles(selectedUserId, roleTypes);
+        await updateRoles(selectedUserId, newRoleTypes);
         this.showSuccessSnackbar("Added admin priviledges");
         this.getAllUsers();
       } catch (e) {
@@ -159,10 +173,28 @@ export default {
      */
     async removeAdminPriviledge(selectedUserId) {
       const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
+      const oldRoleTypes = selectedUser.roles.map(role => role.roleType);
       // Remove admin role from user
       const roleTypes = selectedUser.roles
         .filter(role => role.roleType !== roleType.ADMIN)
         .map(role => role.roleType);
+
+      const undoCommand = async (selectedUserId, roleTypes) => {
+        await updateRoles(selectedUserId, roleTypes);
+        this.getAllUsers();
+      }
+
+      const redoCommand = async (selectedUserId, roleTypes) => {
+        await updateRoles(selectedUserId, roleTypes);
+        this.getAllUsers();
+      }
+
+
+      
+      const removeAdminPriviledgeCommand = new Command(undoCommand.bind(null, selectedUserId, oldRoleTypes), redoCommand.bind(null, selectedUserId, roleTypes));
+      
+      this.$refs.undoRedo.addUndo(removeAdminPriviledgeCommand);
+
 
 
       try {
