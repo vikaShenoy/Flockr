@@ -19,7 +19,7 @@
           :profilePhoto="userProfile.profilePhoto"
           :photos="userProfile.personalPhotos"
           :userId="userProfile.userId"
-          v-on:newProfilePic="newProfilePic"
+          v-on:updateProfilePic="updateProfilePic"
           v-on:showError="showError"
         />
 
@@ -90,6 +90,7 @@ import { updateBasicInfo } from "./BasicInfo/BasicInfoService";
 import { updateNationalities } from "./Nationalities/NationalityService";
 import { updatePassports } from "./Passports/PassportService";
 import { updateTravellerTypes } from "./TravellerTypes/TravellerTypesService";
+import { setProfilePictureToOldPicture } from "./ProfilePic/ProfilePicService";
 import Snackbar from "../../components/Snackbars/Snackbar";
 import {endpoint} from "../../utils/endpoint";
 
@@ -240,11 +241,27 @@ export default {
     },
     /**
      * Updates the profile picture of a user after it has been changed.
-     *
-     * @param imageObject the new profile picture.
+     * Add an undo/redo command to the undo/redo stack.
+     * @param oldPhoto the old profile picture.
+     * @param newPhoto the new profile picture.
      */
-    newProfilePic(imageObject) {
-      this.userProfile.profilePhoto = imageObject;
+    updateProfilePic(oldPhoto, newPhoto) {
+      this.userProfile.profilePhoto = newPhoto;
+      let undoCommand = async (profilePhoto) => {
+        if (profilePhoto) {
+          await setProfilePictureToOldPicture(profilePhoto);
+        }
+        this.userProfile.profilePhoto = profilePhoto;
+      };
+      undoCommand = undoCommand.bind(null, oldPhoto);
+
+      let redoCommand = async (profilePhoto) => {
+        await setProfilePictureToOldPicture(profilePhoto);
+        this.userProfile.profilePhoto = profilePhoto;
+      };
+      redoCommand = redoCommand.bind(null, newPhoto);
+      const updateProfilePicCommand = new Command(undoCommand, redoCommand);
+      this.$refs.undoRedo.addUndo(updateProfilePicCommand);
     },
     /**
      * Shows an snackbar error message
