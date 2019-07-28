@@ -268,7 +268,7 @@ public class UserController extends Controller {
                         }
                     }
                     System.out.println("I made it here");
-=                    user.setRoles(userRoles);
+                    user.setRoles(userRoles);
                     user.save();
                     return ok("Success");
                 });
