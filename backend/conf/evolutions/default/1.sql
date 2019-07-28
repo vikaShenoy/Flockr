@@ -190,7 +190,8 @@ create table treasure_hunt (
   start_date                    datetime(6),
   end_date                      datetime(6),
   deleted_expiry                datetime(6),
-  deleted                       BOOLEAN DEFAULT FALSE not null,
+  deleted
+    BOOLEAN DEFAULT FALSE not null,
   constraint pk_treasure_hunt primary key (treasure_hunt_id)
 );
 
