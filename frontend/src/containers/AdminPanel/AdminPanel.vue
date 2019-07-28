@@ -1,5 +1,9 @@
 <template>
   <div class="admin-panel">
+    <div style="float: right">
+      <UndoRedo ref="undoRedo"/>
+    </div>
+
     <h2>Admin Panel</h2>
     <ManageUsers
       v-bind:adminSearch.sync="adminSearch"
@@ -13,14 +17,6 @@
       v-on:showMessage="showSuccessSnackbar"
      />
 
-    <EditUserForm
-      v-if="userBeingEdited"
-      :showForm="this.showEditUserForm"
-      :initialUserData="this.userBeingEdited"
-      v-on:dismissForm="handleEditUserFormDismissal"
-      v-on:submitForm="handleEditUserFormSubmission"
-      v-on:incorrectData="handleEditUserFormError"
-    />
     <Snackbar :snackbarModel="this.snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
@@ -35,13 +31,16 @@ import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
 import Snackbar from '../../components/Snackbars/Snackbar.vue';
 import DestinationProposals from "./DestinationProposals/DestinationProposals";
+import UndoRedo from "../../components/UndoRedo/UndoRedo";
+import Command from "../../components/UndoRedo/Command";
 
 export default {
   components: {
     ManageUsers,
     EditUserForm,
     Snackbar,
-    DestinationProposals
+    DestinationProposals,
+    UndoRedo
   },
 
   mounted() {
@@ -82,15 +81,6 @@ export default {
       const allUsers = await getAllUsers();
       this.users = allUsers;
     },
-    // event handler for when a child component wants to edit a user by id
-    handleWantToEditUserById: async function(userId) {
-      const res = await superagent.get(endpoint(`/users/${userId}`)).set("Authorization", localStorage.getItem("authToken"));
-      this.userBeingEdited = res.body;
-      this.showEditUserForm = true; // show the edit user dialog
-    },
-    handleEditUserFormDismissal: function() {
-      this.showEditUserForm = false; // close the edit user dialog
-    },
     showSuccessSnackbar(message) {
       this.snackbarModel.text = message;
       this.snackbarModel.color = 'green';
@@ -100,17 +90,6 @@ export default {
       this.snackbarModel.text = errorMessage;
       this.snackbarModel.color = 'red';
       this.snackbarModel.show = true;
-    },
-    handleEditUserFormSubmission: async function(patchedUser) {
-      const userId = patchedUser.userId;
-      try {
-        await patchUser(userId, patchedUser);
-        this.showEditUserForm = false;
-        this.getAllUsers();
-        this.showSuccessSnackbar("Successfully edited user");
-      } catch (e) {
-        this.showErrorSnackbar("Could not edit the user");
-     }
     },
     async handleDeleteUsersByIds(userIds) {
       const deleteUserPromises = userIds.map(userId => {

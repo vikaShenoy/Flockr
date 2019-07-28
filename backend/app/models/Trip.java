@@ -20,7 +20,7 @@ public class Trip extends Model {
 
     private String tripName;
 
-    @OneToMany(mappedBy = "trip")
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     private List<TripDestination> tripDestinations;
 
     /**
