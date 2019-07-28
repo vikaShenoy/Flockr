@@ -8,7 +8,6 @@
     <ManageUsers
       v-bind:adminSearch.sync="adminSearch"
       :users="getFilteredUsers"
-      v-on:wantToEditUserById="handleWantToEditUserById"
       v-on:deleteUsersByIds="handleDeleteUsersByIds"
       v-on:logoutUsersByIds="handleLogoutUsersByIds"
     />
@@ -25,7 +24,7 @@
 <script>
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 import EditUserForm from "./EditUserForm/EditUserForm.vue";
-import { getUsers, getAllUsers } from "./AdminPanelService.js";
+import { getUsers, getAllUsers, deleteUsers, undoDeleteUsers } from "./AdminPanelService.js";
 import { patchUser } from "./AdminPanelService.js";
 import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
@@ -92,14 +91,22 @@ export default {
       this.snackbarModel.show = true;
     },
     async handleDeleteUsersByIds(userIds) {
-      const deleteUserPromises = userIds.map(userId => {
-        const promise = superagent
-          .delete(endpoint(`/users/${userId}`)).set('Authorization', localStorage.getItem('authToken'));
-        return promise;
-      });
+
+      const undoCommand = async (userIds) => {
+        await undoDeleteUsers(userIds);
+        this.getAllUsers();
+      };
+
+      const redoCommand = async (userIds) => {
+        await deleteUsers(userIds);
+        this.getAllUsers();
+      }
+
+      const deleteUsersCommand = new Command(undoCommand.bind(null, userIds), redoCommand.bind(null, userIds));
+      this.$refs.undoRedo.addUndo(deleteUsersCommand);
 
       try {
-        await Promise.all(deleteUserPromises);
+        await deleteUsers(userIds);
         this.getAllUsers();
         this.showSuccessSnackbar("Successfully deleted user(s)'");
       } catch(err) {
@@ -137,4 +144,10 @@ export default {
     height: 100%;
     padding: 10px;
   }
+
+  h2 {
+    width: 130px;
+    margin: 0 auto;
+  }
+
 </style>
