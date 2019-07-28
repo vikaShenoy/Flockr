@@ -342,6 +342,7 @@ public class TreasureHuntController extends Controller {
      * @param request the http request
      * @return the completion stage containing the result
      */
+    @With(LoggedIn.class)
     public CompletionStage<Result> undoDeleteTreasureHunt(int treasureHuntId, Http.Request request) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
         return treasureHuntRepository.getTreasureHuntByIdWithSoftDelete(treasureHuntId)

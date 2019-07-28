@@ -13,6 +13,7 @@ public class TasksController extends AbstractModule {
         bind(DeleteExpiredUsersTask.class).asEagerSingleton();
         bind(DeleteExpiredDestinationsTask.class).asEagerSingleton();
         bind(CountrySyncTask.class).asEagerSingleton();
+        bind(DeleteExpiredTreasureHunts.class).asEagerSingleton();
         // you may add more tasks here
     }
 }
