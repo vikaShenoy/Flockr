@@ -69,6 +69,7 @@
   import PromptDialog from "../../../components/PromptDialog/PromptDialog";
   import Snackbar from "../../../components/Snackbars/Snackbar";
   import {deleteUserPhoto, undoDeleteUserPhoto} from "../../UserGallery/UserGalleryService";
+  import Command from "../../../components/UndoRedo/Command";
 
   export default {
     props: {
@@ -174,9 +175,9 @@
             this.updatePhotoDialog(false);
             this.$emit("deletePhoto", index, true);
 
-            const deleteCommand = new Command(undoCommand.bind(null, index, photo), redoCommand.bind(null, index, photo));
-            this.$refs.undoRedo.addUndo(deleteCommand);
-            
+            const deleteCommand = new Command(undoCommand.bind(null, index, photo),
+				redoCommand.bind(null, index, photo));
+            this.$emit("addPhotoCommand", deleteCommand);
           } catch (error) {
             this.$emit("showError", error.message);
           }
