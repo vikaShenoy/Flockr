@@ -3,12 +3,17 @@ package controllers;
 import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
+import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
+import exceptions.UnauthorizedException;
 import models.Destination;
 import models.Trip;
 import models.TripDestination;
 import models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.*;
@@ -42,6 +47,8 @@ public class TripController extends Controller {
     private final HttpExecutionContext httpExecutionContext;
     private final TripUtil tripUtil;
     private final Security security;
+    final Logger log = LoggerFactory.getLogger(this.getClass());
+
 
     @Inject
     public TripController(TripRepository tripRepository, Security security, UserRepository userRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil, DestinationRepository destinationRepository) {
@@ -144,9 +151,6 @@ public class TripController extends Controller {
     public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        System.out.println("User is: " + user);
-        System.out.println("User ID is: " + userId);
-        System.out.println(security.userHasPermission(user, userId));
         if (!security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
@@ -170,6 +174,54 @@ public class TripController extends Controller {
                         return internalServerError();
                     }
                 });
+    }
+
+    @With(LoggedIn.class)
+    public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+        if (!security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
+        return tripRepository.getTripByIdsIncludingDeleted(tripId, userId).
+                thenComposeAsync((optionalTrip) -> {
+                    if (!optionalTrip.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
+                    Trip trip = optionalTrip.get();
+                    if (!user.isAdmin() && user.getUserId() != userId) {
+                        throw new CompletionException(new ForbiddenRequestException("You do not have permission to undo this deletion."));
+                    }
+                    if (!trip.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This trip has not been deleted."));
+                    }
+
+                    return tripRepository.restoreTrip(trip);
+                })
+                .thenApplyAsync(trip -> ok(Json.toJson(trip)))
+                .exceptionally(error -> {
+                    ObjectNode message = Json.newObject();
+                    try {
+                        throw error.getCause();
+                    } catch (BadRequestException e) {
+                        message.put("message", e.getMessage());
+                        return badRequest(message);
+                    } catch (UnauthorizedException e) {
+                        message.put("message", e.getMessage());
+                        return unauthorized(message);
+                    } catch (ForbiddenRequestException e) {
+                        message.put("message", e.getMessage());
+                        return forbidden(message);
+                    } catch (NotFoundException e) {
+                        message.put("message", e.getMessage());
+                        return notFound(message);
+                    } catch (Throwable e) {
+                        log.error("An unexpected error has occurred", e);
+                        return internalServerError();
+                    }
+                });
+
     }
 
 

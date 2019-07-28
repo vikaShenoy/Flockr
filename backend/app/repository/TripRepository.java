@@ -64,6 +64,20 @@ public class TripRepository {
     }
 
     /**
+     * Restore a deleted trip
+     * @param trip the trip to be restored
+     * @return
+     */
+    public CompletionStage<Trip> restoreTrip(Trip trip) {
+        return supplyAsync(() -> {
+            trip.setDeleted(false);
+            trip.setDeletedExpiry(null);
+            trip.save();
+            return trip;
+        });
+    }
+
+    /**
      * Get a trip by its tripId and userId.
      *
      * @param tripId The id of the trip to find.
@@ -73,6 +87,22 @@ public class TripRepository {
     public CompletionStage<Optional<Trip>> getTripByIds(int tripId, int userId) {
         return supplyAsync(() -> {
             Optional<Trip> trip = Trip.find.query().
+                    where().eq("trip_id", tripId)
+                    .eq("user_user_id", userId)
+                    .findOneOrEmpty();
+            return trip;
+        }, executionContext);
+    }
+
+    /**
+     * Get a trip, including if it has been soft deleted, by its tripId and userId
+     * @param tripId The id of the trip to get
+     * @param userId The user id of the owner of the trip
+     * @return the trip that matches the given ids
+     */
+    public CompletionStage<Optional<Trip>> getTripByIdsIncludingDeleted(int tripId, int userId) {
+        return supplyAsync(() -> {
+            Optional<Trip> trip = Trip.find.query().setIncludeSoftDeletes().
                     where().eq("trip_id", tripId)
                     .eq("user_user_id", userId)
                     .findOneOrEmpty();
