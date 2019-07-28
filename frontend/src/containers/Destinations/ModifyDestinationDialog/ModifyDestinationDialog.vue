@@ -256,11 +256,7 @@ import {
   requestTravellerTypes,
   requestDistricts
 } from "./ModifyDestinationDialogService";
-
 import ErrorSnackbar from "../../../components/Snackbars/ErrorSnackbar";
-
-import UserStore from "../../../stores/UserStore";
-
 import CountryPicker from "../../../components/Country/CountryPicker"
 export default {
   name: "add-destination-dialog",
@@ -402,12 +398,8 @@ export default {
      * Gets destination types to populate destination types with and sets it as state
      */
     async getDestinationTypes() {
-      try {
-        const destinationTypes = await requestDestinationTypes();
-        this.destinationTypes = destinationTypes;
-      } catch (e) {
-
-      }
+      const destinationTypes = await requestDestinationTypes();
+      this.destinationTypes = destinationTypes;
     },
     /**
      * Gets districts in a specific country and sets it as state
