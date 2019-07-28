@@ -9,7 +9,7 @@
         v-else v-for="trip in trips"
         :key="trip.tripId"
         :trip="trip"
-        :viewOnly="false"
+        :viewOnly="viewOnly"
       />
     </div>
 
