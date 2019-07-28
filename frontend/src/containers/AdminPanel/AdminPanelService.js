@@ -65,3 +65,19 @@ export async function patchUser(userId, body) {
       .send(body);
   }
 }
+
+/**
+ * Updates a user's roles
+ * @param {number} selectedUserId userId of roles to update
+ * @param {Array<string>} roleTypes roleType for user to have
+ */
+export async function updateRoles(selectedUserId, roleTypes) {
+  const authToken = localStorage.getItem("authToken");
+  await superagent
+    .patch(endpoint(`/users/${selectedUserId}/roles`))
+    .send({
+      roles: roleTypes
+    })
+    .set("Authorization", authToken);
+}
+

@@ -1,7 +1,7 @@
 # Routes
 
 # Home page
-GET           /                                                         controllers.Assets.at(path="/public/vue-front-end-goes-here", file="index.html")
+GET          /                                                  controllers.Assets.at(path="/public/vue-front-end-goes-here", file="index.html")
 
 # Auth routes
 POST          /api/auth/users/signup                                    controllers.AuthController.signup(request: Request)
@@ -70,6 +70,15 @@ POST          /api/users/:userId/trips                                  controll
 DELETE        /api/users/:userId/trips/:tripId                          controllers.TripController.deleteTrip(userId: Int, tripId : Int, request : Request)
 GET           /api/users/:userId/trips/:tripId                          controllers.TripController.getTrip(userId: Int, tripId: Int, request: Request)
 PUT           /api/users/:userId/trips/:tripId                          controllers.TripController.updateTrip(request: Request, userId: Int, tripId : Int)
+
+# Treasure Hunt Routes
+
+PUT           /api/treasurehunts/:treasureHuntId                      controllers.TreasureHuntController.editTreasureHunt(request: Request, treasureHuntId: Int)
+DELETE        /api/treasurehunts/:treasureHuntId                      controllers.TreasureHuntController.deleteTreasureHunt(request: Request, treasureHuntId: Int)
+POST          /api/users/:userId/treasurehunts                        controllers.TreasureHuntController.addTreasureHunt(request: Request, userId: Int)
+GET           /api/users/:userId/treasurehunts                        controllers.TreasureHuntController.getTreasureHuntsByUserId(request: Request, userId: Int)
+GET           /api/treasurehunts                                      controllers.TreasureHuntController.getAllTreasureHunts(request: Request)
+
 
 
 # Map static resources from the /public folder to the /assets URL path
