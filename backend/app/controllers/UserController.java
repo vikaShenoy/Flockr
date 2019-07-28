@@ -228,7 +228,6 @@ public class UserController extends Controller {
      */
     @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> updateTravellerRole(int travellerId, Http.Request request) {
-        System.out.println("I made it here");
         JsonNode jsonBody = request.body().asJson();
         JsonNode roleArray = jsonBody.withArray("roles");
         List<String> roleTypes = new ArrayList<>();

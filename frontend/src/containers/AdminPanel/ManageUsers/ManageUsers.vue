@@ -146,6 +146,10 @@ export default {
     selectedUsers: function() {
       return this.items.filter((item) => item.selected).map((user) => user.userId);
     },
+    /**
+     * Checks if user can add admin privileges to the selected users
+     * @returns {boolean} True if admin can add admin priviledges, false otherwise
+     */
     canAddAdminPriviledge() {
       if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
         return false;

@@ -172,7 +172,6 @@ export default {
      * @param {number} selectedUserId ID of user to remove admin priviledges for
      */
     async removeAdminPriviledge(selectedUserId) {
-      console.log("I made it here");
       const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
       // Remove admin role from user
       const roleTypes = selectedUser.roles
