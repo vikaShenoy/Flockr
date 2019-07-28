@@ -1,8 +1,5 @@
 <template>
   <div>
-    <div id="undo-redo">
-      <UndoRedo ref="undoRedo" />
-    </div>
     <h3 style="margin-bottom: 4px;margin-top: 4px;text-align:left; width: 50%">Photos</h3>
 
     <v-card id="photos">
@@ -17,8 +14,9 @@
           <v-layout v-if="photos && photos.length" row wrap>
             <v-flex sm12 md6 lg4 v-for="(photo, index) in photos" v-bind:key="photo.photoId">
               <v-img v-if="index < 6" class="photo clickable"
-                     :src="thumbnailUrl(photo.photoId)"
-                      @click="openViewPhotoDialog(photo, index)"/>
+                :src="thumbnailUrl(photo.photoId)"
+                @click="openViewPhotoDialog(photo, index)"
+              />
             </v-flex>
           </v-layout>
 
@@ -34,30 +32,32 @@
 
       <v-card-actions>
         <v-spacer align="center">
-          <add-photo-dialog
-                  :dialog="addPhotoDialog"
-                  v-on:closeDialog="closeAddPhotoDialog"
-                  v-on:addImage="addImage"
-          ></add-photo-dialog>
+          <AddPhotoDialog
+            :dialog="addPhotoDialog"
+            v-on:closeDialog="closeAddPhotoDialog"
+            v-on:addImage="addImage"
+          />
         </v-spacer>
       </v-card-actions>
     </v-card>
 
-    <photo-panel
-            :photo="currentPhoto"
-            :showDialog="viewPhotoDialog"
-            :currentPhotoIndex="currentPhotoIndex"
-            :deleteFunction="currentPhotoDeleteFunction"
-            v-on:closeDialog="updatePhotoDialog"
-            @deletePhoto="showPromptDialog"
-            @displayErrorMessage="displayErrorMessage"
-            @changedPermission="changedPermission"/>
+    <PhotoPanel
+      :photo="currentPhoto"
+      :showDialog="viewPhotoDialog"
+      :currentPhotoIndex="currentPhotoIndex"
+      :deleteFunction="currentPhotoDeleteFunction"
+      v-on:closeDialog="updatePhotoDialog"
+      @deletePhoto="showPromptDialog"
+      @displayErrorMessage="displayErrorMessage"
+      @changedPermission="changedPermission"
+    />
     <snackbar :snackbarModel="this.snackbarModel" @dismissSnackbar="snackbarModel.show=false"/>
     <prompt-dialog
-            :onConfirm="promptDialog.deleteFunction"
-            :dialog="promptDialog.show"
-            :message="promptDialog.message"
-            @promptEnded="promptEnded"/>
+      :onConfirm="promptDialog.deleteFunction"
+      :dialog="promptDialog.show"
+      :message="promptDialog.message"
+      @promptEnded="promptEnded"
+    />
 
   </div>
 </template>
@@ -69,8 +69,6 @@
   import PromptDialog from "../../../components/PromptDialog/PromptDialog";
   import Snackbar from "../../../components/Snackbars/Snackbar";
   import {deleteUserPhoto, undoDeleteUserPhoto} from "../../UserGallery/UserGalleryService";
-  import UndoRedo from "../../../components/UndoRedo/UndoRedo";
-  import Command from "../../../components/UndoRedo/Command";
 
   export default {
     props: {
@@ -80,8 +78,7 @@
       Snackbar,
       PromptDialog,
       PhotoPanel,
-      AddPhotoDialog,
-      UndoRedo
+      AddPhotoDialog
     },
 
     data() {
@@ -227,19 +224,6 @@
         return endpoint(`/users/photos/${photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
       },
       addImage(image) {
-        const undoCommand = async (image) => {
-          await deleteUserPhoto(image);
-          this.$emit("undoAddPhoto", image);
-        };
-
-        const redoCommand = async (image) => {
-          await undoDeleteUserPhoto(image);
-          this.$emit("addPhoto", image);
-        };
-
-        const undoUploadCommand = new Command(undoCommand.bind(null, image), redoCommand.bind(null, image));
-        console.log("Undo upload photo command added to the stack.");
-        this.$refs.undoRedo.addUndo(undoUploadCommand);
         this.$emit("addPhoto", image);
       }
     },
