@@ -14,7 +14,22 @@
 
         <h2>Treasure Hunts</h2>
         </div>
-        <v-expansion-panel class="panel">
+
+        <div v-if="!treasureHunts">
+           <v-progress-circular
+            indeterminate
+            color="secondary"
+            id="loading-spinner"
+          ></v-progress-circular> 
+        </div>
+
+        <div v-else-if="treasureHunts.length === 0" id="no-treasure-hunts">
+            <v-icon>search</v-icon>
+            <span>No treasure hunts found</span>
+        </div>
+
+
+        <v-expansion-panel class="panel" v-else>
           <v-expansion-panel-content
             v-for="(item, i) in treasureHunts"
             :key="i"
@@ -33,7 +48,7 @@
                   small
                   flat
                   v-if="isOwner(item.ownerId) || isAdmin()"
-                  v-on:click="showEditDialog(item)"
+                  @click="event => showEditDialog(event, item)"
                 >
                   <v-icon>edit</v-icon>
                 </v-btn>
@@ -43,7 +58,7 @@
                   small
                   flat
                   v-if="isOwner(item.ownerId) || isAdmin()"
-                  v-on:click="deleteTreasureHunt(item.treasureHuntId)"
+                  @click="event => deleteTreasureHunt(event, item.treasureHuntId)"
                 >
                   <v-icon>delete</v-icon>
                 </v-btn>
@@ -60,6 +75,8 @@
             </v-card>
           </v-expansion-panel-content>
         </v-expansion-panel>
+
+
         <AddTreasureHunt
           :toggle="showDialog"
           @closeDialog="closeDialog"
@@ -114,7 +131,7 @@ export default {
     return {
       showDialog: false,
       showEditForm: false,
-      treasureHunts: [],
+      treasureHunts: null,
       treasureHunt: {},
       refreshEditDialog: 50
     };
@@ -222,13 +239,15 @@ export default {
      * Function to show the edit treasure hunt form
      * @param treasureHunt
      */
-    showEditDialog(treasureHunt) {
+    showEditDialog(event, treasureHunt) {
+      event.stopPropagation();
       this.treasureHunt = treasureHunt;
       this.showEditForm = true;
       this.refreshEditDialog += 1;
     },
 
-    async deleteTreasureHunt(treasureHuntId) {
+    async deleteTreasureHunt(event, treasureHuntId) {
+      event.stopPropagation();
       try {
         await deleteTreasureHuntData(treasureHuntId);
         this.updateList();
@@ -282,7 +301,7 @@ export default {
 }
 
 h2 {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 #undo-redo {
@@ -309,6 +328,23 @@ h2 {
 
 .end-date {
     color: rgba(0,0,0,0.80)
+}
+
+#loading-spinner {
+  margin: 0 auto;
+  display: block;
+  margin-top: 50px;
+}
+
+#no-treasure-hunts {
+  span {
+    color: rgba(0, 0, 0, 0.5);
+    font-weight: 500;
+  }
+  
+  display: flex;
+  flex-direction: column;
+  margin-top: 80px;
 }
 </style>
 
