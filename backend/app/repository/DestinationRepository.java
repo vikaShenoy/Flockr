@@ -211,6 +211,15 @@ public class DestinationRepository {
         });
     }
 
+    public CompletionStage<Optional<DestinationPhoto>> getPhotoByIdWithSoftDelete(int destinationId, int photoId) {
+        return supplyAsync(() -> {
+            Optional<DestinationPhoto> photo = DestinationPhoto.find.query().setIncludeSoftDeletes().
+                    where().eq("destination_destination_id", destinationId).
+                    eq("personal_photo_photo_id", photoId).findOneOrEmpty();
+            return photo;
+        }, executionContext);
+    }
+
     /**
      * Insert a destination photo into the database
      *
@@ -221,6 +230,38 @@ public class DestinationRepository {
         return supplyAsync(() -> {
             photo.insert();
             return photo;
+        }, executionContext);
+    }
+
+    /**
+     * Soft delete a destination photo from the database
+     *
+     * @param destinationPhoto the DestinationPhoto to delete
+     * @return the ID of the destination photo that was deleted
+     */
+    public CompletionStage<Integer> deleteDestinationPhoto(DestinationPhoto destinationPhoto) {
+        return supplyAsync(() -> {
+            destinationPhoto.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+            destinationPhoto.save();
+            destinationPhoto.delete();
+
+            return destinationPhoto.getDestinationPhotoId();
+        }, executionContext);
+    }
+
+    /**
+     *  Un-soft-delete a destination photo from the database
+     *
+     * @param destinationPhoto the DestinationPhoto to un-delete
+     * @return the ID of the destination photo that was un-deleted
+     */
+    public CompletionStage<Integer> undoDeleteDestinationPhoto(DestinationPhoto destinationPhoto) {
+        return supplyAsync(() -> {
+            destinationPhoto.setDeletedExpiry(null);
+            destinationPhoto.setDeleted(false);
+            destinationPhoto.save();
+
+            return destinationPhoto.getDestinationPhotoId();
         }, executionContext);
     }
 

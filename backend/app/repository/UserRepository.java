@@ -202,7 +202,7 @@ public class UserRepository {
      * Gets a user by the user id includes soft deleted users.
      *
      * @param userId the id of the user.
-     * @return the optional user in an async funvction.
+     * @return the optional user in an async function.
      */
     public CompletionStage<Optional<User>> getUserByIdIncludingDeleted(int userId) {
         return supplyAsync(() -> User.find.query().setIncludeSoftDeletes()

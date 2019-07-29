@@ -14,6 +14,7 @@
       <v-icon>add</v-icon>
     </v-btn>
 
+    <undo-redo ref="undoRedo"/>
 
    <v-btn-toggle v-model="viewOption" flat id="view-option" mandatory>
       <v-btn class="option" value="your" v-bind:class="{'not-selected': viewOption !== 'your'}">
@@ -42,26 +43,118 @@
         v-for="destination in getDestinationsList"
         v-bind:key="destination.destinationId"
         :destination="destination"
+        @showDeleteDestination="showDeleteDestination"
       />
     </div>
 
   </div>
+
+  <PromptDialog
+    :dialog="isShowingDeleteDestDialog" 
+    message="Are you sure you want to delete the destination?"
+    :onConfirm="deleteDestination"
+    v-on:promptEnded="isShowingDeleteDestDialog = false"
+  />
+
+  <AlertDialog
+    title="Cannot delete destination"
+    :dialog.sync="cannotDeleteDestDialog"
+  >
+    The destination that you are trying to delete is in the following trips 
+
+    <ul>
+      <li v-for="usedTrip in usedTrips" v-bind:key="usedTrip.tripId">{{ usedTrip.tripName }}</li>
+    </ul>
+    
+  </AlertDialog>
+
+
 
   </v-card>
 </template>
 
 <script>
 import DestinationSummary from "./DestinationSummary/DestinationSummary";
+import PromptDialog from "../../../components/PromptDialog/PromptDialog";
+import { getUserTrips, deleteDestination, undoDeleteDestination } from "./DestinationSidebarService";
+import AlertDialog from "../../../components/AlertDialog/AlertDialog";
+import UndoRedo from "../../../components/UndoRedo/UndoRedo";
+import Command from '../../../components/UndoRedo/Command';
 
 export default {
   props: ["yourDestinations", "publicDestinations"],
   components: {
-    DestinationSummary
+    DestinationSummary,
+    PromptDialog,
+    AlertDialog,
+    UndoRedo,
   },
   data() {
     return {
-      viewOption: "your"
+      viewOption: "your",
+      isShowingDeleteDestDialog: false,
+      trips: [],
+      cannotDeleteDestDialog: false,
+      currentDeletingDestinationId: null,
+      usedTrips: []
     };
+  },
+  mounted() {
+    this.getUserTrips(); 
+  },
+  methods: {
+    /**
+     * Gets a user's trips
+     */
+    async getUserTrips() {
+      const userTrips = await getUserTrips();
+      this.trips = userTrips;
+    },
+    // Deletes a destination
+    async deleteDestination() {
+      const undoCommand = async (destinationId) => {
+        await undoDeleteDestination(destinationId);
+        this.$emit("refreshDestinations", destinationId);
+      }
+
+      const redoCommand = async (destinationId) => {
+        await deleteDestination(this.currentDeletingDestinationId);
+        this.$emit("refreshDestinations", destinationId);
+      }
+      
+      const deleteDestinationCommand = new Command(undoCommand.bind(null, this.currentDeletingDestinationId), redoCommand.bind(this.currentDeletingDestinationId));
+      this.$refs.undoRedo.addUndo(deleteDestinationCommand);
+      await deleteDestination(this.currentDeletingDestinationId);
+      this.$emit("refreshDestinations");
+    },
+    /**
+     * Gets trips that are using a specific destination
+     */
+    getTripsUsingDestination(destinationId) {
+      return this.trips.filter(trip => {
+        const usedTripDestinations = trip.tripDestinations.filter(tripDestination => {
+          return tripDestination.destination.destinationId === destinationId;
+        }); 
+
+        return usedTripDestinations.length;
+      });
+    },
+    showDeleteDestination(destinationId) {
+      const usedTrips = this.getTripsUsingDestination(destinationId);
+      if (usedTrips.length) {
+        this.usedTrips = usedTrips;
+        this.cannotDeleteDestDialog = true;
+      } else {
+        this.isShowingDeleteDestDialog = true;
+        this.currentDeletingDestinationId = destinationId;
+      }
+    },
+    /**
+     * Method to add an undo/redo command to the undo/redo stack.
+     */
+    addUndoRedoCommand(command) {
+      this.$refs.undoRedo.addUndo(command)
+    }
   },
   computed: {
     shouldShowSpinner() {
@@ -96,7 +189,7 @@ export default {
     float: right;
 
     #title {
-      height: 100px;
+      height: 125px;
       background-color: $primary;
       color: $darker-white;
       text-align: center;
@@ -127,7 +220,7 @@ export default {
 
     #destinations-list {
       height: calc(100% - 100px);
-      margin-top: 100px;
+      margin-top: 125px;
     }
 
     #spinner {

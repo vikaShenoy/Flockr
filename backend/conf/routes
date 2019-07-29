@@ -59,10 +59,10 @@ PUT           /api/destinations/:destinationId/undodelete               controll
 
 
 # Destination photos routes
-POST          /api/destinations/:destinationId/photos                   controllers.DestinationController.addPhoto(destinationId: Int, request: Request)
-GET           /api/destinations/:destinationId/photos                   controllers.DestinationController.getPhotos(destinationId: Int, request: Request)
-DELETE        /api/destinations/:destinationId/photos/:photoId          controllers.DestinationController.unlinkPhoto(destinationId: Int, photoId: Int, request: Request)
-
+POST          /api/destinations/:destinationId/photos                       controllers.DestinationController.addPhoto(destinationId: Int, request: Request)
+GET           /api/destinations/:destinationId/photos                       controllers.DestinationController.getPhotos(destinationId: Int, request: Request)
+DELETE        /api/destinations/:destinationId/photos/:photoId              controllers.DestinationController.deletePhoto(destinationId: Int, photoId: Int, request: Request)
+PUT           /api/destinations/:destinationId/photos/:photoId/undodelete   controllers.DestinationController.undoPhotoDelete(destinationId: Int, photoId: Int, request: Request)
 
 # Trip Routes
 GET           /api/users/:userId/trips                                  controllers.TripController.getTrips(request: Request, userId: Int)
@@ -70,6 +70,7 @@ POST          /api/users/:userId/trips                                  controll
 DELETE        /api/users/:userId/trips/:tripId                          controllers.TripController.deleteTrip(userId: Int, tripId : Int, request : Request)
 GET           /api/users/:userId/trips/:tripId                          controllers.TripController.getTrip(userId: Int, tripId: Int, request: Request)
 PUT           /api/users/:userId/trips/:tripId                          controllers.TripController.updateTrip(request: Request, userId: Int, tripId : Int)
+PUT           /api/users/:userId/trips/:tripId/restore               controllers.TripController.restoreTrip(userId: Int, tripId: Int, request: Request)
 
 # Treasure Hunt Routes
 

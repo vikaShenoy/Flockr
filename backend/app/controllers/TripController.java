@@ -3,12 +3,17 @@ package controllers;
 import actions.ActionState;
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
+import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
+import exceptions.UnauthorizedException;
 import models.Destination;
 import models.Trip;
 import models.TripDestination;
 import models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.*;
@@ -42,9 +47,13 @@ public class TripController extends Controller {
     private final HttpExecutionContext httpExecutionContext;
     private final TripUtil tripUtil;
     private final Security security;
+    final Logger log = LoggerFactory.getLogger(this.getClass());
+
 
     @Inject
-    public TripController(TripRepository tripRepository, Security security, UserRepository userRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil, DestinationRepository destinationRepository) {
+    public TripController(TripRepository tripRepository, Security security, UserRepository userRepository,
+                          HttpExecutionContext httpExecutionContext, TripUtil tripUtil,
+                          DestinationRepository destinationRepository) {
         this.tripRepository = tripRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.tripUtil = tripUtil;
@@ -88,7 +97,8 @@ public class TripController extends Controller {
 
                     User user = optionalUser.get();
 
-                    List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId, tripDestinations);
+                    List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
+                            tripDestinations);
 
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
@@ -144,9 +154,6 @@ public class TripController extends Controller {
     public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        System.out.println("User is: " + user);
-        System.out.println("User ID is: " + userId);
-        System.out.println(security.userHasPermission(user, userId));
         if (!security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
@@ -172,6 +179,68 @@ public class TripController extends Controller {
                 });
     }
 
+    /**
+     * Undo the soft-delete for a trip.
+     * @param userId user who owns the trip.
+     * @param tripId id of the trip to un-soft delete.
+     * @param request HTTP request object.
+     * @return
+     * - 200 with trip if successful
+     * - 400 bad request if the trip hasn't been deleted
+     * - 401 unauthorized if the user is unauthorized
+     * - 403 forbidden if the user isn't allowed to undo the delete
+     * - 404 not found if the trip can't be found in the db
+     * - 500 internal server error for other errors
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+
+        if (!security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
+        return tripRepository.getTripByIdsIncludingDeleted(tripId, userId).
+                thenComposeAsync((optionalTrip) -> {
+                    if (!optionalTrip.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
+                    Trip trip = optionalTrip.get();
+                    if (!user.isAdmin() && user.getUserId() != userId) {
+                        throw new CompletionException(new ForbiddenRequestException(
+                                "You do not have permission to undo this deletion."));
+                    }
+                    if (!trip.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This trip has not been deleted."));
+                    }
+
+                    return tripRepository.restoreTrip(trip);
+                })
+                .thenApplyAsync(trip -> ok(Json.toJson(trip)))
+                .exceptionally(error -> {
+                    ObjectNode message = Json.newObject();
+                    try {
+                        throw error.getCause();
+                    } catch (BadRequestException e) {
+                        message.put("message", e.getMessage());
+                        return badRequest(message);
+                    } catch (UnauthorizedException e) {
+                        message.put("message", e.getMessage());
+                        return unauthorized(message);
+                    } catch (ForbiddenRequestException e) {
+                        message.put("message", e.getMessage());
+                        return forbidden(message);
+                    } catch (NotFoundException e) {
+                        message.put("message", e.getMessage());
+                        return notFound(message);
+                    } catch (Throwable e) {
+                        log.error("An unexpected error has occurred", e);
+                        return internalServerError();
+                    }
+                });
+
+    }
+
 
     /**
      * Endpoint to update a trips destinations.
@@ -180,7 +249,7 @@ public class TripController extends Controller {
      * @param tripId  The trip ID to update
      * @param userId  The id of the user that the trip belongs to
      * @return Returns the http response which can be
-     * - Ok - Trip was updated successfully
+     * - 200 - Trip was updated successfully
      * - 400 - there was an error with the request.
      * - 500 - there was an internal server error.
      */
@@ -208,7 +277,8 @@ public class TripController extends Controller {
                         throw new CompletionException(new BadRequestException());
                     }
 
-                    List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId, tripDestinations);
+                    List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
+                            tripDestinations);
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
                                 Trip trip = optionalTrip.get();
@@ -249,12 +319,16 @@ public class TripController extends Controller {
         List<CompletionStage<Destination>> updateDestinations = new ArrayList<>();
         for (TripDestination tripDestination : tripDestinations) {
 
-            CompletionStage<Destination> updateDestination = destinationRepository.getDestinationById(tripDestination.getDestination().getDestinationId())
+            CompletionStage<Destination> updateDestination = destinationRepository.getDestinationById(
+                    tripDestination.getDestination().getDestinationId())
                     .thenApplyAsync(destination -> {
-                                if (destination.isPresent() &&                                      // The destination exists
-                                        destination.get().getIsPublic() &&                          // The destination is public
-                                        destination.get().getDestinationOwner() != null &&          // The owner is not already null
-                                        !destination.get().getDestinationOwner().equals(userId)) {  // The user doesn't own the destination
+                                if (destination.isPresent() &&  // The destination exists
+                                        // The destination is public
+                                        destination.get().getIsPublic() &&
+                                        // The owner is not already null
+                                        destination.get().getDestinationOwner() != null &
+                                        // The user doesn't own the destination
+                                        !destination.get().getDestinationOwner().equals(userId)) {
                                     destination.get().setDestinationOwner(null);
                                     destinationRepository.update(destination.get());
                                 }
@@ -267,7 +341,7 @@ public class TripController extends Controller {
     }
 
     /**
-     * Endpoint to get a users trips
+     * Endpoint to get a users' trips.
      *
      * @param request - Request object to get the users ID
      * @param userId  - Irrelevant ID for consistency reasons
