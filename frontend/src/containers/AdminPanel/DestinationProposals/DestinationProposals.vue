@@ -2,7 +2,6 @@
   <v-card id="destination-proposals">
     <v-subheader>
       Destination Proposals
-        <UndoRedo id="undo-redo-btns" ref="undoRedo" />
     </v-subheader>
     <v-divider></v-divider>
 
@@ -120,7 +119,8 @@ export default {
         };
 
         const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, destinationProposalId));
-        this.$refs.undoRedo.addUndo(acceptProposalCommand);
+        this.$emit("acceptProposalCommand", acceptProposalCommand);
+
         this.filterOutDestinationProposalId(destinationProposalId);
         this.$emit("showMessage", "Accepted Proposal");
       } catch (e) {
@@ -143,7 +143,7 @@ export default {
         };
 
         const declineProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, destinationProposalId));
-        this.$refs.undoRedo.addUndo(declineProposalCommand);
+        this.$emit("declineProposalCommand", declineProposalCommand);
         this.filterOutDestinationProposalId(destinationProposalId);
         this.$emit("showMessage", "Rejected Proposal");
       } catch (e) {
@@ -169,11 +169,6 @@ export default {
 <style lang="scss" scoped>
 #destination-proposals {
   margin-top: 10px;
-}
-
-#undo-redo-btns {
-  float: right;
-  padding-left: 920px;
 }
 </style>
 

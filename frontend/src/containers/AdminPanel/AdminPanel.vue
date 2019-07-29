@@ -16,6 +16,8 @@
     <DestinationProposals
       v-on:showError="showErrorSnackbar"
       v-on:showMessage="showSuccessSnackbar"
+      @acceptProposalCommand="acceptProposalCommand"
+      @declineProposalCommand="declineProposalCommand"
      />
 
     <Snackbar :snackbarModel="this.snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
@@ -73,8 +75,20 @@ export default {
     }
   },
   methods: {
+    /**
+     * Accepts the proposal and adds it into the undo-redo stack
+     */
+    acceptProposalCommand(acceptProposalCommand) {
+      this.$refs.undoRedo.addUndo(acceptProposalCommand);
+    },
 
-    /** 
+    /**
+     * Declines the proposal and adds it into the undo-redo stack
+     */
+    declineProposalCommand(declineProposalCommand) {
+      this.$refs.undoRedo.addUndo(declineProposalCommand);
+    },
+    /**
      * Call admin panel service method to retrieve 
      * all users, including those with incomplete profiles.
      * Set the users so they display on the panel.
