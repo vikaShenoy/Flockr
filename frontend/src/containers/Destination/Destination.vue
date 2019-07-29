@@ -241,8 +241,7 @@ export default {
       };
 
       const redoCommand = async () => {
-        const photo = await undoRemovePhotoFromDestination(this.destination.destinationId, photoId);
-        console.log("photo", photo);
+        await undoRemovePhotoFromDestination(this.destination.destinationId, photoId);
         this.destinationPhotos.push(photo)
       };
 
