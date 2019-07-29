@@ -1,6 +1,6 @@
 <template>
   <div id="view-container">
-    <v-card id="undo-redo-card">
+    <v-card id="undo-redo-card" v-if="!viewOnly">
       <UndoRedo ref="undoRedo"/>
       <p>You can undo and redo your actions in this page</p>
     </v-card>
@@ -9,12 +9,13 @@
       <v-container grid-list-xl text-center>
         <v-layout wrap>
           <v-flex xs10 offset-xs1>
-            <TripList :userId="userId" @delete-trip="deleteTrip"/>
+            <TripList :userId="userId" @delete-trip="deleteTrip" viewOnly/>
           </v-flex>
         </v-layout>
       </v-container>
 
       <v-btn
+        v-if="!viewOnly"
         id="add-trip-button"
         fab
         dark
@@ -44,6 +45,12 @@ import Command from "../../components/UndoRedo/Command";
 import { deleteTripFromList, restoreTrip } from "./OldTripsService";
 
 export default {
+  props: {
+    viewOnly: { // hide action buttons and undo redo
+      type: Boolean,
+      required: false
+    }
+  },
   components: {
     AddTrip,
     TripList,
