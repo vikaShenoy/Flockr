@@ -92,6 +92,22 @@ public class TripControllerTest {
         trip.save();
     }
 
+    @Test
+    public void undoDeleteOk() {
+        trip.delete();
+        Optional<Trip> optionalTrip = Trip.find.query()
+                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Assert.assertFalse(optionalTrip.isPresent());
+
+        Result result = fakeClient.makeRequestWithToken(
+                "PUT",
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore",
+                user.getToken()
+        );
+        Assert.assertEquals(200, result.status());
+
+    }
+
     @After
     public void tearDown() {
         Helpers.stop(application);
