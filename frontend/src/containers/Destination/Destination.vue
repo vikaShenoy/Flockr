@@ -241,13 +241,7 @@ export default {
       };
 
       const redoCommand = async () => {
-        console.log("Redo", photoId);
-        const res = await superagent.post(endpoint(`/destinations/${this.destination.destinationId}/photos`))
-          .set('Authorization', authToken)
-          .send(data);
-        let photo = res.body;
-        photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
-        photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+        await undoRemovePhotoFromDestination(this.destination.destinationId, photoId);
         this.destinationPhotos.push(photo)
       };
 
