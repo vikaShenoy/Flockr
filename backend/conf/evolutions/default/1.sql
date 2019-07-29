@@ -79,6 +79,8 @@ create table destination_photo (
   destination_photo_id          integer auto_increment not null,
   destination_destination_id    integer,
   personal_photo_photo_id       integer,
+  deleted_expiry                datetime(6),
+  deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_destination_photo primary key (destination_photo_id)
 );
 
