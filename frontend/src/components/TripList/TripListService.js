@@ -136,29 +136,5 @@ export function sortTrips(trips) {
 }
 
 
-/**
- * Function to call the backend and delete a trip from the database
- * @param tripId the ID of the trip to delete
- * @returns {Promise<*>} the body of the response
- */
-export async function deleteTripFromList(tripId) {
-  const authToken = localStorage.getItem("authToken");
-  const userId = localStorage.getItem("userId");
-
-  const res = await superagent.delete(endpoint(`/users/${userId}/trips/${tripId}`)).set("Authorization", authToken);
-
-  return res.body;
-}
-
-export async function restoreTrip(tripId) {
-  const authToken = localStorage.getItem("authToken");
-  const userId = localStorage.getItem("userId");
-
-    const res = await superagent.put(endpoint(`/users/${userId}/trips/${tripId}/restore`)).set("Authorization", authToken);
-
-  return res.body;
-}
-
-
 
 

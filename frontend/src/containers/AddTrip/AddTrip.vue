@@ -124,8 +124,7 @@ export default {
       if (!validFields) return;
       const userId = localStorage.getItem("userId");
       const tripId = await addTrip(this.tripName, this.tripDestinations, userId);
-      this.$emit("new-trip");
-      // TODO: add a trip to undo redo in OldTrips.vue
+      this.$emit("new-trip-was-added", tripId);
     }
   }
 };
