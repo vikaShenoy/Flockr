@@ -63,7 +63,7 @@ export async function removePhotoFromDestination(destinationId, photoId) {
  * @returns {Promise<*>} the response body
  */
 export async function undoRemovePhotoFromDestination(destinationId, photoId) {
-  const res = await superagent.put(endpoint(`/destinations/${destinationId}/photos/${photoId}/undodelete`))
+  const res = await superagent.put(endpoint(  `/destinations/${destinationId}/photos/${photoId}/undodelete`))
     .set("Authorization", localStorage.getItem("authToken"));
 
   return res.body;

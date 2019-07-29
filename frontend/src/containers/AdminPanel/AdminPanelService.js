@@ -1,36 +1,45 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 
+
+/**
+ * Deletes a user
+ * @param {number} userId The ID of the user to delete
+ */
+export async function deleteUser(userId) {
+    const authToken = localStorage.getItem("authToken");
+    await superagent.delete(endpoint(`/users/${userId}`))
+    .set("Authorization", authToken);
+}
 /**
  * Make API call to delete the given users
  * @param {number[]} userIds the ids of the users we want to delete
  */
 export async function deleteUsers(userIds) {
-  const authToken = localStorage.getItem("authToken");
-  const deleteUserPromises = userIds.map(userId => {
-    const promise = superagent.delete(endpoint(`/users/${userId}`))
-    .set("Authorization", authToken);
-    return promise;
-  });
-
+  const deleteUserPromises = userIds.map(userId => deleteUser(userId));
   await Promise.all(deleteUserPromises);
+}
+
+/**
+ * Undoes the deletion of a user
+ * @param {number} userId the ID of the user to undelete
+ */
+export async function undoDeleteUser(userId) {
+  const authToken = localStorage.getItem("authToken");
+    await superagent
+      .put(endpoint(`/users/${userId}/undodelete`))
+      .set("Authorization", authToken);
 }
 
 /**
  * Undeletes users
  */
 export async function undoDeleteUsers(userIds) {
-  const authToken = localStorage.getItem("authToken");
-
-  const undoDeleteUserPromises = userIds.map(userId => {
-    const promise = superagent
-      .put(endpoint(`/users/${userId}/undodelete`))
-      .set("Authorization", authToken);
-    return promise;
-  });
-
+  const undoDeleteUserPromises = userIds.map(userId => undoDeleteUser(userId));
   await Promise.all(undoDeleteUserPromises);
 }
+
+
 
 /**
  * Get user data for users, with a complete profile.

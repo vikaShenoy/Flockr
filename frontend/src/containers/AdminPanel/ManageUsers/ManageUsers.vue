@@ -94,7 +94,7 @@
 
       <v-dialog v-model="showSignup" max-width="800">
       <v-card>
-        <SignUp @exit="closeSignupModal()"></SignUp>
+        <SignUp @exit="closeSignupModal" isSigningUpAsAdmin></SignUp>
         <v-card-actions>
           <v-spacer></v-spacer>
         </v-card-actions>
@@ -213,9 +213,11 @@ export default {
     /**
      * Close the modal containing the signup component.
      */
-    closeSignupModal() {
-      this.showSignup = false;
+    closeSignupModal(userId) {
+      this.$emit("userSignedUp", userId);
+     this.showSignup = false;
       this.$parent.getAllUsers();
+      this.$parent.$refs.undoRedo.addUndo(signupCommand);
     },
 
     /**
