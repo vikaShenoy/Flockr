@@ -92,6 +92,15 @@ public class TripControllerTest {
         trip.save();
     }
 
+    private void restore(Trip trip) {
+        trip.setDeleted(false);
+        trip.setDeletedExpiry(null);
+        trip.save();
+        Optional<Trip> optionalTrip = Trip.find.query()
+                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Assert.assertTrue(optionalTrip.isPresent());
+    }
+
     @Test
     public void restoreTripOk() {
         trip.delete();
@@ -110,32 +119,95 @@ public class TripControllerTest {
 
     @Test
     public void restoreTripForbidden() {
-        Assert.fail();
+        trip.delete();
+        Optional<Trip> optionalTrip = Trip.find.query()
+                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Assert.assertFalse(optionalTrip.isPresent());
+
+        Result result = fakeClient.makeRequestWithToken(
+                "PUT",
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore",
+                otherUser.getToken()
+        );
+        Assert.assertEquals(403, result.status());
+        restore(trip);
     }
 
     @Test
     public void restoreTripUnauthorized() {
-        Assert.fail();
+        trip.delete();
+        Optional<Trip> optionalTrip = Trip.find.query()
+                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Assert.assertFalse(optionalTrip.isPresent());
+
+        Result result = fakeClient.makeRequestWithNoToken(
+                "PUT",
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore"
+        );
+        Assert.assertEquals(401, result.status());
+        restore(trip);
     }
 
     @Test
     public void restoreTripAdmin() {
-        Assert.fail();
+        trip.delete();
+        Optional<Trip> optionalTrip = Trip.find.query()
+                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Assert.assertFalse(optionalTrip.isPresent());
+
+        Result result = fakeClient.makeRequestWithToken(
+                "PUT",
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore",
+                adminUser.getToken()
+        );
+        Assert.assertEquals(200, result.status());
     }
 
     @Test
     public void restoreTripUserNotFound() {
-        Assert.fail();
+        trip.delete();
+        Optional<Trip> optionalTrip = Trip.find.query()
+                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Assert.assertFalse(optionalTrip.isPresent());
+
+        Result result = fakeClient.makeRequestWithToken(
+                "PUT",
+                "/api/users/" + -50 + "/trips/" + trip.getTripId() + "/restore",
+                user.getToken()
+        );
+        Assert.assertEquals(404, result.status());
+        restore(trip);
     }
 
     @Test
     public void restoreTripNotFound() {
-        Assert.fail();
+        trip.delete();
+        Optional<Trip> optionalTrip = Trip.find.query()
+                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Assert.assertFalse(optionalTrip.isPresent());
+
+        Result result = fakeClient.makeRequestWithToken(
+                "PUT",
+                "/api/users/" + user.getUserId() + "/trips/" + -50 + "/restore",
+                user.getToken()
+        );
+        Assert.assertEquals(404, result.status());
+        restore(trip);
     }
 
     @Test
     public void restoreTripBadRequest() {
-        Assert.fail();
+
+        Optional<Trip> optionalTrip = Trip.find.query()
+                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Assert.assertTrue(optionalTrip.isPresent());
+
+        Result result = fakeClient.makeRequestWithToken(
+                "PUT",
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore",
+                user.getToken()
+        );
+        Assert.assertEquals(400, result.status());
     }
 
     @After
