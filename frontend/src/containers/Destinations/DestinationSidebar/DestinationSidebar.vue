@@ -66,6 +66,14 @@ export default {
       viewOption: "your"
     };
   },
+  methods: {
+    /**
+     * Method to add an undo/redo command to the undo/redo stack.
+     */
+    addUndoRedoCommand(command) {
+      this.$refs.undoRedo.addUndo(command)
+    }
+  },
   computed: {
     shouldShowSpinner() {
       return this.viewOption === "your" && !this.yourDestinations || this.viewOption === "public" && !this.publicDestinations;
