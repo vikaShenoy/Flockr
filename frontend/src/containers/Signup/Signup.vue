@@ -80,7 +80,8 @@ import moment from "moment";
 
 export default {
   props: {
-    shouldGoToProfile: {
+    // flag that identified if component should be used for signing up or signup as a user as an admin
+    isSigningUpAsAdmin: {
       type: Boolean,
       required: false
     }
@@ -279,8 +280,8 @@ export default {
       try {
         const { token, userId } = await signup(userInfo);
 
-        // Only set local storage if user is not currently logged in
-        if (!localStorage.getItem("authToken")) {
+        // Only set local storage if not signup up as an admin
+        if (!this.isSigningUpAsAdmin) {
           localStorage.setItem("authToken", token);
           localStorage.setItem("userId", userId);
 
@@ -288,11 +289,8 @@ export default {
           then we'll know what ID to go back to once they are done
           */
           localStorage.setItem("ownUserId", userId);
-          
-          
-        } else {
-          this.$emit('exit', true);
         }
+
         this.signedUpUserId = userId;
         this.loading = false;
         this.currStepperStep = 3; // go to next stepper in sign up sequence
@@ -317,7 +315,14 @@ export default {
           gender: gender,
           dateOfBirth: moment(dateOfBirth, 'DD/MM/YYYY').format('YYYY-DD-MM')
         });
-        this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
+        
+        // If signing up a user as admin, then emit, otherwise go to user profile page
+        if (this.isSigningUpAsAdmin) {
+          this.$emit("exit", this.signedUpUserId);
+        } else {
+          this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
+        }
+
         this.loading = false;
       } catch (err) {
         console.error(`Could not add traveller info for user with id ${signedUpUserId}: ${err}`);

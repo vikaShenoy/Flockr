@@ -12,6 +12,7 @@
       v-on:logoutUsersByIds="handleLogoutUsersByIds"
       @addAdminPriviledge="addAdminPriviledge"
       @removeAdminPriviledge="removeAdminPriviledge"
+      @userSignedUp="userSignedUp"
     />
     <DestinationProposals
       v-on:showError="showErrorSnackbar"
@@ -28,7 +29,7 @@
 <script>
 import ManageUsers from "./ManageUsers/ManageUsers.vue";
 import EditUserForm from "./EditUserForm/EditUserForm.vue";
-import { getUsers, getAllUsers, deleteUsers, undoDeleteUsers, updateRoles } from "./AdminPanelService.js";
+import { getUsers, getAllUsers, deleteUsers, undoDeleteUsers, updateRoles, deleteUser, undoDeleteUser } from "./AdminPanelService.js";
 import { patchUser } from "./AdminPanelService.js";
 import superagent from "superagent";
 import { endpoint } from '../../utils/endpoint';
@@ -218,8 +219,25 @@ export default {
       } catch (e) {
         this.showErrorSnackbar("Error removing admin priviledges");
       }
+    },
+    // Adds commands to undo stack and refreshes users
+    userSignedUp(userId) {
+      const undoCommand = async (userId) => {
+        await deleteUser(userId);
+        this.getAllUsers();
+      }
+
+      const redoCommand = async (userId) => {
+        await undoDeleteUser(userId)
+        this.getAllUsers();
+      };
+
+      const signupCommand = new Command(undoCommand.bind(null, userId), redoCommand.bind(null, userId));
+      this.getAllUsers();
+      this.$refs.undoRedo.addUndo(signupCommand);
     }
-  }
+  },
+  
 };
 </script>
 
