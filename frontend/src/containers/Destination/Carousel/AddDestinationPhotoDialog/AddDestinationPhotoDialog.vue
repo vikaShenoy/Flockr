@@ -57,8 +57,6 @@
 </template>
 
 <script>
-
-    import superagent from 'superagent';
     import {endpoint} from '../../../../utils/endpoint';
     export default {
         name: "AddPhotoDialog",
@@ -104,20 +102,9 @@
                 return endpoint(`/users/photos/${photoId}/thumbnail${queryAuthorization}`);
             },
             addPhotoToDestination: async function(photoId) {
-                let data = {
-                    photoId: photoId
-                };
-                let authToken = localStorage.getItem('authToken');
-
                 try {
-                    const res = await superagent.post(endpoint(`/destinations/${this.id}/photos`))
-                        .set('Authorization', authToken)
-                        .send(data);
                     this.showAddPhotoDialog = false;
-                    let photo = res.body;
-                    photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
-                    photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
-                    this.$emit("addPhoto", photo);
+                    this.$emit("addPhoto", photoId);
                 } catch (e) {
                     this.$emit("displayError", e.message);
                 }
