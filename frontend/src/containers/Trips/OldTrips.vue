@@ -1,58 +1,132 @@
 <template>
-  <div class="trips-container">
+  <div id="view-container">
+    <v-card id="undo-redo-card">
+      <UndoRedo ref="undoRedo"/>
+      <p>You can undo and redo your actions in this page</p>
+    </v-card>
+  
+    <div v-if="!isAddingATrip" class="trips-container" :key="tripListKey">
+      <TripList :userId="userId" @delete-trip="deleteTrip"/>
 
-    <TripList :userId="userId" />
-
-    <v-btn
-      id="add-trip"
-      fab
-      dark
-      color="secondary"
-    >
-      <v-icon
+      <v-btn
+        id="add-trip-button"
+        fab
         dark
-        @click="goToAddTrip"
-      >add</v-icon>
-    </v-btn>
+        color="secondary"
+      >
+        <v-icon
+          dark
+          @click="isAddingATrip = true"
+        >add</v-icon>
+      </v-btn>
+    </div>
 
-
+    <AddTrip
+      v-else
+      @new-trip-was-added="newTripWasAdded"
+      @cancel-trip-creation="isAddingATrip = false"
+    />
   </div>
 </template>
 
 
 <script>
 import TripList from "../../components/TripList/TripList";
+import AddTrip from "../AddTrip/AddTrip";
+import UndoRedo from "../../components/UndoRedo/UndoRedo";
+import Command from "../../components/UndoRedo/Command";
+import { deleteTripFromList, restoreTrip } from "./OldTripsService";
 
 export default {
   components: {
-    TripList
+    AddTrip,
+    TripList,
+    UndoRedo
   },
   data() {
     return {
       // Used to know what user to get trips from
-      userId: localStorage.getItem("userId")
+      userId: localStorage.getItem("userId"),
+      isAddingATrip: false,
+      tripListKey: 0 // used to force rerenders of the component when trips are added
     };
   },
   methods: {
-   /**
-     * Go to route for adding a trip.
+    /**
+     * Called when the list of trips changes and we need the list of trips
+     * to be updated.
+     * Creates undo/redo commands and adds them to the stack.
      */
-    goToAddTrip() {
-      this.$router.push("/trips/add");
+    newTripWasAdded(tripId) {
+      this.refreshTrips();
+      this.isAddingATrip = false;
+
+      let undoCommand = async (tripId) => {
+        await deleteTripFromList(tripId);
+        this.refreshTrips();
+      };
+      undoCommand = undoCommand.bind(null, tripId);
+
+      let redoCommand = async (tripId) => {
+        await restoreTrip(tripId);
+        this.refreshTrips();
+      };
+      redoCommand = redoCommand.bind(null, tripId);
+      const addedTripCommand = new Command(undoCommand, redoCommand);
+      this.$refs.undoRedo.addUndo(addedTripCommand);
+    },
+    /**
+     * Delete a trip given its id. Create and add undo/redo commands
+     * to the stack.
+     */
+    deleteTrip(tripId) {
+      let undoCommand = async (tripId) => {
+        await restoreTrip(tripId);
+        this.refreshTrips();
+      };
+      undoCommand = undoCommand.bind(null, tripId);
+
+      let redoCommand = async (tripId) => {
+        await deleteTripFromList(tripId);
+        this.refreshTrips();
+      };
+      redoCommand = redoCommand.bind(null, tripId);
+      redoCommand(); // execute the deletion
+      const deleteTripCommand = new Command(undoCommand, redoCommand);
+      this.$refs.undoRedo.addUndo(deleteTripCommand);
+    },
+    /**
+     * Force a component re render for the list of trips by changing
+     * its key
+     */
+    refreshTrips() {
+      this.tripListKey += 1;
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
+#undo-redo-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
 .trips-container {
   width: 100%;
-  padding-top: 15px;
-  padding-bottom: 15px;
 }
-#add-trip {
+
+#add-trip-button {
   position: fixed;
   right: 30px;
   bottom: 30px;
+}
+
+#view-container {
+  width: 100%;
+  height: 100%;
+  padding: 15px;
 }
 </style>
