@@ -42,9 +42,6 @@
          Request Traveller Types 
         </v-btn>
 
-
- 
-
         <v-btn
           color="secondary"
           depressed
@@ -234,20 +231,27 @@ export default {
         .set('Authorization', authToken)
         .send(data);
       let photo = res.body;
-      photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
-      photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+      photo["endpoint"] = endpoint(
+          `/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
+      photo["thumbEndpoint"] = endpoint(
+          `/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+
+      const destinationPhotoId = photo.destinationPhotoId;
+      const photoIndex = this.destinationPhotos.length;
 
       const undoCommand = async () => {
-        await removePhotoFromDestination(this.destination.destinationId, photoId);
-        this.removePhoto(this.index);
+        await removePhotoFromDestination(this.destination.destinationId, destinationPhotoId);
+        this.removePhoto(photoIndex);
       };
 
       const redoCommand = async () => {
-        await undoRemovePhotoFromDestination(this.destination.destinationId, photoId);
-        this.destinationPhotos.push(photo)
+        await undoRemovePhotoFromDestination(this.destination.destinationId, destinationPhotoId);
+        this.addPhotoToDisplay(photoIndex, photo);
       };
 
-      const addDestinationPhotoCommand = new Command(undoCommand.bind(null, photoId), redoCommand.bind(null, photoId));
+      const addDestinationPhotoCommand = new Command(
+          undoCommand.bind(null, destinationPhotoId, photoIndex),
+		  redoCommand.bind(null, destinationPhotoId, photoIndex));
       this.$refs.undoRedo.addUndo(addDestinationPhotoCommand);
       this.destinationPhotos.push(photo)
     },
@@ -259,39 +263,39 @@ export default {
       this.snackbarModel.color = color;
       this.snackbarModel.show = true;
     },
+
     displayRemovePrompt(closeDialog, photoId, index) {
       const destinationId = this.destination.destinationId;
       const removePhoto = this.removePhoto;
+      const addPhotoToDisplay = this.addPhotoToDisplay;
       const displayMessage = this.displayMessage;
       this.index = index;
-      const removeFunction = async function () {
+      const removeFunction = async () => {
         try {
-          await removePhotoFromDestination(destinationId, photoId);
-          removePhoto(index);
-          closeDialog(false);
-          displayMessage("The photo has been successfully removed.", "green");
+		  const photoData = this.destinationPhotos[index];
+		  const destinationPhotoId = photoData.destinationPhotoId;
 
-          const undoCommand = async (destinationId, photoId) => {
-            console.log("undo dest", destinationId);
-            console.log("undo photo", photoId);
-            await undoRemovePhotoFromDestination(destinationId, photoId);
+          const undoCommand = async (destinationId, destinationPhotoId, index, photoData) => {
+            await undoRemovePhotoFromDestination(destinationId, destinationPhotoId);
+            addPhotoToDisplay(index, photoData);
           };
 
-          const redoCommand = async (destinationId, photoId, index) => {
-            console.log("redo dest", destinationId);
-            console.log("redo photo", photoId);
-            await removePhotoFromDestination(destinationId, photoId);
+          const redoCommand = async (destinationId, destinationPhotoId, index) => {
+            await removePhotoFromDestination(destinationId, destinationPhotoId);
             removePhoto(index);
-            closeDialog(false);
-            displayMessage("The photo has been successfully removed.", "green");
-
           };
 
-          const removeDestinationPhotoCommand = new Command(undoCommand.bind(null, destinationId, photoId, index), redoCommand.bind(null, destinationId, photoId, index));
+          const removeDestinationPhotoCommand = new Command(
+              undoCommand.bind(null, destinationId, destinationPhotoId, index, photoData),
+			  redoCommand.bind(null, destinationId, destinationPhotoId, index));
           this.$refs.undoRedo.addUndo(removeDestinationPhotoCommand);
+
+		  await removePhotoFromDestination(destinationId, destinationPhotoId);
+		  removePhoto(index);
+		  closeDialog(false);
+		  displayMessage("The photo has been successfully removed.", "green");
+
         } catch (error) {
-          console.log(error.message);
-          console.log(error);
           displayMessage(error.message, "red");
         }
       };
@@ -308,6 +312,7 @@ export default {
     removePhoto(index) {
       this.destinationPhotos.splice(index, 1);
     },
+
     async deleteDestination() {
       const destinationId = this.$route.params.destinationId;
       try {
@@ -317,6 +322,11 @@ export default {
         this.showError("Could not delete destination");
       }
     },
+
+    addPhotoToDisplay(index, photo) {
+      this.destinationPhotos.splice(index, 0, photo);
+	},
+
     /* Called when the prompt dialog has finished.
       * Closes the prompt dialog and resets the values to defaults.
     */

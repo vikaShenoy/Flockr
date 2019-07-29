@@ -205,6 +205,7 @@ public class TripController extends Controller {
                     if (!optionalTrip.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
+
                     Trip trip = optionalTrip.get();
                     if (!user.isAdmin() && user.getUserId() != userId) {
                         throw new CompletionException(new ForbiddenRequestException(

@@ -661,6 +661,8 @@ public class DestinationController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> undoPhotoDelete(int destinationId, int photoId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
+        System.out.println(destinationId);
+        System.out.println(photoId);
         return destinationRepository.getPhotoByIdWithSoftDelete(destinationId, photoId)
                 .thenComposeAsync(optionalPhoto -> {
                     if (!optionalPhoto.isPresent()) {
