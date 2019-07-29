@@ -44,6 +44,7 @@
                 @closeDialog="closeDialog"
                 @updateToggle="updateToggle"
                 @updateList="updateList"
+                @createTreasureHuntCommand="createTreasureHuntCommand"
         ></AddTreasureHunt>
 
         <EditTreasureHunt
@@ -62,10 +63,11 @@
 <script>
 import AddTreasureHunt from "./AddTreasureHunt";
 import EditTreasureHunt from "./EditTreasureHunt"
-import {getAllTreasureHunts, getDestination, deleteTreasureHuntData} from "./TreasureHuntsService";
+import {getAllTreasureHunts, getDestination, deleteTreasureHuntData, undoDeleteTreasureHuntData} from "./TreasureHuntsService";
 import moment from "moment";
 import UserStore from "../../stores/UserStore";
 import UndoRedo from "../../components/UndoRedo/UndoRedo";
+import Command from "../../components/UndoRedo/Command";
 
 export default {
     components: {UndoRedo, AddTreasureHunt, EditTreasureHunt},
@@ -88,6 +90,12 @@ export default {
           this.$refs.undoRedo.addUndo(editCommand);
 		},
 
+      /**
+       * Adds the treasure hunt undo-redo in the stack
+       */
+        createTreasureHuntCommand(createTreasureHuntCommand) {
+          this.$refs.undoRedo.addUndo(createTreasureHuntCommand);
+        },
         /**
          * Hides the create treasure hunt modal
          */
@@ -185,9 +193,35 @@ export default {
         },
 
         async deleteTreasureHunt(treasureHuntId) {
+          try {
             await deleteTreasureHuntData(treasureHuntId);
             this.updateList();
-        }
+
+            const undoCommand = async () => {
+              await undoDeleteTreasureHuntData(treasureHuntId);
+              this.updateList();
+            };
+
+            const redoCommand = async () => {
+              await deleteTreasureHuntData(treasureHuntId);
+              this.updateList();
+            };
+
+            const deleteTreasureHuntCommand = new Command(undoCommand.bind(null, treasureHuntId), redoCommand.bind(null, treasureHuntId));
+            this.$refs.undoRedo.addUndo(deleteTreasureHuntCommand);
+          } catch (e) {
+              this.showError(e.message);
+          }
+        },
+      /**
+       * Shows an snackbar error message
+       * @param {string} text the text to display on the snackbar
+       */
+      showError(text) {
+        this.errorSnackbar.text = text;
+        this.errorSnackbar.show = true;
+        this.errorSnackbar.color = "error";
+      }
     }
 
 }

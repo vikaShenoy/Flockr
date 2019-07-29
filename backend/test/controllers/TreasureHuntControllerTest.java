@@ -676,7 +676,20 @@ public class TreasureHuntControllerTest {
 
     @Test
     public void undoDeleteTreasureHuntUnauthorised() {
+        Result result = fakeClient.makeRequestWithNoToken(
+                "PUT",
+                "/api/treasurehunts/" + treasureHunt.getTreasureHuntId() + "/undodelete");
+        Assert.assertEquals(401, result.status());
+    }
 
+    @Test
+    public void undoDeleteTreasureHuntBadRequest() {
+        undoDeleteTreasureHunt(user.getToken(), treasureHunt.getTreasureHuntId(), 400, false);
+    }
+
+    @Test
+    public void undoDeleteTreasureHuntNotFound() {
+        undoDeleteTreasureHunt(user.getToken(), 1000000000, 404, false);
     }
 
     private void undoDeleteTreasureHunt(String token, int treasureHuntId, int statusCode, boolean deleted) {
