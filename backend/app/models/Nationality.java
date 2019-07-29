@@ -43,6 +43,10 @@ public class Nationality extends Model {
         return nationalityCountry;
     }
 
+    public void setNationalityName(String nationalityName) {
+        this.nationalityName = nationalityName;
+    }
+
     public void setNationalityCountry(Country nationalityCountry) {
         this.nationalityCountry = nationalityCountry;
     }

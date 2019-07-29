@@ -57,7 +57,6 @@ public class CountrySchedulerUtil {
      */
     public List<Passport> getPassportsToSave(Map<String, Country> newCountries, Map<String, Passport> currentPassports) {
         List<Passport> passportsToSave = new ArrayList<>();
-        List<Passport> passports = Passport.find.all();
 
         for (String ISOCode : newCountries.keySet()) {
             Country newCountry = newCountries.get(ISOCode);
@@ -65,12 +64,13 @@ public class CountrySchedulerUtil {
                 Passport passport = new Passport(newCountry.getCountryName());
                 passport.setCountry(newCountry);
                 passportsToSave.add(passport);
-            }
-
-            for (Passport passport : passports) {
-                if (passport.getPassportCountry().equalsIgnoreCase(newCountry.getCountryName())) {
-                    passport.setCountry(newCountry);
-                    passportsToSave.add(passport);
+            } else {
+                for (Passport passport : currentPassports.values()) {
+                    if (passport.getPassportCountry().equalsIgnoreCase(newCountry.getCountryName())) {
+                        passport.setPassportCountry(newCountry.getCountryName());
+                        passport.setCountry(newCountry);
+                        passportsToSave.add(passport);
+                    }
                 }
             }
         }
@@ -79,7 +79,6 @@ public class CountrySchedulerUtil {
 
     public List<Nationality> getNationalitiesToSave(Map<String, Country> newCountries, Map<String, Nationality> currentNationalities) {
         List<Nationality> nationalitiesToSave = new ArrayList<>();
-        List<Nationality> nationalities = Nationality.find.all();
 
         for (String ISOCode : newCountries.keySet()) {
             Country newCountry = newCountries.get(ISOCode);
@@ -87,12 +86,13 @@ public class CountrySchedulerUtil {
                 Nationality nationality = new Nationality(newCountry.getCountryName());
                 nationality.setNationalityCountry(newCountry);
                 nationalitiesToSave.add(nationality);
-            }
-
-            for (Nationality nationality : nationalities) {
-                if (nationality.getNationalityName().equalsIgnoreCase(newCountry.getCountryName())) {
-                    nationality.setNationalityCountry(newCountry);
-                    nationalitiesToSave.add(nationality);
+            } else {
+                for (Nationality nationality : currentNationalities.values()) {
+                    if (nationality.getNationalityName().equalsIgnoreCase(newCountry.getCountryName())) {
+                        nationality.setNationalityName(newCountry.getCountryName());
+                        nationality.setNationalityCountry(newCountry);
+                        nationalitiesToSave.add(nationality);
+                    }
                 }
             }
         }

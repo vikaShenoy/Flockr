@@ -31,6 +31,10 @@ public class Passport extends Model {
         this.passportCountry = passportCountry;
     }
 
+    public void setPassportCountry(String passportCountry) {
+        this.passportCountry = passportCountry;
+    }
+
     public int getPassportId() {
         return passportId;
     }
@@ -55,4 +59,14 @@ public class Passport extends Model {
      * This is required by EBean to make queries on the database.
      */
     public static final Finder<Integer, Passport> find = new Finder<>(Passport.class);
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Passport)) {
+            return false;
+        }
+        Passport passportToCompare = (Passport) obj;
+        boolean samePassportId = this.getPassportId() == passportToCompare.getPassportId();
+        return samePassportId;
+    }
 }
