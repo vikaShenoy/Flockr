@@ -48,7 +48,7 @@ public class DeleteExpiredPhotosTask {
             Timestamp now = Timestamp.from(Instant.now());
             return PersonalPhoto.find.query().setIncludeSoftDeletes()
                     .where().eq("deleted", true).and()
-                    .ge("deleted_expiry", now).findList(); //TODO:: not sure if this part is right???
+                    .le("deleted_expiry", now).findList();
         });
     }
 
@@ -58,31 +58,31 @@ public class DeleteExpiredPhotosTask {
                 .schedule(
                         Duration.create(5, TimeUnit.SECONDS), // initialDelay
                         Duration.create(24, TimeUnit.HOURS), // interval
-                        () -> {
-                            getDeletedPhotos()
-                                .thenApplyAsync(personalPhotos -> {
-                                    log.info("-----------Cleaning up deleted photos-------------");
-                                    System.out.println("-----------Cleaning up deleted photos-------------");
-                                    for (PersonalPhoto personalPhoto : personalPhotos) {
-                                        File photoToDelete = new File(
-                                                "./storage/photos/" + personalPhoto.getFilenameHash());
-                                        File thumbnailToDelete = new File(
-                                                "./storage/photos/" + personalPhoto.getThumbnailName());
+                        () -> getDeletedPhotos()
+                            .thenApplyAsync(personalPhotos -> {
+                                int numSuccesses = 0;
+                                log.info("-----------Cleaning up deleted photos-------------");
+                                System.out.println("-----------Cleaning up deleted photos-------------");
+                                for (PersonalPhoto personalPhoto : personalPhotos) {
+                                    File photoToDelete = new File(
+                                            "./storage/photos/" + personalPhoto.getFilenameHash());
+                                    File thumbnailToDelete = new File(
+                                            "./storage/photos/" + personalPhoto.getThumbnailName());
 
-                                        if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
-                                            log.error("Could not delete photo or thumbnail for file " +
-                                                    personalPhoto.getFilenameHash());
-                                        } else {
-                                            log.info("Successfully deleted the photo " +
-                                                    personalPhoto.getFilenameHash());
-                                        }
-                                        personalPhoto.deletePermanent();
+                                    if (!photoToDelete.delete() || !thumbnailToDelete.delete()) {
+                                        log.error("Could not delete photo or thumbnail for file " +
+                                                personalPhoto.getFilenameHash());
+                                    } else {
+                                        log.info("Successfully deleted the photo " +
+                                                personalPhoto.getFilenameHash());
+                                        numSuccesses++;
                                     }
-                                    log.info(String.format("%d Photos deleted successfully", personalPhotos.size()));
-                                    System.out.printf("%d Photos deleted successfully%n", personalPhotos.size());
-                                    return personalPhotos;
-                            });
-                        },
+                                    personalPhoto.deletePermanent();
+                                }
+                                log.info(String.format("%d Photos deleted successfully", numSuccesses));
+                                System.out.println(String.format("%d Photos deleted successfully%n", numSuccesses));
+                                return personalPhotos;
+                        }),
                         this.executionContext);
     }
 }

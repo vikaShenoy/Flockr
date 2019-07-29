@@ -46,7 +46,7 @@ public class DeleteExpiredDestinationsTask {
             Timestamp now = Timestamp.from(Instant.now());
             return Destination.find.query().setIncludeSoftDeletes()
                     .where().eq("deleted", true).and()
-                    .ge("deleted_expiry", now).findList(); //TODO:: not sure if this part is right???
+                    .le("deleted_expiry", now).findList();
         });
     }
 
