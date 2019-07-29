@@ -244,8 +244,7 @@ public class DestinationRepository {
             destinationPhoto.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
             destinationPhoto.save();
             destinationPhoto.delete();
-
-            return destinationPhoto.getDestinationPhotoId();
+            return destinationPhoto.destinationPhotoId;
         }, executionContext);
     }
 
@@ -255,13 +254,12 @@ public class DestinationRepository {
      * @param destinationPhoto the DestinationPhoto to un-delete
      * @return the ID of the destination photo that was un-deleted
      */
-    public CompletionStage<Integer> undoDeleteDestinationPhoto(DestinationPhoto destinationPhoto) {
+    public CompletionStage<DestinationPhoto> undoDeleteDestinationPhoto(DestinationPhoto destinationPhoto) {
         return supplyAsync(() -> {
             destinationPhoto.setDeletedExpiry(null);
             destinationPhoto.setDeleted(false);
             destinationPhoto.save();
-
-            return destinationPhoto.getDestinationPhotoId();
+            return destinationPhoto;
         }, executionContext);
     }
 
