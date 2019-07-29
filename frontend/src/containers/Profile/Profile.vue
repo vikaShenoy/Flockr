@@ -77,7 +77,7 @@ import Nationalities from "./Nationalities/Nationalities";
 import Passports from "./Passports/Passports";
 import TravellerTypes from "./TravellerTypes/TravellerTypes";
 import BasicInfo from "./BasicInfo/BasicInfo";
-import Trips from "./Trips/Trips";
+import Trips from "../Trips/Trips";
 import Photos from "./Photos/Photos";
 import UndoRedo from "../../components/UndoRedo/UndoRedo";
 import Command from "../../components/UndoRedo/Command";

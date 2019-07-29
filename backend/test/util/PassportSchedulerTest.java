@@ -90,7 +90,4 @@ public class PassportSchedulerTest {
         Assert.assertTrue(passportList.get(0).getCountry().getIsValid());
     }
 
-
-
-
 }

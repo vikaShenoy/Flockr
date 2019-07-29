@@ -112,10 +112,13 @@ export default {
         const undoCommand = async () => {
           await undeleteProposal(destinationProposalId);
           await sendUpdateDestination(this.oldDestination, this.destinationId);
-        };
+          this.getAllProposals();
+x        };
 
         const redoCommand = async () => {
           await acceptProposal(destinationProposalId);
+          this.filterOutDestinationProposalId(destinationProposalId);
+          this.getAllProposals();
         };
 
         const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, destinationProposalId));
@@ -136,10 +139,13 @@ export default {
 
         const undoCommand = async () => {
           await undeleteProposal(destinationProposalId);
+          this.getAllProposals();
         };
 
         const redoCommand = async () => {
           await declineProposal(destinationProposalId);
+          this.filterOutDestinationProposalId(destinationProposalId);
+          this.getAllProposals();
         };
 
         const declineProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, destinationProposalId));
@@ -160,8 +166,11 @@ export default {
       }); 
 
       this.destinationProposals = newDestinationProposals;
-    }
-    
+    },
+    async getAllProposals() {
+      const proposals = await getDestinationProposals();
+      this.destinationProposals = proposals;
+    },
   }
 };
 </script>
