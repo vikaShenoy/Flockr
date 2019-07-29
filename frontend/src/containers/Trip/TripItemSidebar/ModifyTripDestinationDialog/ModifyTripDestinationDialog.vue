@@ -215,6 +215,7 @@
 <script>
 import { rules } from "../../../../utils/rules";
 import { getDestinations, editTrip, transformFormattedTrip } from "./ModifyTripDestinationDialogService";
+import { getYourDestinations } from '../../../Destinations/DestinationsService';
 
 export default {
   props: {
@@ -295,7 +296,15 @@ export default {
     },
     async getDestinations() {
       const destinations = await getDestinations();
-      this.destinations = destinations;
+      const [publicDestinations, yourDestinations] = await Promise.all([getDestinations(), getYourDestinations()]);
+        
+        // Need to filter out duplicate destinations
+        const destinationsFound = new Set();
+        const allDestinations = [...publicDestinations, ...yourDestinations].filter(destination => {
+          return !destinationsFound.has(destination.destinationId) && destinationsFound.add(destination.destinationId);
+        });
+
+        this.destinations = allDestinations;
     }
   },
   computed: {

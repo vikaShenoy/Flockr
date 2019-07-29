@@ -42,26 +42,97 @@
         v-for="destination in getDestinationsList"
         v-bind:key="destination.destinationId"
         :destination="destination"
+        @showDeleteDestination="showDeleteDestination"
       />
     </div>
 
   </div>
+
+  <PromptDialog
+    :dialog="isShowingDeleteDestDialog" 
+    message="Are you sure you want to delete the destination?"
+    :onConfirm="deleteDestination"
+    v-on:promptEnded="isShowingDeleteDestDialog = false"
+  />
+
+  <AlertDialog
+    title="Cannot delete destination"
+    :dialog.sync="cannotDeleteDestDialog"
+  >
+    The destination that you are trying to delete is in the following trips 
+
+    <ul>
+      <li v-for="usedTrip in usedTrips" v-bind:key="usedTrip.tripId">{{ usedTrip.tripName }}</li>
+    </ul>
+    
+  </AlertDialog>
+
+
 
   </v-card>
 </template>
 
 <script>
 import DestinationSummary from "./DestinationSummary/DestinationSummary";
+import PromptDialog from "../../../components/PromptDialog/PromptDialog";
+import { getUserTrips, deleteDestination } from "./DestinationSidebarService";
+import AlertDialog from "../../../components/AlertDialog/AlertDialog";
 
 export default {
   props: ["yourDestinations", "publicDestinations"],
   components: {
-    DestinationSummary
+    DestinationSummary,
+    PromptDialog,
+    AlertDialog
   },
   data() {
     return {
-      viewOption: "your"
+      viewOption: "your",
+      isShowingDeleteDestDialog: false,
+      trips: [],
+      cannotDeleteDestDialog: false,
+      currentDeletingDestinationId: null,
+      usedTrips: []
     };
+  },
+  mounted() {
+    this.getUserTrips(); 
+  },
+  methods: {
+    /**
+     * Gets a user's trips
+     */
+    async getUserTrips() {
+      const userTrips = await getUserTrips();
+      this.trips = userTrips;
+    },
+    // Deletes a destination
+    async deleteDestination() {
+      await deleteDestination(this.currentDeletingDestinationId);
+      this.$emit("refreshDestinations");
+    },
+    /**
+     * Gets trips that are using a specific destination
+     */
+    getTripsUsingDestination(destinationId) {
+      return this.trips.filter(trip => {
+        const usedTripDestinations = trip.tripDestinations.filter(tripDestination => {
+          return tripDestination.destination.destinationId === destinationId;
+        }); 
+
+        return usedTripDestinations.length;
+      });
+    },
+    showDeleteDestination(destinationId) {
+      const usedTrips = this.getTripsUsingDestination(destinationId);
+      if (usedTrips.length) {
+        this.usedTrips = usedTrips;
+        this.cannotDeleteDestDialog = true;
+      } else {
+        this.isShowingDeleteDestDialog = true;
+        this.currentDeletingDestinationId = destinationId;
+      }
+    }
   },
   computed: {
     shouldShowSpinner() {

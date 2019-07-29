@@ -12,3 +12,25 @@ export async function getYourDestinations() {
 
   return res.body;
 }
+
+
+export async function getUserTrips() {
+  const userId = localStorage.getItem("userId");
+  const authToken = localStorage.getItem("authToken");
+  const res = await superagent.get(endpoint(`/users/${userId}/trips`))
+    .set("Authorization", authToken);
+
+  return res.body;
+}
+
+/**
+ * Delete a destination from the database
+ * @param destinationId int id of the destination
+ * @returns {Promise<void>} contains nothing
+ */
+export async function deleteDestination(destinationId) {
+  await superagent.delete(endpoint(`/destinations/${destinationId}`))
+    .set("Authorization", localStorage.getItem("authToken"));
+}
+
+

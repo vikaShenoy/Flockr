@@ -41,15 +41,6 @@ export async function getDestinationPhotos(destinationId) {
   return addPhotoUrls(res.body);
 }
 
-/**
- * Delete a destination from the database
- * @param destinationId int id of the destination
- * @returns {Promise<void>} contains nothing
- */
-export async function deleteDestination(destinationId) {
-  await superagent.delete(endpoint(`/destinations/${destinationId}`))
-    .set("Authorization", localStorage.getItem("authToken"));
-}
 
 /**
  * Sends a delete request to the server to remove the association of a photo from a destination.

@@ -12,6 +12,7 @@
       :publicDestinations="publicDestinations"
       v-on:viewOptionChanged="viewOptionChanged"
       v-on:addDestinationClicked="addDestinationClicked"
+      @refreshDestinations="refreshDestinations"
     />
 
     <ModifyDestinationDialog
@@ -52,6 +53,13 @@ export default {
     this.getYourDestinations();
   },
   methods: {
+    refreshDestinations() {
+      if (this.viewOption === "your") {
+        this.getYourDestinations();
+      } else {
+        this.getPublicDestinations();
+      }
+    },
     /**
      * Gets destinations for the logged in user
      */
@@ -59,6 +67,7 @@ export default {
       try {
         const yourDestinations = await getYourDestinations(); 
         this.yourDestinations = yourDestinations;
+        console.log("I got my destinations");
       } catch (e) {
         console.log("Could not get your destinations");
       }
@@ -70,6 +79,7 @@ export default {
       try {
         const publicDestinations = await getPublicDestinations();
         this.publicDestinations = publicDestinations;
+        console.log("I got public destinations");
       } catch (e) {
         console.log("Could not get public destinations");
       }
@@ -82,7 +92,6 @@ export default {
       this.viewOption = viewOption;
       // If user wants to load public destinations and they haven't been loaded, then load
       if (viewOption === "public" && !this.publicDestinations) {
-        console.log("Did I make it here");
         this.getPublicDestinations();
       }
     },
