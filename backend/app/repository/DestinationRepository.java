@@ -110,12 +110,11 @@ public class DestinationRepository {
         return supplyAsync(() -> {
             Optional<DestinationPhoto> destinationPhoto = DestinationPhoto.find.query()
                     .where().eq("destination_destination_id", destinationId)
-                    .and().eq("personal_photo_photo_id", photoId).findOneOrEmpty();
+                    .and().eq("destination_photo_id", photoId).findOneOrEmpty();
             return destinationPhoto;
         }, executionContext);
     }
-
-
+    
     /**
      * Inserts a destination into the database
      *
@@ -215,7 +214,7 @@ public class DestinationRepository {
         return supplyAsync(() -> {
             Optional<DestinationPhoto> photo = DestinationPhoto.find.query().setIncludeSoftDeletes().
                     where().eq("destination_destination_id", destinationId).
-                    eq("personal_photo_photo_id", photoId).findOneOrEmpty();
+                    eq("destination_photo_id", photoId).findOneOrEmpty();
             return photo;
         }, executionContext);
     }
