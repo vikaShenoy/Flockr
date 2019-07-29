@@ -14,7 +14,9 @@
       <v-icon>add</v-icon>
     </v-btn>
 
-    <undo-redo ref="undoRedo"/>
+    <div id="undo-redo">
+    <UndoRedo ref="undoRedo"/>
+    </div>
 
    <v-btn-toggle v-model="viewOption" flat id="view-option" mandatory>
       <v-btn class="option" value="your" v-bind:class="{'not-selected': viewOption !== 'your'}">
@@ -235,6 +237,13 @@ export default {
       position: absolute;
       margin-top: 13px;
       left: 0;
+    }
+
+    #undo-redo {
+      position: absolute;
+      right: 25px;
+      margin-top: 17px;
+      
     }
   }
 </style>

@@ -4,6 +4,7 @@
       <DestinationMap
         :destinations="destination ? [destination] : []"
         :destinationTitle="destination ? destination.destinationName : ''"
+        :destinationPhotos="destinationPhotos"
         shouldShowOverlay
        />
     </div>
@@ -18,9 +19,9 @@
       :dialog="showingEditDestDialog" 
       :destinationToEdit="destination"
       :editMode="true"
-      v-on:dialogChanged="editDestDialogChanged"
-      v-on:updateDestination="updateDestination"
-      v-on:showError="showError"
+      @dialogChanged="editDestDialogChanged"
+      @updateDestination="updateDestination"
+      @showError="showError"
     />
     <v-container grid-list-lg style="padding-top: 0px"> 
     <v-layout row wrap>
@@ -63,9 +64,9 @@
           :destinationPhotos="destinationPhotos"
           :destinationId="destination.destinationId"
           :hasOwnerRights="hasOwnerRights"
-          v-on:addPhoto="addPhoto"
-          v-on:displayRemovePrompt="displayRemovePrompt"
-          v-on:permissionUpdated="permissionUpdated"
+          @addPhoto="addPhoto"
+          @displayRemovePrompt="displayRemovePrompt"
+          @permissionUpdated="permissionUpdated"
         /> 
       </v-flex>
 
@@ -87,8 +88,9 @@
   <RequestTravellerTypes 
     :isShowingTravellerTypesDialog.sync="isShowingTravellerTypesDialog" 
     :destination="destination"
-    v-on:sendingProposal="sendingProposal"
-    v-on:showError="showError"
+    @sendingProposal="sendingProposal"
+    @showError="showError"
+    v-if="destination"
   />
 
   <prompt-dialog

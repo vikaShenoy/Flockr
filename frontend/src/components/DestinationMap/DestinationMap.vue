@@ -3,8 +3,8 @@
     <!--Conditional title that gets displayed at the bottom left of the map-->
     <div id="destination-title" v-if="destinationTitle">
 
-      <v-avatar> <img
-          src="https://vuetifyjs.com/apple-touch-icon-180x180.png"
+      <v-avatar v-if="destinationPhotos.length"> <img
+          :src="getPhotoUrl(destinationPhotos[0].personalPhoto.photoId)"
           alt="avatar"
           class="avatar"
         />
@@ -113,6 +113,7 @@
 
 <script>
 import { gmapApi } from "vue2-google-maps";
+import { endpoint } from "../../utils/endpoint.js";
 
 const publicIcon = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
 const privateIcon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
@@ -151,6 +152,10 @@ export default {
     isTripMap: {
       type: Boolean,
       required: false
+    },
+    destinationPhotos: {
+      type: Array,
+      required: false
     }
   },
   methods: {
@@ -182,6 +187,9 @@ export default {
         this.infoWindowOpen = true;
         this.currentOpenedIndex = index;
       }
+    },
+    getPhotoUrl(photoId) {
+      return endpoint(`/users/photos/${photoId}?Authorization=${localStorage.getItem("authToken")}`);
     }
   },
   watch: {
