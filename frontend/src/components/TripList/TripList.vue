@@ -9,7 +9,7 @@
         v-else v-for="trip in trips"
         :key="trip.tripId"
         :trip="trip"
-        :viewOnly="true"
+        :viewOnly="viewOnly"
       />
     </div>
 
@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { getTrips, sortTrips, transformTrips, getTripData } from "./TripListService.js";
+import { getTrips, sortTrips, transformTrips, deleteTripFromList, restoreTrip} from "./TripListService.js";
 import TripItem from "./TripItem/TripItem";
 import UndoRedo from "../UndoRedo/UndoRedo";
 import Command from "../UndoRedo/Command";
@@ -37,7 +37,7 @@ export default {
   },
   props: {
     userId: {
-      type: Number | String,
+      type: [Number, String],
       required: true
     },
     viewOnly: {
@@ -55,28 +55,23 @@ export default {
   },
     methods: {
       async refreshList() {
-          try {
-              const trips = await getTrips(this.userId);
-              const sortedTrips = sortTrips(trips);
-              this.trips = transformTrips(sortedTrips);
-          } catch (e) {
-              console.log(e);
-              // Handle errors later
-          }
+        const trips = await getTrips(this.userId);
+        const sortedTrips = sortTrips(trips);
+        this.trips = transformTrips(sortedTrips);
       },
-      async handleDelete(trip) {
+      async handleDelete(tripId) {
           const undoCommand = async () => {
-              console.log("Undo the delete here")
-              console.log(trip)
-
+            await restoreTrip(tripId);
+              this.refreshList();
           };
 
           const redoCommand = async () => {
-              console.log("redo the delete here");
+              await deleteTripFromList(tripId);
+              this.refreshList();
           };
 
-          const deleteTripCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
-          this.$refs.undoRedo.addUndo(deleteTripCommand);
+        const deleteTripCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
+        this.$refs.undoRedo.addUndo(deleteTripCommand);
       }
     }
 }

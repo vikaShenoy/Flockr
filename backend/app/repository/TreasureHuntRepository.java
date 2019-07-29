@@ -7,6 +7,9 @@ import org.slf4j.LoggerFactory;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -47,9 +50,15 @@ public class TreasureHuntRepository {
      *
      * @param treasureHunt the treasure hunt object.
      * @return the async method to run which updates the treasure hunt.
+     * Contains a boolean true if the treasure hunt is delete successfully.
      */
     public CompletionStage<Boolean> removeTreasureHunt(TreasureHunt treasureHunt) {
-        return supplyAsync(treasureHunt::delete, executionContext);
+
+        return supplyAsync(() -> {
+            treasureHunt.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+            treasureHunt.save();
+            return treasureHunt.delete();
+        }, executionContext);
     }
 
     /**

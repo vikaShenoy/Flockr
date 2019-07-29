@@ -30,15 +30,19 @@
                                 <v-layout wrap>
 
                                     <v-flex xs12>
-                                        <v-text-field v-model="editTreasureHuntName" label="Name" required ></v-text-field>
+                                        <v-text-field v-model="editTreasureHuntName" label="Name" required >
+										</v-text-field>
                                     </v-flex>
                                     <v-flex xs12>
-                                        <v-select v-model="editTreasureHuntDestination" required label="Destination" :items="destinations" item-text="destinationName" item-value="destinationId">
+                                        <v-select v-model="editTreasureHuntDestination" required label="Destination"
+												  :items="destinations" item-text="destinationName"
+												  item-value="destinationId">
 
                                         </v-select>
                                     </v-flex>
                                     <v-flex xs12>
-                                        <v-textarea v-model="editTreasureHuntRiddle" label="Riddle" required></v-textarea>
+                                        <v-textarea v-model="editTreasureHuntRiddle" label="Riddle" required>
+										</v-textarea>
                                     </v-flex>
                                     <v-flex xs12>
                                         <v-text-field
@@ -63,7 +67,8 @@
                     <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn color="blue darken-1" flat @click="closeDialog">Close</v-btn>
-                        <v-btn color="blue darken-1" :disabled="validTreasureHunt" flat v-on:click="editTreasureHunt()" >Update</v-btn>
+                        <v-btn color="blue darken-1" :disabled="validTreasureHunt" flat v-on:click="editTreasureHunt()"
+						>Update</v-btn>
                     </v-card-actions>
                 </v-card>
 
@@ -78,6 +83,7 @@
 <script>
     import moment from "moment";
     import {getPublicDestinations, editTreasureHunt} from "./TreasureHuntsService"
+    import Command from "../../components/UndoRedo/Command";
     export default {
         name: "EditTreasureHunt",
         props: {
@@ -89,11 +95,9 @@
             this.editTreasureHuntName = this.data.treasureHuntName;
             this.editTreasureHuntRiddle = this.data.riddle;
             this.editTreasureHuntDestination = this.data.treasureHuntDestinationId;
-            this.startDate = moment(this.data.startDate).format("YYYY-MM-DD");;
+            this.startDate = moment(this.data.startDate).format("YYYY-MM-DD");
             this.endDate = moment(this.data.endDate).format("YYYY-MM-DD");
             this.visible = this.toggle;
-
-
         },
         data() {
             return {
@@ -104,7 +108,6 @@
                 editTreasureHuntRiddle: "",
                 startDate: null,
                 endDate: null,
-
             }
         },
         methods: {
@@ -129,21 +132,44 @@
             },
 
             /**
-             * Calls the treasure hunt service to update the given treasure hunt
+             * Calls the treasure hunt service to update the given treasure hunt.
+			 * Create the undo edit command and pass it to the stack.
              */
             async editTreasureHunt() {
-                let treasureHunt = {
 
+                let oldTreasureHuntData = {
+                    treasureHuntId: this.data.treasureHuntId,
+					treasureHuntName: this.data.treasureHuntName,
+					treasureHuntDestinationId: this.data.treasureHuntDestinationId,
+					riddle: this.data.riddle,
+					startDate: moment(this.data.startDate).format("YYYY-MM-DD"),
+					endDate: moment(this.data.endDate).format("YYYY-MM-DD")
+				};
+
+                let newTreasureHuntData = {
                     treasureHuntId: this.data.treasureHuntId,
                     treasureHuntName: this.editTreasureHuntName,
                     treasureHuntDestinationId: this.editTreasureHuntDestination,
                     riddle: this.editTreasureHuntRiddle,
                     startDate: this.startDate,
                     endDate: this.endDate
-
                 };
-                await editTreasureHunt(treasureHunt);
 
+                const undoCommand = async (oldTreasureHuntData) => {
+                	await editTreasureHunt(oldTreasureHuntData);
+                    this.$emit("updateList");
+				};
+
+                const redoCommand = async (newTreasureHuntData) => {
+                    await editTreasureHunt(newTreasureHuntData);
+                    this.$emit("updateList");
+				};
+
+                const editCommand = new Command(undoCommand.bind(null, oldTreasureHuntData),
+				redoCommand.bind(null, newTreasureHuntData));
+                this.$emit("addCommand", editCommand);
+
+                await editTreasureHunt(newTreasureHuntData);
                 this.closeDialog();
                 this.$emit("updateList");
             }

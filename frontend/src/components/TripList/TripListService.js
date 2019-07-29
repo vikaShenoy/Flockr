@@ -150,11 +150,11 @@ export async function deleteTripFromList(tripId) {
   return res.body;
 }
 
-export async function getTripData(tripId) {
+export async function restoreTrip(tripId) {
   const authToken = localStorage.getItem("authToken");
   const userId = localStorage.getItem("userId");
 
-  const res = await superagent.get(endpoint(`/users/${userId}/trips/${tripId}`)).set("Authorization", authToken);
+    const res = await superagent.put(endpoint(`/users/${userId}/trips/${tripId}/restore`)).set("Authorization", authToken);
 
   return res.body;
 }

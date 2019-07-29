@@ -35,17 +35,10 @@ export default {
   },
   methods: {
    /**
-     * If you're an admin, go to page to create trips for other users
-     * If you're not an admin, go to create trips page for yourself
+     * Go to route for adding a trip.
      */
     goToAddTrip() {
-      const travellerId = this.$route.params.travellerId;
-
-      if (travellerId) {
-        this.$router.push(`/travellers/${travellerId}/trips/add`);
-      } else {
-        this.$router.push("/trips/add");
-      }
+      this.$router.push("/trips/add");
     }
   }
 };

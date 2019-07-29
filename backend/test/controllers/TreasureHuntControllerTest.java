@@ -659,4 +659,50 @@ public class TreasureHuntControllerTest {
         Assert.assertFalse(optionalTreasureHunt.isPresent());
     }
 
+    @Test
+    public void undoDeleteTreasureHuntGoodUser() {
+        undoDeleteTreasureHunt(user.getToken(), treasureHunt.getTreasureHuntId(), 200, true);
+    }
+
+    @Test
+    public void undoDeleteTreasureHuntAdmin() {
+        undoDeleteTreasureHunt(adminUser.getToken(), treasureHunt.getTreasureHuntId(), 200, true);
+    }
+
+    @Test
+    public void undoDeleteTreasureHuntForbidden() {
+        undoDeleteTreasureHunt(otherUser.getToken(), treasureHunt.getTreasureHuntId(), 403, true);
+    }
+
+    @Test
+    public void undoDeleteTreasureHuntUnauthorised() {
+
+    }
+
+    private void undoDeleteTreasureHunt(String token, int treasureHuntId, int statusCode, boolean deleted) {
+        if (deleted) {
+            treasureHunt.delete();
+
+            Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query()
+                    .where().eq("treasure_hunt_id", treasureHuntId).findOneOrEmpty();
+            Assert.assertFalse(optionalTreasureHunt.isPresent());
+        }
+
+        Result result = fakeClient.makeRequestWithToken(
+                "PUT",
+                "/api/treasurehunts/" + treasureHuntId + "/undodelete",
+                token);
+        Assert.assertEquals(statusCode, result.status());
+
+        if (statusCode == 200) {
+            Optional<TreasureHunt> optionalTreasureHunt = TreasureHunt.find.query()
+                    .where().eq("treasure_hunt_id", treasureHuntId).findOneOrEmpty();
+            Assert.assertTrue(optionalTreasureHunt.isPresent());
+        }
+
+
+    }
+
+
+
 }

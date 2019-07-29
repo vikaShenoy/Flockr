@@ -346,7 +346,6 @@ export default {
       this.isShowingDialog = value;
     },
     editedTripDestination(tripDestination) {
-      console.log("Did I make it here");
       this.tripDestination = {...tripDestination};
     }
   }

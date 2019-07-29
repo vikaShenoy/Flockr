@@ -3,6 +3,9 @@ package repository;
 import models.Trip;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -54,9 +57,24 @@ public class TripRepository {
      */
     public CompletionStage<Trip> deleteTrip(Trip trip) {
         return supplyAsync(() -> {
-            trip.delete();
+            trip.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+            trip.delete(); // Soft delete
             return trip;
         }, executionContext);
+    }
+
+    /**
+     * Restore a deleted trip
+     * @param trip the trip to be restored
+     * @return
+     */
+    public CompletionStage<Trip> restoreTrip(Trip trip) {
+        return supplyAsync(() -> {
+            trip.setDeleted(false);
+            trip.setDeletedExpiry(null);
+            trip.save();
+            return trip;
+        });
     }
 
     /**
@@ -69,6 +87,22 @@ public class TripRepository {
     public CompletionStage<Optional<Trip>> getTripByIds(int tripId, int userId) {
         return supplyAsync(() -> {
             Optional<Trip> trip = Trip.find.query().
+                    where().eq("trip_id", tripId)
+                    .eq("user_user_id", userId)
+                    .findOneOrEmpty();
+            return trip;
+        }, executionContext);
+    }
+
+    /**
+     * Get a trip, including if it has been soft deleted, by its tripId and userId
+     * @param tripId The id of the trip to get
+     * @param userId The user id of the owner of the trip
+     * @return the trip that matches the given ids
+     */
+    public CompletionStage<Optional<Trip>> getTripByIdsIncludingDeleted(int tripId, int userId) {
+        return supplyAsync(() -> {
+            Optional<Trip> trip = Trip.find.query().setIncludeSoftDeletes().
                     where().eq("trip_id", tripId)
                     .eq("user_user_id", userId)
                     .findOneOrEmpty();

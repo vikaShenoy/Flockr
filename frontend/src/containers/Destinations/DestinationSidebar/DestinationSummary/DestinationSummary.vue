@@ -49,10 +49,6 @@ export default {
     }
   },
   methods: {
-    testingPrintPhotos: function() {
-      console.log("Testing");
-    },
-
     getDestinationPhoto: async function(destinationId) {
       const res = await superagent.get(endpoint(`/destinations/${destinationId}/photos`))
         .set("Authorization", localStorage.getItem("authToken"));

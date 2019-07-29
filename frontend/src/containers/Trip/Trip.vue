@@ -84,7 +84,6 @@ export default {
         const trip = transformTripResponse(rawTrip);
         this.trip = trip;
     } catch (e) {
-        console.log(e);
         this.showError("Could not get trip");
       }
     },
@@ -130,7 +129,6 @@ export default {
         await editTrip(tripId, this.trip.tripName, this.trip.tripDestinations);
         this.showSuccessMessage("Successfully changed order");
       } catch (e) {
-        console.log(e);
         this.showError("Could not change order");
       }
     },

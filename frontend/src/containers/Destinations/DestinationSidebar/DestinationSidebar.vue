@@ -14,6 +14,7 @@
       <v-icon>add</v-icon>
     </v-btn>
 
+    <undo-redo ref="undoRedo"/>
 
    <v-btn-toggle v-model="viewOption" flat id="view-option" mandatory>
       <v-btn class="option" value="your" v-bind:class="{'not-selected': viewOption !== 'your'}">
@@ -77,13 +78,15 @@ import DestinationSummary from "./DestinationSummary/DestinationSummary";
 import PromptDialog from "../../../components/PromptDialog/PromptDialog";
 import { getUserTrips, deleteDestination } from "./DestinationSidebarService";
 import AlertDialog from "../../../components/AlertDialog/AlertDialog";
+import UndoRedo from "../../../components/UndoRedo/UndoRedo";
 
 export default {
   props: ["yourDestinations", "publicDestinations"],
   components: {
     DestinationSummary,
     PromptDialog,
-    AlertDialog
+    AlertDialog,
+    UndoRedo,
   },
   data() {
     return {
@@ -132,6 +135,12 @@ export default {
         this.isShowingDeleteDestDialog = true;
         this.currentDeletingDestinationId = destinationId;
       }
+    },
+    /**
+     * Method to add an undo/redo command to the undo/redo stack.
+     */
+    addUndoRedoCommand(command) {
+      this.$refs.undoRedo.addUndo(command)
     }
   },
   computed: {
@@ -167,7 +176,7 @@ export default {
     float: right;
 
     #title {
-      height: 100px;
+      height: 125px;
       background-color: $primary;
       color: $darker-white;
       text-align: center;
@@ -198,7 +207,7 @@ export default {
 
     #destinations-list {
       height: calc(100% - 100px);
-      margin-top: 100px;
+      margin-top: 125px;
     }
 
     #spinner {
