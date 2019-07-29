@@ -33,4 +33,15 @@ export async function deleteDestination(destinationId) {
     .set("Authorization", localStorage.getItem("authToken"));
 }
 
+/**
+ * Undoes deletion of a destination
+ * @param {number} destinationId ID of destination to undo deletion of
+ */
+export async function undoDeleteDestination(destinationId) {
+  const authToken = localStorage.getItem("authToken");
+  await superagent
+    .put(endpoint(`/destinations/${destinationId}/undodelete`))
+    .set("Authorization", authToken);
+}
+
 

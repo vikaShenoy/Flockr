@@ -81,7 +81,6 @@ export default {
       try {
         const yourDestinations = await getYourDestinations();
         this.yourDestinations = yourDestinations;
-        console.log("I got my destinations");
       } catch (e) {
         console.log("Could not get your destinations");
       }

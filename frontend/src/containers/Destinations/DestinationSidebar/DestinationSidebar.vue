@@ -76,9 +76,10 @@
 <script>
 import DestinationSummary from "./DestinationSummary/DestinationSummary";
 import PromptDialog from "../../../components/PromptDialog/PromptDialog";
-import { getUserTrips, deleteDestination } from "./DestinationSidebarService";
+import { getUserTrips, deleteDestination, undoDeleteDestination } from "./DestinationSidebarService";
 import AlertDialog from "../../../components/AlertDialog/AlertDialog";
 import UndoRedo from "../../../components/UndoRedo/UndoRedo";
+import Command from '../../../components/UndoRedo/Command';
 
 export default {
   props: ["yourDestinations", "publicDestinations"],
@@ -111,6 +112,18 @@ export default {
     },
     // Deletes a destination
     async deleteDestination() {
+      const undoCommand = async (destinationId) => {
+        await undoDeleteDestination(destinationId);
+        this.$emit("refreshDestinations", destinationId);
+      }
+
+      const redoCommand = async (destinationId) => {
+        await deleteDestination(this.currentDeletingDestinationId);
+        this.$emit("refreshDestinations", destinationId);
+      }
+      
+      const deleteDestinationCommand = new Command(undoCommand.bind(null, this.currentDeletingDestinationId), redoCommand.bind(this.currentDeletingDestinationId));
+      this.$refs.undoRedo.addUndo(deleteDestinationCommand);
       await deleteDestination(this.currentDeletingDestinationId);
       this.$emit("refreshDestinations");
     },
