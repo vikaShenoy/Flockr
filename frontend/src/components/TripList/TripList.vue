@@ -13,7 +13,7 @@
       />
     </div>
 
-    <div v-else>
+    <div v-else id="loader">
       <v-progress-circular
         indeterminate
         color="secondary"
@@ -76,6 +76,12 @@ export default {
       position: fixed;
       right: 1000px;
       bottom: 45px;
+  }
+
+  #loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>
 

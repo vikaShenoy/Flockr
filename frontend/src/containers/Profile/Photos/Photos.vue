@@ -1,15 +1,15 @@
 <template>
   <div>
-    <h3 style="margin-bottom: 4px;margin-top: 4px;text-align:left; width: 50%">Photos</h3>
+    <div style="display: flex">
+    <h3 style="margin-bottom: 0px;margin-top: 9px;text-align:left; width: 50%">Photos</h3>
+    <v-spacer align="right">
+      <v-btn v-if="photos.length" color="secondary" small flat v-on:click="openGallery">View Gallery</v-btn>
+    </v-spacer>
+    </div>
 
     <v-card id="photos">
-      <v-card-actions>
-        <v-spacer align="left">
-          <v-btn v-if="photos.length" color="secondary" outline v-on:click="openGallery">View Gallery</v-btn>
-        </v-spacer>
-      </v-card-actions>
       <v-responsive>
-        <v-container grid-list-sm fluid>
+        <v-container grid-list-sm fluid id="grid-container">
           <!-- users photos -->
           <v-layout v-if="photos && photos.length" row wrap>
             <v-flex sm12 md6 lg4 v-for="(photo, index) in photos" v-bind:key="photo.photoId">
@@ -253,5 +253,10 @@
   #undo-redo {
     float: right;
   }
+
+  #grid-container {
+    padding: 0px;
+  }
+  
 
 </style>
