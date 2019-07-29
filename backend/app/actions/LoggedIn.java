@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**
- * Middleware to check if a user is logged in
+ * Middleware to check if a user is logged in.
  */
 public class LoggedIn extends Action.Simple {
     private final AuthRepository authRepository;

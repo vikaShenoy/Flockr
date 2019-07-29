@@ -3,8 +3,10 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
+import io.ebean.annotation.SoftDelete;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 @Entity
 public class DestinationPhoto extends Model {
@@ -19,9 +21,33 @@ public class DestinationPhoto extends Model {
     @ManyToOne
     private PersonalPhoto personalPhoto;
 
+    @JsonIgnore
+    @SoftDelete
+    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean deleted;
+
+    @JsonIgnore
+    private Timestamp deletedExpiry;
+
     public DestinationPhoto(Destination destination, PersonalPhoto personalPhoto)  {
         this.destination = destination;
         this.personalPhoto = personalPhoto;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public Timestamp getDeletedExpiry() {
+        return deletedExpiry;
+    }
+
+    public void setDeletedExpiry(Timestamp deletedExpiry) {
+        this.deletedExpiry = deletedExpiry;
     }
 
     public void setDestination(Destination destination) {

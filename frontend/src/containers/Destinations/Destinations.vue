@@ -12,6 +12,8 @@
       :publicDestinations="publicDestinations"
       v-on:viewOptionChanged="viewOptionChanged"
       v-on:addDestinationClicked="addDestinationClicked"
+      @refreshDestinations="refreshDestinations"
+      ref="sidebar"
     />
 
     <ModifyDestinationDialog
@@ -22,6 +24,7 @@
     >
 
     </ModifyDestinationDialog>
+    <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
 
@@ -50,13 +53,27 @@ export default {
       yourDestinations: null,
       publicDestinations: null,
       showCreateDestDialog: false,
-      viewOption: "your"
+      viewOption: "your",
+      snackbarModel: {
+        show: false,
+        text: "",
+        color: "error",
+        duration: 3000,
+        snackbarId: 1
+      }
     };
   },
   mounted() {
     this.getYourDestinations();
   },
   methods: {
+    refreshDestinations() {
+      if (this.viewOption === "your") {
+        this.getYourDestinations();
+      } else {
+        this.getPublicDestinations();
+      }
+    },
     /**
      * Gets destinations for the logged in user
      */
@@ -75,6 +92,7 @@ export default {
       try {
         const publicDestinations = await getPublicDestinations();
         this.publicDestinations = publicDestinations;
+        console.log("I got public destinations");
       } catch (e) {
         console.log("Could not get public destinations");
       }
@@ -87,7 +105,6 @@ export default {
       this.viewOption = viewOption;
       // If user wants to load public destinations and they haven't been loaded, then load
       if (viewOption === "public" && !this.publicDestinations) {
-        console.log("Did I make it here");
         this.getPublicDestinations();
       }
     },
@@ -103,9 +120,11 @@ export default {
       const undoCommand = async (destination) => {
         try {
           await sendDeleteDestination(destination.destinationId);
-          this.yourDestinations.remove(destination);
+          this.yourDestinations.splice(this.yourDestinations.indexOf(destination));
         } catch (error) {
-          //TODO: this
+          this.snackbarModel.text = error.message;
+          this.snackbarModel.color = "error";
+          this.snackbarModel.show = true;
         }
       };
 
@@ -113,13 +132,16 @@ export default {
         try {
           await sendUndoDeleteDestination(destination.destinationId);
           this.yourDestinations.push(destination);
+          [].shift()
         } catch (error) {
-          //TODO: this
+          this.snackbarModel.text = error.message;
+          this.snackbarModel.color = "error";
+          this.snackbarModel.show = true;
         }
       };
 
       const updateDestCommand = new Command(undoCommand.bind(null, destination), redoCommand.bind(null, destination));
-      this.$refs.undoRedo.addUndo(updateDestCommand);
+      this.$refs.sidebar.addUndoRedoCommand(updateDestCommand);
       this.showCreateDestDialog = false;
 
     },

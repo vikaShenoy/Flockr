@@ -15,9 +15,15 @@
       <span class="destination-district">{{ this.destination.destinationDistrict.districtName }}</span>
     </div>
 
+
     <v-icon color="secondary" class="destination-lock">
       {{ this.destination.isPublic ? "lock_open" : "lock" }}
     </v-icon>
+
+    <v-icon color="error" class="delete-destination" v-if="this.destination.destinationOwner ===  userStore.data.userId" @click="event => showDeletePrompt(event, destination.destinationId)">
+      delete
+    </v-icon>
+
     <v-divider></v-divider>
   </div>
 </template>
@@ -25,6 +31,7 @@
 <script>
 import superagent from "superagent";
 import { endpoint } from "../../../../utils/endpoint";
+import UserStore from "../../../../stores/UserStore";
 
 export default {
   mounted() {
@@ -37,7 +44,8 @@ export default {
   },
   data() {
     return {
-      imageSrc: "https://www.tibs.org.tw/images/default.jpg"
+      imageSrc: "https://www.tibs.org.tw/images/default.jpg",
+      userStore: UserStore
     }
   },
   methods: {
@@ -48,6 +56,10 @@ export default {
           const photoId = res.body[0].personalPhoto.photoId;
           this.imageSrc = endpoint(`/users/photos/${photoId}`) + '?Authorization=' + localStorage.getItem("authToken");
         }
+     },
+     showDeletePrompt(event, destinationId) {
+       event.stopPropagation();
+       this.$emit("showDeleteDestination", destinationId);
      }
   }
 };
@@ -92,6 +104,17 @@ export default {
 
 .avatar {
   margin-top: -10px;
+}
+
+.delete-destination {
+  float: right;
+  margin-top: 17px;
+  transition: background-color 0.1s linear;
+  z-index: 100;
+
+  &:hover {
+    color: #c53e3e !important;
+  }
 }
 
 </style>

@@ -611,7 +611,7 @@ public class DestinationController extends Controller {
      * @return a response that complies with the API spec
      */
     @With(LoggedIn.class)
-    public CompletionStage<Result> unlinkPhoto(int destinationId, int photoId, Http.Request request) {
+    public CompletionStage<Result> deletePhoto(int destinationId, int photoId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         ObjectNode res = Json.newObject();
         String messageKey = "message";
@@ -626,7 +626,7 @@ public class DestinationController extends Controller {
             // allow deletion of the destination photo to any admin
             DestinationPhoto destinationPhoto  = optionalDestinationPhoto.get();
             if (user.isDefaultAdmin() || user.isAdmin()) {
-                destinationPhoto.delete();
+                destinationRepository.deleteDestinationPhoto(destinationPhoto);
                 res.put(messageKey, "The destination photo link was deleted");
                 return ok(res);
             }
@@ -634,7 +634,7 @@ public class DestinationController extends Controller {
             // allow the photo's owner to delete the destination photo
             PersonalPhoto personalPhoto = destinationPhoto.getPersonalPhoto();
             if (personalPhoto.getUser().equals(user)) {
-                destinationPhoto.delete();
+                destinationRepository.deleteDestinationPhoto(destinationPhoto);
                 res.put(messageKey, "The destination photo link was deleted");
                 return ok(res);
             }
@@ -643,6 +643,62 @@ public class DestinationController extends Controller {
             res.put(messageKey, String.format("User %d is not allowed to delete destination photo %d",user.getUserId(), photoId));
             return forbidden(res);
         }, httpExecutionContext.current());
+    }
+
+    /**
+     * Endpoint controller method for undoing a personal photo deletion.
+     * return status codes are as follows:
+     * - 200 - OK - successful undo.
+     * - 400 - Bad Request - The photo has not been deleted.
+     * - 401 - Unauthorised - the user is not authorised.
+     * - 403 - Forbidden - The user does not have permission to undo this deletion.
+     * - 404 - Not Found - The photo cannot be found.
+     *
+     * @param photoId the id of the photo.
+     * @param request the http request.
+     * @return the completion stage containing the result.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> undoPhotoDelete(int destinationId, int photoId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        return destinationRepository.getPhotoByIdWithSoftDelete(destinationId, photoId)
+                .thenComposeAsync(optionalPhoto -> {
+                    if (!optionalPhoto.isPresent()) {
+                        throw new CompletionException(new NotFoundException("Photo not found"));
+                    }
+                    DestinationPhoto photo = optionalPhoto.get();
+                    PersonalPhoto personalPhoto = photo.getPersonalPhoto();
+                    if (!user.isAdmin() && user.getUserId() != personalPhoto.getOwnerId()) {
+                        throw new CompletionException(new ForbiddenRequestException(
+                                "You do not have permission to undo this deletion"));
+                    }
+                    if (!photo.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This photo has not been deleted"));
+                    }
+                    return destinationRepository.undoDeleteDestinationPhoto(photo);
+                })
+                .thenApplyAsync(photo -> ok(Json.toJson(photo)))
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (BadRequestException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", error.getMessage());
+                        return badRequest(message);
+                    } catch (NotFoundException error) {
+                        System.out.println(2);
+                        ObjectNode message = Json.newObject();
+                        message.put("message", error.getMessage());
+                        return notFound(message);
+                    } catch (ForbiddenRequestException error) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", error.getMessage());
+                        return forbidden(message);
+                    } catch (Throwable throwable) {
+                        log.error("500 - Internal Server Error", throwable);
+                        return internalServerError();
+                    }
+                });
     }
 
     /**

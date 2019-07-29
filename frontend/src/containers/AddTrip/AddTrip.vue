@@ -25,15 +25,26 @@
         id="add-destination"
         @click="addDestination"
       >
-      <v-icon>add</v-icon>
+        <v-icon>add</v-icon>
       </v-btn>
 
+
+      <v-btn
+        depressed
+        color="error"
+        id="cancel-trip-creation-btn"
+        @click="$emit('cancel-trip-creation')"
+      >
+        Cancel
+      </v-btn>
       <v-btn
         depressed
         color="secondary"
         id="add-trip-btn"
         @click="addTrip()" 
-      >Create</v-btn>
+      >
+        Create
+      </v-btn>
     </v-form>
   </v-card>
 </template>
@@ -113,9 +124,7 @@ export default {
       if (!validFields) return;
       const userId = localStorage.getItem("userId");
       const tripId = await addTrip(this.tripName, this.tripDestinations, userId);
-
-      // go to the page for the trip
-      this.$router.push(`/trips/${tripId}`); 
+      this.$emit("new-trip-was-added", tripId);
     }
   }
 };
@@ -124,7 +133,6 @@ export default {
 <style lang="scss" scoped>
 #add-trip {
   margin-top: 30px;
-  padding: 20px;
 
   h2 {
     text-align: center;

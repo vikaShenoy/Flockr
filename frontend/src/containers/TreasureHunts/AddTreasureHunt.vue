@@ -78,7 +78,10 @@
 </template>
 
 <script>
-    import {getPublicDestinations, createTreasureHunt} from "./TreasureHuntsService"
+    import {getPublicDestinations, createTreasureHunt, undoDeleteTreasureHuntData} from "./TreasureHuntsService"
+    import {deleteTreasureHuntData} from "./TreasureHuntsService";
+    import Command from "../../components/UndoRedo/Command";
+
     export default {
         name: "AddTreasureHunt",
         props: {
@@ -96,8 +99,8 @@
                 createTreasureHuntRiddle: "",
                 startDate: null,
                 endDate: null,
-                today: new Date().toISOString().split("T")[0]
-
+                today: new Date().toISOString().split("T")[0],
+                treasure: null,
             }
         },
         methods: {
@@ -135,10 +138,28 @@
                     endDate: this.endDate
 
                 };
-                await createTreasureHunt(treasureHunt);
 
-                this.closeDialog();
-                this.$emit("updateList");
+                try {
+
+                    this.treasure = await createTreasureHunt(treasureHunt);
+
+                    const undoCommand = async () => {
+                        await deleteTreasureHuntData(this.treasure.treasureHuntId);
+                        this.$emit("updateList");
+                    };
+
+                    const redoCommand = async () => {
+                        await undoDeleteTreasureHuntData(this.treasure.treasureHuntId);
+                        this.$emit("updateList");
+                    };
+
+                    const createTreasureHuntCommand = new Command(undoCommand.bind(null, this.treasure.treasureHuntId), redoCommand.bind(null, this.treasure.treasureHuntId));
+                    this.$emit("createTreasureHuntCommand", createTreasureHuntCommand);
+                    this.closeDialog();
+                    this.$emit("updateList");
+                } catch (error) {
+                    this.$emit("showError", error.message)
+                }
             }
         },
         computed: {

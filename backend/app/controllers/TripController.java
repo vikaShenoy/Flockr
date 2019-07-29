@@ -51,7 +51,9 @@ public class TripController extends Controller {
 
 
     @Inject
-    public TripController(TripRepository tripRepository, Security security, UserRepository userRepository, HttpExecutionContext httpExecutionContext, TripUtil tripUtil, DestinationRepository destinationRepository) {
+    public TripController(TripRepository tripRepository, Security security, UserRepository userRepository,
+                          HttpExecutionContext httpExecutionContext, TripUtil tripUtil,
+                          DestinationRepository destinationRepository) {
         this.tripRepository = tripRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.tripUtil = tripUtil;
@@ -95,7 +97,8 @@ public class TripController extends Controller {
 
                     User user = optionalUser.get();
 
-                    List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId, tripDestinations);
+                    List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
+                            tripDestinations);
 
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
@@ -176,6 +179,19 @@ public class TripController extends Controller {
                 });
     }
 
+    /**
+     * Undo the soft-delete for a trip.
+     * @param userId user who owns the trip.
+     * @param tripId id of the trip to un-soft delete.
+     * @param request HTTP request object.
+     * @return
+     * - 200 with trip if successful
+     * - 400 bad request if the trip hasn't been deleted
+     * - 401 unauthorized if the user is unauthorized
+     * - 403 forbidden if the user isn't allowed to undo the delete
+     * - 404 not found if the trip can't be found in the db
+     * - 500 internal server error for other errors
+     */
     @With(LoggedIn.class)
     public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
@@ -191,7 +207,8 @@ public class TripController extends Controller {
                     }
                     Trip trip = optionalTrip.get();
                     if (!user.isAdmin() && user.getUserId() != userId) {
-                        throw new CompletionException(new ForbiddenRequestException("You do not have permission to undo this deletion."));
+                        throw new CompletionException(new ForbiddenRequestException(
+                                "You do not have permission to undo this deletion."));
                     }
                     if (!trip.isDeleted()) {
                         throw new CompletionException(new BadRequestException("This trip has not been deleted."));
@@ -232,7 +249,7 @@ public class TripController extends Controller {
      * @param tripId  The trip ID to update
      * @param userId  The id of the user that the trip belongs to
      * @return Returns the http response which can be
-     * - Ok - Trip was updated successfully
+     * - 200 - Trip was updated successfully
      * - 400 - there was an error with the request.
      * - 500 - there was an internal server error.
      */
@@ -260,7 +277,8 @@ public class TripController extends Controller {
                         throw new CompletionException(new BadRequestException());
                     }
 
-                    List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId, tripDestinations);
+                    List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
+                            tripDestinations);
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
                                 Trip trip = optionalTrip.get();
@@ -301,12 +319,16 @@ public class TripController extends Controller {
         List<CompletionStage<Destination>> updateDestinations = new ArrayList<>();
         for (TripDestination tripDestination : tripDestinations) {
 
-            CompletionStage<Destination> updateDestination = destinationRepository.getDestinationById(tripDestination.getDestination().getDestinationId())
+            CompletionStage<Destination> updateDestination = destinationRepository.getDestinationById(
+                    tripDestination.getDestination().getDestinationId())
                     .thenApplyAsync(destination -> {
-                                if (destination.isPresent() &&                                      // The destination exists
-                                        destination.get().getIsPublic() &&                          // The destination is public
-                                        destination.get().getDestinationOwner() != null &&          // The owner is not already null
-                                        !destination.get().getDestinationOwner().equals(userId)) {  // The user doesn't own the destination
+                                if (destination.isPresent() &&  // The destination exists
+                                        // The destination is public
+                                        destination.get().getIsPublic() &&
+                                        // The owner is not already null
+                                        destination.get().getDestinationOwner() != null &&
+                                        // The user doesn't own the destination
+                                        !destination.get().getDestinationOwner().equals(userId)) {
                                     destination.get().setDestinationOwner(null);
                                     destinationRepository.update(destination.get());
                                 }
@@ -319,7 +341,7 @@ public class TripController extends Controller {
     }
 
     /**
-     * Endpoint to get a users trips
+     * Endpoint to get a users' trips.
      *
      * @param request - Request object to get the users ID
      * @param userId  - Irrelevant ID for consistency reasons

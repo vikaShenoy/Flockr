@@ -42,16 +42,6 @@ export async function getDestinationPhotos(destinationId) {
 }
 
 /**
- * Delete a destination from the database
- * @param destinationId int id of the destination
- * @returns {Promise<void>} contains nothing
- */
-export async function deleteDestination(destinationId) {
-  await superagent.delete(endpoint(`/destinations/${destinationId}`))
-    .set("Authorization", localStorage.getItem("authToken"));
-}
-
-/**
  * Sends a delete request to the server to remove the association of a photo from a destination.
  *
  * @param destinationId {Number} the id of the destination.
@@ -63,6 +53,20 @@ export async function removePhotoFromDestination(destinationId, photoId) {
       .set("Authorization", localStorage.getItem("authToken"));
 
   return response.body;
+}
+
+/**
+ * Undoes the deletion of the photo destination
+ *
+ * @param destinationId the destination ID
+ * @param photoId the id of the photo
+ * @returns {Promise<*>} the response body
+ */
+export async function undoRemovePhotoFromDestination(destinationId, photoId) {
+  const res = await superagent.put(endpoint(`/destinations/${destinationId}/photos/${photoId}/undodelete`))
+    .set("Authorization", localStorage.getItem("authToken"));
+
+  return res.body;
 }
 
 /**

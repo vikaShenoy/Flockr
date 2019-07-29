@@ -42,6 +42,9 @@ import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+/**
+ * Controller to handle photo related endpoints.
+ */
 public class PhotoController extends Controller {
 
     private final Security security;

@@ -48,7 +48,7 @@ public class DeleteExpiredUsersTask {
             Timestamp now = Timestamp.from(Instant.now());
             return User.find.query().setIncludeSoftDeletes()
                     .where().eq("deleted", true).and()
-                    .ge("deleted_expiry", now).findList(); //TODO:: not sure if this part is right???
+                    .le("deleted_expiry", now).findList();
         });
     }
 
@@ -81,11 +81,14 @@ public class DeleteExpiredUsersTask {
                                         }
                                         if (user.deletePermanent()) {
                                             log.info(String.format("User %s %s deleted successfully.", user.getFirstName(), user.getLastName()));
+                                            System.out.println(String.format("User %s %s deleted successfully.", user.getFirstName(), user.getLastName()));
                                         } else {
                                             log.info(String.format("User %s %s was not deleted.", user.getFirstName(), user.getLastName()));
+                                            System.out.println(String.format("User %s %s was not deleted.", user.getFirstName(), user.getLastName()));
                                         }
                                     }
                                     log.info(String.format("%d users deleted successfully", users.size()));
+                                    System.out.println(String.format("%d users deleted successfully", users.size()));
                                     return users;
                                 }),
                         this.executionContext);

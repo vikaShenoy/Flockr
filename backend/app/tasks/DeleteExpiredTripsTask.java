@@ -44,7 +44,7 @@ public class DeleteExpiredTripsTask {
             Timestamp now = Timestamp.from(Instant.now());
             return Trip.find.query().setIncludeSoftDeletes()
                     .where().eq("deleted", true).and()
-                    .ge("deleted_expiry", now).findList(); //TODO:: not sure if this part is right???
+                    .le("deleted_expiry", now).findList();
         });
     }
 

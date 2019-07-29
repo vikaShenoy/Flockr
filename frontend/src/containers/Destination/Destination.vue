@@ -53,14 +53,6 @@
           <v-icon>edit</v-icon>
         </v-btn>
 
-        <v-btn
-          color="error"
-          depressed
-          @click="isShowingDeleteDestDialog = true"
-          v-if="userStore.methods.isAdmin() || destination.destinationOwner === userStore.data.userId"
-        >
-          <v-icon>delete</v-icon>
-        </v-btn>
 
        </div>
       </v-flex>
@@ -92,13 +84,6 @@
      v-on:dismissSnackbar="dismissSnackbar"
      />
 
-  <PromptDialog
-    :dialog="isShowingDeleteDestDialog" 
-    message="Are you sure you want to delete the destination?"
-    :onConfirm="deleteDestination"
-    v-on:promptEnded="isShowingDeleteDestDialog = false"
-  />
-
   <RequestTravellerTypes 
     :isShowingTravellerTypesDialog.sync="isShowingTravellerTypesDialog" 
     :destination="destination"
@@ -117,7 +102,7 @@
 
 <script>
 import Command from "../../components/UndoRedo/Command";
-import { getDestination, getDestinationPhotos, deleteDestination, removePhotoFromDestination, rejectProposal, undeleteProposal } from "./DestinationService";
+import { getDestination, getDestinationPhotos, deleteDestination, removePhotoFromDestination, undoRemovePhotoFromDestination, rejectProposal, undeleteProposal } from "./DestinationService";
 import ModifyDestinationDialog from "../Destinations/ModifyDestinationDialog/ModifyDestinationDialog";
 import DestinationMap from "../../components/DestinationMap/DestinationMap";
 import DestinationDetails from "./DestinationDetails/DestinationDetails";
@@ -129,6 +114,8 @@ import { sendUpdateDestination } from "../Destinations/DestinationsService";
 import UserStore from '../../stores/UserStore';
 import UndoRedo from "../../components/UndoRedo/UndoRedo"
 import { sendProposal } from "./RequestTravellerTypes/RequestTravellerTypesService";
+import superagent from 'superagent';
+import {endpoint} from '../../utils/endpoint';
 
 
 export default {
@@ -149,7 +136,6 @@ export default {
       destinationPhotos: [],
       hasOwnerRights: false,
       showingEditDestDialog: false,
-      isShowingDeleteDestDialog: false,
       snackbarModel: {
         show: false,
         timeout: 3000,
@@ -162,7 +148,8 @@ export default {
         show: false,
         message: "",
         deleteFunction: null
-      }
+      },
+      index: null,
     };
   },
   async mounted() {
@@ -234,6 +221,41 @@ export default {
       this.snackbarModel.show = true;
     },
     /**
+     * Adds the photo to a destination with undo and redo functionalities
+    */
+    async addPhoto(photoId) {
+      let data = {
+        photoId: photoId
+      };
+      let authToken = localStorage.getItem('authToken');
+      const res = await superagent.post(endpoint(`/destinations/${this.destination.destinationId}/photos`))
+        .set('Authorization', authToken)
+        .send(data);
+      let photo = res.body;
+      photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
+      photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+
+      const undoCommand = async () => {
+        await removePhotoFromDestination(this.destination.destinationId, photoId);
+        this.removePhoto(this.index);
+      };
+
+      const redoCommand = async () => {
+        console.log("Redo", photoId);
+        const res = await superagent.post(endpoint(`/destinations/${this.destination.destinationId}/photos`))
+          .set('Authorization', authToken)
+          .send(data);
+        let photo = res.body;
+        photo["endpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}?Authorization=${localStorage.getItem("authToken")}`);
+        photo["thumbEndpoint"] = endpoint(`/users/photos/${photo.personalPhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+        this.destinationPhotos.push(photo)
+      };
+
+      const addDestinationPhotoCommand = new Command(undoCommand.bind(null, photoId), redoCommand.bind(null, photoId));
+      this.$refs.undoRedo.addUndo(addDestinationPhotoCommand);
+      this.destinationPhotos.push(photo)
+    },
+    /**
      * Displays a message using the snackbar.
      */
     displayMessage(text, color) {
@@ -245,13 +267,35 @@ export default {
       const destinationId = this.destination.destinationId;
       const removePhoto = this.removePhoto;
       const displayMessage = this.displayMessage;
+      this.index = index;
       const removeFunction = async function () {
         try {
           await removePhotoFromDestination(destinationId, photoId);
           removePhoto(index);
           closeDialog(false);
           displayMessage("The photo has been successfully removed.", "green");
+
+          const undoCommand = async (destinationId, photoId) => {
+            console.log("undo dest", destinationId);
+            console.log("undo photo", photoId);
+            await undoRemovePhotoFromDestination(destinationId, photoId);
+          };
+
+          const redoCommand = async (destinationId, photoId, index) => {
+            console.log("redo dest", destinationId);
+            console.log("redo photo", photoId);
+            await removePhotoFromDestination(destinationId, photoId);
+            removePhoto(index);
+            closeDialog(false);
+            displayMessage("The photo has been successfully removed.", "green");
+
+          };
+
+          const removeDestinationPhotoCommand = new Command(undoCommand.bind(null, destinationId, photoId, index), redoCommand.bind(null, destinationId, photoId, index));
+          this.$refs.undoRedo.addUndo(removeDestinationPhotoCommand);
         } catch (error) {
+          console.log(error.message);
+          console.log(error);
           displayMessage(error.message, "red");
         }
       };
@@ -267,9 +311,6 @@ export default {
      */
     removePhoto(index) {
       this.destinationPhotos.splice(index, 1);
-    },
-    addPhoto(photo) {
-      this.destinationPhotos.push(photo)
     },
     async deleteDestination() {
       const destinationId = this.$route.params.destinationId;

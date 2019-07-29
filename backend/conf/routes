@@ -57,12 +57,11 @@ PUT           /api/destinations/:destinationId                          controll
 PUT           /api/destinations/:destinationId/undodelete               controllers.DestinationController.undoDeleteDestination(destinationId: Int, request: Request)
 
 
-
 # Destination photos routes
-POST          /api/destinations/:destinationId/photos                   controllers.DestinationController.addPhoto(destinationId: Int, request: Request)
-GET           /api/destinations/:destinationId/photos                   controllers.DestinationController.getPhotos(destinationId: Int, request: Request)
-DELETE        /api/destinations/:destinationId/photos/:photoId          controllers.DestinationController.unlinkPhoto(destinationId: Int, photoId: Int, request: Request)
-
+POST          /api/destinations/:destinationId/photos                       controllers.DestinationController.addPhoto(destinationId: Int, request: Request)
+GET           /api/destinations/:destinationId/photos                       controllers.DestinationController.getPhotos(destinationId: Int, request: Request)
+DELETE        /api/destinations/:destinationId/photos/:photoId              controllers.DestinationController.deletePhoto(destinationId: Int, photoId: Int, request: Request)
+PUT           /api/destinations/:destinationId/photos/:photoId/undodelete   controllers.DestinationController.undoPhotoDelete(destinationId: Int, photoId: Int, request: Request)
 
 # Trip Routes
 GET           /api/users/:userId/trips                                  controllers.TripController.getTrips(request: Request, userId: Int)

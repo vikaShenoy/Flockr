@@ -4,6 +4,7 @@ import akka.actor.ActorSystem;
 import models.DestinationProposal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Predef;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
@@ -45,7 +46,7 @@ public class DeleteExpiredDestinationProposal {
             Timestamp now = Timestamp.from(Instant.now());
             return DestinationProposal.find.query().setIncludeSoftDeletes()
                     .where().eq("deleted", true).and()
-                    .ge("deleted_expiry", now).findList();
+                    .le("deleted_expiry", now).findList();
         });
     }
 
@@ -65,8 +66,8 @@ public class DeleteExpiredDestinationProposal {
                                         for (DestinationProposal destinationProposal : destinationProposals) {
                                             destinationProposal.deletePermanent();
                                         }
-                                        log.info(String.format(" %d Destination Proposals deleted successfully", destinationProposals.size()));
-                                        System.out.printf(" %d Destination Proposals deleted successfully", destinationProposals.size());
+                                        log.info(String.format("%d Destination Proposals deleted successfully", destinationProposals.size()));
+                                        System.out.println(String.format("%d Destination Proposals deleted successfully", destinationProposals.size()));
                                         return destinationProposals;
                                     }),
                         this.executionContext);
