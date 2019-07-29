@@ -326,7 +326,7 @@ public class TripController extends Controller {
                                         // The destination is public
                                         destination.get().getIsPublic() &&
                                         // The owner is not already null
-                                        destination.get().getDestinationOwner() != null &
+                                        destination.get().getDestinationOwner() != null &&
                                         // The user doesn't own the destination
                                         !destination.get().getDestinationOwner().equals(userId)) {
                                     destination.get().setDestinationOwner(null);
