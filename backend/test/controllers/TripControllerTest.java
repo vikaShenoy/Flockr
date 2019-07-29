@@ -164,22 +164,6 @@ public class TripControllerTest {
     }
 
     @Test
-    public void restoreTripUserNotFound() {
-        trip.delete();
-        Optional<Trip> optionalTrip = Trip.find.query()
-                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
-        Assert.assertFalse(optionalTrip.isPresent());
-
-        Result result = fakeClient.makeRequestWithToken(
-                "PUT",
-                "/api/users/" + -50 + "/trips/" + trip.getTripId() + "/restore",
-                user.getToken()
-        );
-        Assert.assertEquals(404, result.status());
-        restore(trip);
-    }
-
-    @Test
     public void restoreTripNotFound() {
         trip.delete();
         Optional<Trip> optionalTrip = Trip.find.query()
