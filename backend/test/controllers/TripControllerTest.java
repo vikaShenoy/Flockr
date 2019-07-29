@@ -4,18 +4,19 @@ import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import models.*;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 import play.Application;
 import play.test.Helpers;
 import utils.FakeClient;
 import utils.FakePlayClient;
 import utils.TestState;
+import play.mvc.Result;
+
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TripControllerTest {
 
@@ -24,11 +25,17 @@ public class TripControllerTest {
     User user;
     User otherUser;
     User adminUser;
-    Destination destination;
-    DestinationProposal destinationProposal;
+    Destination christchurch;
+    Destination westMelton;
+    TripDestination tripChristchurch;
+    TripDestination tripWestMelton;
+    List<TripDestination> tripDestinations;
+    Trip trip;
 
     @Before
     public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
+
+        // Configuration
         Map<String, String> testSettings = new HashMap<>();
         testSettings.put("db.default.driver", "org.h2.Driver");
         testSettings.put("db.default.url", "jdbc:h2:mem:testdb;MODE=MySQL;");
@@ -36,10 +43,12 @@ public class TripControllerTest {
         testSettings.put("play.evolutions.db.default.autoApply", "true");
         testSettings.put("play.evolutions.db.default.autoApplyDowns", "true");
 
+        // Fake Client
         application = Helpers.fakeApplication(testSettings);
         Helpers.start(application);
         fakeClient = new FakePlayClient(application);
 
+        // Users
         user = fakeClient.signUpUser("Tommy", "Tester", "tommy@tester.com",
                 "testing");
         otherUser = fakeClient.signUpUser("Indy", "Inspector", "indy@inspector.com",
@@ -47,32 +56,40 @@ public class TripControllerTest {
         adminUser = fakeClient.signUpUser("Sam", "Admin", "sam@admin.com",
                 "testing");
 
+        // Making an admin
         Role role = new Role(RoleType.ADMIN);
+        role.save();
         List<Role> roles = new ArrayList<>();
         roles.add(role);
-        role.save();
         adminUser = User.find.byId(adminUser.getUserId());
         adminUser.setRoles(roles);
         adminUser.save();
 
-        // Add some destinations
+        // Creating some initial destinations
         DestinationType destinationType = new DestinationType("city");
-        Country country = new Country("Peru", "PE", true);
-        District district = new District("Test District", country);
-        destination = new Destination("Test City", destinationType, district,
-                0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
-
         destinationType.save();
+        Country country = new Country("New Zealand", "NZ", true);
         country.save();
+        District district = new District("Canterbury", country);
         district.save();
-        destination.save();
 
-        // Add some proposal
-        TravellerType travellerType = new TravellerType("Gap Year");
-        List<TravellerType> travellerTypes = new ArrayList<>();
-        travellerTypes.add(travellerType);
-        destinationProposal = new DestinationProposal(destination, travellerTypes, user);
-        destinationProposal.save();
+        christchurch = new Destination("Christchurch", destinationType, district,0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
+        christchurch.save();
+
+        westMelton = new Destination("West Melton", destinationType, district,0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
+        westMelton.save();
+
+        // Creating a trip
+
+        tripChristchurch = new TripDestination(christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
+        tripWestMelton = new TripDestination(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        tripChristchurch.save();
+        tripWestMelton.save();
+        tripDestinations = new ArrayList<>();
+        tripDestinations.add(tripChristchurch);
+        tripDestinations.add(tripWestMelton);
+        trip = new Trip(tripDestinations, user, "Testing Trip 1");
+        trip.save();
     }
 
     @After
@@ -80,4 +97,6 @@ public class TripControllerTest {
         Helpers.stop(application);
         TestState.clear();
     }
+
+
 }
