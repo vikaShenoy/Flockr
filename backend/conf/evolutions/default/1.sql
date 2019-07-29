@@ -200,6 +200,8 @@ create table trip (
   trip_id                       integer auto_increment not null,
   user_user_id                  integer,
   trip_name                     varchar(255),
+  deleted_expiry                datetime(6),
+  deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_trip primary key (trip_id)
 );
 

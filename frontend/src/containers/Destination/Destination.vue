@@ -53,14 +53,6 @@
           <v-icon>edit</v-icon>
         </v-btn>
 
-        <v-btn
-          color="error"
-          depressed
-          @click="isShowingDeleteDestDialog = true"
-          v-if="userStore.methods.isAdmin() || destination.destinationOwner === userStore.data.userId"
-        >
-          <v-icon>delete</v-icon>
-        </v-btn>
 
        </div>
       </v-flex>
@@ -91,13 +83,6 @@
     :snackbarModel="snackbarModel"
      v-on:dismissSnackbar="dismissSnackbar"
      />
-
-  <PromptDialog
-    :dialog="isShowingDeleteDestDialog" 
-    message="Are you sure you want to delete the destination?"
-    :onConfirm="deleteDestination"
-    v-on:promptEnded="isShowingDeleteDestDialog = false"
-  />
 
   <RequestTravellerTypes 
     :isShowingTravellerTypesDialog.sync="isShowingTravellerTypesDialog" 
@@ -151,7 +136,6 @@ export default {
       destinationPhotos: [],
       hasOwnerRights: false,
       showingEditDestDialog: false,
-      isShowingDeleteDestDialog: false,
       snackbarModel: {
         show: false,
         timeout: 3000,
@@ -302,9 +286,12 @@ export default {
             console.log("redo photo", photoId);
             await removePhotoFromDestination(destinationId, photoId);
             removePhoto(index);
+            closeDialog(false);
+            displayMessage("The photo has been successfully removed.", "green");
+
           };
 
-          const removeDestinationPhotoCommand = new Command(undoCommand.bind(null, this.destination.destinationId, photoId), redoCommand.bind(null, this.destination.destinationId, photoId, index));
+          const removeDestinationPhotoCommand = new Command(undoCommand.bind(null, photoId, index), redoCommand.bind(null, photoId, index));
           this.$refs.undoRedo.addUndo(removeDestinationPhotoCommand);
         } catch (error) {
           console.log(error.message);

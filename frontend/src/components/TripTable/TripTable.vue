@@ -65,6 +65,7 @@
 import Sortable from "sortablejs";
 import moment from "moment";
 import { getDestinations } from "./TripTableService";
+import { getYourDestinations } from '../../containers/Destinations/DestinationsService';
 
 export default {
   props: {
@@ -120,9 +121,17 @@ export default {
   methods: {
     async getDestinations() {
       try {
-        const destinations = await getDestinations();
-        this.destinations = destinations;
+        const [publicDestinations, yourDestinations] = await Promise.all([getDestinations(), getYourDestinations()]);
+        
+        // Need to filter out duplicate destinations
+        const destinationsFound = new Set();
+        const allDestinations = [...publicDestinations, ...yourDestinations].filter(destination => {
+          return !destinationsFound.has(destination.destinationId) && destinationsFound.add(destination.destinationId);
+        });
+
+        this.destinations = allDestinations;
       } catch (e) {
+        console.log(e);
         // add error handling later
       }
     },

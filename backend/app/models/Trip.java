@@ -1,9 +1,12 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
+import io.ebean.annotation.SoftDelete;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -23,6 +26,14 @@ public class Trip extends Model {
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
     private List<TripDestination> tripDestinations;
 
+    @JsonIgnore
+    @SoftDelete
+    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean deleted;
+
+    @JsonIgnore
+    private Timestamp deletedExpiry;
+
     /**
      * Constructor to create a new trip.
      * @param tripDestinations list of TripDestinations which make up the trip.
@@ -33,13 +44,6 @@ public class Trip extends Model {
         this.tripDestinations = tripDestinations;
         this.user = user;
         this.tripName = tripName;
-    }
-
-    public Trip(List<TripDestination> tripDestinations, User user, String tripName, int tripId) {
-        this.tripDestinations = tripDestinations;
-        this.user = user;
-        this.tripName = tripName;
-        this.tripId = tripId;
     }
 
     public int getTripId() {
@@ -72,6 +76,22 @@ public class Trip extends Model {
 
     public void setTripName(String tripName) {
         this.tripName = tripName;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public void setDeletedExpiry(Timestamp deletedExpiry) {
+        this.deletedExpiry = deletedExpiry;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public Timestamp getDeletedExpiry() {
+        return deletedExpiry;
     }
 
     /**

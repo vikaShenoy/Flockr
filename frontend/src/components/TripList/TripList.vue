@@ -9,7 +9,7 @@
         v-else v-for="trip in trips"
         :key="trip.tripId"
         :trip="trip"
-        :viewOnly="true"
+        :viewOnly="viewOnly"
       />
     </div>
 
@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { getTrips, sortTrips, transformTrips } from "./TripListService.js";
+import { getTrips, sortTrips, transformTrips, deleteTripFromList, restoreTrip} from "./TripListService.js";
 import TripItem from "./TripItem/TripItem";
 import UndoRedo from "../UndoRedo/UndoRedo";
 import Command from "../UndoRedo/Command";
@@ -59,16 +59,16 @@ export default {
         const sortedTrips = sortTrips(trips);
         this.trips = transformTrips(sortedTrips);
       },
-      async handleDelete(trip) {
-        const undoCommand = async () => {
-            // TODO: Sam to implement
-            throw new Error(`Undo for deleting trips not implemented`);
-        };
+      async handleDelete(tripId) {
+          const undoCommand = async () => {
+            await restoreTrip(tripId);
+              this.refreshList();
+          };
 
-        const redoCommand = async () => {
-            // TODO: Sam to implement
-            throw new Error(`Redo for deleting a trip not implemented`);
-        };
+          const redoCommand = async () => {
+              await deleteTripFromList(tripId);
+              this.refreshList();
+          };
 
         const deleteTripCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
         this.$refs.undoRedo.addUndo(deleteTripCommand);

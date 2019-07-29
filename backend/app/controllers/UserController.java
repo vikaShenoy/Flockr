@@ -304,11 +304,15 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
-    /**		    /**
+    /**
      * Delete a user given its id
      * @param userId the id of the user to be deleted
      * @param request the request passed by the controller
-     * @return
+     * @return HTTP result with codes:
+     * - 500 - internal server errors
+     * - 401 - user is not authorised
+     * - 404 - user to be deleted can't be found
+     * - 200 - successful delete
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteUser(int userId, Http.Request request) {
@@ -332,31 +336,41 @@ public class UserController extends Controller {
                     } else if (userBeingDeleted.isAdmin()) {
                         if (userDoingDeletion.isAdmin() || userDoingDeletion.isDefaultAdmin()) {
                             // only admins and the default admin can delete admins
-                            message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
-                            CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                            message.put(
+                                    "message", "Deleted user with id: " + userBeingDeleted.getUserId());
+                            CompletionStage<Result> completionStage = userRepository.deleteUserById(
+                                    userId).thenApply((ignored) -> ok(message));
                             CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
                             try {
                                 return completableFuture.get();
                             } catch (InterruptedException | ExecutionException e) {
-                                System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
-                                message.put("message", "Something went wrong deleting that user, try again");
+                                System.err.println(String.format(
+                                        "Async execution interrupted when user %s was deleting user %s",
+                                        userDoingDeletion, userBeingDeleted));
+                                message.put(
+                                        "message", "Something went wrong deleting that user, try again");
                                 return internalServerError(message);
                             }
                         } else {
-                            message.put("message", "Only admins or the default admin can delete other admins");
+                            message.put(
+                                    "message", "Only admins or the default admin can delete other admins");
                             return unauthorized(message);
                         }
                     } else {
                         if (userDoingDeletion.equals(userBeingDeleted) && !userBeingDeleted.isDefaultAdmin()) {
                             // a user can delete itself
                             message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
-                            CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                            CompletionStage<Result> completionStage = userRepository.deleteUserById(
+                                    userId).thenApply((ignored) -> ok(message));
                             CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
                             try {
                                 return completableFuture.get();
                             } catch (InterruptedException | ExecutionException e) {
-                                System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
-                                message.put("message", "Something went wrong deleting that user, try again");
+                                System.err.println(String.format(
+                                        "Async execution interrupted when user %s was deleting user %s",
+                                        userDoingDeletion, userBeingDeleted));
+                                message.put(
+                                        "message", "Something went wrong deleting that user, try again");
                                 return internalServerError(message);
                             }
                         } else if ((userDoingDeletion.isAdmin() && !userBeingDeleted.isDefaultAdmin()) || userDoingDeletion.isDefaultAdmin()) {

@@ -15,6 +15,9 @@ import java.util.concurrent.CompletionStage;
 import static play.mvc.Results.notFound;
 import static play.mvc.Results.ok;
 
+/**
+ * Controller to handle user role endpoints.
+ */
 public class RoleController {
 
     private final RoleRepository roleRepository;
@@ -29,9 +32,9 @@ public class RoleController {
     /**
      * A function that gets a list of all the possible roles that are available in the
      * database
-     * @param request The http request
-     * @return CompletionStage<Result> the completion function to be
-     * called on completion.
+     * @param request Http request object
+     * @return CompletionStage<Result>
+     *     - 200 with all roles if successful.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getAllRoles(Http.Request request) {
@@ -46,8 +49,9 @@ public class RoleController {
      * Function that requests a list of all of a users roles from the role repository and returns an async function.
      * @param userId int the id of the user
      * @param request the http Request
-     * @return CompletionStage<Result> the completion function to be
-     * called on completion.
+     * @return
+     * - 200 with roles if ok
+     * - 404 not found if the user can't be found in db
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getUsersRoles(int userId, Http.Request request) {

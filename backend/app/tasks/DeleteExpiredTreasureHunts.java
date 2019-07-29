@@ -28,11 +28,17 @@ public class DeleteExpiredTreasureHunts {
         this.initialise();
     }
 
+    /**
+     * Async function to get a list of all expired & deleted treasure hunts in the database.
+     *
+     * @return the list of expired deleted treasure hunts.
+     */
     public CompletionStage<List<TreasureHunt>> getDeletedTreasureHunts() {
         return supplyAsync(() -> {
             Timestamp now = Timestamp.from(Instant.now());
             return TreasureHunt.find.query().setIncludeSoftDeletes()
-                    .where().eq("deleted_expiry", now).findList();
+                    .where().eq("deleted", true).and()
+                    .le("deleted_expiry", now).findList();
 
         });
     }

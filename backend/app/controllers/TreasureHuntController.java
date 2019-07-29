@@ -37,11 +37,11 @@ import static util.TreasureHuntUtil.validateTreasureHunts;
 
 
 /**
- * Contains all end points associated with treasure hunts.
+ * Controller to handle all end points associated with treasure hunts.
  */
 public class TreasureHuntController extends Controller {
 
-    final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private TreasureHuntRepository treasureHuntRepository;
     private final DatabaseExecutionContext executionContext;
     private UserRepository userRepository;
@@ -131,7 +131,7 @@ public class TreasureHuntController extends Controller {
                         try {
                             Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDateString);
                             if (startDate.after(treasureHunt.getEndDate())) {
-                                throw new CompletionException(new BadRequestException("Start date cannot be before end date."));
+                                throw new CompletionException(new BadRequestException("Start date cannot be after end date."));
                             }
                             treasureHunt.setStartDate(startDate);
                         } catch (ParseException e) {
@@ -259,10 +259,10 @@ public class TreasureHuntController extends Controller {
     }
 
     /**
-     * Endpoint to get all treasure hunts for a user
+     * Endpoint to get all treasure hunts for a user.
      *
-     * @param request
-     * @param userId
+     * @param request HTTP request object.
+     * @param userId id of the user to get treasure hunts for.
      * @return Returns one of the following HTTP responses:
      * - 200 - Returns a list of treasure hunts
      * - 401 - Not authorised
@@ -330,7 +330,7 @@ public class TreasureHuntController extends Controller {
     }
 
     /**
-     * The method that undoes the deletion of a treasure hunt
+     * Undo the deletion of a treasure hunt.
      * The following are the status codes:
      * - 200 - OK - successful undo.
      * - 400 - Bad Request - The treasure hunt has not been deleted.
