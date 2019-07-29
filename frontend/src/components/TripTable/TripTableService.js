@@ -2,7 +2,7 @@ import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 
 /**
- * Gets all destinations
+ * Get all destinations.
  */
 export async function getDestinations() {
   const authToken = localStorage.getItem("authToken");
@@ -10,6 +10,10 @@ export async function getDestinations() {
   return res.body;
 }
 
+/**
+ * Get a user's destinations.
+ * @returns {Promise<*>} JSON response with destinations.
+ */
 export async function getYourDestinations() {
   const authToken = localStorage.getItem("authToken");
   const userId = localStorage.getItem("userId");

@@ -35,14 +35,18 @@ export default {
     this._keyDownListener = document.addEventListener("keydown", this.keyDown)
   },
   beforeDestroy() {
-    
     document.removeEventListener("keydown", this.keyDown); 
   },
   methods: {
+		/**
+		 * Binds keyboard buttons to the undo and redo commands. Executes undo/redo depending on which keys
+		 * were pressed.
+		 * @param event the keyboard button click event.
+		 */
     keyDown(event) {
       const shouldUndo = event.keyCode === Z_KEY_CODE && event.ctrlKey && !event.shiftKey;
-      const shouldRedo = (event.keyCode === Y_KEY_CODE && event.ctrlKey) || (event.keyCode === Z_KEY_CODE && event.shiftKey && event.ctrlKey);
-      
+      const shouldRedo = (event.keyCode === Y_KEY_CODE && event.ctrlKey) ||
+					(event.keyCode === Z_KEY_CODE && event.shiftKey && event.ctrlKey);
       if (shouldUndo) {
         if (this.undoStack.length) {
           this.undo();
@@ -54,7 +58,7 @@ export default {
       }
     },
     /**
-     * Undo's last action and adds to redo stack
+     * Undo's last action and adds to redo stack.
      */
     async undo() {
       const command = this.undoStack.pop();
@@ -69,7 +73,7 @@ export default {
       }
     },
     /**
-     * Redo's last action and adds to undo stack
+     * Redo's last action and adds to undo stack.
      */
     async redo() {
       const command = this.redoStack.pop();
@@ -83,7 +87,7 @@ export default {
       }
     },
     /**
-     * Adds a command to the undo stack
+     * Adds a command to the undo stack.
      */
     addUndo(command) {
       this.undoStack.push(command);

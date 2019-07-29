@@ -15,7 +15,6 @@ export async function uploadImage(imageFile, isPublic, userId) {
     .field("isPublic", isPublic)
     .field("isPrimary", false)
     .attach("image", imageFile);
-
   return res.body;
 }
 

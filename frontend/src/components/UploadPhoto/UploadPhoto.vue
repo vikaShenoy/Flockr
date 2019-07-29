@@ -34,14 +34,12 @@
 
       <h3>Choose a file or drag it here</h3>
     </div>
-
     <div class="switch">
       <v-switch switch v-model="isPublic" label="Set to public" id="is-public-switch" color="secondary"></v-switch>
     </div>
 
-    <v-btn id="upload-btn" :disabled="!uploadReady || imageUploading" :loading="imageUploading" color="secondary" @click="upload">Upload</v-btn>
-
-
+    <v-btn id="upload-btn" :disabled="!uploadReady || imageUploading" :loading="imageUploading"
+					 color="secondary" @click="upload">Upload</v-btn>
   </v-card>
 </template>
 

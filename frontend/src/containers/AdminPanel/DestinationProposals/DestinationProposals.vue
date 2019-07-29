@@ -118,7 +118,8 @@ export default {
           await acceptProposal(destinationProposalId);
         };
 
-        const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, destinationProposalId));
+        const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId),
+						redoCommand.bind(null, destinationProposalId));
         this.$emit("acceptProposalCommand", acceptProposalCommand);
 
         this.filterOutDestinationProposalId(destinationProposalId);
@@ -142,7 +143,8 @@ export default {
           await declineProposal(destinationProposalId);
         };
 
-        const declineProposalCommand = new Command(undoCommand.bind(null, destinationProposalId), redoCommand.bind(null, destinationProposalId));
+        const declineProposalCommand = new Command(undoCommand.bind(null, destinationProposalId),
+						redoCommand.bind(null, destinationProposalId));
         this.$emit("declineProposalCommand", declineProposalCommand);
         this.filterOutDestinationProposalId(destinationProposalId);
         this.$emit("showMessage", "Rejected Proposal");

@@ -1,4 +1,4 @@
-// NOTE: The snackbar will hide itself after its timeout is over but it will not emit a dissmissSnackbar event when it does
+// NOTE: The snackbar will hide itself after its timeout is over but it will not emit a dismissSnackbar event.
 
 <template>
     <v-snackbar

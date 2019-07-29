@@ -108,6 +108,11 @@ export default {
       this.snackbarModel.color = 'red';
       this.snackbarModel.show = true;
     },
+
+		/**
+		 * Delete users on the admin panel. Create the command to be used with undo/redo functionality.
+		 * @param userIds list of user ids for users to be deleted.
+		 */
     async handleDeleteUsersByIds(userIds) {
 
       const undoCommand = async (userIds) => {
@@ -118,7 +123,7 @@ export default {
       const redoCommand = async (userIds) => {
         await deleteUsers(userIds);
         this.getAllUsers();
-      }
+      };
 
       const deleteUsersCommand = new Command(undoCommand.bind(null, userIds), redoCommand.bind(null, userIds));
       this.$refs.undoRedo.addUndo(deleteUsersCommand);
@@ -163,15 +168,14 @@ export default {
       const undoCommand = async (selectedUserId, roleTypes) => {
         await updateRoles(selectedUserId, roleTypes);
         this.getAllUsers();
-      }
+      };
 
       const redoCommand = async (selectedUserId, roleTypes) => {
         await updateRoles(selectedUserId, roleTypes);
         this.getAllUsers();
-      }
+      };
 
       const addAdminPriviledgeCommand = new Command(undoCommand.bind(null, selectedUserId, roleTypes), redoCommand.bind(null, selectedUserId, newRoleTypes));
-      
       this.$refs.undoRedo.addUndo(addAdminPriviledgeCommand);
 
       try {
@@ -197,21 +201,15 @@ export default {
       const undoCommand = async (selectedUserId, roleTypes) => {
         await updateRoles(selectedUserId, roleTypes);
         this.getAllUsers();
-      }
-
+      };
       const redoCommand = async (selectedUserId, roleTypes) => {
         await updateRoles(selectedUserId, roleTypes);
         this.getAllUsers();
-      }
+      };
 
-
-      
-      const removeAdminPriviledgeCommand = new Command(undoCommand.bind(null, selectedUserId, oldRoleTypes), redoCommand.bind(null, selectedUserId, roleTypes));
-      
+      const removeAdminPriviledgeCommand = new Command(undoCommand.bind(null, selectedUserId, oldRoleTypes),
+					redoCommand.bind(null, selectedUserId, roleTypes));
       this.$refs.undoRedo.addUndo(removeAdminPriviledgeCommand);
-
-
-
       try {
         await updateRoles(selectedUserId, roleTypes);
         this.showSuccessSnackbar("Removed admin priviledges");
@@ -220,12 +218,16 @@ export default {
         this.showErrorSnackbar("Error removing admin priviledges");
       }
     },
-    // Adds commands to undo stack and refreshes users
+
+    /**
+		 * Add commands to the undo stack and refresh users.
+     * @param userId user who has been signed up.
+     */
     userSignedUp(userId) {
       const undoCommand = async (userId) => {
         await deleteUser(userId);
         this.getAllUsers();
-      }
+      };
 
       const redoCommand = async (userId) => {
         await undoDeleteUser(userId)

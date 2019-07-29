@@ -19,6 +19,11 @@ export default {
         }
     },
     methods: {
+			/**
+			 * Check whether a country is valid by looking for it in the master
+			 * country list.
+			 * Set the valid flag.
+			 */
       countryIsValid() {
         const foundCountry = this.countries.find((c) => {
           return c.countryName === this.country
@@ -28,6 +33,11 @@ export default {
     },
     computed: {
     },
+    /**
+		 * Populate the list of countries from backend.
+		 * Check whether the country being displayed in valid.
+     * @returns {Promise<void>}
+     */
     async mounted() {
         const countryPromise = getCountries();
         this.countries = await Promise.resolve(countryPromise);

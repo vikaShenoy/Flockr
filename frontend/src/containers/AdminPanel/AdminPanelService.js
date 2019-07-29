@@ -32,7 +32,7 @@ export async function undoDeleteUser(userId) {
 }
 
 /**
- * Undeletes users
+ * Un-deletes users (soft delete functionality).
  */
 export async function undoDeleteUsers(userIds) {
   const undoDeleteUserPromises = userIds.map(userId => undoDeleteUser(userId));
@@ -61,6 +61,12 @@ export async function getAllUsers() {
   return res.body;
 }
 
+/**
+ * Patch user to edit their details.
+ * @param userId user to edit.
+ * @param body new user data.
+ * @returns {Promise<void>}
+ */
 export async function patchUser(userId, body) {
   const authToken = localStorage.getItem("authToken");
   const res = await superagent
