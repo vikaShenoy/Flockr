@@ -79,5 +79,10 @@ export async function deleteTreasureHuntData(treasureHuntId) {
         .set("Authorization", token);
 
     return res.body;
+}
 
+export async function undoDeleteTreasureHuntData(treasureHuntId) {
+    const res = await superagent.put(endpoint(`/treasurehunts/${treasureHuntId}/undodelete `))
+      .set("Authorization", localStorage.getItem("authToken"));
+    return res.body;
 }
