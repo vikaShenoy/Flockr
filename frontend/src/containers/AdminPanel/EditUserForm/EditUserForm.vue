@@ -186,9 +186,16 @@ export default {
     }
   },
   methods: {
+		/**
+		 * Stop the form from displaying by emitting call to parent.
+		 */
     dismissForm: function() {
       this.$emit('dismissForm');
     },
+		/**
+		 * Check the form is valid and then emit a call to submit the form.
+		 * Emit a call to show the form contains invalid data if invalid.
+		 */
     submitForm: function() {
       if (this.$refs.form.validate()) {
         this.$emit('submitForm', this.changes);
@@ -241,21 +248,35 @@ export default {
         console.error(`Could not get all user roles: ${err}`);
       }
     },
-    /**
-     * Given an array of traveller type names, return their corresponding ids
-     */
+
+		/**
+		 * Transform an array of traveller type names into their corresponding ids.
+		 * @param travellerTypeNames array of traveller type names.
+		 * @return array of traveller type ids.
+		 */
     parseEditTravellerTypeChangeEvent: function(travellerTypeNames) {
       // filter all the traveller types to be only the ones with the name included in the event, then map them to their ids
       return this.allTravellerTypes.filter((travellerType) => travellerTypeNames.includes(travellerType.travellerTypeName))
         .map((travellerType) => travellerType.travellerTypeId);
     },
 
+    /**
+		 * Transform an array of passport names into their corresponding ids.
+     * @param passportNames array of passport names.
+     * @returns {(NumberConstructor | *)[]} array of passport ids.
+     */
     parseEditPassportsChangeEvent: function(passportNames) {
-      // filter all the traveller types to be only the ones with the name included in the event, then map them to their ids
+      // filter all the traveller types to be only the ones with the name included in the event,
+			// then map them to their ids
       return this.allPassports.filter((passport) => passportNames.includes(passport.passportCountry))
         .map((passport) => passport.passportId);
     },
 
+    /**
+		 * Transform an array of nationality names into their corresponding ids.
+     * @param nationaltyNames array of nationality names.
+     * @returns {(NumberConstructor | *)[]} array of nationality ids.
+     */
     parseEditNationalityChangeEvent: function(nationaltyNames) {
       return this.allNationalities.filter((nationality) => nationaltyNames.includes(nationality.nationalityName))
         .map((nationality) => nationality.nationalityId);

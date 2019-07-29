@@ -164,6 +164,9 @@ export default {
 
       return true;
     },
+		/**
+		 * Check if the person trying to remove admin rights is allowed to do so.
+		 */
     canRemoveAdminPriviledge() {
       if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
         return false;
@@ -175,7 +178,6 @@ export default {
           return true;
         }
       }
-
       return false;
     },
     
@@ -279,6 +281,10 @@ export default {
           return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
       }
     },
+		/**
+		 * Redirect the user so they can view/use the application as another user.
+		 * (Used by admins to browse as a user and change their account).
+		 */
     viewAsUserClicked() {
       const user = this.users.filter(user => user.userId == this.selectedUsers[0])[0];
       UserStore.methods.viewAsAnotherUser(user);

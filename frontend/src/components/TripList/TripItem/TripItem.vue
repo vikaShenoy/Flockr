@@ -47,6 +47,10 @@
       }
     },
     methods: {
+			/**
+			 * Delete the trip being viewed. Emit calls to the tripList component to visually update.
+			 * @returns {Promise<void>}
+			 */
       async deleteTrip() {
         const { tripId } = this.trip;
         this.$emit("refreshList");

@@ -62,7 +62,7 @@
         <div>
           <Trips
             :trips.sync="userProfile.trips"
-            :userId="userProfile.userId"
+            viewOnly
           />
         </div>
       </div>

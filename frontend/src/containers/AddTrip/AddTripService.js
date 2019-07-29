@@ -15,13 +15,13 @@ export async function addTrip(tripName, tripDestinations, userId) {
 
     transformedTripDestination.destinationId = tripDestination.destinationId;
     transformedTripDestination.arrivalDate = moment(tripDestination.arrivalDate).valueOf();
-    transformedTripDestination.arrivalTime = tripDestination.arrivalTime === null ? null : moment.duration(tripDestination.arrivalTime).asMinutes();
+    transformedTripDestination.arrivalTime =
+        tripDestination.arrivalTime === null ? null : moment.duration(tripDestination.arrivalTime).asMinutes();
     transformedTripDestination.departureDate = moment(tripDestination.departureDate).valueOf(); 
-    transformedTripDestination.departureTime = tripDestination.departureTime === null ? null : moment.duration(tripDestination.departureTime).asMinutes();
-
+    transformedTripDestination.departureTime =
+        tripDestination.departureTime === null ? null : moment.duration(tripDestination.departureTime).asMinutes();
     return transformedTripDestination;
   }); 
-
 
   const res = await superagent.post(endpoint(`/users/${userId}/trips`))
   .set("Authorization", localStorage.getItem("authToken"))

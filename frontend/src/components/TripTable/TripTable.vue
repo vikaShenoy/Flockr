@@ -119,6 +119,9 @@ export default {
     };
   },
   methods: {
+		/**
+		 * Get all destinations, then filter to remove duplicates.
+		 * */
     async getDestinations() {
       try {
         const [publicDestinations, yourDestinations] = await Promise.all([getDestinations(), getYourDestinations()]);
@@ -132,9 +135,12 @@ export default {
         this.destinations = allDestinations;
       } catch (e) {
         console.log(e);
-        // add error handling later
       }
     },
+
+		/**
+		 * Allow the user to sort the trip table with drag/drop.
+		 * */
     initSorting() {
       let table = document.querySelector(".v-datatable tbody");
       Sortable.create(table, {

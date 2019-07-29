@@ -114,7 +114,7 @@ public class DestinationRepository {
             return destinationPhoto;
         }, executionContext);
     }
-    
+
     /**
      * Inserts a destination into the database
      *

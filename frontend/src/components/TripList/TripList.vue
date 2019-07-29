@@ -50,6 +50,11 @@ export default {
     this.refreshList();
   },
     methods: {
+			/**
+			 * Called on mount and after the trip list changes (eg. deletion).
+			 * Updates the view to show trips.
+			 * @returns {Promise<void>}
+			 */
       async refreshList() {
         const trips = await getTrips(this.userId);
         const sortedTrips = sortTrips(trips);
