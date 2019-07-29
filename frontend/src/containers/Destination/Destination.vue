@@ -291,7 +291,7 @@ export default {
 
           };
 
-          const removeDestinationPhotoCommand = new Command(undoCommand.bind(null, photoId, index), redoCommand.bind(null, photoId, index));
+          const removeDestinationPhotoCommand = new Command(undoCommand.bind(null, destinationId, photoId, index), redoCommand.bind(null, destinationId, photoId, index));
           this.$refs.undoRedo.addUndo(removeDestinationPhotoCommand);
         } catch (error) {
           console.log(error.message);
