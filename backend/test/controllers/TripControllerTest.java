@@ -93,7 +93,7 @@ public class TripControllerTest {
     }
 
     @Test
-    public void undoDeleteOk() {
+    public void restoreTripOk() {
         trip.delete();
         Optional<Trip> optionalTrip = Trip.find.query()
                 .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
@@ -106,6 +106,36 @@ public class TripControllerTest {
         );
         Assert.assertEquals(200, result.status());
 
+    }
+
+    @Test
+    public void restoreTripForbidden() {
+        Assert.fail();
+    }
+
+    @Test
+    public void restoreTripUnauthorized() {
+        Assert.fail();
+    }
+
+    @Test
+    public void restoreTripAdmin() {
+        Assert.fail();
+    }
+
+    @Test
+    public void restoreTripUserNotFound() {
+        Assert.fail();
+    }
+
+    @Test
+    public void restoreTripNotFound() {
+        Assert.fail();
+    }
+
+    @Test
+    public void restoreTripBadRequest() {
+        Assert.fail();
     }
 
     @After
