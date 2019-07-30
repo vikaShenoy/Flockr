@@ -19,7 +19,9 @@
           v-bind:key="passport.passportId"
           color="primary"
           text-color="white"
-        >{{ passport.passportCountry }}</v-chip>
+        >
+          <CountryDisplay v-bind:country="passport.passportCountry"/>
+        </v-chip>
 
         <span v-if="!userPassports.length">Add your passports here</span>
       </div>
@@ -27,7 +29,7 @@
       <v-combobox
         v-else
         v-model="userPass"
-        :items="this.allPassports"
+        :items="this.validPassports"
         :item-text="getPassportText"
         label="Your passports"
         chips
@@ -44,7 +46,7 @@
             close
             @input="remove(data.item)"
           >
-            <strong>{{ data.item.passportCountry }}</strong>&nbsp;
+            {{ data.item.passportCountry }}
           </v-chip>
         </template>
       </v-combobox>
@@ -61,18 +63,26 @@ import UserStore from "../../../stores/UserStore";
 import { getPassports } from "./PassportService.js";
 import UndoRedo from "../../../components/UndoRedo/UndoRedo";
 import Command from "../../../components/UndoRedo/Command";
+import CountryDisplay from "../../../components/Country/CountryDisplay";
+import { getCountries } from "../../../components/Country/CountryService";
+
 
 export default {
+  components: {
+    CountryDisplay
+  },
   props: ["userPassports", "userId"],
   mounted() {
     this.getPassports();
+    this.filterPassports();
   },
   data() {
     return {
       userStore: UserStore.data,
       allPassports: [], // retrieved from API
       isEditing: false,
-      userPass: [...this.userPassports]
+      userPass: [...this.userPassports],
+      validPassports: null
     };
   },
   methods: {
@@ -107,6 +117,10 @@ export default {
     remove (item) {
       this.userPass.splice(this.userPass.indexOf(item), 1);
       this.userPass = [...this.userPass];
+    },
+    async filterPassports() {
+      const passports = await getPassports();
+      this.validPassports = passports.filter(passport => passport.country.isValid === true);
     }
 
   }

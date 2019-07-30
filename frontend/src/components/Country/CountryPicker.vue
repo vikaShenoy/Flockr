@@ -19,8 +19,8 @@ export default {
     methods: {
     },
     async mounted() {
-      const countryPromise = getCountries();
-      this.countries = await Promise.resolve(countryPromise);
+      this.countries = await getCountries();
+      this.countries = this.countries.filter(e => e.isValid === true);
     },
     watch: {
       selectedValue: function (newValue) {
