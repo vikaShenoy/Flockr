@@ -74,6 +74,15 @@ public class CountrySchedulerUtil {
                 }
             }
         }
+
+        for (String ISOCode : currentPassports.keySet()) {
+            if (!newCountries.containsKey(ISOCode)) {
+                currentPassports.get(ISOCode).getCountry().setIsValid(false);
+                passportsToSave.add(currentPassports.get(ISOCode));
+            }
+        }
+
+
         return passportsToSave;
     }
 
@@ -94,6 +103,13 @@ public class CountrySchedulerUtil {
                         nationalitiesToSave.add(nationality);
                     }
                 }
+            }
+        }
+
+        for (String ISOCode : currentNationalities.keySet()) {
+            if (!newCountries.containsKey(ISOCode)) {
+                currentNationalities.get(ISOCode).getNationalityCountry().setIsValid(false);
+                nationalitiesToSave.add(currentNationalities.get(ISOCode));
             }
         }
         return nationalitiesToSave;

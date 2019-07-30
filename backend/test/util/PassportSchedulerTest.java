@@ -46,9 +46,12 @@ public class PassportSchedulerTest {
         currentPassports.put("AUS", passportAU);
 
         List<Passport> passportList = countrySchedulerUtil.getPassportsToSave(newCountries, currentPassports);
+        Assert.assertEquals(2, passportList.size());
         for (Passport passport : passportList) {
-            if (!passport.equals(passportNZ)) {
+            if (passport.getCountry().getISOCode().equalsIgnoreCase("AUS")) {
                 Assert.assertTrue(!passport.getCountry().getIsValid());
+            } else if (passport.getCountry().getISOCode().equalsIgnoreCase("NZL")) {
+                Assert.assertTrue(passport.getCountry().getIsValid());
             }
         }
     }
@@ -79,7 +82,7 @@ public class PassportSchedulerTest {
         Country nz = new Country("New Zealand", "NZL", true);
         Country nzl = new Country("New Zealand", "NZL", false);
         newCountries.put("NZL", nz);
-        Passport passportNZ = new Passport(nz.getCountryName());
+        Passport passportNZ = new Passport(nzl.getCountryName());
         passportNZ.setCountry(nzl);
         currentPassports.put("NZL", passportNZ);
 
