@@ -19,6 +19,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
+import repository.PhotoRepository;
 import repository.UserRepository;
 import util.Security;
 
@@ -45,12 +46,14 @@ public class UserController extends Controller {
     private final UserRepository userRepository;
     private HttpExecutionContext httpExecutionContext;
     private final Security security;
+    private final PhotoRepository photoRepository;
 
     @Inject
-    public UserController(UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security) {
+    public UserController(UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, PhotoRepository photoRepository) {
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
+        this.photoRepository = photoRepository;
     }
 
     /**
@@ -420,6 +423,9 @@ public class UserController extends Controller {
                     }
                     if (!deletedUser.isDeleted()) {
                         throw new CompletionException(new BadRequestException("This user has not been deleted."));
+                    }
+                    if (deletedUser.getProfilePhoto() != null) {
+                        photoRepository.undoPhotoDelete(deletedUser.getProfilePhoto());
                     }
                     return userRepository.undoDeleteUser(deletedUser);
                 })
