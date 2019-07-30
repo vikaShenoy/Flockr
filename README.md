@@ -1,11 +1,11 @@
 # SENG302 Team 500
 
 ## Context
-This project is called Travel EA which is a web application that is like the app of 
-all the apps. It acts like an Executive Assistant for organising your travel. 
-In this application, you can create your profile, find your own travel partners 
-with the similar interests as you, plan your trips or use others’ trips to plan 
-your own trip.
+Travel EA is the app of all the apps. It acts like an Executive Assistant for
+organising your travel. 
+In this application, you can create your profile, find travel partners 
+with similar interests to you, plan your trips or use others’ trips to plan 
+your own.
 
 ## Objective
 This README file shows how to deploy the application, test the project and shows 
@@ -17,14 +17,14 @@ and the dev branch that is the development branch for the project.
 ##### Dev Branch
 ![Dev Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/dev/pipeline.svg?style=flat)
 
-The Project split into:
-- API backend using Play and Java
+TravelEA is split into:
+- Backend using Play and Java to implement the TravelEA API
 - Front end using Vue.js
 
 ## Project Structure
 ### Project Structure for Back End
-* `backend/app/` The source for the API backend
-* `backend/conf/` configuration files required to ensure the backend builds properly
+* `app/` The source for the API backend
+* `conf/` configuration files required to ensure the backend builds properly
 
 ### Project Structure for Front End
 * `public` The directory that includes static assets to be served by the front end
@@ -33,10 +33,9 @@ The Project split into:
 ## Deployment Procedure
 ### How to run the product in dev mode
 ```bash
-cd backend
 sbt run
 ```
-And open <http://localhost:9000/>  
+And open <http://localhost:8080/>  
 **Note:** There may be a small delay as the front end is automatically started.
 
 ### How to run the product in production mode
@@ -63,7 +62,6 @@ Simply right-click on test directory and click 'Run All Tests'
 ```
 **OR**
 ```bash
-cd backend
 sbt test
 ```
 
@@ -118,8 +116,12 @@ Copyyright of Canterbury University
 Refer to the root directory for the [project license](/LICENSE)
 
 ## Author and Contributors
+* Andy Holden
 * Angelica Dela Cruz
 * Exequiel Bahamonde Carcamo
+* Finn Greig
 * Isaac Foster
 * Rafael Goesmann
+* Sam Annand
+* Vikas Shenoy
 
