@@ -100,7 +100,7 @@
                 startDate: null,
                 endDate: null,
                 today: new Date().toISOString().split("T")[0],
-                treasure: null,
+                treasure: null
             }
         },
         methods: {
@@ -129,13 +129,14 @@
              * Calls the treasure hunt service to create a treasure hunt
              */
             async createTreasureHunt() {
+
                 let treasureHunt = {
 
                     treasureHuntName: this.createTreasureHuntName,
                     treasureHuntDestinationId: this.createTreasureHuntDestination,
                     riddle: this.createTreasureHuntRiddle,
                     startDate: this.startDate,
-                    endDate: this.endDate
+                    endDate: this.endDate + " 23:59:59"
 
                 };
 

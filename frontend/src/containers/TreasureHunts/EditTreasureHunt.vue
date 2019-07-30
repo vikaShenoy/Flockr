@@ -50,6 +50,7 @@
                                                 label="Start Date"
                                                 prepend-icon="event"
                                                 type="date"
+                                                :max="today"
                                         ></v-text-field>
                                     </v-flex>
                                     <v-flex xs12>
@@ -58,6 +59,7 @@
                                                 label="End Date"
                                                 prepend-icon="event"
                                                 type="date"
+                                                :min="today"
                                         ></v-text-field>
                                     </v-flex>
                                 </v-layout>
@@ -108,6 +110,7 @@
                 editTreasureHuntRiddle: "",
                 startDate: null,
                 endDate: null,
+                today: new Date().toISOString().split("T")[0]
             }
         },
         methods: {
@@ -143,7 +146,7 @@
 					treasureHuntDestinationId: this.data.treasureHuntDestinationId,
 					riddle: this.data.riddle,
 					startDate: moment(this.data.startDate).format("YYYY-MM-DD"),
-					endDate: moment(this.data.endDate).format("YYYY-MM-DD")
+					endDate: moment(this.data.endDate).format("YYYY-MM-DD HH:mm:ss")
 				};
 
                 let newTreasureHuntData = {
@@ -152,7 +155,7 @@
                     treasureHuntDestinationId: this.editTreasureHuntDestination,
                     riddle: this.editTreasureHuntRiddle,
                     startDate: this.startDate,
-                    endDate: this.endDate
+                    endDate: this.endDate + " 23:59:59"
                 };
 
                 const undoCommand = async (oldTreasureHuntData) => {
