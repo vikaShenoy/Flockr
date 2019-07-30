@@ -115,21 +115,23 @@ export default {
 		 */
     async handleDeleteUsersByIds(userIds) {
 
-      const undoCommand = async (userIds) => {
-        await undoDeleteUsers(userIds);
-        this.getAllUsers();
-      };
-
-      const redoCommand = async (userIds) => {
-        await deleteUsers(userIds);
-        this.getAllUsers();
-      };
-
-      const deleteUsersCommand = new Command(undoCommand.bind(null, userIds), redoCommand.bind(null, userIds));
-      this.$refs.undoRedo.addUndo(deleteUsersCommand);
 
       try {
         await deleteUsers(userIds);
+
+        const undoCommand = async (userIds) => {
+          await undoDeleteUsers(userIds);
+          this.getAllUsers();
+        };
+
+        const redoCommand = async (userIds) => {
+          await deleteUsers(userIds);
+          this.getAllUsers();
+        };
+
+        const deleteUsersCommand = new Command(undoCommand.bind(null, userIds), redoCommand.bind(null, userIds));
+        this.$refs.undoRedo.addUndo(deleteUsersCommand);
+
         this.getAllUsers();
         this.showSuccessSnackbar("Successfully deleted user(s)'");
       } catch(err) {
