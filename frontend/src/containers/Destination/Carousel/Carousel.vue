@@ -79,8 +79,8 @@ export default {
   },
   methods: {
     /**
-     * Function to get all the photos of a user
-     * emits an event to the parent element if an error occurs
+     * Get all of the user's photos.
+     * Emit a call to parent on error.
      */
     getUserPhotos: async function () {
       let authToken = localStorage.getItem('authToken');

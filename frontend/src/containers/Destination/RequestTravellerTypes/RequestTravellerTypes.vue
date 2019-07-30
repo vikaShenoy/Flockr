@@ -101,16 +101,18 @@ export default {
     this.travellerTypes = travellerTypes;
   },
   methods: {
+    /**
+		 * Send a proposal to add traveller types for a destination.
+		 * Check the form is valid and then emit a call to parent to send the proposal.
+		 * This will go to the admins for review.
+     * @returns {Promise<void>}
+     */
     async sendProposal() {
       const validForm = this.$refs.form.validate();
       if (!validForm) return;
       try {
         const travellerTypeIds = this.selectedTravellerTypes
                                   .map(selectedTravellerType => selectedTravellerType.travellerTypeId);
-
-
-        
-
         this.isDialogShowing = false;
         this.$emit("sendingProposal", travellerTypeIds);
       } catch (e) {

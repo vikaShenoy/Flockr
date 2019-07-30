@@ -79,6 +79,11 @@ export async function rejectProposal(destinationProposalId) {
     .set("Authorization", localStorage.getItem("authToken"));
 }
 
+/**
+ * Undo the soft delete for a destination proposal. Used for undo/redo.
+ * @param destinationProposalId id of the destination proposal to un-delete.
+ * @returns {Promise<void>}
+ */
 export async function undeleteProposal(destinationProposalId) {
   await superagent.put(endpoint(`/destinations/proposals/${destinationProposalId}/undoReject`))
     .set("Authorization", localStorage.getItem("authToken"));

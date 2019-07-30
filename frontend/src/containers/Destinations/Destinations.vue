@@ -114,6 +114,10 @@ export default {
     addDestinationClicked() {
       this.showCreateDestDialog = true;
     },
+    /**
+		 * Add a new destination to the system. Push the undo/redo commands to the stack.
+     * @param destination new destination.
+     */
     addNewDestination(destination) {
       this.yourDestinations.push(destination);
 
@@ -148,6 +152,10 @@ export default {
     addDestDialogChanged(dialogValue) {
       this.showCreateDestDialog = dialogValue;
     },
+    /**
+		 * Show either your destinations or public destinations depending on view option.
+     * @returns {*}
+     */
     getDestinationsCurrentlyViewing() {
       const destinations = this.viewOption === "your" ? this.yourDestinations : this.publicDestinations;
       if (!destinations) return [];
