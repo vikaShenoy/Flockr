@@ -9,7 +9,7 @@
       <v-container grid-list-xl text-center>
         <v-layout wrap>
           <v-flex xs10 offset-xs1>
-            <TripList :userId="userId" @delete-trip="deleteTrip" viewOnly/>
+            <TripList :userId="userId" @delete-trip="deleteTrip" :viewOnly="viewOnly"/>
           </v-flex>
         </v-layout>
       </v-container>

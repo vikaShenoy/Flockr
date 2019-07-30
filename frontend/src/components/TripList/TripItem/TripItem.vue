@@ -16,7 +16,9 @@
       </v-flex>
 
       <v-flex>
+
         <v-card class="trip-item" @click="$router.push(`/trips/${trip.tripId}`)">
+
           <div class="status">
             <v-icon v-if="trip.status === 'Upcoming'" style="font-size: 40px;color: #FFF;">flight_takeoff</v-icon>
             <v-icon v-else-if="trip.status === 'Passed'" style="font-size: 40px;color: #FFF;">flight_landing</v-icon>
@@ -28,6 +30,7 @@
 
             <b>Status: </b> <span>{{ trip.status }}</span>
           </div>
+          
         </v-card>
       </v-flex>
     </v-layout>
