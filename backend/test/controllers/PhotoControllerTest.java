@@ -2,10 +2,7 @@ package controllers;
 
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
-import models.PersonalPhoto;
-import models.Role;
-import models.RoleType;
-import models.User;
+import models.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +27,8 @@ public class PhotoControllerTest {
     User otherUser;
     User adminUser;
     PersonalPhoto photo;
+    DestinationPhoto destPhoto;
+    Destination destination;
 
     @Before
     public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
@@ -84,13 +83,49 @@ public class PhotoControllerTest {
 
         int newPhotoId = PlayResultToJson.convertResultToJson(result).get("photoId").asInt();
 
-        photo = PersonalPhoto.find.byId(newPhotoId);
-        Assert.assertNotNull(photo);
+        PersonalPhoto personalPhoto = PersonalPhoto.find.byId(newPhotoId);
+        Assert.assertNotNull(personalPhoto);
         user = User.find.byId(user.getUserId());
+
+        File file2 = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/",
+                "cat.jpeg");
+
+        if (!file2.exists()) {
+            Assert.fail(String.format("File %s was not found", file2));
+        }
+
+        Result result2 = fakeClient.makeMultipartFormRequestWithFileAndToken(
+                "POST",
+                "/api/users/" + user.getUserId() + "/photos",
+                user.getToken(),
+                file2,
+                values);
+        Assert.assertEquals(201, result2.status());
+
+        int destPhotoId = PlayResultToJson.convertResultToJson(result2).get("photoId").asInt();
+
+        photo = PersonalPhoto.find.byId(destPhotoId);
+        Assert.assertNotNull(photo);
+
+        // Add some destinations
+        DestinationType destinationType = new DestinationType("city");
+        Country country = new Country("Peru", "PE", true);
+        District district = new District("Test District", country);
+        destination = new Destination("Test City", destinationType, district,
+                0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
+
+        destinationType.save();
+        country.save();
+        district.save();
+        destination.save();
+
+        destPhoto = new DestinationPhoto(destination, photo);
+        destPhoto.save();
     }
 
     @After
     public void tearDown() {
+        //TODO: delete created photo files.
         Helpers.stop(application);
         TestState.clear();
     }
@@ -195,5 +230,61 @@ public class PhotoControllerTest {
         }
     }
 
+    @Test
+    public void undoDeleteDestinationPhotoGood() {
+        undoDeleteDestinationPhotoWithToken(user.getToken(), 200, destPhoto.getDestinationPhotoId(), true);
+    }
 
+    @Test
+    public void undoDeleteDestinationPhotoGoodAdmin() {
+        undoDeleteDestinationPhotoWithToken(adminUser.getToken(), 200, destPhoto.getDestinationPhotoId(), true);
+    }
+
+    @Test
+    public void undoDeleteDestinationPhotoNotFound() {
+        undoDeleteDestinationPhotoWithToken(user.getToken(), 404, 10000000, false);
+    }
+
+    @Test
+    public void undoDeleteDestinationPhotoBadRequest() {
+        undoDeleteDestinationPhotoWithToken(user.getToken(), 400, destPhoto.getDestinationPhotoId(), false);
+    }
+
+    @Test
+    public void undoDeleteDestinationPhotoUnauthorized() {
+        destPhoto.delete();
+
+        Result result = fakeClient.makeRequestWithNoToken(
+                "PUT",
+                "/api/users/photos/" + destPhoto.getDestinationPhotoId() + "/undodelete");
+        Assert.assertEquals(401, result.status());
+    }
+
+    @Test
+    public void undoDeleteDestinationPhotoForbidden() {
+        undoDeleteDestinationPhotoWithToken(otherUser.getToken(), 403, destPhoto.getDestinationPhotoId(), false);
+    }
+
+    /**
+     * Deletes a destination photo and checks that the correct status code is found.
+     *
+     * @param token the token to send with the undo request.
+     * @param statusCode the status code of the result.
+     * @param photoId the id of the photo to undo.
+     * @param delete true if the photo should actually be deleted first.
+     */
+    private void undoDeleteDestinationPhotoWithToken(String token, int statusCode, int photoId, boolean delete) {
+        if (delete) destPhoto.delete();
+
+        Result result = fakeClient.makeRequestWithToken(
+                "PUT",
+                "/api/destinations/" + destination.getDestinationId() + "/photos/" + photoId + "/undodelete",
+                token);
+        Assert.assertEquals(statusCode, result.status());
+
+        if (statusCode == 200) {
+            Optional<PersonalPhoto> optionalPhoto = PersonalPhoto.find.query().where().eq("photo_id", photo.getPhotoId()).findOneOrEmpty();
+            Assert.assertTrue(optionalPhoto.isPresent());
+        }
+    }
 }
