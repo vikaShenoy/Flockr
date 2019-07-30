@@ -115,7 +115,7 @@ public class TreasureHuntController extends Controller {
                     if (jsonBody.has("endDate")) {
                         String endDateString = jsonBody.get("endDate").asText();
                         try {
-                            Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDateString);
+                            Date endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDateString);
                             if (!jsonBody.has("startDate")) {
                                 if (endDate.before(treasureHunt.getStartDate())) {
                                     throw new CompletionException(new BadRequestException("End date cannot be before start date."));
@@ -123,7 +123,7 @@ public class TreasureHuntController extends Controller {
                             }
                             treasureHunt.setEndDate(endDate);
                         } catch (ParseException e) {
-                            throw new CompletionException(new BadRequestException("End date must be of format yyyy-mm-dd"));
+                            throw new CompletionException(new BadRequestException("End date must be of format yyyy-mm-dd HH:mm:ss"));
                         }
                     }
                     if (jsonBody.has("startDate")) {
@@ -236,7 +236,7 @@ public class TreasureHuntController extends Controller {
 
                         Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDateString);
                         String endDateString = jsonBody.get("endDate").asText();
-                        Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDateString);
+                        Date endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDateString);
                         int destinationId = jsonBody.get("treasureHuntDestinationId").asInt();
 
                         TreasureHunt treasureHunt = new TreasureHunt(treasureHuntName, userId, destinationId, riddle, startDate,

@@ -198,7 +198,7 @@ public class TreasureHuntControllerTest {
 
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         ObjectNode treasureHuntObject = Json.newObject();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String newDate = dateFormat.format(Date.from(Instant.now().plus(Duration.ofDays(365))));
         treasureHuntObject.put("endDate", newDate);
         Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
@@ -412,7 +412,7 @@ public class TreasureHuntControllerTest {
         body.put("treasureHuntDestinationId", destination.getDestinationId());
         body.put("riddle", "Test riddle");
         body.put("startDate", "2016-01-01");
-        body.put("endDate", "2016-12-31");
+        body.put("endDate", "2016-12-31 11:59:59");
 
         Result result = fakeClient.makeRequestWithToken("POST", body,
                 "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
@@ -434,7 +434,7 @@ public class TreasureHuntControllerTest {
         body.put("treasureHuntName", name);
         body.put("riddle", "Test riddle");
         body.put("startDate", "2016-01-01");
-        body.put("endDate", "2016-12-31");
+        body.put("endDate", "2016-12-31 11:59:59");
         Result result = fakeClient.makeRequestWithToken("POST", body, "/api/users/" + user.getUserId() +
                 "/treasurehunts", user.getToken());
         Assert.assertEquals(400, result.status());
@@ -553,7 +553,7 @@ public class TreasureHuntControllerTest {
         body.put("treasureHuntDestinationId", destination.getDestinationId());
         body.put("riddle", "Test riddle");
         body.put("startDate", "2016-01-01");
-        body.put("endDate", "2022-12-31");
+        body.put("endDate", "2022-12-31 11:59:59");
         Result result = fakeClient.makeRequestWithToken("POST", body,
                 "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
         Assert.assertEquals(201, result.status());
@@ -584,7 +584,7 @@ public class TreasureHuntControllerTest {
         body.put("treasureHuntDestinationId", destination.getDestinationId());
         body.put("riddle", "Test riddle");
         body.put("startDate", "2026-01-01");
-        body.put("endDate", "2036-01-01");
+        body.put("endDate", "2036-01-01 11:59:59");
         Result result = fakeClient.makeRequestWithToken("POST", body,
                 "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
         Assert.assertEquals(201, result.status());
@@ -614,8 +614,8 @@ public class TreasureHuntControllerTest {
         body.put("treasureHuntName", "Invalid Treasure Hunt");
         body.put("treasureHuntDestinationId", destination.getDestinationId());
         body.put("riddle", "Test riddle");
-        body.put("startDate", "20166-01-01");
-        body.put("endDate", "2017-01-01");
+        body.put("startDate", "2016-01-01");
+        body.put("endDate", "2017-01-01 11:59:59");
         Result result = fakeClient.makeRequestWithToken("POST", body,
                 "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
         Assert.assertEquals(201, result.status());
