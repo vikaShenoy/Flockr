@@ -16,11 +16,11 @@ object VuePlayHook {
 
 
       override def beforeStarted(): Unit = {
-        if (!(base / "../frontend" / "node_modules").exists())  
+        if (!(base / "frontend" / "node_modules").exists())
           if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            Process("cmd /c npm install", base / "../frontend").!
+            Process("cmd /c npm install", base / "frontend").!
           } else {
-            Process("npm install", base / "../frontend").!
+            Process("npm install", base / "frontend").!
           }
       }
   
@@ -31,7 +31,7 @@ object VuePlayHook {
 //      }
 
       override def afterStarted(): Unit = {
-        val frontend = base / "../frontend"
+        val frontend = base / "frontend"
         // Windows cmd prefixes
         if (System.getProperty("os.name").toLowerCase().contains("win")){
           Process("cmd /c npm run serve", frontend ).run
