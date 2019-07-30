@@ -97,8 +97,7 @@
 						</td>
 						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
 							<v-chip class="table-chip" v-for="nationality in props.item.nationalities"
-											v-bind:key="nationality">{{
-								nationality }}
+											v-bind:key="nationality"><CountryDisplay v-bind:country="nationality"></CountryDisplay>
 							</v-chip>
 						</td>
 						<td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
@@ -119,8 +118,10 @@
 	import {getAllTravellerTypes} from "../Profile/TravellerTypes/TravellerTypesService";
 	import { endpoint } from "../../utils/endpoint";
 	import moment from "moment";
+	import CountryDisplay from "../../components/Country/CountryDisplay";
 
 	export default {
+		components: {CountryDisplay},
 		data() {
 			return {
 				nationalities: {
