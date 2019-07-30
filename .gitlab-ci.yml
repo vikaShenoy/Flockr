@@ -7,33 +7,33 @@ recent-artifacts-backend:
   artifacts:
     expire_in: "1 week"
     paths:
-      - backend/target/universal/*.zip
+      - target/universal/*.zip
   except:
     - tags
     - dev
     - master
   script:
-    - "cd backend && sbt dist"
+    - "sbt dist"
   stage: build
 
 release-artifacts-backend:
   artifacts:
     paths:
-      - backend/target/universal/*.zip
+      - target/universal/*.zip
   only:
     - master 
   script:
-    - "cd backend && sbt dist"
+    - "sbt dist"
   stage: build
 
 staging-artifacts-backend:
   artifacts:
     paths:
-      - backend/target/universal/*.zip
+      - target/universal/*.zip
   only:
     - dev
   script:
-    - "cd backend && NODE_ENV=staging sbt dist"
+    - "NODE_ENV=staging sbt dist"
   stage: build
 
 tag_checker:
@@ -48,14 +48,14 @@ run-tests:
     - dev@seng302-2019/team-500
     - master@seng302-2019/team-500
   script:
-    - "cd backend && sbt test"
+    - "sbt test"
   stage: test
 
 # staging-run:
 #   dependencies:
 #     - staging-artifacts-backend
 #   script: 
-#     - "cd backend/target/universal"
+#     - "cd target/universal"
 #     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
 #     - pm2 delete dev-server || true
 #     - sudo rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT
@@ -70,7 +70,7 @@ run-tests:
 #   dependencies:
 #     - release-artifacts-backend
 #   script: 
-#     - "cd backend/target/universal"
+#     - "cd target/universal"
 #     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
 #     - pm2 delete prod-server || true
 #     - sudo rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT
@@ -92,8 +92,8 @@ after_script:
 # update-sonar:
 #  stage: test
 #  script:
-#     - cd backend && sbt jacoco
-#     - cd .. && export PATH=$PATH:/opt/sonarqubeScanner/bin
+#     - sbt jacoco
+#     - export PATH=$PATH:/opt/sonarqubeScanner/bin
 #     - sonar-scanner  --debug
 #  only:
 #     - master@seng302-2019/team-500
