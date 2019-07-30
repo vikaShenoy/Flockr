@@ -216,10 +216,8 @@ export default {
      * Close the modal containing the signup component.
      */
     closeSignupModal(userId) {
+      this.showSignup = false;
       this.$emit("userSignedUp", userId);
-     this.showSignup = false;
-      this.$parent.getAllUsers();
-      this.$parent.$refs.undoRedo.addUndo(signupCommand);
     },
 
     /**

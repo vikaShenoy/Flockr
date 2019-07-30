@@ -176,6 +176,9 @@ export default {
       const isAdmin = UserStore.methods.isAdmin();
 
       return this.items.filter(item => {
+        console.log("Is the profile completed?", profileCompleted);
+        console.log(UserStore.data);
+        
         if (item.loggedIn && loggedIn) {
           if ((item.profileCompleted && profileCompleted) || !item.profileCompleted) {
             if (item.requiresAdminRole && !isAdmin) {

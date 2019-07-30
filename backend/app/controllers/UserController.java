@@ -93,7 +93,7 @@ public class UserController extends Controller {
         }
 
         return userRepository.getUserById(userId)
-                .thenApplyAsync((user) -> {
+                .thenApplyAsync(user -> {
                     if (!user.isPresent()) {
                         return notFound();
                     }
@@ -167,11 +167,9 @@ public class UserController extends Controller {
                     }
 
                     ObjectNode message = Json.newObject();
-                    message.put("message", "Successfully updated the traveller's information");
-                    userRepository.updateUser(user.get());
-                    return ok(message);
-
-                }, httpExecutionContext.current());
+                    return userRepository.updateUser(user.get());
+                }, httpExecutionContext.current())
+                .thenApplyAsync(updatedUser -> ok());
     }
 
     /**

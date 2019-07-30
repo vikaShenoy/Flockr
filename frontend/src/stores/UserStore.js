@@ -20,6 +20,7 @@ const UserStore = {
   },
   methods: {
     setData(user) {
+      console.log("user is: ", user);
       UserStore.data.userId = user.userId;
       UserStore.data.firstName = user.firstName;
       UserStore.data.middleName = user.middleName;
@@ -106,7 +107,7 @@ const UserStore = {
      */
 
     profileCompleted() {
-      return UserStore.data.middleName !== null && UserStore.data.dateOfBirth !== null && UserStore.data.gender !== null && UserStore.data.nationalities.length && UserStore.data.travellerTypes.length;
+      return UserStore.data.dateOfBirth !== null && UserStore.data.gender !== null && UserStore.data.nationalities.length && UserStore.data.travellerTypes.length;
     },
     /**
      * 

@@ -50,3 +50,14 @@ export function updateBasicInfo(userId, basicInfo) {
   .set("Authorization", localStorage.getItem("authToken"))
   .send(basicInfo);
 }
+
+/**
+ * Gets a user
+ */
+export async function getUser(userId) {
+  const authToken = localStorage.getItem("authToken");
+  const res = await superagent.get(endpoint(`/users/${userId}`))
+    .set("Authorization", authToken)
+
+  return res.body;
+}

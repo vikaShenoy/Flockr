@@ -71,12 +71,13 @@
 
 <script>
 
-import { signup, emailTaken, rules, updateBasicInfo } from "./SignupService.js";
+import { signup, emailTaken, rules, updateBasicInfo, getUser } from "./SignupService.js";
 import { getNationalities } from "../Profile/Nationalities/NationalityService.js";
 import { getPassports } from "../Profile/Passports/PassportService.js";
 import { getTravellerTypes, getAllTravellerTypes } from "../Profile/TravellerTypes/TravellerTypesService.js";
 import { validate } from "email-validator";
 import moment from "moment";
+import UserStore from "../../stores/UserStore";
 
 export default {
   props: {
@@ -320,7 +321,11 @@ export default {
         if (this.isSigningUpAsAdmin) {
           this.$emit("exit", this.signedUpUserId);
         } else {
-          this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
+          setTimeout(async () => {
+            const user = await getUser(this.signedUpUserId);
+            UserStore.methods.setData(user);
+            this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
+          }, 2000);
         }
 
         this.loading = false;
