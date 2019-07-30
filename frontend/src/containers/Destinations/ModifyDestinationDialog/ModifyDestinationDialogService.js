@@ -37,7 +37,7 @@ export async function requestDistricts(countryId) {
 }
 
 /**
- * 
+ * Get a list of valid user traveller types.
  */
 export async function requestTravellerTypes() {
   const res = await superagent.get(endpoint("/users/types"))

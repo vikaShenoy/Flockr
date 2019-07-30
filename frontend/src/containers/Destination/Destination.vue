@@ -51,7 +51,6 @@
           <v-icon>edit</v-icon>
         </v-btn>
 
-
        </div>
       </v-flex>
       <v-flex xs12 sm6 lg4 xl4 style="padding-bottom: 0px">
@@ -168,11 +167,13 @@ export default {
     editDestDialogChanged(dialogValue) {
       this.showingEditDestDialog = dialogValue;
     },
+		/**
+		 * Update a destination. Add the undo command to the undo/redo stack.
+		 * @param updatedDestination updated destination object.
+		 */
     updateDestination(updatedDestination) {
-      
-
       const undoCommand = async (destination) => {
-        await sendUpdateDestination(destination, this.destination.destinationId)
+        await sendUpdateDestination(destination, this.destination.destinationId);
         this.destination = destination;
       };
 
@@ -181,7 +182,8 @@ export default {
         this.destination = destination;
       };
 
-      const updateDestCommand = new Command(undoCommand.bind(null, this.destination), redoCommand.bind(null, updatedDestination));
+      const updateDestCommand = new Command(undoCommand.bind(null, this.destination),
+					redoCommand.bind(null, updatedDestination));
 
       this.$refs.undoRedo.addUndo(updateDestCommand);
       this.destination = updatedDestination;
@@ -189,9 +191,6 @@ export default {
       this.snackbarModel.color = "success";
       this.snackbarModel.text = "Updated destination";
       this.snackbarModel.show = true;
-
-     
-
     },
     showError(errorMessage) {
       this.snackbarModel.text = errorMessage;
@@ -201,6 +200,11 @@ export default {
     dismissSnackbar() {
       this.snackbarModel.show = false;
     },
+		/**
+		 * Send a proposal for traveller types for a destination.
+		 * Add the undo/redo commands to the undo/redo stack.
+		 * @param travellerTypeIds ids to be proposed for the destination.
+		 */
     async sendingProposal(travellerTypeIds) {
       const proposal = await sendProposal(this.destination.destinationId, travellerTypeIds);
 
@@ -212,7 +216,8 @@ export default {
         await undeleteProposal(destinationProposalId);
       };
 
-      const sendProposalCommand = new Command(undoCommand.bind(null, proposal.destinationProposalId), redoCommand.bind(null, proposal.destinationProposalId));
+      const sendProposalCommand = new Command(undoCommand.bind(null, proposal.destinationProposalId),
+					redoCommand.bind(null, proposal.destinationProposalId));
       this.$refs.undoRedo.addUndo(sendProposalCommand);
 
       this.snackbarModel.color = "success";
@@ -220,7 +225,7 @@ export default {
       this.snackbarModel.show = true;
     },
     /**
-     * Adds the photo to a destination with undo and redo functionalities
+     * Adds the photo to a destination with undo and redo functionality.
     */
     async addPhoto(photoId) {
       let data = {
@@ -264,6 +269,12 @@ export default {
       this.snackbarModel.show = true;
     },
 
+		/**
+		 * Delete a photo from a destination. Add undo/redo commands to the stack.
+		 * @param closeDialog flag to close the popup
+		 * @param photoId id of the photo to delete
+		 * @param index index of the photo in the list of destination photos.
+		 */
     displayRemovePrompt(closeDialog, photoId, index) {
       const destinationId = this.destination.destinationId;
       const removePhoto = this.removePhoto;
@@ -275,20 +286,20 @@ export default {
 		  const photoData = this.destinationPhotos[index];
 		  const destinationPhotoId = photoData.destinationPhotoId;
 
-          const undoCommand = async (destinationId, destinationPhotoId, index, photoData) => {
-            await undoRemovePhotoFromDestination(destinationId, destinationPhotoId);
-            addPhotoToDisplay(index, photoData);
-          };
+			const undoCommand = async (destinationId, destinationPhotoId, index, photoData) => {
+				await undoRemovePhotoFromDestination(destinationId, destinationPhotoId);
+				addPhotoToDisplay(index, photoData);
+			};
 
-          const redoCommand = async (destinationId, destinationPhotoId, index) => {
-            await removePhotoFromDestination(destinationId, destinationPhotoId);
-            removePhoto(index);
-          };
+			const redoCommand = async (destinationId, destinationPhotoId, index) => {
+				await removePhotoFromDestination(destinationId, destinationPhotoId);
+				removePhoto(index);
+			};
 
-          const removeDestinationPhotoCommand = new Command(
-              undoCommand.bind(null, destinationId, destinationPhotoId, index, photoData),
-			  redoCommand.bind(null, destinationId, destinationPhotoId, index));
-          this.$refs.undoRedo.addUndo(removeDestinationPhotoCommand);
+			const removeDestinationPhotoCommand = new Command(
+					undoCommand.bind(null, destinationId, destinationPhotoId, index, photoData),
+			redoCommand.bind(null, destinationId, destinationPhotoId, index));
+			this.$refs.undoRedo.addUndo(removeDestinationPhotoCommand);
 
 		  await removePhotoFromDestination(destinationId, destinationPhotoId);
 		  removePhoto(index);
@@ -306,13 +317,15 @@ export default {
     },
     /**
      * Removes a photo at the given index from the photos array.
-     *
      * @param index {Number} the index of the photo.
      */
     removePhoto(index) {
       this.destinationPhotos.splice(index, 1);
     },
 
+		/**
+		 * Delete a destination. Route the user back to the main destinations page.
+		 */
     async deleteDestination() {
       const destinationId = this.$route.params.destinationId;
       try {
@@ -335,6 +348,11 @@ export default {
       this.promptDialog.show = false;
     },
 
+    /**
+		 * Called when the user updates the photo permissions on one of their destination photos.
+     * @param newValue updated permission value
+     * @param index index of the photo in the destination photos list.
+     */
     permissionUpdated(newValue, index) {
       this.destinationPhotos[index].personalPhoto.isPublic = newValue;
       if (newValue) {
@@ -343,8 +361,6 @@ export default {
         this.displayMessage("This photo is now private", "green");
       }
     }
-
-
   }
 }
 </script>

@@ -106,25 +106,29 @@ export default {
   },
   methods: {
     /**
-     * Gets a user's trips
+     * Get a user's trips.
      */
     async getUserTrips() {
       const userTrips = await getUserTrips();
       this.trips = userTrips;
     },
-    // Deletes a destination
+
+		/**
+		 * Delete a destination. Refresh the destination list to remove it. Add the undo/redo commands to the stack.
+		 */
     async deleteDestination() {
       const undoCommand = async (destinationId) => {
         await undoDeleteDestination(destinationId);
         this.$emit("refreshDestinations", destinationId);
-      }
+      };
 
       const redoCommand = async (destinationId) => {
         await deleteDestination(this.currentDeletingDestinationId);
         this.$emit("refreshDestinations", destinationId);
-      }
+      };
       
-      const deleteDestinationCommand = new Command(undoCommand.bind(null, this.currentDeletingDestinationId), redoCommand.bind(this.currentDeletingDestinationId));
+      const deleteDestinationCommand = new Command(undoCommand.bind(null, this.currentDeletingDestinationId),
+					redoCommand.bind(this.currentDeletingDestinationId));
       this.$refs.undoRedo.addUndo(deleteDestinationCommand);
       await deleteDestination(this.currentDeletingDestinationId);
       this.$emit("refreshDestinations");
@@ -141,6 +145,7 @@ export default {
         return usedTripDestinations.length;
       });
     },
+
     showDeleteDestination(destinationId) {
       const usedTrips = this.getTripsUsingDestination(destinationId);
       if (usedTrips.length) {

@@ -2,7 +2,6 @@ import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 import {async} from "q";
 
-
 /**
  * Get a list of all public and private destinations that a user has
  * @param {number} userId ID of the user to get destinations from
@@ -26,9 +25,6 @@ export async function getPublicDestinations() {
 
   return res.body;
 }
-
-
-
 
 /**
  * Sends a request to get a specific destination.
@@ -55,6 +51,11 @@ export async function sendDeleteDestination(destinationId) {
   return res.body;
 }
 
+/**
+ * Undo deletion for a destination (soft-delete). Used in undo/redo.
+ * @param destinationId id of the destination to undo delete for.
+ * @returns {Promise<*>}
+ */
 export async function sendUndoDeleteDestination(destinationId) {
   const res = await superagent.put(endpoint(`/destinations/${destinationId}/undodelete`))
       .set("Authorization", localStorage.getItem("authToken"));

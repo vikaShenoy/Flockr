@@ -1,6 +1,5 @@
 <template>
     <div>
-
         <v-dialog v-model="showAddPhotoDialog">
             <v-card>
                 <v-card-title class="primary title">
@@ -46,7 +45,8 @@
                             </v-img>
                         </v-flex>
                         <v-spacer align="center">
-                            <h4 v-if="!userPhotos.length">{{ $route.params.userId ? "This user has " : "You have " }} no available photos for this destination</h4>
+                            <h4 v-if="!userPhotos.length">{{ $route.params.userId ? "This user has " : "You have " }}
+															No available photos for this destination</h4>
                         </v-spacer>
                     </v-layout>
                 </v-card-text>
@@ -96,11 +96,22 @@
             onShowPhotoDialogUpdated() {
                 this.$emit('closeAddPhotoDialog', this.showAddPhotoDialog);
             },
+          /**
+					 * Get the thumbnail for a destination photo.
+           * @param photoId photo to get a thumbnail for.
+           * @returns {string} photo thumbnail endpoint.
+           */
             thumbnailPhotoUrl(photoId) {
                 const authToken = localStorage.getItem("authToken");
                 const queryAuthorization = `?Authorization=${authToken}`;
                 return endpoint(`/users/photos/${photoId}/thumbnail${queryAuthorization}`);
             },
+          /**
+					 * Emit a call to the parent to add a personal photo to a destination as a destination photo.
+					 * Close the add photo dialog.
+           * @param photoId id of the personal photo to add to destination.
+           * @returns {Promise<void>}
+           */
             addPhotoToDestination: async function(photoId) {
                 try {
                     this.showAddPhotoDialog = false;
@@ -108,7 +119,6 @@
                 } catch (e) {
                     this.$emit("displayError", e.message);
                 }
-
             },
             onDestinationIdUpdated() {
                 this.id = this.destinationId;
