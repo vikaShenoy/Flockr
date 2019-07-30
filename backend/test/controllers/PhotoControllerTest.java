@@ -84,7 +84,7 @@ public class PhotoControllerTest {
         int newPhotoId = PlayResultToJson.convertResultToJson(result).get("photoId").asInt();
 
         PersonalPhoto personalPhoto = PersonalPhoto.find.byId(newPhotoId);
-        Assert.assertNotNull(photo);
+        Assert.assertNotNull(personalPhoto);
         user = User.find.byId(user.getUserId());
 
         File file2 = new File(System.getProperty("user.dir") + "/test/resources/fileStorageForTests/photos/",
@@ -104,8 +104,8 @@ public class PhotoControllerTest {
 
         int destPhotoId = PlayResultToJson.convertResultToJson(result2).get("photoId").asInt();
 
-        PersonalPhoto persPhoto = PersonalPhoto.find.byId(destPhotoId);
-        Assert.assertNotNull(persPhoto);
+        photo = PersonalPhoto.find.byId(destPhotoId);
+        Assert.assertNotNull(photo);
 
         // Add some destinations
         DestinationType destinationType = new DestinationType("city");
@@ -119,7 +119,7 @@ public class PhotoControllerTest {
         district.save();
         destination.save();
 
-        destPhoto = new DestinationPhoto(destination, persPhoto);
+        destPhoto = new DestinationPhoto(destination, photo);
         destPhoto.save();
     }
 
@@ -256,7 +256,7 @@ public class PhotoControllerTest {
 
         Result result = fakeClient.makeRequestWithNoToken(
                 "PUT",
-                "/api/users/photos/" + photoId + "/undodelete");
+                "/api/users/photos/" + destPhoto.getDestinationPhotoId() + "/undodelete");
         Assert.assertEquals(401, result.status());
     }
 
@@ -278,7 +278,7 @@ public class PhotoControllerTest {
 
         Result result = fakeClient.makeRequestWithToken(
                 "PUT",
-                "/api/destinations/" + destination.getDestinationId() + "/photos/" + photoId + "/undodelete" + photoId + "/undodelete",
+                "/api/destinations/" + destination.getDestinationId() + "/photos/" + photoId + "/undodelete",
                 token);
         Assert.assertEquals(statusCode, result.status());
 
