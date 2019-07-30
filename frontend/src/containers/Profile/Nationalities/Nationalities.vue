@@ -22,8 +22,9 @@
           v-for="nationality in userNationalities"
           v-bind:key="nationality.nationalityId"
           color="primary"
-          text-color="white"
-        >{{ nationality.nationalityName }}</v-chip>
+          text-color="white">
+          <CountryDisplay v-bind:country="nationality.nationalityName"/>
+        </v-chip>
 
         <span v-if="!userNationalities.length">Please provide at least one Nationality</span>
       </div>
@@ -31,7 +32,7 @@
       <v-combobox
         v-else
         v-model="userNat"
-        :items="this.allNationalities"
+        :items="this.validNationalities"
         :item-text="getNationalityText"
         label="Your nationality"
         :error-messages="nationalityErrors"
@@ -62,11 +63,17 @@ import UserStore from "../../../stores/UserStore";
 import { getNationalities } from "./NationalityService";
 import UndoRedo from "../../../components/UndoRedo/UndoRedo";
 import Command from "../../../components/UndoRedo/Command";
+import CountryDisplay from "../../../components/Country/CountryDisplay"
+
 
 export default {
+  components: {
+    CountryDisplay
+  },
   props: ["userNationalities", "userId"],
   mounted() {
     this.getNationalities();
+    this.filterNationalities();
   },
   data() {
     return {
@@ -74,7 +81,8 @@ export default {
       userNat: [...this.userNationalities],
       allNationalities: [],
       isEditing: false,
-      nationalityErrors: []
+      nationalityErrors: [],
+      validNationalities: null
     };
   },
   methods: {
@@ -118,6 +126,11 @@ export default {
     remove(item) {
       this.userNat.splice(this.userNat.indexOf(item), 1);
       this.userNat = [...this.userNat];
+    },
+
+    async filterNationalities() {
+      const nationalities = await getNationalities();
+      this.validNationalities = nationalities.filter(nationality => nationality.nationalityCountry.isValid === true);
     }
   }
 };

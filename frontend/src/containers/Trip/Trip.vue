@@ -165,6 +165,12 @@ export default {
       this.addEditTripCommand(oldTrip, newTrip);
       this.$set(this.trip, "tripDestinations", tripDestinations);
     },
+    /**
+		 * Delete a trip destination from a trip and update view.
+		 * Add command to the undo/redo stack.
+     * @param tripDestination trip destination to delete.
+     * @returns {Promise<void>}
+     */
     async deleteTripDestination(tripDestination) {
       if (this.trip.tripDestinations.length === 2) {
         this.showError("You cannot have less then 2 destinations");
@@ -177,13 +183,25 @@ export default {
         this.showError("Deleting this destination results in contiguous destinations");
         return;
       }
-
       const tripId = this.$route.params.tripId;
-
+      const oldTripDestinations = this.trip.tripDestinations;
       try {
+        const undoCommand = async () => {
+          await editTrip(tripId, this.trip.tripName, oldTripDestinations);
+          this.$set(this.trip, "tripDestinations", oldTripDestinations);
+				};
+        const redoCommand = async () => {
+          await editTrip(tripId, this.trip.tripName, newTripDestinations);
+          this.$set(this.trip, "tripDestinations", newTripDestinations);
+				};
+
+        const deleteDestCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
+        this.$refs.undoRedo.addUndo(deleteDestCommand);
+
         await editTrip(tripId, this.trip.tripName, newTripDestinations);
         this.$set(this.trip, "tripDestinations", newTripDestinations);
         this.showSuccessMessage("Removed destination from trip");
+
       } catch (e) {
         this.showError("Could not remove destination from trip");        
       }
