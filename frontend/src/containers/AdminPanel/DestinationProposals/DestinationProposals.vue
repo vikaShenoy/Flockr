@@ -113,7 +113,7 @@ export default {
           await undeleteProposal(destinationProposalId);
           await sendUpdateDestination(this.oldDestination, this.destinationId);
           this.getAllProposals();
-x        };
+        };
 
         const redoCommand = async () => {
           await acceptProposal(destinationProposalId);

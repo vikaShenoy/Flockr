@@ -67,5 +67,15 @@ public class Nationality extends Model {
      * This is required by EBean to make queries on the database
      */
     public static final Finder<Integer, Nationality> find = new Finder<>(Nationality.class);
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Nationality)) {
+            return false;
+        }
+        Nationality nationalityToCompare = (Nationality) object;
+        boolean sameNationalityId = this.getNationalityId() == nationalityToCompare.getNationalityId();
+        return sameNationalityId;
+    }
 }
 
