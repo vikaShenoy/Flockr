@@ -165,7 +165,6 @@ public class PhotoController extends Controller {
                         message.put("message", error.getMessage());
                         return badRequest(message);
                     } catch (NotFoundException error) {
-                        System.out.println(2);
                         ObjectNode message = Json.newObject();
                         message.put("message", error.getMessage());
                         return notFound(message);

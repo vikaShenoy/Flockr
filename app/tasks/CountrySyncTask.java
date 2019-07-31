@@ -161,7 +161,6 @@ public class CountrySyncTask {
                     long startTime = System.currentTimeMillis();
                     fetchCountryApi()
                             .thenApplyAsync(newCountries -> {
-                                System.out.println("HI");
                                 Map<String, Country> oldCountries = getCurrentCountries();
                                 Map<String, Passport> oldPassports = getCurrentPassports();
                                 Map<String, Nationality> oldNationalities = getCurrentNationalities();

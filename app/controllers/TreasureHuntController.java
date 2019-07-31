@@ -252,7 +252,6 @@ public class TreasureHuntController extends Controller {
                     } catch (NullPointerException e) {
                         return badRequest(Json.newObject().put("Message", "Insufficient data provided."));
                     } catch (Exception e) {
-                        System.out.println(e);
                         return internalServerError();
                     }
                 }, executionContext);

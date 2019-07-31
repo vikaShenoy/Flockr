@@ -119,18 +119,15 @@ public class UserRepository {
     }
 
     /**
-     * Gets a nationality by it's ID                            System.out.println();(nationality);
+     * Gets a nationality by it's ID.
 
      *
      * @param nationalityId The nationality to get
      * @return The list of nationalities
      */
     public CompletionStage<Optional<Nationality>> getNationalityById(int nationalityId) {
-        return supplyAsync(() -> {
-            Optional<Nationality> nationality = Nationality.find.query().
-                    where().eq("nationality_id", nationalityId).findOneOrEmpty();
-            return nationality;
-        }, executionContext);
+        return supplyAsync(() -> Nationality.find.query().
+                where().eq("nationality_id", nationalityId).findOneOrEmpty(), executionContext);
     }
 
 

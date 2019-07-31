@@ -118,10 +118,10 @@ public class UserController extends Controller {
                         try {
                             String incomingDate = jsonBody.get("dateOfBirth").asText();
                             Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
-                            System.out.println("Date stored in db for user is: " + date);
+                            log.info(String.format("Date stored in db for user is: %s", date));
                             user.get().setDateOfBirth(date);
                         } catch (ParseException e) {
-                            System.out.println(Arrays.toString(e.getStackTrace()));
+                            log.error("Error: ", e);
                         }
                     }
 
@@ -271,7 +271,6 @@ public class UserController extends Controller {
                             }
                         }
                     }
-                    System.out.println("I made it here");
                     user.setRoles(userRoles);
                     user.save();
                     return ok("Success");

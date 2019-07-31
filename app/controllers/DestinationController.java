@@ -119,7 +119,7 @@ public class DestinationController extends Controller {
         User loggedInUser = request.attrs().get(ActionState.USER);
         return destinationRepository.getDestinations()
                 .thenApplyAsync(destinations -> {
-                    System.out.println("is the logged in user an admin: " +  loggedInUser.isAdmin());
+                    log.info(String.format("is the logged in user an admin: %s", loggedInUser.isAdmin()));
                     if (loggedInUser.getUserId() == userId || loggedInUser.isAdmin()) {
                         List<Destination> userDestinations = destinations.stream()
                                 .filter(destination -> {
@@ -661,8 +661,6 @@ public class DestinationController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> undoPhotoDelete(int destinationId, int photoId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
-        System.out.println(destinationId);
-        System.out.println(photoId);
         return destinationRepository.getPhotoByIdWithSoftDelete(destinationId, photoId)
                 .thenComposeAsync(optionalPhoto -> {
                     if (!optionalPhoto.isPresent()) {
@@ -688,7 +686,6 @@ public class DestinationController extends Controller {
                         message.put("message", error.getMessage());
                         return badRequest(message);
                     } catch (NotFoundException error) {
-                        System.out.println(2);
                         ObjectNode message = Json.newObject();
                         message.put("message", error.getMessage());
                         return notFound(message);
