@@ -118,11 +118,15 @@
        */
       addNewDestination(destination) {
         this.yourDestinations.push(destination);
+        this.getYourDestinations();
+        this.getPublicDestinations();
 
         const undoCommand = async (destination) => {
           try {
             await sendDeleteDestination(destination.destinationId);
             this.yourDestinations.splice(this.yourDestinations.indexOf(destination));
+            this.getYourDestinations();
+            this.getPublicDestinations();
           } catch (error) {
             this.snackbarModel.text = error.message;
             this.snackbarModel.color = "error";
@@ -134,6 +138,8 @@
           try {
             await sendUndoDeleteDestination(destination.destinationId);
             this.yourDestinations.push(destination);
+            this.getYourDestinations();
+            this.getPublicDestinations();
             [].shift()
           } catch (error) {
             this.snackbarModel.text = error.message;
