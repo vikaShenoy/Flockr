@@ -18,11 +18,11 @@ dist/
 *.env
 
 # Do not upload files to the repo pls
-/backend/storage/photos/*.jpg
-/backend/storage/photos/*.jpeg
-/backend/storage/photos/*.png
-/backend/storage/videos
-/backend/storage/audio
+/storage/photos/*.jpg
+/storage/photos/*.jpeg
+/storage/photos/*.png
+/storage/videos
+/storage/audio
 
 # Ignore production frontend files
 vue-front-end-goes-here/
