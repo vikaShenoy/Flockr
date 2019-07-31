@@ -41,7 +41,8 @@
 
 <script>
   import TripTable from "../../components/TripTable/TripTable";
-  import {editTrip, getTrip, transformTripResponse} from "./EditTripService.js";
+  import {getTrip, transformTripResponse} from "./EditTripService.js";
+  import {editTrip} from "../Trip/TripService";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -65,10 +66,12 @@
         tripName: "",
         tripDestinations: [],
         tripNameRules: [rules.required],
+        travellerId: 0
       };
     },
     mounted() {
       this.getTrip();
+      this.travellerId = this.$route.params.travellerId;
     },
     methods: {
       /**
@@ -129,8 +132,8 @@
           const tripId = this.$route.params.id;
           await editTrip(tripId, this.tripName, this.tripDestinations);
 
-          if (travellerId) {
-            this.$router.push(`/travellers/${travellerId}/trips/${tripId}`);
+          if (this.travellerId) {
+            this.$router.push(`/travellers/${this.travellerId}/trips/${tripId}`);
           } else {
             this.$router.push(`/trips/${tripId}`)
           }

@@ -226,6 +226,7 @@
                 return {...traveller, age, nationalities: nationalityNames, travellerTypes}
               });
         } catch (error) {
+
           console.log(error);
         }
       },

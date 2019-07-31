@@ -203,7 +203,6 @@
             return;
           }
 
-          const userId = localStorage.getItem("userId");
           const {userProfile} = this;
 
           const oldBasicInfo = {

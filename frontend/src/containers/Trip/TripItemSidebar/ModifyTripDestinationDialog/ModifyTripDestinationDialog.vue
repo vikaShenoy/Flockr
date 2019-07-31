@@ -299,7 +299,6 @@
         };
       },
       async getDestinations() {
-        const destinations = await getDestinations();
         const [publicDestinations, yourDestinations] = await Promise.all([getDestinations(), getYourDestinations()]);
 
         // Need to filter out duplicate destinations

@@ -119,7 +119,6 @@
           this.isDialogShowing = false;
           this.$emit("sendingProposal", travellerTypeIds);
         } catch (e) {
-          console.log(e);
           this.$emit("showError", "Could not send proposal");
         }
       }

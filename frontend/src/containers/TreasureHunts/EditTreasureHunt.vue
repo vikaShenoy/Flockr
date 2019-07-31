@@ -188,10 +188,10 @@
       }
     },
     watch: {
-      toggle(newVal, oldVal) {
+      toggle(newVal) {
         this.visible = newVal
       },
-      visible(newVal, oldVal) {
+      visible(newVal) {
         this.$emit("updateToggle", newVal)
       }
     }

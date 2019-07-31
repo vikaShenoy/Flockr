@@ -28,7 +28,6 @@
 
 <script>
   import ManageUsers from "./ManageUsers/ManageUsers.vue";
-  import EditUserForm from "./EditUserForm/EditUserForm.vue";
   import {
     deleteUser,
     deleteUsers,
@@ -48,7 +47,6 @@
   export default {
     components: {
       ManageUsers,
-      EditUserForm,
       Snackbar,
       DestinationProposals,
       UndoRedo

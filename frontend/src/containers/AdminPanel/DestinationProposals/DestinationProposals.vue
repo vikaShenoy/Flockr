@@ -56,15 +56,11 @@
     getDestinationProposal,
     getDestinationProposals
   } from "./DestinationProposalsService";
-  import UndoRedo from "../../../components/UndoRedo/UndoRedo.vue"
   import Command from "../../../components/UndoRedo/Command";
   import {sendUpdateDestination} from "../../Destinations/DestinationsService";
   import {undeleteProposal} from "../../Destination/DestinationService";
 
   export default {
-    components: {
-      UndoRedo
-    },
     data() {
       return {
         headers: [

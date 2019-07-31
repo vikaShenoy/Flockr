@@ -80,7 +80,7 @@
   import {emailTaken, getUser, rules, signup, updateBasicInfo} from "./SignupService.js";
   import {getNationalities} from "../Profile/Nationalities/NationalityService.js";
   import {getPassports} from "../Profile/Passports/PassportService.js";
-  import {getAllTravellerTypes, getTravellerTypes} from "../Profile/TravellerTypes/TravellerTypesService.js";
+  import {getAllTravellerTypes} from "../Profile/TravellerTypes/TravellerTypesService.js";
   import {validate} from "email-validator";
   import moment from "moment";
   import UserStore from "../../stores/UserStore";
@@ -146,7 +146,6 @@
       isBasicInfoStepperCompleted: function () {
         const {firstName, lastName, gender, dateOfBirth} = this;
         const fieldsAreNotEmpty = [firstName, lastName, gender, dateOfBirth].every(field => field.length > 0);
-        const dateOfBirthBeforeToday = moment(dateOfBirth, 'DD/MM/YYYY') < moment();
         return fieldsAreNotEmpty;
       },
       /**

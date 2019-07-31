@@ -233,7 +233,6 @@
        * Function called from child to update the list of treasure hunts
        */
       updateList() {
-        console.log(2);
         this.getTreasureHunts();
       },
 

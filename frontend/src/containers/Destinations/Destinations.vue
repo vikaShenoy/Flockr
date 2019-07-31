@@ -92,7 +92,6 @@
         try {
           const publicDestinations = await getPublicDestinations();
           this.publicDestinations = publicDestinations;
-          console.log("I got public destinations");
         } catch (e) {
           console.log("Could not get public destinations");
         }

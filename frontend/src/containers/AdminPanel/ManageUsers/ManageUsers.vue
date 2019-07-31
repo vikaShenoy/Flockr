@@ -300,7 +300,7 @@
     },
     props: ["users"],
     watch: {
-      users(newUsers) {
+      users() {
         this.items = this.mapUsers();
       }
     },

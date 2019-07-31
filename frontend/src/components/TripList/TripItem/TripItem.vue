@@ -22,7 +22,7 @@
           <div class="status">
             <v-icon v-if="trip.status === 'Upcoming'" style="font-size: 40px;color: #FFF;">flight_takeoff</v-icon>
             <v-icon v-else-if="trip.status === 'Passed'" style="font-size: 40px;color: #FFF;">flight_landing</v-icon>
-            <v-icon v-else="trip.status === 'Ongoing'" style="font-size: 40px;color: #FFF;">flight</v-icon>
+            <v-icon v-else-if="trip.status === 'Ongoing'" style="font-size: 40px;color: #FFF;">flight</v-icon>
           </div>
 
           <div class="content">
