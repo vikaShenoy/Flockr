@@ -7,10 +7,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
-import exceptions.UnauthorizedException;
 import models.PersonalPhoto;
 import models.User;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Files;
@@ -21,21 +19,16 @@ import repository.PhotoRepository;
 import repository.UserRepository;
 import util.PhotoUtil;
 import util.Security;
-
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
-import javax.xml.ws.Response;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -182,9 +175,9 @@ public class PhotoController extends Controller {
     /**
      * This function is responsible for deleting the photo with the given ID
      *
-     * @param photoId       the id of the photo to be deleted
-     * @param request       the Http request sent
-     * @return              a Play result
+     * @param photoId the id of the photo to be deleted
+     * @param request the Http request sent
+     * @return a Play result
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deletePhoto(int photoId, Http.Request request) {
@@ -281,9 +274,8 @@ public class PhotoController extends Controller {
                     if (!photo.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     } else if (!user.isAdmin() && !photo.get().isPublic() && user.getUserId() != photo.get().getUser().getUserId()) {
-                       return forbidden();
-                    }
-                    else {
+                        return forbidden();
+                    } else {
                         String path = System.getProperty("user.dir") + "/storage/photos";
                         photo.get().getFilenameHash();
                         File photoToBeSent = new File(path, photo.get().getFilenameHash());
@@ -483,7 +475,7 @@ public class PhotoController extends Controller {
                                                     if (oldProfilePhoto != null) {
                                                         oldProfilePhoto.delete();
                                                     }
-                                               }
+                                                }
 
                                                 receivingUser.setProfilePhoto(insertedPhoto);
                                                 receivingUser.save();
@@ -581,8 +573,8 @@ public class PhotoController extends Controller {
             return supplyAsync(() -> notFound("Could not find "));
         }
 
-       return photoRepository.getPhotoByIdWithSoftDelete(photoId)
-               .thenComposeAsync(optionalPhoto -> {
+        return photoRepository.getPhotoByIdWithSoftDelete(photoId)
+                .thenComposeAsync(optionalPhoto -> {
                     if (!optionalPhoto.isPresent()) {
                         throw new CompletionException(new NotFoundException("Photo not found"));
                     }
@@ -657,9 +649,6 @@ public class PhotoController extends Controller {
         image.createGraphics().drawImage(img, 0, 0, null);
         ImageIO.write(image, photoContentType, thumbFileDestination);
     }
-
-
-
 
 
 }
