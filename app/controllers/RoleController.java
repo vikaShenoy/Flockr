@@ -8,10 +8,8 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.With;
 import repository.RoleRepository;
-
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
-
 import static play.mvc.Results.notFound;
 import static play.mvc.Results.ok;
 

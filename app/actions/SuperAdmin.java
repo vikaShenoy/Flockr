@@ -6,7 +6,6 @@ import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
 import util.Security;
-
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.supplyAsync;

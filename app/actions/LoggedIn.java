@@ -1,20 +1,14 @@
 package actions;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.ebean.EbeanServer;
 import play.libs.Json;
-import play.libs.typedmap.TypedKey;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
-
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
-import models.User;
 import repository.AuthRepository;
-
 import javax.inject.Inject;
-
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**

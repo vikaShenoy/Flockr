@@ -22,9 +22,6 @@ import repository.DatabaseExecutionContext;
 import play.mvc.With;
 import repository.TreasureHuntRepository;
 import repository.UserRepository;
-import scala.reflect.internal.Trees;
-import util.TreasureHuntUtil;
-
 import javax.inject.Inject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

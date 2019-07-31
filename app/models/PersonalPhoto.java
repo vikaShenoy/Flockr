@@ -6,7 +6,6 @@ import io.ebean.Finder;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
 import play.data.validation.Constraints;
-import play.libs.Json;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
