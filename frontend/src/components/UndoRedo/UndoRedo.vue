@@ -31,7 +31,7 @@
       }
     },
     mounted() {
-      this._keyDownListener = document.addEventListener("keydown", this.keyDown)
+      document.addEventListener("keydown", this.keyDown)
     },
     beforeDestroy() {
       document.removeEventListener("keydown", this.keyDown);
@@ -63,7 +63,7 @@
         const command = this.undoStack.pop();
         try {
           await command.unexecute();
-          this.addRedo(command);
+          this.redoStack.push(command);
           this.showSuccessSnackbar("Successfully Un-did action");
         } catch (e) {
           // eslint-disable-next-line
@@ -79,7 +79,7 @@
 
         try {
           await command.execute();
-          this.addUndo(command);
+          this.undoStack.push(command);
           this.showSuccessSnackbar("Successfully Re-did action");
         } catch (e) {
           this.showErrorSnackbar("Could not undo action");
@@ -89,13 +89,8 @@
        * Adds a command to the undo stack.
        */
       addUndo(command) {
+        this.redoStack = [];
         this.undoStack.push(command);
-      },
-      /**
-       * Adds a command to the redo stack
-       */
-      addRedo(command) {
-        this.redoStack.push(command);
       },
       /**
        * Shows a success snackbar

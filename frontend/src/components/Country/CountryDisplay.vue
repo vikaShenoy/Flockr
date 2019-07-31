@@ -4,7 +4,6 @@
 </template>
 
 <script>
-  import {getCountries} from "./CountryService";
 
   export default {
     props: {
@@ -15,11 +14,6 @@
     data() {
       return {
         countries: null
-      }
-    },
-    watch: {
-      country(newValue){
-        console.log(newValue);
       }
     }
   }
