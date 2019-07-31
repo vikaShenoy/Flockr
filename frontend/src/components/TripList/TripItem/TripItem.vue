@@ -4,12 +4,12 @@
     <v-layout>
       <v-flex shrink>
         <v-btn
-          v-if="!viewOnly"
-          fab
-          small
-          color="secondary"
-          style="margin: 20px;"
-          @click="deleteTrip"
+                v-if="!viewOnly"
+                fab
+                small
+                color="secondary"
+                style="margin: 20px;"
+                @click="deleteTrip"
         >
           <v-icon>delete</v-icon>
         </v-btn>
@@ -30,7 +30,7 @@
 
             <b>Status: </b> <span>{{ trip.status }}</span>
           </div>
-          
+
         </v-card>
       </v-flex>
     </v-layout>
@@ -50,12 +50,12 @@
       }
     },
     methods: {
-			/**
-			 * Delete the trip being viewed. Emit calls to the tripList component to visually update.
-			 * @returns {Promise<void>}
-			 */
+      /**
+       * Delete the trip being viewed. Emit calls to the tripList component to visually update.
+       * @returns {Promise<void>}
+       */
       async deleteTrip() {
-        const { tripId } = this.trip;
+        const {tripId} = this.trip;
         this.$emit("refreshList");
         this.$emit("handleDelete", tripId);
       }
@@ -65,11 +65,12 @@
 
 <style lang="scss" scoped>
   @import "../../../styles/_variables.scss";
+
   .trip-item {
     margin: 15px;
     cursor: pointer;
     height: 80px;
-    
+
     &:hover {
       background-color: #f4f4f4;
     }
@@ -86,13 +87,12 @@
       width: 50px;
     }
 
-    } 
+  }
 
-    .content {
-      padding-top: 10px;
-      padding-left: 10px;
-    }
-
+  .content {
+    padding-top: 10px;
+    padding-left: 10px;
+  }
 
 
 </style>

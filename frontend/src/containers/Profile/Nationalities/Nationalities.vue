@@ -5,11 +5,11 @@
 
       <div id="edit-btn">
         <v-btn
-          v-if="userStore.userId === userId"
-          small
-          flat
-          color="secondary"
-          @click="toggleEditSave"
+                v-if="userStore.userId === userId"
+                small
+                flat
+                color="secondary"
+                @click="toggleEditSave"
         >
           <v-icon v-if="!isEditing">edit</v-icon>
           <span v-else>Save</span>
@@ -19,10 +19,10 @@
     <v-card id="nationalities">
       <div v-if="!isEditing">
         <v-chip
-          v-for="nationality in userNationalities"
-          v-bind:key="nationality.nationalityId"
-          color="primary"
-          text-color="white">
+                v-for="nationality in userNationalities"
+                v-bind:key="nationality.nationalityId"
+                color="primary"
+                text-color="white">
           <CountryDisplay v-bind:country="nationality.nationalityName"/>
         </v-chip>
 
@@ -30,25 +30,25 @@
       </div>
 
       <v-combobox
-        v-else
-        v-model="userNat"
-        :items="this.validNationalities"
-        :item-text="getNationalityText"
-        label="Your nationality"
-        :error-messages="nationalityErrors"
-        chips
-        clearable
-        solo
-        multiple
+              v-else
+              v-model="userNat"
+              :items="this.validNationalities"
+              :item-text="getNationalityText"
+              label="Your nationality"
+              :error-messages="nationalityErrors"
+              chips
+              clearable
+              solo
+              multiple
       >
 
         <template v-slot:selection="data">
           <v-chip
-            color="primary"
-            text-color="white"
-            :selected="data.selected"
-            close
-            @input="remove(data.item)"
+                  color="primary"
+                  text-color="white"
+                  :selected="data.selected"
+                  close
+                  @input="remove(data.item)"
           >
             <strong>{{ data.item.nationalityName }}</strong>&nbsp;
           </v-chip>
@@ -59,101 +59,99 @@
 </template>
 
 <script>
-import UserStore from "../../../stores/UserStore";
-import { getNationalities } from "./NationalityService";
-import UndoRedo from "../../../components/UndoRedo/UndoRedo";
-import Command from "../../../components/UndoRedo/Command";
-import CountryDisplay from "../../../components/Country/CountryDisplay"
+  import UserStore from "../../../stores/UserStore";
+  import {getNationalities} from "./NationalityService";
+  import CountryDisplay from "../../../components/Country/CountryDisplay"
 
 
-export default {
-  components: {
-    CountryDisplay
-  },
-  props: ["userNationalities", "userId"],
-  mounted() {
-    this.getNationalities();
-    this.filterNationalities();
-  },
-  data() {
-    return {
-      userStore: UserStore.data,
-      userNat: [...this.userNationalities],
-      allNationalities: [],
-      isEditing: false,
-      nationalityErrors: [],
-      validNationalities: null
-    };
-  },
-  methods: {
-    /**
-     * Gets all nationalities
-     */
-    async getNationalities() {
-      try {
-        const nationalities = await getNationalities();
-        this.allNationalities = nationalities;
-      } catch (e) {
-        // Add error handling later
-      }
+  export default {
+    components: {
+      CountryDisplay
     },
-    /**
-     * Toggles between editing and saving, if saving, then nationalities will
-     * be updated
-     */
-    async toggleEditSave() {
-      if (this.isEditing) {
-        // if user was editing and has now submitted their changes
-        if (this.userNat.length === 0) {
-          this.nationalityErrors = ["Please select a nationality"];
-          return;
+    props: ["userNationalities", "userId"],
+    mounted() {
+      this.getNationalities();
+      this.filterNationalities();
+    },
+    data() {
+      return {
+        userStore: UserStore.data,
+        userNat: [...this.userNationalities],
+        allNationalities: [],
+        isEditing: false,
+        nationalityErrors: [],
+        validNationalities: null
+      };
+    },
+    methods: {
+      /**
+       * Gets all nationalities
+       */
+      async getNationalities() {
+        try {
+          const nationalities = await getNationalities();
+          this.allNationalities = nationalities;
+        } catch (e) {
+          // Add error handling later
         }
+      },
+      /**
+       * Toggles between editing and saving, if saving, then nationalities will
+       * be updated
+       */
+      async toggleEditSave() {
+        if (this.isEditing) {
+          // if user was editing and has now submitted their changes
+          if (this.userNat.length === 0) {
+            this.nationalityErrors = ["Please select a nationality"];
+            return;
+          }
 
-        this.nationalityErrors = [];
-        const oldNationalities = this.userNationalities;
-        const newNationalities = this.userNat;
-        this.$emit("update-user-nationalities", oldNationalities, newNationalities);
+          this.nationalityErrors = [];
+          const oldNationalities = this.userNationalities;
+          const newNationalities = this.userNat;
+          this.$emit("update-user-nationalities", oldNationalities, newNationalities);
+        }
+        this.isEditing = !this.isEditing;
+      },
+      /**
+       * Gets the nationality country from the list of nationalities
+       */
+      getNationalityText: item => item.nationalityName,
+      /**
+       * Removes a nationality in edit mode
+       */
+      remove(item) {
+        this.userNat.splice(this.userNat.indexOf(item), 1);
+        this.userNat = [...this.userNat];
+      },
+
+      async filterNationalities() {
+        const nationalities = await getNationalities();
+        this.validNationalities = nationalities.filter(nationality => nationality.nationalityCountry.isValid === true);
       }
-      this.isEditing = !this.isEditing;
-    },
-    /**
-     * Gets the nationality country from the list of nationalities
-     */
-    getNationalityText: item => item.nationalityName,
-    /**
-     * Removes a nationality in edit mode
-     */
-    remove(item) {
-      this.userNat.splice(this.userNat.indexOf(item), 1);
-      this.userNat = [...this.userNat];
-    },
-
-    async filterNationalities() {
-      const nationalities = await getNationalities();
-      this.validNationalities = nationalities.filter(nationality => nationality.nationalityCountry.isValid === true);
     }
-  }
-};
+  };
 </script>
 
 <style lang="scss" scoped>
-#nationalities {
-  padding: 10px;
-  margin-bottom: 20px;
-}
-
-#header {
-  width: 100%;
-  margin-top: 20px;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  align-items: center;
-
-  h3 {
-    text-align: left;
+  #nationalities {
+    padding: 10px;
+    margin-bottom: 20px;
   }
-}
+
+  #header {
+    width: 100%;
+    margin-top: 20px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      text-align: left;
+    }
+  }
 </style>
 
 

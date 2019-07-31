@@ -1,5 +1,5 @@
 <template>
-  <v-card id="destination-details"> 
+  <v-card id="destination-details">
     <v-layout row wrap>
       <v-flex class="destination-item" xs3>
         <v-icon color="secondary" style="font-size: 30px;">location_on</v-icon>
@@ -7,7 +7,8 @@
       </v-flex>
 
       <v-flex class="destination-value" xs9>
-        {{ destination.destinationDistrict.districtName }},&nbsp;<CountryDisplay v-bind:country="destination.destinationCountry.countryName" />
+        {{ destination.destinationDistrict.districtName }},&nbsp;<CountryDisplay
+              v-bind:country="destination.destinationCountry.countryName"/>
       </v-flex>
 
 
@@ -54,52 +55,48 @@
 
       <v-flex class="destination-value" xs9>
         <v-chip
-          v-for="travellerType in destination.travellerTypes"
-          v-bind:key="travellerType.travellerTypeId"
-          color="primary"
-          text-color="white"
+                v-for="travellerType in destination.travellerTypes"
+                v-bind:key="travellerType.travellerTypeId"
+                color="primary"
+                text-color="white"
         >
           {{ travellerType.travellerTypeName }}
         </v-chip>
       </v-flex>
 
 
-
-
-
-
     </v-layout>
 
 
-   
   </v-card>
 </template>
 
 
 <script>
 
-import CountryDisplay from "../../../components/Country/CountryDisplay";
-export default {
-  components: {CountryDisplay},
-  props: ["destination"]
-}
+  import CountryDisplay from "../../../components/Country/CountryDisplay";
+
+  export default {
+    components: {CountryDisplay},
+    props: ["destination"]
+  }
 </script>
 
 <style lang="scss" scoped>
-#destination-details {
-  padding: 10px;
-}
+  #destination-details {
+    padding: 10px;
+  }
 
-.destination-item, .destination-value {
-  display: flex;
-  align-items: center;
-  margin-top: 13px;
-}
+  .destination-item, .destination-value {
+    display: flex;
+    align-items: center;
+    margin-top: 13px;
+  }
 
-.destination-value {
-  text-align: center;
-  justify-content: center;
-}
+  .destination-value {
+    text-align: center;
+    justify-content: center;
+  }
 
 </style>
 

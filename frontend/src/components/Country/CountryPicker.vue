@@ -1,5 +1,5 @@
 <template>
-    <v-select :items="countries" item-text="countryName" item-value="countryId" v-model="selectedValue" label="Country"></v-select>
+    <v-combobox :items="countries" item-text="countryName" item-value="countryId" v-model="selectedValue" label="Country"></v-combobox>
 </template>
 
 <script>

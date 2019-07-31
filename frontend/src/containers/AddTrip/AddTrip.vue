@@ -1,47 +1,47 @@
 <template>
   <v-card
-    id="add-trip"
-    class="col-lg-10 offset-lg-1"
+          id="add-trip"
+          class="col-lg-10 offset-lg-1"
   >
 
     <h2>Add Trip</h2>
 
     <v-form ref="addTripForm">
       <v-text-field
-        v-model="tripName"
-        label="Trip Name"
-        color="secondary"
-        class="col-md-6"
-        :rules="tripNameRules"
+              v-model="tripName"
+              label="Trip Name"
+              color="secondary"
+              class="col-md-6"
+              :rules="tripNameRules"
       >
       </v-text-field>
 
-      <TripTable :tripDestinations="tripDestinations" />
+      <TripTable :tripDestinations="tripDestinations"/>
 
       <v-btn
-        depressed
-        color="secondary"
-        small
-        id="add-destination"
-        @click="addDestination"
+              depressed
+              color="secondary"
+              small
+              id="add-destination"
+              @click="addDestination"
       >
         <v-icon>add</v-icon>
       </v-btn>
 
 
       <v-btn
-        depressed
-        color="error"
-        id="cancel-trip-creation-btn"
-        @click="$emit('cancel-trip-creation')"
+              depressed
+              color="error"
+              id="cancel-trip-creation-btn"
+              @click="$emit('cancel-trip-creation')"
       >
         Cancel
       </v-btn>
       <v-btn
-        depressed
-        color="secondary"
-        id="add-trip-btn"
-        @click="addTrip()" 
+              depressed
+              color="secondary"
+              id="add-trip-btn"
+              @click="addTrip()"
       >
         Create
       </v-btn>
@@ -50,104 +50,104 @@
 </template>
 
 <script>
-import TripTable from "../../components/TripTable/TripTable";
-import { addTrip } from "./AddTripService.js";
+  import TripTable from "../../components/TripTable/TripTable";
+  import {addTrip} from "./AddTripService.js";
 
-const rules = {
-  required: field => !!field || "Field required" 
-};
+  const rules = {
+    required: field => !!field || "Field required"
+  };
 
-const tripDestination = {
-  destinationId: null,
-  arrivalDate: null,
-  arrivalTime: null,
-  departureDate: null,
-  departureTime: null,
-};
+  const tripDestination = {
+    destinationId: null,
+    arrivalDate: null,
+    arrivalTime: null,
+    departureDate: null,
+    departureTime: null,
+  };
 
-export default {
-  components: {
-    TripTable
-  },
-  data() {
-    return {
-     tripName: "",
-     tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
-      tripNameRules: [rules.required],
-    };
-  },
-  methods: {
-    /**
-     * Adds an empty destination
-     */
-    addDestination() {
-      this.tripDestinations.push({...tripDestination, id: this.tripDestinations.length});
+  export default {
+    components: {
+      TripTable
     },
-    /**
-     * Iterates through destinations and check and renders error message
-     * if destinations are contiguous.
-     * @returns {boolean} True if contiguous destinations are found, false otherwise. 
-     */
-    contiguousDestinations() {
-      let foundContiguousDestination = false;
+    data() {
+      return {
+        tripName: "",
+        tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
+        tripNameRules: [rules.required],
+      };
+    },
+    methods: {
+      /**
+       * Adds an empty destination
+       */
+      addDestination() {
+        this.tripDestinations.push({...tripDestination, id: this.tripDestinations.length});
+      },
+      /**
+       * Iterates through destinations and check and renders error message
+       * if destinations are contiguous.
+       * @returns {boolean} True if contiguous destinations are found, false otherwise.
+       */
+      contiguousDestinations() {
+        let foundContiguousDestination = false;
 
-      this.$set(this.tripDestinations[0], "destinationErrors", []);
+        this.$set(this.tripDestinations[0], "destinationErrors", []);
 
-      for (let i = 1; i < this.tripDestinations.length; i++) {
-        if (this.tripDestinations[i].destinationId === this.tripDestinations[i - 1].destinationId && this.tripDestinations[i].destinationId) {
-          this.$set(this.tripDestinations[i], "destinationErrors", ["Destination is same as last destination"]);
-          foundContiguousDestination = true;
-          continue;
+        for (let i = 1; i < this.tripDestinations.length; i++) {
+          if (this.tripDestinations[i].destinationId === this.tripDestinations[i - 1].destinationId && this.tripDestinations[i].destinationId) {
+            this.$set(this.tripDestinations[i], "destinationErrors", ["Destination is same as last destination"]);
+            foundContiguousDestination = true;
+            continue;
+          }
+          this.tripDestinations[i].destinationErrors = [];
         }
-        this.tripDestinations[i].destinationErrors = [];
-      }
-      return foundContiguousDestination;
-    },
-    /**
-     * Validates and renders errors if there are any
-     * @returns {boolean} True if fields are valid, false otherwise
-     */
-    validate() {
-      const validFields = this.$refs.addTripForm.validate();
-      const contiguousDestinations = this.contiguousDestinations();
-      if (!validFields || contiguousDestinations)  {
-        return false;
-      }
+        return foundContiguousDestination;
+      },
+      /**
+       * Validates and renders errors if there are any
+       * @returns {boolean} True if fields are valid, false otherwise
+       */
+      validate() {
+        const validFields = this.$refs.addTripForm.validate();
+        const contiguousDestinations = this.contiguousDestinations();
+        if (!validFields || contiguousDestinations) {
+          return false;
+        }
 
-      return true;
-    },
-    /**
-     * Validates fields before sending a request to add a trip
-     */
-    async addTrip() {
-      const validFields = this.validate();
-      if (!validFields) return;
-      const userId = localStorage.getItem("userId");
-      const tripId = await addTrip(this.tripName, this.tripDestinations, userId);
-      this.$emit("new-trip-was-added", tripId);
+        return true;
+      },
+      /**
+       * Validates fields before sending a request to add a trip
+       */
+      async addTrip() {
+        const validFields = this.validate();
+        if (!validFields) return;
+        const userId = localStorage.getItem("userId");
+        const tripId = await addTrip(this.tripName, this.tripDestinations, userId);
+        this.$emit("new-trip-was-added", tripId);
+      }
     }
-  }
-};
+  };
 </script>
 
 <style lang="scss" scoped>
-#add-trip {
-  margin-top: 30px;
+  #add-trip {
+    margin-top: 30px;
 
-  h2 {
-    text-align: center;
+    h2 {
+      text-align: center;
+    }
   }
-}
 
-#add-destination {
-  margin-top: 10px !important;
-  display: block;
-  margin: 0 auto;
-}
+  #add-destination {
+    margin-top: 10px !important;
+    display: block;
+    margin: 0 auto;
+  }
 
-#add-trip-btn {
-  float: right;
-}
+  #add-trip-btn {
+    float: right;
+  }
 </style>
 
 

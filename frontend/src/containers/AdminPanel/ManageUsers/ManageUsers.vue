@@ -9,72 +9,71 @@
           <v-text-field label="Search User" color="secondary" @input="searchAdminChange"/>
 
           <v-btn
-            class="action-button"
-            :disabled="this.selectedUsers.length !== 1"
-            @click="viewAsUserClicked"
-            depressed
-            color="secondary"
+                  class="action-button"
+                  :disabled="this.selectedUsers.length !== 1"
+                  @click="viewAsUserClicked"
+                  depressed
+                  color="secondary"
           >
             View as User
           </v-btn>
 
           <v-btn
-            class="action-button"
-            :disabled="this.selectedUsers.length !== 1"
-            @click="logoutUsersButtonClicked"
-            depressed
-            color="secondary"
+                  class="action-button"
+                  :disabled="this.selectedUsers.length !== 1"
+                  @click="logoutUsersButtonClicked"
+                  depressed
+                  color="secondary"
           >
             Log Out User
           </v-btn>
 
           <v-btn
-            class="action-button"
-            @click="signupButtonClicked"
-            depressed
-            color="secondary"
+                  class="action-button"
+                  @click="signupButtonClicked"
+                  depressed
+                  color="secondary"
           >
             Sign Up User
           </v-btn>
 
           <v-btn
-            class="action-button"
-            :disabled="!this.canAddAdminPriviledge"
-            @click="showPrompt('Are you sure?', addAdminPriviledge)"
-            depressed
-            color="secondary"
+                  class="action-button"
+                  :disabled="!this.canAddAdminPriviledge"
+                  @click="showPrompt('Are you sure?', addAdminPriviledge)"
+                  depressed
+                  color="secondary"
           >
             Make Admin
           </v-btn>
 
           <v-btn
-            class="action-button"
-            :disabled="!this.canRemoveAdminPriviledge"
-            @click="showPrompt('Are you sure?', removeAdminPriviledge)"
-            depressed
-            color="secondary"
+                  class="action-button"
+                  :disabled="!this.canRemoveAdminPriviledge"
+                  @click="showPrompt('Are you sure?', removeAdminPriviledge)"
+                  depressed
+                  color="secondary"
           >
             Remove admin
           </v-btn>
 
 
-
           <v-btn
-            class="action-button"
-            :disabled="this.selectedUsers.length === 0"
-            @click="showPrompt('Are you sure?', deleteUsersButtonClicked)"
-            depressed
-            color="secondary"
+                  class="action-button"
+                  :disabled="this.selectedUsers.length === 0"
+                  @click="showPrompt('Are you sure?', deleteUsersButtonClicked)"
+                  depressed
+                  color="secondary"
           >
             Delete users
           </v-btn>
         </v-subheader>
       </v-list>
     </v-card>
-        
-        <!-- User tile -->
-      <v-card id="users">
-        <v-list>
+
+    <!-- User tile -->
+    <v-card id="users">
+      <v-list>
         <v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
           <v-list-tile-avatar>
             <img :src="item.avatar">
@@ -92,7 +91,7 @@
       </v-list>
     </v-card>
 
-      <v-dialog v-model="showSignup" max-width="800">
+    <v-dialog v-model="showSignup" max-width="800">
       <v-card>
         <SignUp @exit="closeSignupModal" isSigningUpAsAdmin></SignUp>
         <v-card-actions>
@@ -101,213 +100,211 @@
       </v-card>
     </v-dialog>
     <prompt-dialog
-    :message=prompt.message
-    :onConfirm="prompt.onConfirm"
-    :dialog="prompt.show" 
-    v-on:promptEnded="prompt.show=false"></prompt-dialog>
+            :message=prompt.message
+            :onConfirm="prompt.onConfirm"
+            :dialog="prompt.show"
+            v-on:promptEnded="prompt.show=false"></prompt-dialog>
   </div>
 
 </template>
 
 
 <script>
-import {deleteUsers, getAllUsers} from "../AdminPanelService";
-import {endpoint} from "../../../utils/endpoint.js";
-import moment from "moment";
-import SignUp from "../../Signup/Signup";
-import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
-import UserStore from "../../../stores/UserStore";
-import roleType from '../../../stores/roleType';
+  import {endpoint} from "../../../utils/endpoint.js";
+  import moment from "moment";
+  import SignUp from "../../Signup/Signup";
+  import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
+  import UserStore from "../../../stores/UserStore";
+  import roleType from '../../../stores/roleType';
 
-export default {
-  components: {
-    PromptDialog,
-    SignUp
-  },
-  mounted () {
-    this.items = this.mapUsers();
-  },
-  data() {
-    return {
-      items: [],
-      showSignup: false,
-      prompt: {
-        message: "",
-        onConfirm: null,
-        show: false
-      }
-    };
-  },
-  computed: {
-    
-    /**
-     * Get the user ids of selected users.
-     */
-    selectedUsers: function() {
-      return this.items.filter((item) => item.selected).map((user) => user.userId);
+  export default {
+    components: {
+      PromptDialog,
+      SignUp
     },
-    /**
-     * Checks if user can add admin privileges to the selected users
-     * @returns {boolean} True if admin can add admin priviledges, false otherwise
-     */
-    canAddAdminPriviledge() {
-      if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
-        return false;
-      }
-      const user = this.items.filter(user => user.userId === this.selectedUsers[0])[0];
+    mounted() {
+      this.items = this.mapUsers();
+    },
+    data() {
+      return {
+        items: [],
+        showSignup: false,
+        prompt: {
+          message: "",
+          onConfirm: null,
+          show: false
+        }
+      };
+    },
+    computed: {
 
-      for (const role of user.roles) {
-        if (role.roleType === roleType.ADMIN || roleType.DEFAULT_ADMIN) {
+      /**
+       * Get the user ids of selected users.
+       */
+      selectedUsers: function () {
+        return this.items.filter((item) => item.selected).map((user) => user.userId);
+      },
+      /**
+       * Checks if user can add admin privileges to the selected users
+       * @returns {boolean} True if admin can add admin priviledges, false otherwise
+       */
+      canAddAdminPriviledge() {
+        if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
           return false;
         }
-      }
+        const user = this.items.filter(user => user.userId === this.selectedUsers[0])[0];
 
-      return true;
-    },
-		/**
-		 * Check if the person trying to remove admin rights is allowed to do so.
-		 */
-    canRemoveAdminPriviledge() {
-      if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
-        return false;
-      }
-      const user = this.items.filter(user => user.userId === this.selectedUsers[0])[0];
-
-      for (const role of user.roles) {
-        if (role.roleType === roleType.ADMIN) {
-          return true;
+        for (const role of user.roles) {
+          if (role.roleType === roleType.ADMIN || roleType.DEFAULT_ADMIN) {
+            return false;
+          }
         }
-      }
-      return false;
-    },
-    
-  },
-  methods: {
 
-    /**
-     * Called when the view destinations button is clicked.
-     * routes the admin to the destinations page for the selected user.
-     */
-    viewDestinationsButtonClicked() {
-      const userId = this.selectedUsers[0];
+        return true;
+      },
+      /**
+       * Check if the person trying to remove admin rights is allowed to do so.
+       */
+      canRemoveAdminPriviledge() {
+        if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
+          return false;
+        }
+        const user = this.items.filter(user => user.userId === this.selectedUsers[0])[0];
 
-      this.$router.push(`/users/${userId}/destinations`);
-    },
+        for (const role of user.roles) {
+          if (role.roleType === roleType.ADMIN) {
+            return true;
+          }
+        }
+        return false;
+      },
 
-    /**
-     * Emit a function call, indicates search admin 
-     * has changed.
-     */
-    searchAdminChange(searchAdmin) 
-    {
-      this.$emit('update:adminSearch',searchAdmin);
     },
+    methods: {
 
-    /**
-     * Show a prompt to the user.
-     */
-    showPrompt(message, onConfirm) {
-      this.prompt.message = message;
-      this.prompt.onConfirm = onConfirm;
-      this.prompt.show = true;
-    },
+      /**
+       * Called when the view destinations button is clicked.
+       * routes the admin to the destinations page for the selected user.
+       */
+      viewDestinationsButtonClicked() {
+        const userId = this.selectedUsers[0];
 
-    /**
-     * Close the modal containing the signup component.
-     */
-    closeSignupModal(userId) {
-      this.showSignup = false;
-      this.$emit("userSignedUp", userId);
-    },
+        this.$router.push(`/users/${userId}/destinations`);
+      },
 
-    /**
-     * Open the modal component containing the signup component.
-     */
-    signupButtonClicked: function() {
-      this.showSignup = true;
-    },
-    /**
-     * Call the admin panel service to logout the given user ids.
-     */
-    logoutUsersButtonClicked: async function() {
-      const userIds = this.selectedUsers;
-      this.$emit("logoutUsersByIds", userIds);
-    },
-    /**
-     * Call the admin panel service to delete the given user ids.
-     */
-    deleteUsersButtonClicked: async function() {
-      const userIds = this.selectedUsers;
-      this.$emit("deleteUsersByIds", userIds);
-    },
+      /**
+       * Emit a function call, indicates search admin
+       * has changed.
+       */
+      searchAdminChange(searchAdmin) {
+        this.$emit('update:adminSearch', searchAdmin);
+      },
 
-    /**
-     * Open the trips page for the selected user.
-     */
-    viewTripsButtonClicked: function() {
-      const userId = this.selectedUsers[0];
-      this.$router.push(`/travellers/${userId}/trips`);
-    },
-    /**
-     * Format the user data to be displayed on the admin panel. 
-     * Also filters user so it doesn't contain self
-     * Use a generic avatar untill photos are implemented.
-     */
-    mapUsers: function() {
-      return this.users
-      .filter(user => user.userId !== UserStore.data.userId)
-      .map(user => ({
-        avatar: this.photoUrl(user.profilePhoto),
-        userId: user.userId,
-        title: user.firstName + ' ' + user.lastName,
-        subtitle: 'Joined on ' + moment(user.timestamp).format("D/M/YYYY H:mm"),
-        selected: false,
-        roles: user.roles
-    }));
-    },
-    /**
-     * Gets the URL of a photo for a user
-     * @param {number} photoId the ID of the photo to get
-     * @returns {string} the url of the photo
-     */
-    photoUrl(profilePhoto) {
-      if (profilePhoto != null) {
+      /**
+       * Show a prompt to the user.
+       */
+      showPrompt(message, onConfirm) {
+        this.prompt.message = message;
+        this.prompt.onConfirm = onConfirm;
+        this.prompt.show = true;
+      },
+
+      /**
+       * Close the modal containing the signup component.
+       */
+      closeSignupModal(userId) {
+        this.showSignup = false;
+        this.$emit("userSignedUp", userId);
+      },
+
+      /**
+       * Open the modal component containing the signup component.
+       */
+      signupButtonClicked: function () {
+        this.showSignup = true;
+      },
+      /**
+       * Call the admin panel service to logout the given user ids.
+       */
+      logoutUsersButtonClicked: async function () {
+        const userIds = this.selectedUsers;
+        this.$emit("logoutUsersByIds", userIds);
+      },
+      /**
+       * Call the admin panel service to delete the given user ids.
+       */
+      deleteUsersButtonClicked: async function () {
+        const userIds = this.selectedUsers;
+        this.$emit("deleteUsersByIds", userIds);
+      },
+
+      /**
+       * Open the trips page for the selected user.
+       */
+      viewTripsButtonClicked: function () {
+        const userId = this.selectedUsers[0];
+        this.$router.push(`/travellers/${userId}/trips`);
+      },
+      /**
+       * Format the user data to be displayed on the admin panel.
+       * Also filters user so it doesn't contain self
+       * Use a generic avatar untill photos are implemented.
+       */
+      mapUsers: function () {
+        return this.users
+            .filter(user => user.userId !== UserStore.data.userId)
+            .map(user => ({
+              avatar: this.photoUrl(user.profilePhoto),
+              userId: user.userId,
+              title: user.firstName + ' ' + user.lastName,
+              subtitle: 'Joined on ' + moment(user.timestamp).format("D/M/YYYY H:mm"),
+              selected: false,
+              roles: user.roles
+            }));
+      },
+      /**
+       * Gets the URL of a photo for a user
+       * @param {number} photoId the ID of the photo to get
+       * @returns {string} the url of the photo
+       */
+      photoUrl(profilePhoto) {
+        if (profilePhoto != null) {
           const authToken = localStorage.getItem("authToken");
           const queryAuthorization = `?Authorization=${authToken}`;
           return endpoint(`/users/photos/${profilePhoto.photoId}${queryAuthorization}`);
-      } else {
+        } else {
           return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
+        }
+      },
+      /**
+       * Redirect the user so they can view/use the application as another user.
+       * (Used by admins to browse as a user and change their account).
+       */
+      viewAsUserClicked() {
+        const user = this.users.filter(user => user.userId == this.selectedUsers[0])[0];
+        UserStore.methods.viewAsAnotherUser(user);
+        this.$router.push(`/profile/${user.userId}`);
+      },
+      /**
+       * Emits event to add admin priviledge to a user
+       */
+      addAdminPriviledge() {
+        this.$emit("addAdminPriviledge", this.selectedUsers[0]);
+      },
+      /**
+       * Emits event to remove admin priviledge from a user
+       */
+      removeAdminPriviledge() {
+        this.$emit('removeAdminPriviledge', this.selectedUsers[0]);
       }
     },
-		/**
-		 * Redirect the user so they can view/use the application as another user.
-		 * (Used by admins to browse as a user and change their account).
-		 */
-    viewAsUserClicked() {
-      const user = this.users.filter(user => user.userId == this.selectedUsers[0])[0];
-      UserStore.methods.viewAsAnotherUser(user);
-      this.$router.push(`/profile/${user.userId}`);
+    props: ["users"],
+    watch: {
+      users(newUsers) {
+        this.items = this.mapUsers();
+      }
     },
-    /**
-     * Emits event to add admin priviledge to a user
-     */
-    addAdminPriviledge() {
-      this.$emit("addAdminPriviledge", this.selectedUsers[0]);
-    },
-    /**
-     * Emits event to remove admin priviledge from a user
-     */
-    removeAdminPriviledge() {
-      this.$emit('removeAdminPriviledge', this.selectedUsers[0]);
-    }
-  },
-  props: ["users"],
-  watch: {
-    users(newUsers) {
-      this.items = this.mapUsers();
-    }
-  },
-}
+  }
 </script>
 
 
@@ -338,6 +335,7 @@ export default {
       p {
         text-align: left;
       }
+
       flex-grow: 1;
       justify-self: start;
     }

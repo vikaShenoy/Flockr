@@ -1,13 +1,13 @@
 <template>
   <div id="destination-photo" v-if="photo">
     <v-speed-dial
-      v-model="fab"
-      bottom
-      right
-      direction="top"
-      :open-on-hover="false"
-      transition="slide-y-reverse-transition"
-      id="permissions-button"
+            v-model="fab"
+            bottom
+            right
+            direction="top"
+            :open-on-hover="false"
+            transition="slide-y-reverse-transition"
+            id="permissions-button"
     >
       <template v-slot:activator>
         <v-btn v-if="hasModifyRights" v-model="fab" color="blue darken-2" dark fab>

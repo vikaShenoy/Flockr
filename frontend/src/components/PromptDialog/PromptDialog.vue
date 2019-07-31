@@ -78,10 +78,10 @@
 <style lang="scss" scoped>
 
   pre {
-    white-space: pre-wrap;      /* Since CSS 2.1 */
+    white-space: pre-wrap; /* Since CSS 2.1 */
     white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-    white-space: -o-pre-wrap;   /* Opera 7 */
-    word-wrap: break-word;      /* Internet Explorer 5.5+ */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
     font-family: 'Roboto', sans-serif;
     font-size: 1em;
     text-align: center;

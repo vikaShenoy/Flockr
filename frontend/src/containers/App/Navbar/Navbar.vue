@@ -8,14 +8,14 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../../../styles/_variables.scss";
+  @import "../../../styles/_variables.scss";
 
-#navbar {
-  width: 100%;
-  background-color: $secondary;
-  color: white;
-  position: fixed;
-  z-index: 3;
-}
+  #navbar {
+    width: 100%;
+    background-color: $secondary;
+    color: white;
+    position: fixed;
+    z-index: 3;
+  }
 </style>
 

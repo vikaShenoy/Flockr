@@ -3,8 +3,8 @@
     <div class="row">
       <div class="col-lg-4">
         <img
-          class="profile-pic"
-          src="./tempPic.jpg"
+                class="profile-pic"
+                src="./tempPic.jpg"
         >
       </div>
       <div class="col-lg-4">
@@ -22,31 +22,33 @@
       </div>
 
       <div
-        class="col-lg-4"
-        style="border-left: 1px solid rgba(0,0,0,0.12)"
+              class="col-lg-4"
+              style="border-left: 1px solid rgba(0,0,0,0.12)"
       >
         <div>
           <b>Nationalities</b>
-          <br />
+          <br/>
 
           <v-chip
-            v-for="nationality in traveller.nationalities"
-            v-bind:key="nationality.nationalityId"
-            color="primary"
-            text-color="white"
-          >{{ nationality.nationalityName }}</v-chip>
+                  v-for="nationality in traveller.nationalities"
+                  v-bind:key="nationality.nationalityId"
+                  color="primary"
+                  text-color="white"
+          >{{ nationality.nationalityName }}
+          </v-chip>
         </div>
 
         <div>
           <b>Passports</b>
-          <br />
+          <br/>
 
           <v-chip
-            v-for="passport in traveller.passports"
-            v-bind:key="passport.passportId"
-            color="primary"
-            text-color="white"
-          >{{ passport.passportCountry }}</v-chip>
+                  v-for="passport in traveller.passports"
+                  v-bind:key="passport.passportId"
+                  color="primary"
+                  text-color="white"
+          >{{ passport.passportCountry }}
+          </v-chip>
         </div>
 
       </div>
@@ -56,52 +58,53 @@
 </template>
 
 <script>
-import moment from "moment";
+  import moment from "moment";
 
 
-export default {
-  props: ["traveller"],
-  methods: {
-    /**
-     * Formats a timestamp to a readable date
-     * @param {string} dateTimestamp The timestamp to format
-     * @return {string} The formatted date
-     */
-    formatDateOfBirth(dateTimestamp) {
-      return moment(dateTimestamp).format("YYYY-MM-DD");
+  export default {
+    props: ["traveller"],
+    methods: {
+      /**
+       * Formats a timestamp to a readable date
+       * @param {string} dateTimestamp The timestamp to format
+       * @return {string} The formatted date
+       */
+      formatDateOfBirth(dateTimestamp) {
+        return moment(dateTimestamp).format("YYYY-MM-DD");
+      }
     }
-  }
-};
+  };
 </script>
 
 
 <style lang="scss" scoped>
-@import "../../../styles/_variables.scss";
-.traveller {
-  padding: 20px;
-  margin-top: 20px;
-  cursor: pointer;
+  @import "../../../styles/_variables.scss";
 
-  &:hover {
-    background-color: #f4f4f4;
+  .traveller {
+    padding: 20px;
+    margin-top: 20px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f4f4f4;
+    }
   }
-}
 
-.profile-pic {
-  width: 100%;
-  height: auto;
-}
+  .profile-pic {
+    width: 100%;
+    height: auto;
+  }
 
-.attribute-key {
-  margin-bottom: 10px;
-  width: 50%;
-  display: inline-block;
-}
+  .attribute-key {
+    margin-bottom: 10px;
+    width: 50%;
+    display: inline-block;
+  }
 
-.attribute-value {
-  margin-bottom: 10px;
-  width: 50%;
-  display: inline-block;
-}
+  .attribute-value {
+    margin-bottom: 10px;
+    width: 50%;
+    display: inline-block;
+  }
 </style>
 

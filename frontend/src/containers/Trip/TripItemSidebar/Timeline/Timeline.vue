@@ -1,60 +1,61 @@
 <template>
-    <div id="trip-container">
-            <v-timeline
-              dense
-            >
-                <!--data-destinationId is used to disable sorting items with the same destinationID-->
-                <TripDestination
-                    v-for="tripDestination in trip.tripDestinations"
-                    v-bind:key="tripDestination.tripDestinationId"
-                    :tripDestination="tripDestination"
-                    alignRight
-                    v-on:showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
-                    v-on:deleteTripDestination="deleteTripDestination => $emit('deleteTripDestination', tripDestination)"
-                />
-            </v-timeline>
-    </div>    
+  <div id="trip-container">
+    <v-timeline
+            dense
+    >
+      <!--data-destinationId is used to disable sorting items with the same destinationID-->
+      <TripDestination
+              v-for="tripDestination in trip.tripDestinations"
+              v-bind:key="tripDestination.tripDestinationId"
+              :tripDestination="tripDestination"
+              alignRight
+              v-on:showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
+              v-on:deleteTripDestination="deleteTripDestination => $emit('deleteTripDestination', tripDestination)"
+      />
+    </v-timeline>
+  </div>
 </template>
 
 
 <script>
-import Sortable from "sortablejs";
-import TripDestination from "./TripDestination/TripDestination";
-export default {
+  import Sortable from "sortablejs";
+  import TripDestination from "./TripDestination/TripDestination";
+
+  export default {
     name: "Trip",
     props: {
-        trip: {
-            tripName: String,
-            tripDestinations: Object
-        }
+      trip: {
+        tripName: String,
+        tripDestinations: Object
+      }
     },
     components: {
-       TripDestination 
+      TripDestination
     },
     mounted() {
-        this.initSorting();
+      this.initSorting();
     },
     methods: {
-        initSorting() {
+      initSorting() {
         const table = document.querySelector(".v-timeline");
         Sortable.create(table, {
-            animation: 150,
-            onEnd: ({ newIndex, oldIndex }) => {
-                this.$emit("destinationOrderChanged", {newIndex, oldIndex});
-            }
+          animation: 150,
+          onEnd: ({newIndex, oldIndex}) => {
+            this.$emit("destinationOrderChanged", {newIndex, oldIndex});
+          }
         });
-        }
-   }
-}
+      }
+    }
+  }
 </script>
 
 <style lang="scss" scoped>
-    #trip-container {
-        width: 100%;
-    }
+  #trip-container {
+    width: 100%;
+  }
 
-    h2 {
-        text-align: center;
-        padding: 15px;
-    }
+  h2 {
+    text-align: center;
+    padding: 15px;
+  }
 </style>

@@ -1,15 +1,15 @@
 <template>
   <div style="width: 100%">
     <div v-if="travellers">
-    <div v-if="travellers.length">
-      <div
-        class="row"
-        v-for="traveller in travellers"
-        v-bind:key="traveller.userId"
-      >
-        <Traveller :traveller="traveller"/>
-     </div>
-    </div>
+      <div v-if="travellers.length">
+        <div
+                class="row"
+                v-for="traveller in travellers"
+                v-bind:key="traveller.userId"
+        >
+          <Traveller :traveller="traveller"/>
+        </div>
+      </div>
     </div>
     <div v-else>Sorry there are no travellers</div>
   </div>
@@ -21,28 +21,28 @@
   import {getTravellers} from "./TravellersService";
 
   export default {
-  components: {
-    Traveller
-  },
-  data() {
-    return {
-      travellers: null
-    };
-  },
-  mounted() {
-    this.getTravellers();
-  },
-  methods: {
-    async getTravellers() {
-      try {
-        this.travellers = await getTravellers();
-      } catch (e) {
-        console.log(e);
-        // Add error handling later
+    components: {
+      Traveller
+    },
+    data() {
+      return {
+        travellers: null
+      };
+    },
+    mounted() {
+      this.getTravellers();
+    },
+    methods: {
+      async getTravellers() {
+        try {
+          this.travellers = await getTravellers();
+        } catch (e) {
+          console.log(e);
+          // Add error handling later
+        }
       }
     }
-  }
-};
+  };
 </script>
 
 

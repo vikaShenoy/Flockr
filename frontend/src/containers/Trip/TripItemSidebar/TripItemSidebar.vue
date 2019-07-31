@@ -1,103 +1,102 @@
 <template>
   <v-card
-    id="trip-item-sidebar"
-    :elevation="20"
+          id="trip-item-sidebar"
+          :elevation="20"
   >
-  <div id="title" v-if="trip">
-    <h2>{{ trip.tripName }}</h2>
-  </div>
-
-  <div id="trip-destinations-list">
-    <div v-if="!trip" id="spinner">
-      <v-progress-circular
-        indeterminate
-        color="secondary"
-        style="align-self: center;"
-      >
-      </v-progress-circular>
-
+    <div id="title" v-if="trip">
+      <h2>{{ trip.tripName }}</h2>
     </div>
 
-    <div v-else>
-      <Timeline
-        :trip="trip"
-        v-on:destinationOrderChanged="destinationOrderChanged"
-        v-on:showEditTripDestination="showEditTripDestination"
-        v-on:deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
-       />
+    <div id="trip-destinations-list">
+      <div v-if="!trip" id="spinner">
+        <v-progress-circular
+                indeterminate
+                color="secondary"
+                style="align-self: center;"
+        >
+        </v-progress-circular>
 
-       <v-btn 
-        depressed
-        color="secondary"
-        id="add-trip-destination-btn"
-        @click="isShowingAddDestinationDialog = true"
-       >
-       Add Destination
+      </div>
+
+      <div v-else>
+        <Timeline
+                :trip="trip"
+                v-on:destinationOrderChanged="destinationOrderChanged"
+                v-on:showEditTripDestination="showEditTripDestination"
+                v-on:deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
+        />
+
+        <v-btn
+                depressed
+                color="secondary"
+                id="add-trip-destination-btn"
+                @click="isShowingAddDestinationDialog = true"
+        >
+          Add Destination
         </v-btn>
 
-        <ModifyTripDestinationDialog 
-          :isShowing.sync="isShowingAddDestinationDialog" 
-          :editMode="false"
-          :trip="trip"
-          v-on:updatedTripDestinations="tripDestinationsUpdated"
+        <ModifyTripDestinationDialog
+                :isShowing.sync="isShowingAddDestinationDialog"
+                :editMode="false"
+                :trip="trip"
+                v-on:updatedTripDestinations="tripDestinationsUpdated"
         />
 
-        <ModifyTripDestinationDialog 
-          :isShowing.sync="isShowingUpdateDestinationDialog" 
-          :editMode="true"
-          :trip="trip"
-          v-on:updatedTripDestinations="tripDestinationsUpdated"
-          :editedTripDestination="editedTripDestination"
+        <ModifyTripDestinationDialog
+                :isShowing.sync="isShowingUpdateDestinationDialog"
+                :editMode="true"
+                :trip="trip"
+                v-on:updatedTripDestinations="tripDestinationsUpdated"
+                :editedTripDestination="editedTripDestination"
         />
+      </div>
     </div>
-  </div>
 
   </v-card>
 </template>
 
 <script>
-import Sortable from "sortablejs";
-import Timeline from "./Timeline/Timeline.vue";
-import ModifyTripDestinationDialog from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
+  import Timeline from "./Timeline/Timeline.vue";
+  import ModifyTripDestinationDialog from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
 
 
-export default {
-  components: {
-    Timeline,
-    ModifyTripDestinationDialog
-  },
-  data() {
-    return {
-      isShowingAddDestinationDialog: false,
-      isShowingUpdateDestinationDialog: false,
-      editedTripDestination: null,
-    };
-  },
-  props: {
-    trip: {
-      required: true
-    }
-  },
-  methods: {
-    /**
-     * Emitted when the order of destinations have changed
-     */
-    destinationOrderChanged(indexes) {
-      this.$emit("destinationOrderChanged", indexes);
+  export default {
+    components: {
+      Timeline,
+      ModifyTripDestinationDialog
     },
-    /**
-     * Called when the edit button has been pressed on
-     * a trip destination
-     */
-    showEditTripDestination(tripDestination) {
-      this.isShowingUpdateDestinationDialog = true; 
-      this.editedTripDestination = tripDestination;
+    data() {
+      return {
+        isShowingAddDestinationDialog: false,
+        isShowingUpdateDestinationDialog: false,
+        editedTripDestination: null,
+      };
     },
-    tripDestinationsUpdated(tripDestinations) {
-      this.$emit("updatedTripDestinations", tripDestinations);
+    props: {
+      trip: {
+        required: true
+      }
+    },
+    methods: {
+      /**
+       * Emitted when the order of destinations have changed
+       */
+      destinationOrderChanged(indexes) {
+        this.$emit("destinationOrderChanged", indexes);
+      },
+      /**
+       * Called when the edit button has been pressed on
+       * a trip destination
+       */
+      showEditTripDestination(tripDestination) {
+        this.isShowingUpdateDestinationDialog = true;
+        this.editedTripDestination = tripDestination;
+      },
+      tripDestinationsUpdated(tripDestinations) {
+        this.$emit("updatedTripDestinations", tripDestinations);
+      }
     }
   }
-}
 
 </script>
 
@@ -108,7 +107,7 @@ export default {
 
   #trip-item-sidebar {
     position: fixed;
-    width: 315px; 
+    width: 315px;
     right: 0;
     height: calc(100vh - 64px);
 

@@ -8,25 +8,26 @@
 </template>
 
 <script>
-export default {
-  data () {
+  export default {
+    data() {
       return {
         e1: 0
       }
     }
-}
+  }
 </script>
 
 
 <style lang="scss" scoped>
-@import "../../styles/_variables.scss";
+  @import "../../styles/_variables.scss";
+
   #home {
     display: flex;
     align-items: center;
     justify-content: center;
     background-image: url("../../assets/background.jpg");
     background-size: cover;
-    box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5);
+    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, .5);
     width: 100%;
     height: 100%;
 

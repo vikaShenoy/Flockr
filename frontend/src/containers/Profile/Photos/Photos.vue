@@ -1,10 +1,10 @@
 <template>
   <div>
     <div style="display: flex">
-    <h3 style="margin-bottom: 0px;margin-top: 9px;text-align:left; width: 50%">Photos</h3>
-    <v-spacer align="right">
-      <v-btn v-if="photos.length" color="secondary" small flat v-on:click="openGallery">View Gallery</v-btn>
-    </v-spacer>
+      <h3 style="margin-bottom: 0px;margin-top: 9px;text-align:left; width: 50%">Photos</h3>
+      <v-spacer align="right">
+        <v-btn v-if="photos.length" color="secondary" small flat v-on:click="openGallery">View Gallery</v-btn>
+      </v-spacer>
     </div>
 
     <v-card id="photos">
@@ -14,8 +14,8 @@
           <v-layout v-if="photos && photos.length" row wrap>
             <v-flex sm12 md6 lg4 v-for="(photo, index) in photos" v-bind:key="photo.photoId">
               <v-img v-if="index < 6" class="photo clickable"
-                :src="thumbnailUrl(photo.photoId)"
-                @click="openViewPhotoDialog(photo, index)"
+                     :src="thumbnailUrl(photo.photoId)"
+                     @click="openViewPhotoDialog(photo, index)"
               />
             </v-flex>
           </v-layout>
@@ -33,30 +33,30 @@
       <v-card-actions>
         <v-spacer align="center">
           <AddPhotoDialog
-            :dialog="addPhotoDialog"
-            v-on:closeDialog="closeAddPhotoDialog"
-            v-on:addImage="addImage"
+                  :dialog="addPhotoDialog"
+                  v-on:closeDialog="closeAddPhotoDialog"
+                  v-on:addImage="addImage"
           />
         </v-spacer>
       </v-card-actions>
     </v-card>
 
     <PhotoPanel
-      :photo="currentPhoto"
-      :showDialog="viewPhotoDialog"
-      :currentPhotoIndex="currentPhotoIndex"
-      :deleteFunction="currentPhotoDeleteFunction"
-      v-on:closeDialog="updatePhotoDialog"
-      @deletePhoto="showPromptDialog"
-      @displayErrorMessage="displayErrorMessage"
-      @changedPermission="changedPermission"
+            :photo="currentPhoto"
+            :showDialog="viewPhotoDialog"
+            :currentPhotoIndex="currentPhotoIndex"
+            :deleteFunction="currentPhotoDeleteFunction"
+            v-on:closeDialog="updatePhotoDialog"
+            @deletePhoto="showPromptDialog"
+            @displayErrorMessage="displayErrorMessage"
+            @changedPermission="changedPermission"
     />
     <snackbar :snackbarModel="this.snackbarModel" @dismissSnackbar="snackbarModel.show=false"/>
     <prompt-dialog
-      :onConfirm="promptDialog.deleteFunction"
-      :dialog="promptDialog.show"
-      :message="promptDialog.message"
-      @promptEnded="promptEnded"
+            :onConfirm="promptDialog.deleteFunction"
+            :dialog="promptDialog.show"
+            :message="promptDialog.message"
+            @promptEnded="promptEnded"
     />
 
   </div>
@@ -64,7 +64,7 @@
 
 <script>
   import AddPhotoDialog from "./AddPhotoDialog/AddPhotoDialog";
-  import { endpoint } from "../../../utils/endpoint";
+  import {endpoint} from "../../../utils/endpoint";
   import PhotoPanel from "../../UserGallery/PhotoPanel/PhotoPanel";
   import PromptDialog from "../../../components/PromptDialog/PromptDialog";
   import Snackbar from "../../../components/Snackbars/Snackbar";
@@ -73,7 +73,7 @@
 
   export default {
     props: {
-      photos: Array 
+      photos: Array
     },
     components: {
       Snackbar,
@@ -176,7 +176,7 @@
             this.$emit("deletePhoto", index, true);
 
             const deleteCommand = new Command(undoCommand.bind(null, index, photo),
-				redoCommand.bind(null, index, photo));
+                redoCommand.bind(null, index, photo));
             this.$emit("addPhotoCommand", deleteCommand);
           } catch (error) {
             this.$emit("showError", error.message);
@@ -257,6 +257,6 @@
   #grid-container {
     padding: 0px;
   }
-  
+
 
 </style>

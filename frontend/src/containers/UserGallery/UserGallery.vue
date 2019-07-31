@@ -5,9 +5,9 @@
         <h1>Photo Gallery</h1>
       </v-spacer>
     </v-card-title>
-	  <v-spacer align="right">
-		  <UndoRedo style="padding: 20px" ref="undoRedo"/>
-	  </v-spacer>
+    <v-spacer align="right">
+      <UndoRedo style="padding: 20px" ref="undoRedo"/>
+    </v-spacer>
     <v-responsive>
       <v-container grid-list fluid>
         <v-layout row wrap>
@@ -45,7 +45,7 @@
             :showDialog="showPhotoDialog"
             v-on:closeDialog="updatePhotoDialog"
             @deletePhoto="showPromptDialog"
-			@addPhotoCommand="addPhotoCommand"
+            @addPhotoCommand="addPhotoCommand"
             :currentPhotoIndex="currentPhotoIndex"
             @displayErrorMessage="displayErrorMessage"
             @changedPermission="changedPermission"/>
@@ -105,9 +105,9 @@
      * A list of methods to be used in this page.
      */
     methods: {
-	  addPhotoCommand(command) {
-      this.$refs.undoRedo.addUndo(command);
-	  },
+      addPhotoCommand(command) {
+        this.$refs.undoRedo.addUndo(command);
+      },
       /**
        * Called when the show value in the photo dialog is changed.
        * Updates the showPhotoDialog boolean to match the photo dialog.
@@ -196,24 +196,24 @@
         this.photos.splice(index, 1);
         this.updatePhotoDialog(false);
         if (displaySnackbar) {
-		  this.snackbarModel.text = "Photo Successfully Deleted.";
-		  this.snackbarModel.color = "green";
-		  this.snackbarModel.show = true;
-		}
+          this.snackbarModel.text = "Photo Successfully Deleted.";
+          this.snackbarModel.color = "green";
+          this.snackbarModel.show = true;
+        }
       },
-	  /**
-	   * Called after the user undoes a photo delete.
-	   * Add the photo back in to the gallery.
-	   */
-	  afterUndoDelete(index, photo) {
+      /**
+       * Called after the user undoes a photo delete.
+       * Add the photo back in to the gallery.
+       */
+      afterUndoDelete(index, photo) {
         this.photos.splice(index, 0, photo);
         this.updatePhotoDialog(false);
 
-	  },
+      },
       /**
        * Gets a list of photos for the user from the server.
-	   * Create a delete function for a photo. Add the undo/redo commands to
-	   * the undoRedo component's stack.
+       * Create a delete function for a photo. Add the undo/redo commands to
+       * the undoRedo component's stack.
        */
       async getUsersPhotos() {
         try {
@@ -222,17 +222,17 @@
             const displayErrorMessage = this.displayErrorMessage;
             photo.deleteFunction = async () => {
               try {
-			    const undoCommand = async (index, photo) => {
-			        await undoDeleteUserPhoto(photo);
-			        this.afterUndoDelete(index, photo);
-				};
-			    const redoCommand = async (index, photo) => {
-			        await deleteUserPhoto(photo);
-                    this.afterDelete(index, false);
+                const undoCommand = async (index, photo) => {
+                  await undoDeleteUserPhoto(photo);
+                  this.afterUndoDelete(index, photo);
                 };
-			    const deleteCommand = new Command(undoCommand.bind(null, index, photo),
-					redoCommand.bind(null, index, photo));
-			    this.$refs.undoRedo.addUndo(deleteCommand);
+                const redoCommand = async (index, photo) => {
+                  await deleteUserPhoto(photo);
+                  this.afterDelete(index, false);
+                };
+                const deleteCommand = new Command(undoCommand.bind(null, index, photo),
+                    redoCommand.bind(null, index, photo));
+                this.$refs.undoRedo.addUndo(deleteCommand);
 
                 await deleteUserPhoto(photo);
                 this.afterDelete(index, true);

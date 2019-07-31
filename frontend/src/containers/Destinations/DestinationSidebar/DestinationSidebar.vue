@@ -1,187 +1,186 @@
 <template>
   <v-card
-    id="destination-sidebar"
-    :elevation="20"
+          id="destination-sidebar"
+          :elevation="20"
   >
-  <div id="title">
-    <h2>Destinations</h2>
-    <v-btn
-      flat
-      color="secondary"
-      id="add-destination-btn"
-      @click="$emit('addDestinationClicked')"
-    >
-      <v-icon>add</v-icon>
-    </v-btn>
-
-    <div id="undo-redo">
-    <UndoRedo ref="undoRedo"/>
-    </div>
-
-   <v-btn-toggle v-model="viewOption" flat id="view-option" mandatory>
-      <v-btn class="option" value="your" v-bind:class="{'not-selected': viewOption !== 'your'}">
-        Your Destinations
-      </v-btn>
-      <v-btn flat class="option" value="public" v-bind:class="{'not-selected': viewOption !== 'public'}">
-        Public Destinations
-      </v-btn>
-   </v-btn-toggle>
-
-  </div>
-
-  <div id="destinations-list">
-    <div v-if="shouldShowSpinner" id="spinner">
-      <v-progress-circular
-        indeterminate
-        color="secondary"
-        style="align-self: center;"
+    <div id="title">
+      <h2>Destinations</h2>
+      <v-btn
+              flat
+              color="secondary"
+              id="add-destination-btn"
+              @click="$emit('addDestinationClicked')"
       >
-      </v-progress-circular>
+        <v-icon>add</v-icon>
+      </v-btn>
+
+      <div id="undo-redo">
+        <UndoRedo ref="undoRedo"/>
+      </div>
+
+      <v-btn-toggle v-model="viewOption" flat id="view-option" mandatory>
+        <v-btn class="option" value="your" v-bind:class="{'not-selected': viewOption !== 'your'}">
+          Your Destinations
+        </v-btn>
+        <v-btn flat class="option" value="public" v-bind:class="{'not-selected': viewOption !== 'public'}">
+          Public Destinations
+        </v-btn>
+      </v-btn-toggle>
 
     </div>
 
-    <div v-else>
-      <DestinationSummary
-        v-for="destination in getDestinationsList"
-        v-bind:key="destination.destinationId"
-        :destination="destination"
-        @showDeleteDestination="showDeleteDestination"
-      />
+    <div id="destinations-list">
+      <div v-if="shouldShowSpinner" id="spinner">
+        <v-progress-circular
+                indeterminate
+                color="secondary"
+                style="align-self: center;"
+        >
+        </v-progress-circular>
+
+      </div>
+
+      <div v-else>
+        <DestinationSummary
+                v-for="destination in getDestinationsList"
+                v-bind:key="destination.destinationId"
+                :destination="destination"
+                @showDeleteDestination="showDeleteDestination"
+        />
+      </div>
+
     </div>
 
-  </div>
+    <PromptDialog
+            :dialog="isShowingDeleteDestDialog"
+            message="Are you sure you want to delete the destination?"
+            :onConfirm="deleteDestination"
+            v-on:promptEnded="isShowingDeleteDestDialog = false"
+    />
 
-  <PromptDialog
-    :dialog="isShowingDeleteDestDialog" 
-    message="Are you sure you want to delete the destination?"
-    :onConfirm="deleteDestination"
-    v-on:promptEnded="isShowingDeleteDestDialog = false"
-  />
+    <AlertDialog
+            title="Cannot delete destination"
+            :dialog.sync="cannotDeleteDestDialog"
+    >
+      The destination that you are trying to delete is in the following trips
 
-  <AlertDialog
-    title="Cannot delete destination"
-    :dialog.sync="cannotDeleteDestDialog"
-  >
-    The destination that you are trying to delete is in the following trips 
+      <ul>
+        <li v-for="usedTrip in usedTrips" v-bind:key="usedTrip.tripId">{{ usedTrip.tripName }}</li>
+      </ul>
 
-    <ul>
-      <li v-for="usedTrip in usedTrips" v-bind:key="usedTrip.tripId">{{ usedTrip.tripName }}</li>
-    </ul>
-    
-  </AlertDialog>
-
+    </AlertDialog>
 
 
   </v-card>
 </template>
 
 <script>
-import DestinationSummary from "./DestinationSummary/DestinationSummary";
-import PromptDialog from "../../../components/PromptDialog/PromptDialog";
-import { getUserTrips, deleteDestination, undoDeleteDestination } from "./DestinationSidebarService";
-import AlertDialog from "../../../components/AlertDialog/AlertDialog";
-import UndoRedo from "../../../components/UndoRedo/UndoRedo";
-import Command from '../../../components/UndoRedo/Command';
+  import DestinationSummary from "./DestinationSummary/DestinationSummary";
+  import PromptDialog from "../../../components/PromptDialog/PromptDialog";
+  import {deleteDestination, getUserTrips, undoDeleteDestination} from "./DestinationSidebarService";
+  import AlertDialog from "../../../components/AlertDialog/AlertDialog";
+  import UndoRedo from "../../../components/UndoRedo/UndoRedo";
+  import Command from '../../../components/UndoRedo/Command';
 
-export default {
-  props: ["yourDestinations", "publicDestinations"],
-  components: {
-    DestinationSummary,
-    PromptDialog,
-    AlertDialog,
-    UndoRedo,
-  },
-  data() {
-    return {
-      viewOption: "your",
-      isShowingDeleteDestDialog: false,
-      trips: [],
-      cannotDeleteDestDialog: false,
-      currentDeletingDestinationId: null,
-      usedTrips: []
-    };
-  },
-  mounted() {
-    this.getUserTrips(); 
-  },
-  methods: {
-    /**
-     * Get a user's trips.
-     */
-    async getUserTrips() {
-      const userTrips = await getUserTrips();
-      this.trips = userTrips;
+  export default {
+    props: ["yourDestinations", "publicDestinations"],
+    components: {
+      DestinationSummary,
+      PromptDialog,
+      AlertDialog,
+      UndoRedo,
     },
-
-		/**
-		 * Delete a destination. Refresh the destination list to remove it. Add the undo/redo commands to the stack.
-		 */
-    async deleteDestination() {
-      const undoCommand = async (destinationId) => {
-        await undoDeleteDestination(destinationId);
-        this.$emit("refreshDestinations", destinationId);
+    data() {
+      return {
+        viewOption: "your",
+        isShowingDeleteDestDialog: false,
+        trips: [],
+        cannotDeleteDestDialog: false,
+        currentDeletingDestinationId: null,
+        usedTrips: []
       };
+    },
+    mounted() {
+      this.getUserTrips();
+    },
+    methods: {
+      /**
+       * Get a user's trips.
+       */
+      async getUserTrips() {
+        const userTrips = await getUserTrips();
+        this.trips = userTrips;
+      },
 
-      const redoCommand = async (destinationId) => {
+      /**
+       * Delete a destination. Refresh the destination list to remove it. Add the undo/redo commands to the stack.
+       */
+      async deleteDestination() {
+        const undoCommand = async (destinationId) => {
+          await undoDeleteDestination(destinationId);
+          this.$emit("refreshDestinations", destinationId);
+        };
+
+        const redoCommand = async (destinationId) => {
+          await deleteDestination(this.currentDeletingDestinationId);
+          this.$emit("refreshDestinations", destinationId);
+        };
+
+        const deleteDestinationCommand = new Command(undoCommand.bind(null, this.currentDeletingDestinationId),
+            redoCommand.bind(this.currentDeletingDestinationId));
+        this.$refs.undoRedo.addUndo(deleteDestinationCommand);
         await deleteDestination(this.currentDeletingDestinationId);
-        this.$emit("refreshDestinations", destinationId);
-      };
-      
-      const deleteDestinationCommand = new Command(undoCommand.bind(null, this.currentDeletingDestinationId),
-					redoCommand.bind(this.currentDeletingDestinationId));
-      this.$refs.undoRedo.addUndo(deleteDestinationCommand);
-      await deleteDestination(this.currentDeletingDestinationId);
-      this.$emit("refreshDestinations");
-    },
-    /**
-     * Gets trips that are using a specific destination
-     */
-    getTripsUsingDestination(destinationId) {
-      return this.trips.filter(trip => {
-        const usedTripDestinations = trip.tripDestinations.filter(tripDestination => {
-          return tripDestination.destination.destinationId === destinationId;
-        }); 
+        this.$emit("refreshDestinations");
+      },
+      /**
+       * Gets trips that are using a specific destination
+       */
+      getTripsUsingDestination(destinationId) {
+        return this.trips.filter(trip => {
+          const usedTripDestinations = trip.tripDestinations.filter(tripDestination => {
+            return tripDestination.destination.destinationId === destinationId;
+          });
 
-        return usedTripDestinations.length;
-      });
-    },
+          return usedTripDestinations.length;
+        });
+      },
 
-    showDeleteDestination(destinationId) {
-      const usedTrips = this.getTripsUsingDestination(destinationId);
-      if (usedTrips.length) {
-        this.usedTrips = usedTrips;
-        this.cannotDeleteDestDialog = true;
-      } else {
-        this.isShowingDeleteDestDialog = true;
-        this.currentDeletingDestinationId = destinationId;
+      showDeleteDestination(destinationId) {
+        const usedTrips = this.getTripsUsingDestination(destinationId);
+        if (usedTrips.length) {
+          this.usedTrips = usedTrips;
+          this.cannotDeleteDestDialog = true;
+        } else {
+          this.isShowingDeleteDestDialog = true;
+          this.currentDeletingDestinationId = destinationId;
+        }
+      },
+      /**
+       * Method to add an undo/redo command to the undo/redo stack.
+       */
+      addUndoRedoCommand(command) {
+        this.$refs.undoRedo.addUndo(command)
       }
     },
-    /**
-     * Method to add an undo/redo command to the undo/redo stack.
-     */
-    addUndoRedoCommand(command) {
-      this.$refs.undoRedo.addUndo(command)
-    }
-  },
-  computed: {
-    shouldShowSpinner() {
-      return this.viewOption === "your" && !this.yourDestinations || this.viewOption === "public" && !this.publicDestinations;
+    computed: {
+      shouldShowSpinner() {
+        return this.viewOption === "your" && !this.yourDestinations || this.viewOption === "public" && !this.publicDestinations;
+      },
+      /*
+        Retrieves the destination list corresponding to whether your or public destinations
+        are selected
+      */
+      getDestinationsList() {
+        return this.viewOption === "your" ? this.yourDestinations : this.publicDestinations;
+      }
     },
-    /*
-      Retrieves the destination list corresponding to whether your or public destinations
-      are selected 
-    */
-    getDestinationsList() {
-      return this.viewOption === "your" ? this.yourDestinations : this.publicDestinations;
+    watch: {
+      viewOption(newViewOption) {
+        this.$emit("viewOptionChanged", newViewOption);
+      }
     }
-  },
-  watch: {
-    viewOption(newViewOption) {
-      this.$emit("viewOptionChanged", newViewOption); 
-    }
+
   }
-  
-}
 
 </script>
 
@@ -192,7 +191,7 @@ export default {
 
   #destination-sidebar {
     height: 100%;
-    width: 315px; 
+    width: 315px;
     float: right;
 
     #title {
@@ -248,7 +247,7 @@ export default {
       position: absolute;
       right: 25px;
       margin-top: 17px;
-      
+
     }
   }
 </style>

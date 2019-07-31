@@ -2,10 +2,10 @@
   <v-dialog width="80%" v-model="showPhotoDialog">
     <v-card>
       <destination-photo
-        :photo="photo"
-        @displayError="displayError"
-        @permissionUpdated="permissionUpdated"
-        :hasModifyRights="hasPhotoModifyRights"
+              :photo="photo"
+              @displayError="displayError"
+              @permissionUpdated="permissionUpdated"
+              :hasModifyRights="hasPhotoModifyRights"
       />
       <v-card-actions>
         <v-spacer align="left">
@@ -26,6 +26,7 @@
 <script>
   import DestinationPhoto from "../../../../components/DestinationPhoto/DestinationPhoto";
   import UserStore from "../../../../stores/UserStore";
+
   export default {
     name: "destination-photo-panel",
     components: {DestinationPhoto},
@@ -100,7 +101,7 @@
        * Calculates if the user has admin rights.
        */
       onPhotoChanged() {
-        if (![null,undefined].includes(this.photo)) {
+        if (![null, undefined].includes(this.photo)) {
           this.hasPhotoModifyRights = localStorage.getItem("userId") === this.photo.personalPhoto.ownerId.toString() || UserStore.methods.isAdmin();
         }
       },
