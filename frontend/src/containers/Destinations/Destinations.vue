@@ -90,8 +90,7 @@
        */
       async getPublicDestinations() {
         try {
-          const publicDestinations = await getPublicDestinations();
-          this.publicDestinations = publicDestinations;
+          this.publicDestinations = await getPublicDestinations();
         } catch (e) {
           console.log("Could not get public destinations");
         }
