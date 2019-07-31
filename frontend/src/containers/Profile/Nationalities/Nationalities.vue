@@ -23,7 +23,7 @@
                 v-bind:key="nationality.nationalityId"
                 color="primary"
                 text-color="white">
-          <CountryDisplay v-bind:country="nationality.nationalityName"/>
+          <CountryDisplay v-bind:country="nationality.nationalityCountry"/>
         </v-chip>
 
         <span v-if="!userNationalities.length">Please provide at least one Nationality</span>

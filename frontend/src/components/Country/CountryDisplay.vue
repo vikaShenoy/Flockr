@@ -1,6 +1,6 @@
 <template>
-  <span v-if="isValid"> {{ this.country }}</span>
-  <span class="invalid" v-else>Formerly {{ this.country }}</span>
+  <span v-if="this.country.isValid"> {{ this.country.countryName }}</span>
+  <span class="invalid" v-else>Formerly {{ this.country.countryName }}</span>
 </template>
 
 <script>
@@ -9,38 +9,18 @@
   export default {
     props: {
       country: {
-        type: String
+        type: Object 
       }
     },
     data() {
       return {
-        countries: null,
-        isValid: false
+        countries: null
       }
     },
-    methods: {
-      /**
-       * Check whether a country is valid by looking for it in the master
-       * country list.
-       * Set the valid flag.
-       */
-      countryIsValid() {
-        const foundCountry = this.countries.find((c) => {
-          return c.countryName === this.country
-        });
-        this.isValid = foundCountry.isValid;
+    watch: {
+      country(newValue){
+        console.log(newValue);
       }
-    },
-    computed: {},
-    /**
-     * Populate the list of countries from backend.
-     * Check whether the country being displayed in valid.
-     * @returns {Promise<void>}
-     */
-    async mounted() {
-      const countryPromise = getCountries();
-      this.countries = await Promise.resolve(countryPromise);
-      this.countryIsValid();
     }
   }
 </script>

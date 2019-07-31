@@ -20,7 +20,7 @@
                 color="primary"
                 text-color="white"
         >
-          <CountryDisplay v-bind:country="passport.passportCountry"/>
+          <CountryDisplay v-bind:country="passport.country"/>
         </v-chip>
 
         <span v-if="!userPassports.length">Add your passports here</span>

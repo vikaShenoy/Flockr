@@ -8,7 +8,7 @@
 
       <v-flex class="destination-value" xs9>
         {{ destination.destinationDistrict.districtName }},&nbsp;<CountryDisplay
-              v-bind:country="destination.destinationCountry.countryName"/>
+              v-bind:country="destination.destinationCountry"/>
       </v-flex>
 
 

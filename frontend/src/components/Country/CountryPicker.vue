@@ -1,5 +1,5 @@
 <template>
-    <v-combobox :items="countries" item-text="countryName" item-value="countryId" v-model="selectedValue" label="Country"></v-combobox>
+    <v-combobox :items="countries" item-text="countryName" v-model="selectedValue" label="Country"></v-combobox>
 </template>
 
 <script>
@@ -7,7 +7,7 @@ import { getCountries } from './CountryService';
 export default {
     props: {
       country: {
-        type: Number
+        type: Object 
       }
     },
     data() {
@@ -24,6 +24,7 @@ export default {
     },
     watch: {
       selectedValue: function (newValue) {
+        if (!newValue) return;
         this.$emit('change', newValue)
       }
     }
