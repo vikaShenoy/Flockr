@@ -8,7 +8,7 @@ import models.User;
 
 import javax.inject.Inject;
 
-public class ChatActor extends AbstractActor {
+public class WebSocketActor extends AbstractActor {
 
 
     /**
@@ -18,7 +18,7 @@ public class ChatActor extends AbstractActor {
      * @return
      */
     public static Props props(ActorRef out, User user) {
-        return Props.create(ChatActor.class, out, user);
+        return Props.create(WebSocketActor.class, out, user);
     }
 
     private final ActorRef out;
@@ -30,7 +30,7 @@ public class ChatActor extends AbstractActor {
      * @param user The user that owns the websocket
      */
     @Inject
-    public ChatActor(ActorRef out, User user) {
+    public WebSocketActor(ActorRef out, User user) {
         ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
         this.out = out;
         connectedUsers.addConnectedUser(user, out);

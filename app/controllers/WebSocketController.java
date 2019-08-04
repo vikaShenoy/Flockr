@@ -1,6 +1,6 @@
 package controllers;
 
-import actors.ChatActor;
+import actors.WebSocketActor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -43,7 +43,7 @@ public class WebSocketController extends Controller {
     }
 
     /**
-     * Handles a new client websocket request
+     * Handles and authenticates a new client websocket request
      * @return A websocket or a forbidden response
      */
     public WebSocket socket() {
@@ -53,13 +53,10 @@ public class WebSocketController extends Controller {
              return authRepository.getByToken(authToken)
                      .thenApplyAsync(user -> {
                          if (!user.isPresent()) {
-                             System.out.println("I have unsuccessfully connected to my connected users");
                              return F.Either.<Result, Flow<String, String, ?>>Left(unauthorized());
                          }
 
-                         System.out.println("I have successfully added to my connected users");
-
-                         return F.Either.Right(ActorFlow.actorRef((actorRef) -> Props.create(ChatActor.class, actorRef, user.get()), actorSystem, materializer));
+                         return F.Either.Right(ActorFlow.actorRef((actorRef) -> Props.create(WebSocketActor.class, actorRef, user.get()), actorSystem, materializer));
                      });
         });
     }
