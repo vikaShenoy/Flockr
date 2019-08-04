@@ -26,18 +26,6 @@ export default {
   name: "App",
   data() {
     return {}
-  },
-  mounted() {
-    const socket = new WebSocket("ws://localhost:9000/ws");
-
-    socket.onopen = () => {
-      socket.send("Hello world");
-    }
-
-    socket.onmessage = (message) => {
-      console.log(message);
-    }
-    
   }
 }
 </script>

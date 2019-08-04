@@ -333,11 +333,10 @@
           if (this.isSigningUpAsAdmin) {
             this.$emit("exit", this.signedUpUserId);
           } else {
-            setTimeout(async () => {
               const user = await getUser(this.signedUpUserId);
               UserStore.methods.setData(user);
+              const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
               this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
-            }, 2000);
           }
 
           this.loading = false;

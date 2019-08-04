@@ -28,6 +28,7 @@ export async function loggedIn(to, from, next) {
   try {
     res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
+    const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
   } catch (e) {
     next("/login");
     return;
@@ -64,6 +65,7 @@ export async function loggedInOrOut(to, from, next) {
   try {
     res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
+    const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
   } catch (e) {
     next();
     return;
@@ -97,6 +99,7 @@ export async function isAdmin(to, from, next) {
   let res;
   try {
     res = await superagent.get(endpoint(`/users/${userId}`)).set("Authorization", userToken);
+    const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
   } catch (e) {
     next("/login");
     return;
