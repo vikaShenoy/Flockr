@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class ConnectedUsers {
     private static ConnectedUsers instance;
-    private Map<User, ActorRef> connectedUsers;
+    private Map<ActorRef, User> connectedUsers;
 
     /**
      * Creates connected users
@@ -19,8 +19,7 @@ public class ConnectedUsers {
     private ConnectedUsers() {
         connectedUsers = new HashMap<>();
     }
-
-    /**
+/**
      * Singleton getter for connected users
      * @return
      */
@@ -39,7 +38,7 @@ public class ConnectedUsers {
      * @param out The websocket object
      */
     public void addConnectedUser(User user, ActorRef out) {
-        connectedUsers.put(user, out);
+        connectedUsers.put(out, user);
     }
 
     /**
@@ -48,7 +47,17 @@ public class ConnectedUsers {
      */
     public void removeConnectedUser(ActorRef out) {
         // Note that if user is connected via multiple devices, they will only be removed from device that is being exited
-        connectedUsers.values().remove(out);
+        connectedUsers.remove(out);
     }
 
+    public Map<ActorRef, User> getConnectedUsers() {
+        return connectedUsers;
+    }
+
+    /**
+     * Clears all connected users
+     */
+    public void clear() {
+        connectedUsers.clear();
+    }
 }
