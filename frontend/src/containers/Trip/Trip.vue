@@ -38,6 +38,7 @@
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command"
+import UserStore from '../../stores/UserStore';
 
 
   export default {
@@ -62,6 +63,10 @@
     },
     mounted() {
       this.getTrip();
+
+      UserStore.data.socket.onmessage = (message) => {
+        this.getTrip();
+      }
     },
     methods: {
       showError(errorMessage) {

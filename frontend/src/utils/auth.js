@@ -25,16 +25,17 @@ export async function loggedIn(to, from, next) {
   }
 
   let res;
+  let socket;
   try {
     res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
-    const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+    socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
   } catch (e) {
     next("/login");
     return;
   }
 
-  UserStore.methods.setData(res.body);
+  UserStore.methods.setData(res.body, socket);
   
   next();
 }
@@ -62,16 +63,17 @@ export async function loggedInOrOut(to, from, next) {
   }
 
   let res;
+  let socket;
   try {
     res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
-    const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+    socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
   } catch (e) {
     next();
     return;
   }
 
-  UserStore.methods.setData(res.body);
+  UserStore.methods.setData(res.body, socket);
   next();
 }
 
@@ -97,15 +99,16 @@ export async function isAdmin(to, from, next) {
   }
 
   let res;
+  let socket;
   try {
     res = await superagent.get(endpoint(`/users/${userId}`)).set("Authorization", userToken);
-    const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+    socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
   } catch (e) {
     next("/login");
     return;
   }
 
-  UserStore.methods.setData(res.body);
+  UserStore.methods.setData(res.body, socket);
 
   if (UserStore.methods.isAdmin()) {
     next();

@@ -16,10 +16,11 @@ const UserStore = {
     travellerTypes: null,
     gender: null,
     timestamp: null,
-    viewingAsAnotherUser: false
+    viewingAsAnotherUser: false,
+    socket: null
   },
   methods: {
-    setData(user) {
+    setData(user, socket) {
       console.log("user is: ", user);
       UserStore.data.userId = user.userId;
       UserStore.data.firstName = user.firstName;
@@ -38,6 +39,10 @@ const UserStore = {
       const ownUserId = localStorage.getItem("ownUserId");
 
       UserStore.data.viewingAsAnotherUser = ownUserId !== userId;
+
+      if (socket) {
+        UserStore.data.socket = socket; 
+      }
     },
     /**
      * Check if a user is an admin

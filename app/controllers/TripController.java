@@ -2,6 +2,8 @@ package controllers;
 
 import actions.ActionState;
 import actions.LoggedIn;
+import actors.ConnectedUsers;
+import actors.TripNotifier;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
@@ -45,6 +47,7 @@ public class TripController extends Controller {
     private final TripRepository tripRepository;
     private final DestinationRepository destinationRepository;
     private final HttpExecutionContext httpExecutionContext;
+    private final TripNotifier tripNotifier;
     private final TripUtil tripUtil;
     private final Security security;
     final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -53,13 +56,14 @@ public class TripController extends Controller {
     @Inject
     public TripController(TripRepository tripRepository, Security security, UserRepository userRepository,
                           HttpExecutionContext httpExecutionContext, TripUtil tripUtil,
-                          DestinationRepository destinationRepository) {
+                          DestinationRepository destinationRepository, TripNotifier tripNotifier) {
         this.tripRepository = tripRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.tripUtil = tripUtil;
         this.security = security;
         this.userRepository = userRepository;
         this.destinationRepository = destinationRepository;
+        this.tripNotifier = tripNotifier;
     }
 
     /**
@@ -290,7 +294,11 @@ public class TripController extends Controller {
                                 return tripRepository.update(trip);
                             });
                 }, httpExecutionContext.current())
-                .thenApplyAsync(trip -> ok(Json.toJson(trip)), httpExecutionContext.current())
+                .thenApplyAsync(trip -> {
+                    User userFromUrl = User.find.byId(userId);
+                    tripNotifier.notifyTripUpdate(userFromUrl, trip, ConnectedUsers.getInstance().getConnectedUsers());
+                    return ok(Json.toJson(trip));
+                    }, httpExecutionContext.current())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();

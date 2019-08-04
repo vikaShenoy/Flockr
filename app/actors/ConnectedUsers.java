@@ -38,6 +38,7 @@ public class ConnectedUsers {
      * @param out The websocket object
      */
     public void addConnectedUser(User user, ActorRef out) {
+
         connectedUsers.put(out, user);
     }
 
