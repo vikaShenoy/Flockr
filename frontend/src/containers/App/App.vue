@@ -14,21 +14,32 @@
 </template>
 
 <script>
+import Sidebar from "./Sidebar/Sidebar";
+import Navbar from "./Navbar/Navbar";
 
-  import Sidebar from "./Sidebar/Sidebar";
-  import Navbar from "./Navbar/Navbar";
 
+export default {
+  components: {
+    Sidebar,
+    Navbar
+  },
+  name: "App",
+  data() {
+    return {}
+  },
+  mounted() {
+    const socket = new WebSocket("ws://localhost:9000/ws");
 
-  export default {
-    components: {
-      Sidebar,
-      Navbar
-    },
-    name: "App",
-    data() {
-      return {}
+    socket.onopen = () => {
+      socket.send("Hello world");
     }
+
+    socket.onmessage = (message) => {
+      console.log(message);
+    }
+    
   }
+}
 </script>
 
 <style lang="scss">
