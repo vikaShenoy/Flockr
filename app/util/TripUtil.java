@@ -2,6 +2,8 @@ package util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import exceptions.BadRequestException;
+import exceptions.ForbiddenRequestException;
+import exceptions.NotFoundException;
 import models.Destination;
 import models.Trip;
 import models.TripDestination;
@@ -44,5 +46,35 @@ public class TripUtil {
         }
 
         return tripDestinations;
+    }
+
+    /**
+     * Gets users from userIDS
+     * @param userIdsJson
+     * @throws exceptions.ForbiddenRequestException if userID is in json
+     * @return the list of users
+     */
+    public List<User> getUsersFromJson(JsonNode userIdsJson, User user) throws ForbiddenRequestException, NotFoundException{
+        List<User> users = new ArrayList<>();
+
+        for (JsonNode userIdJson : userIdsJson) {
+            int currentUserId = userIdJson.asInt();
+            if (currentUserId == user.getUserId()) {
+                throw new ForbiddenRequestException("You cannot add yourself to a trip");
+            }
+
+            User currentUser = User.find.byId(currentUserId);
+
+            if (currentUser == null) {
+                throw new NotFoundException("User not found");
+            }
+
+            users.add(currentUser);
+        }
+
+        // Add own user to user IDS
+        users.add(user);
+
+        return users;
     }
 }

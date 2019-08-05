@@ -71,6 +71,7 @@ public class TripController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
+        System.out.println("I am adding a trip");
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
         if (!security.userHasPermission(userFromMiddleware, userId)) {
@@ -81,13 +82,9 @@ public class TripController extends Controller {
 
         String tripName = jsonBody.get("tripName").asText();
         JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
-        List<TripDestination> tripDestinations;
-        try {
-            tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+        JsonNode userIdsJson = jsonBody.get("userIds");
 
-        } catch (BadRequestException e) {
-            return supplyAsync(Results::badRequest);
-        }
+
 
         return userRepository.getUserById(userId)
                 .thenComposeAsync(optionalUser -> {
@@ -97,22 +94,30 @@ public class TripController extends Controller {
 
                     User user = optionalUser.get();
 
+                   List<TripDestination> tripDestinations;
+                   List<User> users;
+
+                   try {
+                       tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+                       users = tripUtil.getUsersFromJson(userIdsJson, user);
+                   } catch (BadRequestException e) {
+                       return CompletableFuture.completedFuture(badRequest(e.getMessage()));
+                    } catch (ForbiddenRequestException e) {
+                       return CompletableFuture.completedFuture(forbidden(e.getMessage()));
+                   } catch (NotFoundException e) {
+                       return CompletableFuture.completedFuture(notFound(e.getMessage()));
+                   }
+
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
                             tripDestinations);
 
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
-                                List<User> users = new ArrayList<>();
-                                users.add(user);
                                 Trip trip = new Trip(tripDestinations, users, tripName);
-
                                 return tripRepository.saveTrip(trip);
-                            });
-                }, httpExecutionContext.current())
-                .thenApplyAsync(updatedTrip -> {
-                    JsonNode tripIdJson = Json.toJson(updatedTrip.getTripId());
-                    return created(tripIdJson);
-                });
+                            })
+                            .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip.getTripId())));
+                }, httpExecutionContext.current());
     }
 
     /**
