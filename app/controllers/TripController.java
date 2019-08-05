@@ -71,7 +71,6 @@ public class TripController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
-        System.out.println("I am adding a trip");
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
         if (!security.userHasPermission(userFromMiddleware, userId)) {
@@ -102,7 +101,7 @@ public class TripController extends Controller {
                        users = tripUtil.getUsersFromJson(userIdsJson, user);
                    } catch (BadRequestException e) {
                        return CompletableFuture.completedFuture(badRequest(e.getMessage()));
-                    } catch (ForbiddenRequestException e) {
+                   } catch (ForbiddenRequestException e) {
                        return CompletableFuture.completedFuture(forbidden(e.getMessage()));
                    } catch (NotFoundException e) {
                        return CompletableFuture.completedFuture(notFound(e.getMessage()));
@@ -277,13 +276,23 @@ public class TripController extends Controller {
                     JsonNode jsonBody = request.body().asJson();
                     String tripName = jsonBody.get("tripName").asText();
                     JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
+                    JsonNode userIdsJson = jsonBody.get("userIds");
 
                     List<TripDestination> tripDestinations;
+                    List<User> users;
                     try {
+                        User user = User.find.byId(userId);
                         tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+                        users = tripUtil.getUsersFromJsonEdit(userIdsJson);
+
                     } catch (BadRequestException e) {
                         throw new CompletionException(new BadRequestException());
-                    }
+                    }  catch (ForbiddenRequestException e) {
+                       return CompletableFuture.completedFuture(forbidden(e.getMessage()));
+                   } catch (NotFoundException e) {
+                       return CompletableFuture.completedFuture(notFound(e.getMessage()));
+                   }
+
 
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
                             tripDestinations);
@@ -293,11 +302,13 @@ public class TripController extends Controller {
 
                                 trip.setTripDestinations(tripDestinations);
                                 trip.setTripName(tripName);
+                                trip.setUsers(users);
 
                                 return tripRepository.update(trip);
-                            });
+                            })
+                            .thenApplyAsync(trip -> ok(Json.toJson(trip)));
+
                 }, httpExecutionContext.current())
-                .thenApplyAsync(trip -> ok(Json.toJson(trip)), httpExecutionContext.current())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();

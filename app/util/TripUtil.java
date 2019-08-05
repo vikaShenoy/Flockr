@@ -77,4 +77,28 @@ public class TripUtil {
 
         return users;
     }
+
+    /**
+     * Gets users from user IDS for editing a trip
+     * @return the list of users
+     */
+    public List<User> getUsersFromJsonEdit(JsonNode userIdsJson) throws NotFoundException, ForbiddenRequestException {
+        List<User> users = new ArrayList<>();
+
+        for (JsonNode userIdJson : userIdsJson) {
+            int currentUserId = userIdJson.asInt();
+            User currentUser = User.find.byId(currentUserId);
+            if (currentUser == null) {
+                throw new NotFoundException("User not found");
+            }
+
+            users.add(currentUser);
+        }
+
+        if (users.size() == 0) {
+            throw new ForbiddenRequestException("You cannot have no users in a group trip");
+        }
+
+        return users;
+    }
 }
