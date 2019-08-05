@@ -88,7 +88,9 @@ public class TripControllerTest {
         tripDestinations = new ArrayList<>();
         tripDestinations.add(tripChristchurch);
         tripDestinations.add(tripWestMelton);
-        trip = new Trip(tripDestinations, user, "Testing Trip 1");
+        List<User> users = new ArrayList<>();
+        users.add(user);
+        trip = new Trip(tripDestinations, users, "Testing Trip 1");
         trip.save();
     }
 

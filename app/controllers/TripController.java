@@ -102,7 +102,9 @@ public class TripController extends Controller {
 
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
-                                Trip trip = new Trip(tripDestinations, user, tripName);
+                                List<User> users = new ArrayList<>();
+                                users.add(user);
+                                Trip trip = new Trip(tripDestinations, users, tripName);
 
                                 return tripRepository.saveTrip(trip);
                             });
