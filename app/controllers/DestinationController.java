@@ -3,6 +3,7 @@ package controllers;
 import actions.ActionState;
 import actions.Admin;
 import actions.LoggedIn;
+import akka.stream.impl.fusing.Log;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.*;
@@ -757,6 +758,32 @@ public class DestinationController extends Controller {
                 return internalServerError(throwableException.getMessage());
             }
         });
+    }
+
+    /**
+     * Function to handle the request for modifying a destination proposal
+     * @param destinationProposalId the id of the destination proposal to modify
+     * @param request the HTTP request object containing a list of traveller type ids
+     * @return A response that complies with the API spec
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> modifyProposal(int destinationProposalId, Http.Request request) {
+        return destinationRepository.getDestinationProposalById(destinationProposalId).thenApplyAsync(
+                optionalDestinationProposal -> {
+                    if (!optionalDestinationProposal.isPresent()) {
+                        return notFound("Proposal could not be found");
+                    }
+                    DestinationProposal destinationProposal = optionalDestinationProposal.get();
+                    JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
+                    List<TravellerType> allTravellerTypes = TravellerType.find.all();
+                    List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
+
+                    
+
+
+
+                }
+        );
     }
 
     /**

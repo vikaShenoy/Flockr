@@ -41,6 +41,7 @@ GET           /api/destinations/proposals                                       
 GET           /api/destinations/proposals/:destinationProposalId                    controllers.DestinationController.getProposalById(destinationProposalId: Int)
 POST          /api/users/:userId/destinations/:destinationId/proposals              controllers.DestinationController.addProposal(userId: Int, request: Request, destinationId: Int)
 PATCH         /api/destinations/proposals/:destinationProposalId                    controllers.DestinationController.acceptProposal(destinationProposalId: Int)
+PUT           /api/destinations/proposals/:destinationProposalId                    controllers.DestinationController.modifyProposal(destinationProposalId: Int, request: Request)
 DELETE        /api/users/:userId/destinations/proposals/:destinationProposalId      controllers.DestinationController.rejectProposal(userId: Int, destinationProposalId: Int, request: Request)
 PUT           /api/destinations/proposals/:destinationProposalId/undoReject         controllers.DestinationController.undoDeleteDestinationProposal(destinationProposalId: Int, request: Request)
 
