@@ -768,20 +768,23 @@ public class DestinationController extends Controller {
      */
     @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> modifyProposal(int destinationProposalId, Http.Request request) {
-        return destinationRepository.getDestinationProposalById(destinationProposalId).thenComposeAsync(
-                (optionalDestinationProposal) -> {
+        return destinationRepository.getDestinationProposalById(destinationProposalId)
+                .thenComposeAsync(optionalDestinationProposal -> {
                     if (!optionalDestinationProposal.isPresent()) {
                         throw new CompletionException(new BadRequestException("Destination proposal not found"));
                     }
                     DestinationProposal destinationProposal = optionalDestinationProposal.get();
                     JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
+                    //String stringBody = request.body().asText();
+                    //JsonNode jsonBody = Json.parse(stringBody);
+                    //JsonNode travellerTypeIds = jsonBody.get("travellerTypeIds");
                     List<TravellerType> allTravellerTypes = TravellerType.find.all();
                     List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
 
                     destinationProposal.setTravellerTypes(travellerTypes);
                     return destinationRepository.updateDestinationProposal(destinationProposal);
-                }, httpExecutionContext.current())
-                .thenApplyAsync(result -> ok(Json.toJson(result)), httpExecutionContext.current())
+                })
+                .thenApplyAsync(destinationProposal -> ok(Json.toJson(destinationProposal)))
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();
