@@ -88,20 +88,24 @@
           const tripId = this.$route.params.tripId;
           const rawTrip = await getTrip(tripId);
           const trip = transformTripResponse(rawTrip);
-          console.log(trip.users);
           this.trip = trip;
         } catch (e) {
           this.showError("Could not get trip");
         }
       },
       async newUsers(users) {
-        const undoCommand = (users) => {
-
+        const undoCommand = async (oldUsers) => {
+          await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, oldUsers);
+          this.getTrip();
         } 
 
-        const redoCommand = (users) => {
-
+        const redoCommand = async (users) => {
+          await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, users);
+          this.getTrip();
         }
+
+        const command = new Command(undoCommand.bind(null, [...this.trip.users]), redoCommand.bind(null, users));
+        this.$refs.undoRedo.addUndo(command);
 
         this.getTrip();
         this.showSuccessMessage("Successfully updated users");

@@ -24,6 +24,7 @@
           <v-btn
             flat
             color="secondary"
+            @click="isShowingDialog = false"
             >Cancel</v-btn>
 
           <v-btn
@@ -78,8 +79,8 @@ export default {
       this.isLoading = true;
       await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, users);
       this.isLoading = false;
-      this.$emit("newUsers");
       this.isShowingDialog = false;
+      this.$emit("newUsers", users);
     }
   },
   mounted() {
@@ -87,8 +88,10 @@ export default {
   },
   watch: {
     isShowingDialog(value) {
-      this.selectedUsers = [...this.trip.users]
-        .filter(user => user.userId !== UserStore.data.userId);
+      if (value) {
+        this.selectedUsers = [...this.trip.users]
+          .filter(user => user.userId !== UserStore.data.userId);
+      }
       
       this.$emit("update:isShowing", value);
     },
