@@ -54,7 +54,7 @@ public class TripUtil {
      * @throws exceptions.ForbiddenRequestException if userID is in json
      * @return the list of users
      */
-    public List<User> getUsersFromJson(JsonNode userIdsJson, User user) throws ForbiddenRequestException, NotFoundException{
+    public List<User> getUsersFromJson(JsonNode userIdsJson, User user, List<User> allUsers) throws ForbiddenRequestException, NotFoundException{
         List<User> users = new ArrayList<>();
 
         for (JsonNode userIdJson : userIdsJson) {
@@ -63,7 +63,15 @@ public class TripUtil {
                 throw new ForbiddenRequestException("You cannot add yourself to a trip");
             }
 
-            User currentUser = User.find.byId(currentUserId);
+            User currentUser = null;
+
+            for (User potentialUser : allUsers)  {
+                if (currentUserId == potentialUser.getUserId()) {
+                    currentUser = potentialUser;
+                    break;
+                }
+            }
+
 
             if (currentUser == null) {
                 throw new NotFoundException("User not found");
@@ -82,12 +90,21 @@ public class TripUtil {
      * Gets users from user IDS for editing a trip
      * @return the list of users
      */
-    public List<User> getUsersFromJsonEdit(JsonNode userIdsJson) throws NotFoundException, ForbiddenRequestException {
+    public List<User> getUsersFromJsonEdit(JsonNode userIdsJson, List<User> allUsers) throws NotFoundException, ForbiddenRequestException {
         List<User> users = new ArrayList<>();
 
         for (JsonNode userIdJson : userIdsJson) {
             int currentUserId = userIdJson.asInt();
-            User currentUser = User.find.byId(currentUserId);
+
+            User currentUser = null;
+
+            for (User potentialUser : allUsers)  {
+                if (currentUserId == potentialUser.getUserId()) {
+                    currentUser = potentialUser;
+                    break;
+                }
+            }
+
             if (currentUser == null) {
                 throw new NotFoundException("User not found");
             }

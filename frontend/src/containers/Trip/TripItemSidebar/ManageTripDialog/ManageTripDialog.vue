@@ -9,14 +9,27 @@
           </v-spacer>
 
         </v-layout>
-        <v-btn @click="showAlertCard = true; leaveOrDelete" class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
+        <v-btn @click="showAlertCard = true; leaveOrDelete" class="red--text leave-button" flat>Leave</v-btn>
       </v-card-title>
 
     <div id="manage-trip-contents">
       <v-container grid-list-md text-center>
       <v-layout wrap>
         <v-flex xs10 offset-xs1>
-          <v-combobox id="selected-users" :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>
+          <h4 id="selected-users-title">Selected users</h4>
+
+          <ul>
+            <li
+              v-for="user in selectedUsers"
+              v-bind:key="user.userId"
+            >
+            {{ formatName(user) }}
+            </li>
+          </ul>
+
+          <div id="selected-users">
+            <v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>
+          </div>
         </v-flex>
       </v-layout>
       </v-container>
@@ -55,7 +68,7 @@
         <v-container grid-list-md text-center>
           <v-layout wrap>
             <v-flex xs10 offset-xs1>
-              Warning text here
+              {{ onlyUser ? "You are the only user in the trip. Proceeding will delete the trip" : "Are you sure you want to leave the trip?" }}
             </v-flex>
           </v-layout>
         </v-container>
@@ -72,6 +85,7 @@
                     color="success"
                     flat
                     :loading="isLoading"
+                    @click="leaveOrDelete"
             >Continue</v-btn>
           </v-spacer>
         </v-card-actions>
@@ -124,17 +138,17 @@ export default {
      * Either deletes a trip if only owner or leaves trip if not
      */
     async leaveOrDelete() {
-      const isConfirmed = confirm(this.onlyUser ? "You are the only user in the trip, proceeding will delete the trip" : "Are you sure you want to leave the trip?");
-
-      if (!isConfirmed) return;
-
-      if (this.onlyUser) {
+     if (this.onlyUser) {
+        this.isLoading = true;
         await deleteTripFromList(this.trip.tripId);
+        this.isLoading = false;
         this.$router.push("/trips");
       } else {
         const usersWithoutCurrent = this.trip.users
           .filter(user => user.userId !== UserStore.data.userId);
+        this.isLoading = true;
         await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, usersWithoutCurrent);
+        this.isLoading = false;
         this.$router.push("/trips");
       }
     },
@@ -178,6 +192,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../../../../styles/_variables.scss";
 
 #manage-trip-contents {
   padding-top: 20px;
@@ -188,6 +203,7 @@ export default {
 }
 
 #selected-users {
+  margin-top: 25px;
   width: 100%;
 }
 
@@ -195,6 +211,11 @@ export default {
   position: absolute;
   right: 0;
   top: 7px;
+}
+
+#selected-users-title {
+  text-align: left;
+  color: $secondary;
 }
 
 </style>

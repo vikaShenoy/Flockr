@@ -155,13 +155,15 @@
           const oldTrip = {
             tripId: this.trip.tripId,
             tripName: this.trip.tripName,
-            tripDestinations: oldTripDestinations
+            tripDestinations: oldTripDestinations,
+            users: this.trip.users
           };
 
           const newTrip = {
             tripId: this.trip.tripId,
             tripName: this.trip.tripName,
-            tripDestinations: this.trip.tripDestinations
+            tripDestinations: this.trip.tripDestinations,
+            users: this.trip.users
           };
 
           this.addEditTripCommand(oldTrip, newTrip);
@@ -177,6 +179,7 @@
        */
       addEditTripCommand(oldTrip, newTrip) {
         const undoCommand = async (oldTrip) => {
+          console.log(oldTrip);
           await editTrip(oldTrip.tripId, oldTrip.tripName, oldTrip.tripDestinations, oldTrip.users);
           this.trip = oldTrip;
         };
@@ -193,13 +196,15 @@
         const oldTrip = {
           tripId: this.trip.tripId,
           tripName: this.trip.tripName,
-          tripDestinations: this.trip.tripDestinations
+          tripDestinations: this.trip.tripDestinations,
+          users: this.trip.users
         };
 
         const newTrip = {
           tripId: this.trip.tripId,
           tripName: this.trip.tripName,
-          tripDestinations: tripDestinations
+          tripDestinations: tripDestinations,
+          users: this.trip.users
         };
 
         this.addEditTripCommand(oldTrip, newTrip);

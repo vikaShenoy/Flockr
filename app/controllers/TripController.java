@@ -97,8 +97,9 @@ public class TripController extends Controller {
                    List<User> users;
 
                    try {
+                       List<User> allUsers = User.find.all();
                        tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
-                       users = tripUtil.getUsersFromJson(userIdsJson, user);
+                       users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
                    } catch (BadRequestException e) {
                        return CompletableFuture.completedFuture(badRequest(e.getMessage()));
                    } catch (ForbiddenRequestException e) {
@@ -281,9 +282,12 @@ public class TripController extends Controller {
                     List<TripDestination> tripDestinations;
                     List<User> users;
                     try {
+                        long startTime = System.currentTimeMillis();
+                        List<User> allUsers = User.find.all();
                         User user = User.find.byId(userId);
                         tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
-                        users = tripUtil.getUsersFromJsonEdit(userIdsJson);
+                        users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
+
 
                     } catch (BadRequestException e) {
                         throw new CompletionException(new BadRequestException());
@@ -293,7 +297,7 @@ public class TripController extends Controller {
                        return CompletableFuture.completedFuture(notFound(e.getMessage()));
                    }
 
-
+                    long startTime = System.currentTimeMillis();
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
                             tripDestinations);
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
