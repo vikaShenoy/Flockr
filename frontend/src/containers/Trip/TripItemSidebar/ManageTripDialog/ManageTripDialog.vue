@@ -1,13 +1,15 @@
 <template>
   <v-dialog width="600px" v-model="isShowingDialog">
+
     <v-card id="manage-trip-dialog">
-           <v-card-title class="primary title">
+      <v-card-title class="primary title">
         <v-layout row>
           <v-spacer align="center">
             <h2 class="light-text">Manage Trip</h2>
           </v-spacer>
-        </v-layout>
 
+        </v-layout>
+        <v-btn class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
       </v-card-title>
 
     <div id="manage-trip-contents">
@@ -98,6 +100,11 @@ export default {
     isShowing(value) {
       this.isShowingDialog = value;
     }
+  },
+  computed: {
+    onlyUser() {
+      return this.trip.users.length === 1;
+    }
   }
 }
 </script>
@@ -115,6 +122,13 @@ export default {
 #selected-users {
   width: 100%;
 }
+
+.leave-button {
+  position: absolute;
+  right: 0;
+  top: 7px;
+}
+
 </style>
 
 
