@@ -64,6 +64,7 @@
           :isShowing.sync="isShowingManageTripDialog" 
           :trip="trip"
           v-if="trip"
+          @newUsers="newUsers"
         />
       </div>
     </div>
@@ -112,6 +113,9 @@
       },
       tripDestinationsUpdated(tripDestinations) {
         this.$emit("updatedTripDestinations", tripDestinations);
+      },
+      newUsers(newUsers) {
+        this.$emit("newUsers", newUsers); 
       }
     }
   }

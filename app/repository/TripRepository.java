@@ -89,7 +89,7 @@ public class TripRepository {
             Optional<Trip> trip = Trip.find.query()
                     .fetch("users")
                     .where().eq("trip_id", tripId)
-                    .eq("user_user_id", userId)
+                    .in("users.userId", userId)
                     .findOneOrEmpty();
             return trip;
         }, executionContext);
@@ -106,7 +106,7 @@ public class TripRepository {
             Optional<Trip> trip = Trip.find.query().setIncludeSoftDeletes()
                     .fetch("users")
                     .where().eq("trip_id", tripId)
-                    .eq("user_user_id", userId)
+                    .in("users.userId", userId)
                     .findOneOrEmpty();
             return trip;
         }, executionContext);
@@ -123,7 +123,7 @@ public class TripRepository {
             List<Trip> trip = Trip.find.query()
                     .fetch("users")
                     .where()
-                    .eq("user_user_id", travellerId)
+                    .in("users.userId", travellerId)
                     .findList();
             return trip;
         }, executionContext);

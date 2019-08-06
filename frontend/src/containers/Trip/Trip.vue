@@ -16,6 +16,7 @@
             v-on:destinationOrderChanged="destinationOrderChanged"
             v-on:updatedTripDestinations="updatedTripDestinations"
             v-on:deleteTripDestination="deleteTripDestination"
+            @newUsers="newUsers"
     />
 
     <Snackbar
@@ -87,10 +88,23 @@
           const tripId = this.$route.params.tripId;
           const rawTrip = await getTrip(tripId);
           const trip = transformTripResponse(rawTrip);
+          console.log(trip.users);
           this.trip = trip;
         } catch (e) {
           this.showError("Could not get trip");
         }
+      },
+      async newUsers(users) {
+        const undoCommand = (users) => {
+
+        } 
+
+        const redoCommand = (users) => {
+
+        }
+
+        this.getTrip();
+        this.showSuccessMessage("Successfully updated users");
       },
       /**
        * Changes order of destination
@@ -131,7 +145,7 @@
 
           this.addEditTripCommand(oldTrip, newTrip);
 
-          await editTrip(tripId, this.trip.tripName, this.trip.tripDestinations);
+          await editTrip(tripId, this.trip.tripName, this.trip.tripDestinations, this.trip.users);
           this.showSuccessMessage("Successfully changed order");
         } catch (e) {
           this.showError("Could not change order");
@@ -142,12 +156,12 @@
        */
       addEditTripCommand(oldTrip, newTrip) {
         const undoCommand = async (oldTrip) => {
-          await editTrip(oldTrip.tripId, oldTrip.tripName, oldTrip.tripDestinations);
+          await editTrip(oldTrip.tripId, oldTrip.tripName, oldTrip.tripDestinations, oldTrip.users);
           this.trip = oldTrip;
         };
 
         const redoCommand = async (newTrip) => {
-          await editTrip(newTrip.tripId, newTrip.tripName, newTrip.tripDestinations);
+          await editTrip(newTrip.tripId, newTrip.tripName, newTrip.tripDestinations, oldTrip.users);
           this.trip = newTrip;
         };
 
@@ -192,18 +206,18 @@
         const oldTripDestinations = this.trip.tripDestinations;
         try {
           const undoCommand = async () => {
-            await editTrip(tripId, this.trip.tripName, oldTripDestinations);
+            await editTrip(tripId, this.trip.tripName, oldTripDestinations, this.trip.users);
             this.$set(this.trip, "tripDestinations", oldTripDestinations);
           };
           const redoCommand = async () => {
-            await editTrip(tripId, this.trip.tripName, newTripDestinations);
+            await editTrip(tripId, this.trip.tripName, newTripDestinations, this.trip.users);
             this.$set(this.trip, "tripDestinations", newTripDestinations);
           };
 
           const deleteDestCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
           this.$refs.undoRedo.addUndo(deleteDestCommand);
 
-          await editTrip(tripId, this.trip.tripName, newTripDestinations);
+          await editTrip(tripId, this.trip.tripName, newTripDestinations, this.trip.users);
           this.$set(this.trip, "tripDestinations", newTripDestinations);
           this.showSuccessMessage("Removed destination from trip");
 
