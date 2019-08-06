@@ -1,7 +1,7 @@
 <template>
   <v-dialog width="600px" v-model="isShowingDialog">
 
-    <v-card id="manage-trip-dialog">
+    <v-card v-if="!showAlertCard" id="manage-trip-dialog">
       <v-card-title class="primary title">
         <v-layout row>
           <v-spacer align="center">
@@ -9,7 +9,7 @@
           </v-spacer>
 
         </v-layout>
-        <v-btn @click="leaveOrDelete" class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
+        <v-btn @click="showAlertCard = true; leaveOrDelete" class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
       </v-card-title>
 
     <div id="manage-trip-contents">
@@ -38,10 +38,46 @@
         </v-spacer>
       </v-card-actions>
     </div>
-
-    
-      
     </v-card>
+
+    <v-card v-if="showAlertCard" id="manage-trip-alert">
+      <v-card-title class="primary title">
+        <v-layout row>
+          <v-spacer align="center">
+            <h2 class="light-text">Warning</h2>
+          </v-spacer>
+
+        </v-layout>
+        <v-btn @click="leaveOrDelete" class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
+      </v-card-title>
+
+      <div id="manage-trip-alert-contents">
+        <v-container grid-list-md text-center>
+          <v-layout wrap>
+            <v-flex xs10 offset-xs1>
+              Warning text here
+            </v-flex>
+          </v-layout>
+        </v-container>
+
+        <v-card-actions>
+          <v-spacer align="right">
+            <v-btn
+                    flat
+                    color="secondary"
+                    @click="showAlertCard = false"
+            >Cancel</v-btn>
+
+            <v-btn
+                    color="success"
+                    flat
+                    :loading="isLoading"
+            >Continue</v-btn>
+          </v-spacer>
+        </v-card-actions>
+      </div>
+    </v-card>
+
   </v-dialog> 
 </template>
 
@@ -62,7 +98,8 @@ export default {
       // copy selected users
       selectedUsers: [],
       users: [],
-      isLoading: false 
+      isLoading: false,
+      showAlertCard: false
     };
   },
   methods: {
