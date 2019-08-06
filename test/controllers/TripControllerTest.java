@@ -27,10 +27,13 @@ public class TripControllerTest {
     User adminUser;
     Destination christchurch;
     Destination westMelton;
+    Destination helkett;
     TripDestination tripChristchurch;
     TripDestination tripWestMelton;
+    TripDestination tripHelkett;
     List<TripDestination> tripDestinations;
     Trip trip;
+    Trip trip2;
 
     @Before
     public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
@@ -79,17 +82,26 @@ public class TripControllerTest {
         westMelton = new Destination("West Melton", destinationType, district,0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
         westMelton.save();
 
+        helkett = new Destination("Helkett", destinationType, district,0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
+        helkett.save();
+
         // Creating a trip
 
         tripChristchurch = new TripDestination(christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
         tripWestMelton = new TripDestination(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        tripHelkett = new TripDestination(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
         tripChristchurch.save();
         tripWestMelton.save();
+        tripHelkett.save();
         tripDestinations = new ArrayList<>();
         tripDestinations.add(tripChristchurch);
         tripDestinations.add(tripWestMelton);
         trip = new Trip(tripDestinations, user, "Testing Trip 1");
         trip.save();
+        tripDestinations.remove(tripWestMelton);
+        tripDestinations.add(tripHelkett);
+        trip2 = new Trip(tripDestinations,user,"Find the family graves");
+        trip2.save();
     }
 
     private void restore(Trip trip) {
@@ -193,6 +205,23 @@ public class TripControllerTest {
         );
         Assert.assertEquals(400, result.status());
     }
+
+//    @Test
+//    public void putTripOk() {
+//
+//        Optional<Trip> optionalParentTrip = Trip.find.query()
+//                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+//        Optional<Trip> optionalSubTrip = Trip.find.query()
+//                .where().eq("trip_id", trip2.getTripId()).findOneOrEmpty();
+//        optionalSubTrip.get().setParentId(optionalParentTrip.get().getTripId());
+//        Result result = fakeClient.makeRequestWithToken(
+//                "PUT",
+//                "/api/users/" + user.getUserId() + "/trips/" + trip2.getTripId(), user.getToken()
+//        );
+//        Assert.assertEquals(200, result.status());
+//
+//    }
+
 
     @After
     public void tearDown() {
