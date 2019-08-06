@@ -344,4 +344,17 @@ public class DestinationRepository {
         });
     }
 
+    /**
+     * Updates a destination proposal
+     *
+     * @param destinationProposal The destination proposal to update
+     * @return The destination proposal that was updated
+     */
+    public CompletionStage<DestinationProposal> updateDestinationProposal(DestinationProposal destinationProposal) {
+        return supplyAsync(() -> {
+            destinationProposal.save();
+            return destinationProposal;
+        }, executionContext);
+    }
+
 }

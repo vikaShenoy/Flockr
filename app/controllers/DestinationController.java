@@ -768,22 +768,40 @@ public class DestinationController extends Controller {
      */
     @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> modifyProposal(int destinationProposalId, Http.Request request) {
-        return destinationRepository.getDestinationProposalById(destinationProposalId).thenApplyAsync(
-                optionalDestinationProposal -> {
+        return destinationRepository.getDestinationProposalById(destinationProposalId).thenComposeAsync(
+                (optionalDestinationProposal) -> {
                     if (!optionalDestinationProposal.isPresent()) {
-                        return notFound("Proposal could not be found");
+                        throw new CompletionException(new BadRequestException("Destination proposal not found"));
                     }
                     DestinationProposal destinationProposal = optionalDestinationProposal.get();
                     JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
                     List<TravellerType> allTravellerTypes = TravellerType.find.all();
                     List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
 
-                    
-
-
-
-                }
-        );
+                    destinationProposal.setTravellerTypes(travellerTypes);
+                    return destinationRepository.updateDestinationProposal(destinationProposal);
+                }, httpExecutionContext.current())
+                .thenApplyAsync(result -> ok(Json.toJson(result)), httpExecutionContext.current())
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (NotFoundException notFoundException) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", notFoundException.getMessage());
+                        return notFound(message);
+                    } catch (BadRequestException badRequestException) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", badRequestException.getMessage());
+                        return badRequest(message);
+                    } catch (ForbiddenRequestException forbiddenRequestException) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", forbiddenRequestException.getMessage());
+                        return forbidden(message);
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                        return internalServerError();
+                    }
+                });
     }
 
     /**
