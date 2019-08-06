@@ -866,6 +866,9 @@ public class DestinationController extends Controller {
         .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));
     }
 
+
+
+
     /**
      * The method that undoes the deletion of a destination proposal
      * The following are the status codes:
