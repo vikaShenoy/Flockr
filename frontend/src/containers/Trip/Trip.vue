@@ -65,16 +65,27 @@
       this.getTrip();
     },
     methods: {
+      /**
+       * Shows an snackbar error
+       * @param {string} errorMessage errorMessage to show to user
+       */
       showError(errorMessage) {
         this.snackbarModel.text = errorMessage;
         this.snackbarModel.color = "error";
         this.snackbarModel.show = true;
       },
+      /**
+       * Shows a success snackbar
+       * @param {string} successMessage Success message to show
+       */
       showSuccessMessage(successMessage) {
         this.snackbarModel.text = successMessage;
         this.snackbarModel.color = "success";
         this.snackbarModel.show = true;
       },
+      /**
+       * Maps tripDestinations to destinations for map
+       */
       mapTripDestinationsToDestinations() {
         if (!this.trip) {
           return [];
@@ -83,6 +94,9 @@
           return tripDest.destination;
         })
       },
+      /**
+       * Gets trip by it's ID
+       */
       async getTrip() {
         try {
           const tripId = this.$route.params.tripId;
@@ -93,6 +107,9 @@
           this.showError("Could not get trip");
         }
       },
+      /**
+       * Emit event called when new users have been updated
+       */
       async newUsers(users) {
         const undoCommand = async (oldUsers) => {
           await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, oldUsers);

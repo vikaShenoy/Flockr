@@ -9,7 +9,7 @@
           </v-spacer>
 
         </v-layout>
-        <v-btn class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
+        <v-btn @click="leaveOrDelete" class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
       </v-card-title>
 
     <div id="manage-trip-contents">
@@ -49,6 +49,7 @@
 import { getAllUsers } from '../../../AddTrip/AddTripService';
 import UserStore from "../../../../stores/UserStore";
 import { editTrip } from '../../TripService';
+import { deleteTripFromList } from '../../../Trips/OldTripsService';
 
 export default {
   props: {
@@ -65,6 +66,9 @@ export default {
     };
   },
   methods: {
+    /**
+     * Gets all users and filters out own user ID
+     */
     async getAllUsers() {
       // Filter out user's own ID
       const users = (await getAllUsers())
@@ -73,9 +77,33 @@ export default {
 
       this.users = users;
     },
+    /**
+     * Formats full name for combobox input
+     */
     formatName(user) {
       return `${user.firstName} ${user.lastName}`;
     },
+    /**
+     * Either deletes a trip if only owner or leaves trip if not
+     */
+    async leaveOrDelete() {
+      const isConfirmed = confirm(this.onlyUser ? "You are the only user in the trip, proceeding will delete the trip" : "Are you sure you want to leave the trip?");
+
+      if (!isConfirmed) return;
+
+      if (this.onlyUser) {
+        await deleteTripFromList(this.trip.tripId);
+        this.$router.push("/trips");
+      } else {
+        const usersWithoutCurrent = this.trip.users
+          .filter(user => user.userId !== UserStore.data.userId);
+        await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, usersWithoutCurrent);
+        this.$router.push("/trips");
+      }
+    },
+    /**
+     * Saves the current selected users that are in the trip
+     */
     async saveUsersInTrip() {
       const users = [...this.selectedUsers, UserStore.data]
       this.isLoading = true;
@@ -89,6 +117,9 @@ export default {
     this.getAllUsers(); 
   },
   watch: {
+    /**
+     * Refreshses selectedUsers when opening up modal
+     */
     isShowingDialog(value) {
       if (value) {
         this.selectedUsers = [...this.trip.users]
