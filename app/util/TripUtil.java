@@ -2,6 +2,8 @@ package util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import exceptions.BadRequestException;
+import exceptions.ForbiddenRequestException;
+import exceptions.NotFoundException;
 import models.Destination;
 import models.Trip;
 import models.TripDestination;
@@ -44,5 +46,76 @@ public class TripUtil {
         }
 
         return tripDestinations;
+    }
+
+    /**
+     * Gets users from userIDS
+     * @param userIdsJson
+     * @throws exceptions.ForbiddenRequestException if userID is in json
+     * @return the list of users
+     */
+    public List<User> getUsersFromJson(JsonNode userIdsJson, User user, List<User> allUsers) throws ForbiddenRequestException, NotFoundException{
+        List<User> users = new ArrayList<>();
+
+        for (JsonNode userIdJson : userIdsJson) {
+            int currentUserId = userIdJson.asInt();
+            if (currentUserId == user.getUserId()) {
+                throw new ForbiddenRequestException("You cannot add yourself to a trip");
+            }
+
+            User currentUser = null;
+
+            for (User potentialUser : allUsers)  {
+                if (currentUserId == potentialUser.getUserId()) {
+                    currentUser = potentialUser;
+                    break;
+                }
+            }
+
+
+            if (currentUser == null) {
+                throw new NotFoundException("User not found");
+            }
+
+            users.add(currentUser);
+        }
+
+        // Add own user to user IDS
+        users.add(user);
+
+        return users;
+    }
+
+    /**
+     * Gets users from user IDS for editing a trip
+     * @return the list of users
+     */
+    public List<User> getUsersFromJsonEdit(JsonNode userIdsJson, List<User> allUsers) throws NotFoundException, ForbiddenRequestException {
+        List<User> users = new ArrayList<>();
+
+        for (JsonNode userIdJson : userIdsJson) {
+            int currentUserId = userIdJson.asInt();
+
+            User currentUser = null;
+
+            for (User potentialUser : allUsers)  {
+                if (currentUserId == potentialUser.getUserId()) {
+                    currentUser = potentialUser;
+                    break;
+                }
+            }
+
+            if (currentUser == null) {
+                throw new NotFoundException("User not found");
+            }
+
+            users.add(currentUser);
+        }
+
+        if (users.size() == 0) {
+            throw new ForbiddenRequestException("You cannot have no users in a group trip");
+        }
+
+        return users;
     }
 }

@@ -3,7 +3,17 @@
           id="trip-item-sidebar"
           :elevation="20"
   >
+
+  
     <div id="title" v-if="trip">
+      <v-btn
+        flat
+        color="secondary"
+        id="manage-trip-btn"
+        @click="isShowingManageTripDialog = true"
+      >Manage
+      </v-btn>
+
       <h2>{{ trip.tripName }}</h2>
     </div>
 
@@ -49,6 +59,13 @@
                 v-on:updatedTripDestinations="tripDestinationsUpdated"
                 :editedTripDestination="editedTripDestination"
         />
+
+        <ManageTripDialog 
+          :isShowing.sync="isShowingManageTripDialog" 
+          :trip="trip"
+          v-if="trip"
+          @newUsers="newUsers"
+        />
       </div>
     </div>
 
@@ -58,18 +75,20 @@
 <script>
   import Timeline from "./Timeline/Timeline.vue";
   import ModifyTripDestinationDialog from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
-
+  import ManageTripDialog from "./ManageTripDialog/ManageTripDialog";
 
   export default {
     components: {
       Timeline,
-      ModifyTripDestinationDialog
+      ModifyTripDestinationDialog,
+      ManageTripDialog
     },
     data() {
       return {
         isShowingAddDestinationDialog: false,
         isShowingUpdateDestinationDialog: false,
         editedTripDestination: null,
+        isShowingManageTripDialog: false
       };
     },
     props: {
@@ -94,6 +113,9 @@
       },
       tripDestinationsUpdated(tripDestinations) {
         this.$emit("updatedTripDestinations", tripDestinations);
+      },
+      newUsers(newUsers) {
+        this.$emit("newUsers", newUsers); 
       }
     }
   }
@@ -163,6 +185,14 @@
     #add-trip-destination-btn {
       margin: 0 auto;
       display: block;
+    }
+
+    #manage-trip-btn {
+      position: absolute;
+      left: 5px;
+      margin-top: 0px;
+
+
     }
   }
 

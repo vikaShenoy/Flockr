@@ -18,8 +18,8 @@ public class Trip extends Model {
     @Id
     private int tripId;
 
-    @ManyToOne()
-    private User user;
+    @ManyToMany()
+    private List<User> users;
 
     private String tripName;
 
@@ -37,12 +37,12 @@ public class Trip extends Model {
     /**
      * Constructor to create a new trip.
      * @param tripDestinations list of TripDestinations which make up the trip.
-     * @param user user who is going on the trip.
+     * @param users users who own the trip
      * @param tripName name of the trip.
      */
-    public Trip(List<TripDestination> tripDestinations, User user, String tripName) {
+    public Trip(List<TripDestination> tripDestinations, List<User> users, String tripName) {
         this.tripDestinations = tripDestinations;
-        this.user = user;
+        this.users = users;
         this.tripName = tripName;
     }
 
@@ -62,12 +62,12 @@ public class Trip extends Model {
         this.tripDestinations = tripDestinations;
     }
 
-    public User getUser() {
-        return user;
+    public List<User> getUsers() {
+        return users;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
     public String getTripName() {
