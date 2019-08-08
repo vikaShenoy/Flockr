@@ -9,7 +9,7 @@
               flat
               color="secondary"
               id="add-destination-btn"
-              @click="$emit('addDestinationClicked')"
+              @click="toggleEditor"
       >
         <v-icon>add</v-icon>
       </v-btn>
@@ -18,7 +18,7 @@
         <UndoRedo ref="undoRedo"/>
       </div>
 
-      <v-btn-toggle v-model="viewOption" flat id="view-option" mandatory>
+      <v-btn-toggle v-if="!shouldShowEditor" v-model="viewOption" flat id="view-option" mandatory>
         <v-btn class="option" value="your" v-bind:class="{'not-selected': viewOption !== 'your'}">
           Your Destinations
         </v-btn>
@@ -30,7 +30,16 @@
     </div>
 
     <div id="destinations-list">
-      <div v-if="shouldShowSpinner" id="spinner">
+      <div v-if="shouldShowEditor">
+        <ModifyDestinationSidebar
+            :editMode="false"
+            v-on:addNewDestination="addNewDestination"
+            v-on:dialogChanged="addDestDialogChanged"
+            v-on:closeEditor="toggleEditor"
+        ></ModifyDestinationSidebar>
+      </div>
+
+      <div v-else-if="shouldShowSpinner" id="spinner">
         <v-progress-circular
                 indeterminate
                 color="secondary"
@@ -81,10 +90,12 @@
   import AlertDialog from "../../../components/AlertDialog/AlertDialog";
   import UndoRedo from "../../../components/UndoRedo/UndoRedo";
   import Command from '../../../components/UndoRedo/Command';
+  import ModifyDestinationSidebar from './ModifyDestinationSidebar/ModifyDestinationSidebar';
 
   export default {
     props: ["yourDestinations", "publicDestinations"],
     components: {
+      ModifyDestinationSidebar,
       DestinationSummary,
       PromptDialog,
       AlertDialog,
@@ -94,6 +105,7 @@
       return {
         viewOption: "your",
         isShowingDeleteDestDialog: false,
+        shouldShowEditor: false,
         trips: [],
         cannotDeleteDestDialog: false,
         currentDeletingDestinationId: null,
@@ -112,6 +124,13 @@
         this.trips = userTrips;
       },
 
+      toggleEditor() {
+        this.shouldShowEditor = !this.shouldShowEditor;
+      },
+
+      addNewDestination(destination) {
+        this.$emit('addNewDestination', destination);
+      },
       /**
        * Delete a destination. Refresh the destination list to remove it. Add the undo/redo commands to the stack.
        */
@@ -195,7 +214,7 @@
     float: right;
 
     #title {
-      height: 125px;
+      height: auto;
       background-color: $primary;
       color: $darker-white;
       text-align: center;
@@ -204,10 +223,15 @@
       flex-direction: column;
       justify-content: space-between;
       position: fixed;
+      width: inherit;
     }
 
     h2 {
       margin-top: 15px;
+    }
+
+    .v-btn-toggle {
+      padding-top: 10px;
     }
 
     .option {
@@ -225,8 +249,8 @@
     }
 
     #destinations-list {
-      height: calc(100% - 100px);
-      margin-top: 125px;
+      height: auto;
+      margin-top: 100px;
     }
 
     #spinner {

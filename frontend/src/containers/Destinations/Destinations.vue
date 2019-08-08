@@ -12,6 +12,7 @@
             :publicDestinations="publicDestinations"
             v-on:viewOptionChanged="viewOptionChanged"
             v-on:addDestinationClicked="addDestinationClicked"
+            @addNewDestination="addNewDestination"
             @refreshDestinations="refreshDestinations"
             ref="sidebar"
     />
