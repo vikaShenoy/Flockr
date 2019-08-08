@@ -2,7 +2,6 @@ package tasks;
 
 
 import akka.actor.ActorSystem;
-import models.Trip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.ExecutionContext;

@@ -309,13 +309,13 @@ public class TripControllerTest {
 //    public void putSubTripOk() {
 //
 //        Optional<Trip> optionalParentTrip = Trip.find.query()
-//                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+//                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
 //        Optional<Trip> optionalSubTrip = Trip.find.query()
-//                .where().eq("trip_id", trip2.getTripId()).findOneOrEmpty();
-//        optionalSubTrip.get().setParentId(optionalParentTrip.get().getTripId());
+//                .where().eq("trip_id", trip2.getTripNodeId()).findOneOrEmpty();
+//        optionalSubTrip.get().setParentId(optionalParentTrip.get().getTripNodeId());
 //        Result result = fakeClient.makeRequestWithToken(
 //                "PUT",
-//                "/api/users/" + user.getUserId() + "/trips/" + optionalSubTrip.get().getTripId(),
+//                "/api/users/" + user.getUserId() + "/trips/" + optionalSubTrip.get().getTripNodeId(),
 //                user.getToken());
 //        Assert.assertEquals(200, result.status());
 //
@@ -325,13 +325,13 @@ public class TripControllerTest {
 //    public void putSubTripAdmin() {
 //
 //        Optional<Trip> optionalParentTrip = Trip.find.query()
-//                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+//                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
 //        Optional<Trip> optionalSubTrip = Trip.find.query()
-//                .where().eq("trip_id", trip2.getTripId()).findOneOrEmpty();
-//        optionalSubTrip.get().setParentId(optionalParentTrip.get().getTripId());
+//                .where().eq("trip_id", trip2.getTripNodeId()).findOneOrEmpty();
+//        optionalSubTrip.get().setParentId(optionalParentTrip.get().getTripNodeId());
 //        Result result = fakeClient.makeRequestWithToken(
 //                "PUT",
-//                "/api/users/" + user.getUserId() + "/trips/" + optionalSubTrip.get().getTripId(),
+//                "/api/users/" + user.getUserId() + "/trips/" + optionalSubTrip.get().getTripNodeId(),
 //                adminUser.getToken());
 //        Assert.assertEquals(200, result.status());
 //
@@ -341,13 +341,13 @@ public class TripControllerTest {
 //    public void putSubTripUnauthorized() {
 //
 //        Optional<Trip> optionalParentTrip = Trip.find.query()
-//                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+//                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
 //        Optional<Trip> optionalSubTrip = Trip.find.query()
-//                .where().eq("trip_id", trip2.getTripId()).findOneOrEmpty();
-//        optionalSubTrip.get().setParentId(optionalParentTrip.get().getTripId());
+//                .where().eq("trip_id", trip2.getTripNodeId()).findOneOrEmpty();
+//        optionalSubTrip.get().setParentId(optionalParentTrip.get().getTripNodeId());
 //        Result result = fakeClient.makeRequestWithNoToken(
 //                "PUT",
-//                "/api/users/" + user.getUserId() + "/trips/" + optionalSubTrip.get().getTripId());
+//                "/api/users/" + user.getUserId() + "/trips/" + optionalSubTrip.get().getTripNodeId());
 //        Assert.assertEquals(401, result.status());
 //
 //    }
@@ -356,10 +356,10 @@ public class TripControllerTest {
 //    public void putSubTripNotFound() {
 //
 //        Optional<Trip> optionalParentTrip = Trip.find.query()
-//                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+//                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
 //        Optional<Trip> optionalSubTrip = Trip.find.query()
-//                .where().eq("trip_id", trip2.getTripId()).findOneOrEmpty();
-//        optionalSubTrip.get().setParentId(optionalParentTrip.get().getTripId());
+//                .where().eq("trip_id", trip2.getTripNodeId()).findOneOrEmpty();
+//        optionalSubTrip.get().setParentId(optionalParentTrip.get().getTripNodeId());
 //        Result result = fakeClient.makeRequestWithToken(
 //                "PUT",
 //                "/api/users/" + user.getUserId() + "/trips/" + -999 , user.getToken());

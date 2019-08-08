@@ -8,10 +8,7 @@ import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import exceptions.UnauthorizedException;
-import models.Destination;
-import models.Trip;
-import models.TripDestination;
-import models.User;
+import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -89,7 +86,7 @@ public class TripController extends Controller {
 
                     User user = optionalUser.get();
 
-                   List<TripDestination> tripDestinations;
+                   List<TripNode> tripDestinations;
                    List<User> users;
 
                    try {
@@ -109,7 +106,7 @@ public class TripController extends Controller {
 
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
-                                Trip trip = new Trip(tripDestinations, users, tripName);
+                                TripNode trip = new TripComposite(tripDestinations, users, tripName);
                                 return tripRepository.saveTrip(trip);
                             })
                             .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip.getTripId())));
@@ -334,9 +331,9 @@ public class TripController extends Controller {
      * @param tripDestinations the destinations of the trip.
      * @return List&lt CompletionStage&lt Destination &gt &gt the list of completion stages.
      */
-    private List<CompletionStage<Destination>> checkAndUpdateOwners(int userId, List<TripDestination> tripDestinations) {
+    private List<CompletionStage<Destination>> checkAndUpdateOwners(int userId, List<TripDestinationLeaf> tripDestinations) {
         List<CompletionStage<Destination>> updateDestinations = new ArrayList<>();
-        for (TripDestination tripDestination : tripDestinations) {
+        for (TripDestinationLeaf tripDestination : tripDestinations) {
 
             CompletionStage<Destination> updateDestination = destinationRepository.getDestinationById(
                     tripDestination.getDestination().getDestinationId())

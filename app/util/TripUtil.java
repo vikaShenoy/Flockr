@@ -5,8 +5,8 @@ import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.Destination;
-import models.Trip;
-import models.TripDestination;
+import models.TripDestinationLeaf;
+import models.TripNode;
 import models.User;
 
 import java.sql.Timestamp;
@@ -15,8 +15,8 @@ import java.util.Date;
 import java.util.List;
 
 public class TripUtil {
-    public List<TripDestination> getTripDestinationsFromJson(JsonNode tripDestinationsJson) throws BadRequestException {
-        List<TripDestination> tripDestinations = new ArrayList<>();
+    public List<TripNode> getTripDestinationsFromJson(JsonNode tripDestinationsJson) throws BadRequestException {
+        List<TripNode> tripDestinations = new ArrayList<>();
 
         if (tripDestinationsJson.size() < 2) {
             throw new BadRequestException("tripDestinationJson has to be smaller or equal to 2");
@@ -27,7 +27,7 @@ public class TripUtil {
             int destinationId = tripDestinationJson.get("destinationId").asInt();
 
             // Check that destinations are not contiguous
-            if (index > 0 && destinationId == tripDestinations.get(tripDestinations.size() - 1).getDestination().getDestinationId()) {
+            if (index > 0 && destinationId == tripDestinations.get(tripDestinations.size() - 1).getTripNodeId()) {
                 throw new BadRequestException("Destinations are contiguous");
             }
 
@@ -39,7 +39,7 @@ public class TripUtil {
             Destination destination = new Destination(null, null, null, null, null, null, -1, new ArrayList<>(), false);
             destination.setDestinationId(destinationId);
 
-            TripDestination tripDestination = new TripDestination(destination, arrivalDate, arrivalTime, departureDate, departureTime);
+            TripDestinationLeaf tripDestination = new TripDestinationLeaf(destination, arrivalDate, arrivalTime, departureDate, departureTime);
             tripDestinations.add(tripDestination);
 
             index++;

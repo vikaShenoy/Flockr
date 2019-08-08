@@ -1,7 +1,5 @@
 package repository;
 
-import models.Trip;
-
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Duration;

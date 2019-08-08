@@ -42,13 +42,12 @@ public class TripNodeTest {
 
     @Test
     public void firstTest() {
-        TripNode superTrip = new CompositeTrip();
-        superTrip.setName("Composite Trip");
+        TripNode superTrip = new TripComposite();
+        ((TripComposite) superTrip).setName("Composite Trip");
         TripNode subTrip1 = new TripDestinationLeaf();
-        subTrip1.setName("sub Trip 1");
         TripNode subTrip2 = new TripDestinationLeaf();
         subTrip2.setName("sub Trip 2");
-        TripNode compTrip2 = new CompositeTrip();
+        TripNode compTrip2 = new TripComposite();
         compTrip2.setName("comp Trip 2");
 
         superTrip.addTripNodes(subTrip1);
@@ -59,7 +58,7 @@ public class TripNodeTest {
 
         Assert.assertEquals(3, superTrip.getTripNodes().size());
 
-        CompositeTrip afterSavedTripNode = CompositeTrip.find.byId(superTrip.getId());
+        TripComposite afterSavedTripNode = TripComposite.find.byId(superTrip.getId());
         Assert.assertEquals("Composite Trip", afterSavedTripNode.getName());
         Assert.assertEquals(3, afterSavedTripNode.getTripNodes().size());
     }
