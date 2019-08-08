@@ -229,8 +229,8 @@ public class DestinationControllerTest {
     }
 
     @Test
-    public void getProposalUnauthorised() {
-        getProposalById(user.getToken(), destinationProposal.getDestinationProposalId(), 401);
+    public void getProposalForbidden() {
+        getProposalById(user.getToken(), destinationProposal.getDestinationProposalId(), 403);
     }
 
     @Test
@@ -286,8 +286,8 @@ public class DestinationControllerTest {
     }
 
     @Test
-    public void acceptProposalsUnauthorised() {
-        acceptProposals(user.getToken(), destinationProposal.getDestinationProposalId(), 401);
+    public void acceptProposalsForbidden() {
+        acceptProposals(user.getToken(), destinationProposal.getDestinationProposalId(), 403);
     }
 
     public void acceptProposals(String token, int destinationProposalId, int statusCode) {
@@ -312,13 +312,7 @@ public class DestinationControllerTest {
         Assert.assertEquals(proposalTypes, travellerTypes);
     }
 
-    /**
-     * Test for ensuring that an admin can successfully modify a traveller type proposal, and that it
-     * is successfully updated.
-     * Calls helper function 'checkProposal' to ensure that the changes were persisted
-     */
-    @Test
-    public void adminModifiesProposal() throws IOException {
+    public void modifyProposal(int status, String token, boolean check) {
 
         int destinationProposalId = destinationProposal.getDestinationProposalId();
         ObjectNode travellerTypes = Json.newObject();
@@ -330,9 +324,25 @@ public class DestinationControllerTest {
                 "PUT",
                 travellerTypes,
                 "/api/destinations/proposals/" + destinationProposalId,
-                adminUser.getToken());
+                token);
 
-        Assert.assertEquals(200, result.status());
-        checkProposal(Stream.of(travellerType2).collect(Collectors.toSet()));
+        Assert.assertEquals(status, result.status());
+        if (check) checkProposal(Stream.of(travellerType2).collect(Collectors.toSet()));
+
+    }
+
+    /**
+     * Test for ensuring that an admin can successfully modify a traveller type proposal, and that it
+     * is successfully updated.
+     * Calls helper function 'checkProposal' to ensure that the changes were persisted
+     */
+    @Test
+    public void adminModifiesProposal() {
+        modifyProposal(200, adminUser.getToken(), true);
+    }
+
+    @Test
+    public void userAttemptsToModifyProposal() {
+        modifyProposal(403, user.getToken(), false);
     }
 }

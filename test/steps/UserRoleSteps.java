@@ -141,6 +141,6 @@ public class UserRoleSteps {
 
     @Then("ROLES - I receive a {int} status code")
     public void roles_I_receive_a_status_code(Integer int1) {
-        Assert.assertEquals(401, statusResult);
+        Assert.assertEquals(403, statusResult);
     }
 }

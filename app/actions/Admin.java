@@ -39,7 +39,7 @@ public class Admin extends Action.Simple {
         }
 
         JsonNode response = Json.newObject().put("error", "Unauthorized");
-        return supplyAsync(() -> unauthorized(response));
+        return supplyAsync(() -> forbidden(response));
         //return delegate.call(request.addAttr(ActionState.IS_ADMIN, false));
     }
 }
