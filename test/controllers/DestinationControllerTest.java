@@ -1,5 +1,6 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
@@ -299,11 +300,15 @@ public class DestinationControllerTest {
 
     /**
      * Helper function for testing the proposal modification endpoint
-     * @param proposal the destination proposal to check for changes
      * @param travellerTypes the set traveller types that the proposal should have
      */
-    public void checkProposal(DestinationProposal proposal, Set<TravellerType> travellerTypes) {
-        Set<TravellerType> proposalTypes = new HashSet(proposal.getTravellerTypes());
+    public void checkProposal(Set<TravellerType> travellerTypes) {
+
+        Optional<DestinationProposal> optionalDestinationProposal = DestinationProposal.find.query().fetch("travellerTypes")
+                .where().eq("destination_proposal_id", destinationProposal.getDestinationProposalId()).findOneOrEmpty();
+
+        destinationProposal = optionalDestinationProposal.get();
+        Set<TravellerType> proposalTypes = new HashSet(destinationProposal.getTravellerTypes());
         Assert.assertEquals(proposalTypes, travellerTypes);
     }
 
@@ -313,7 +318,7 @@ public class DestinationControllerTest {
      * Calls helper function 'checkProposal' to ensure that the changes were persisted
      */
     @Test
-    public void adminModifiesProposal() {
+    public void adminModifiesProposal() throws IOException {
 
         int destinationProposalId = destinationProposal.getDestinationProposalId();
         ObjectNode travellerTypes = Json.newObject();
@@ -328,7 +333,6 @@ public class DestinationControllerTest {
                 adminUser.getToken());
 
         Assert.assertEquals(200, result.status());
-
-        checkProposal(destinationProposal, Stream.of(travellerType2).collect(Collectors.toSet()));
+        checkProposal(Stream.of(travellerType2).collect(Collectors.toSet()));
     }
 }

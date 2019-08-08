@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Types travellers can give themselves on profile, to show which kind
@@ -14,6 +15,16 @@ import java.util.List;
  */
 @Entity
 public class TravellerType extends Model {
+
+    @Override
+    public String toString() {
+        return "TravellerType{" +
+                "users=" + users +
+                ", destinations=" + destinations +
+                ", travellerTypeId=" + travellerTypeId +
+                ", travellerTypeName='" + travellerTypeName + '\'' +
+                '}';
+    }
 
     @ManyToMany
     private List<User> users;
@@ -52,9 +63,13 @@ public class TravellerType extends Model {
         if (obj.getClass() != getClass()) {
             return false;
         }
-
         TravellerType comparedTravellerType = (TravellerType) obj;
-        return travellerTypeId == comparedTravellerType.travellerTypeId;
+        return travellerTypeId == comparedTravellerType.getTravellerTypeId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(travellerTypeId, travellerTypeName);
     }
 
     /**

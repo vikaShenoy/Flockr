@@ -775,9 +775,6 @@ public class DestinationController extends Controller {
                     }
                     DestinationProposal destinationProposal = optionalDestinationProposal.get();
                     JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
-                    //String stringBody = request.body().asText();
-                    //JsonNode jsonBody = Json.parse(stringBody);
-                    //JsonNode travellerTypeIds = jsonBody.get("travellerTypeIds");
                     List<TravellerType> allTravellerTypes = TravellerType.find.all();
                     List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
 
