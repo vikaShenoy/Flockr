@@ -116,6 +116,11 @@
         </v-data-table>
       </v-card>
     </div>
+		<Snackbar
+			:snackbarModel="snackbarModel"
+			v-on:dismissSnackbar="dismissSnackbar"
+		></Snackbar>
+
   </div>
 </template>
 
@@ -126,9 +131,10 @@
   import {endpoint} from "../../utils/endpoint";
   import moment from "moment";
   import CountryDisplay from "../../components/Country/CountryDisplay";
+  import Snackbar from "../../components/Snackbars/Snackbar";
 
   export default {
-    components: {CountryDisplay},
+    components: {Snackbar, CountryDisplay},
     data() {
       return {
         nationalities: {
@@ -146,7 +152,13 @@
         nationality: "",
         travellerType: "",
         gender: "",
-
+				snackbarModel: {
+          show: false,
+					timeout: 3000,
+					text: "",
+					color: null,
+					snackbarId: 1
+				},
         headers: [
           {text: 'Photo', align: 'left', sortable: false, value: 'profilePhoto'},
           {text: 'First Name', align: 'left', sortable: true, value: 'firstName'},
@@ -174,7 +186,7 @@
           this.nationalities.ids.push(currentNationalities[index].nationalityId);
         }
       } catch (error) {
-        console.log(error);
+        this.showError("Could not get nationalities");
       }
 
       // Get all the traveller types
@@ -187,10 +199,18 @@
           this.travellerTypes.ids.push(currentTravellerTypes[index].travellerTypeId);
         }
       } catch (error) {
-        console.log(error);
+        this.showError("Could not get traveller types.");
       }
     },
     methods: {
+      showError(errorMessage) {
+        this.snackbarModel.text = errorMessage;
+        this.snackbarModel.show = true;
+        this.snackbarModel.color = "error"
+			},
+      dismissSnackbar() {
+        this.snackbarModel.show = false;
+			},
       search: async function () {
         // get the queries from the selector variables
         // parse them into an acceptable format to be sent
@@ -226,8 +246,7 @@
                 return {...traveller, age, nationalities: nationalityNames, travellerTypes}
               });
         } catch (error) {
-
-          console.log(error);
+          this.showError("Could not search for travellers")
         }
       },
       clearFilters: async function () {

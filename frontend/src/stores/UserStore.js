@@ -20,7 +20,6 @@ const UserStore = {
   },
   methods: {
     setData(user) {
-      console.log("user is: ", user);
       UserStore.data.userId = user.userId;
       UserStore.data.firstName = user.firstName;
       UserStore.data.middleName = user.middleName;
