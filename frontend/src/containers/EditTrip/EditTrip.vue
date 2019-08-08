@@ -1,48 +1,55 @@
 <template>
-  <v-card
-          id="edit-trip"
-          class="col-lg-10 offset-lg-1"
-  >
+	<div>
+		<v-card
+						id="edit-trip"
+						class="col-lg-10 offset-lg-1"
+		>
 
-    <h2>Edit Trip</h2>
+			<h2>Edit Trip</h2>
 
-    <v-form ref="editTripForm">
-      <v-text-field
-              v-model="tripName"
-              label="Trip Name"
-              color="secondary"
-              class="col-md-6"
-              :rules="tripNameRules"
-      >
-      </v-text-field>
+			<v-form ref="editTripForm">
+				<v-text-field
+								v-model="tripName"
+								label="Trip Name"
+								color="secondary"
+								class="col-md-6"
+								:rules="tripNameRules"
+				>
+				</v-text-field>
 
-      <TripTable :tripDestinations="tripDestinations" :isEditing="true"/>
+				<TripTable :tripDestinations="tripDestinations" :isEditing="true" @showErrorSnackbar="showErrorSnackbar"/>
 
-      <v-btn
-              depressed
-              color="secondary"
-              small
-              id="add-destination"
-              @click="addDestination"
-      >
-        <v-icon>add</v-icon>
-      </v-btn>
+				<v-btn
+								depressed
+								color="secondary"
+								small
+								id="add-destination"
+								@click="addDestination"
+				>
+					<v-icon>add</v-icon>
+				</v-btn>
 
-      <v-btn
-              depressed
-              color="secondary"
-              id="edit-trip-btn"
-              @click="editTrip()"
-      >Save
-      </v-btn>
-    </v-form>
-  </v-card>
+				<v-btn
+								depressed
+								color="secondary"
+								id="edit-trip-btn"
+								@click="editTrip()"
+				>Save
+				</v-btn>
+			</v-form>
+		</v-card>
+
+		<Snackbar
+			:snackbarModel="snackbarModel"
+			></Snackbar>
+	</div>
 </template>
 
 <script>
   import TripTable from "../../components/TripTable/TripTable";
   import {getTrip, transformTripResponse} from "./EditTripService.js";
   import {editTrip} from "../Trip/TripService";
+  import Snackbar from "../../components/Snackbars/Snackbar";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -59,6 +66,7 @@
 
   export default {
     components: {
+      Snackbar,
       TripTable
     },
     data() {
@@ -66,7 +74,13 @@
         tripName: "",
         tripDestinations: [],
         tripNameRules: [rules.required],
-        travellerId: 0
+        travellerId: 0,
+        snackbarModel: {
+          text: "",
+          color: "",
+          show: false,
+          timeout: 2000
+        }
       };
     },
     mounted() {
@@ -74,6 +88,14 @@
       this.travellerId = this.$route.params.travellerId;
     },
     methods: {
+      /**
+			 * Displays a snackbar with an error message.
+			 */
+      showErrorSnackbar(message) {
+        this.snackbarModel.text = message;
+        this.snackbarModel.color = "error";
+        this.snackbarModel.show = true;
+			},
       /**
        * Gets a users trip for editing
        */
@@ -90,8 +112,7 @@
           this.tripName = tripName;
           this.tripDestinations = tripDestinations;
         } catch (e) {
-          console.log(e);
-          // Add error handling later
+          this.showErrorSnackbar("Could not get user trip");
         }
       },
       /**
@@ -139,8 +160,7 @@
           }
 
         } catch (e) {
-          console.log(e);
-          // Add error handling here later
+          this.showErrorSnackbar("Error editing trip");
         }
       }
     }

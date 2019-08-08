@@ -473,7 +473,6 @@ export default {
           try {
             const insertedDestination = await sendAddDestination(this.destination);
             this.$emit("addNewDestination", insertedDestination);
-
             this.closeDialog();
             this.formIsLoading = false;
           } catch (error) {
@@ -496,7 +495,6 @@ export default {
               this.$emit("updateDestination", updatedDestination);
               this.formIsLoading = false;
             } catch (error) {
-              console.log(error);
               const message =
                 error.status === 400
                   ? error.response.body.message
@@ -508,7 +506,6 @@ export default {
       }
     },
     updateCountry(newValue) {
-      console.log("I am setting the country: ", newValue);
       this.destination.destinationCountry = newValue;
     }
   },

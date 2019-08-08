@@ -67,6 +67,11 @@
       this.getYourDestinations();
     },
     methods: {
+      showSnackbarError(message) {
+        this.snackbarModel.color = "error";
+        this.snackbarModel.text = message;
+        this.snackbarModel.show = true;
+			},
       refreshDestinations() {
         if (this.viewOption === "your") {
           this.getYourDestinations();
@@ -82,7 +87,7 @@
           const yourDestinations = await getYourDestinations();
           this.yourDestinations = yourDestinations;
         } catch (e) {
-          console.log("Could not get your destinations");
+          this.showSnackbarError("Could not get your destinations");
         }
       },
       /**
@@ -92,7 +97,7 @@
         try {
           this.publicDestinations = await getPublicDestinations();
         } catch (e) {
-          console.log("Could not get public destinations");
+          this.showSnackbarError("Could not get public destinations");
         }
       },
       /**
@@ -128,9 +133,7 @@
             this.getYourDestinations();
             this.getPublicDestinations();
           } catch (error) {
-            this.snackbarModel.text = error.message;
-            this.snackbarModel.color = "error";
-            this.snackbarModel.show = true;
+            this.showSnackbarError(error.message);
           }
         };
 
@@ -142,9 +145,7 @@
             this.getPublicDestinations();
             [].shift()
           } catch (error) {
-            this.snackbarModel.text = error.message;
-            this.snackbarModel.color = "error";
-            this.snackbarModel.show = true;
+            this.showSnackbarError(error.message);
           }
         };
 

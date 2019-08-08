@@ -72,6 +72,10 @@
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
+
+		<Snackbar
+						:snackbarModel="snackbarModel"
+		></Snackbar>
   </div>
 </template>
 
@@ -84,8 +88,10 @@
   import {validate} from "email-validator";
   import moment from "moment";
   import UserStore from "../../stores/UserStore";
+  import Snackbar from "../../components/Snackbars/Snackbar";
 
   export default {
+    components: {Snackbar},
     props: {
       // flag that identified if component should be used for signing up or signup as a user as an admin
       isSigningUpAsAdmin: {
@@ -127,6 +133,12 @@
         currStepperStep: 1,
         rules: rules,
         loading: false,
+        snackbarModel: {
+          text: "",
+          color: "",
+          show: false,
+          timeout: 2000
+        },
         signedUpUserId: 0 // used to cache the id of the signed up user, used when admin signs up another user
       };
     },
@@ -307,9 +319,14 @@
           this.loading = false;
           this.currStepperStep = 3; // go to next stepper in sign up sequence
         } catch (e) {
-          console.log(e);
+          this.showSnackbarError("Error signing up");
         }
       },
+			showSnackbarError(message) {
+        this.snackbarModel.text = message;
+        this.snackbarModel.show = true;
+        this.snackbarModel.color = "error";
+			},
       async sendTravellerInfo() {
         this.loading = true;
         const {
