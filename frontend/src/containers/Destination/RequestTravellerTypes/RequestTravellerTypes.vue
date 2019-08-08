@@ -94,14 +94,15 @@
       return {
         isDialogShowing: false,
         travellerTypes: [],
+				currentTravellerTypes: [],
         selectedTravellerTypes: [],
         isLoading: false,
         rules
       };
     },
     async mounted() {
-      const travellerTypes = await getTravellerTypes();
-      this.travellerTypes = travellerTypes;
+      this.travellerTypes = await getTravellerTypes();
+      this.selectedTravellerTypes = this.destination.travellerTypes;
     },
     methods: {
       /**
