@@ -46,7 +46,7 @@
 
       </v-card>
 
-    <div v-if="tripNode.nodeType === 'TripComposite' && tripNode.isShowing">
+    <div v-bind:class="{ expanded: tripNode.nodeType === 'TripComposite' && tripNode.isShowing}" id="trip-nodes">
       <div>
         <Timeline 
           :trip="tripNode" 
@@ -151,6 +151,16 @@
 <style lang="scss">
   .v-timeline--dense .v-timeline-item__body {
     max-width: calc(100% - 34px) !important;
+  }
+
+  #trip-nodes {
+    max-height: 0px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .expanded {
+    max-height: 15rem !important;
   }
 
 </style>

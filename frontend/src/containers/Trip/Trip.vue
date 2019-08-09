@@ -17,7 +17,6 @@
       @updatedTripDestinations="updatedTripDestinations"
       @deleteTripDestination="deleteTripDestination"
       @newUsers="newUsers"
-      @toggleShowTripNodes="toggleShowTripNodes"
     />
 
     <Snackbar

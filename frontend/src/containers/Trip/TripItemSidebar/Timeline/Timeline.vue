@@ -4,7 +4,7 @@
             dense
     >
       <!--data-destinationId is used to disable sorting items with the same destinationID-->
-      <TripDestination
+      <TripNode
               v-for="tripNode in trip.tripNodes"
               v-bind:key="tripNode.tripNodeId"
               :tripNode="tripNode"
@@ -19,17 +19,16 @@
 
 <script>
   import Sortable from "sortablejs";
-  import TripDestination from "./TripDestination/TripDestination";
+  import TripNode from "./TripNode/TripNode";
 
   export default {
     props: {
       trip: {
-        tripName: String,
-        tripDestinations: Object
+        tripNodes: Object
       }
     },
     components: {
-      TripDestination
+     TripNode 
     },
     mounted() {
       this.initSorting();
