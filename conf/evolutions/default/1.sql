@@ -152,6 +152,7 @@ create table trip_node (
   trip_node_id                  integer auto_increment not null,
   parent_trip_node_id           integer,
   deleted_expiry                timestamp,
+  is_composite                  boolean default false not null,
   deleted                       BOOLEAN DEFAULT FALSE not null,
   name                          varchar(255),
   destination_destination_id    integer,

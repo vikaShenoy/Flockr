@@ -155,7 +155,7 @@ public class CountrySyncTask {
             .scheduler()
             .schedule(
                 Duration.create(1, TimeUnit.HOURS), // initial delay
-                Duration.create(5, TimeUnit.HOURS), // interval
+                Duration.create(1, TimeUnit.SECONDS), // interval
                 () -> {
                     log.info("Country Schedule started");
                     long startTime = System.currentTimeMillis();

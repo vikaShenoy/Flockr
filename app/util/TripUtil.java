@@ -21,17 +21,18 @@ public class TripUtil {
 
         int index = 0;
         for (JsonNode tripDestinationJson : tripDestinationsJson) {
-            if (tripDestinationJson.get("tripNodes").size() > 0) {
+            if (tripDestinationJson.get("nodeType").asText().equals("TripComposite")) {
                 int tripNodeId = tripDestinationJson.get("tripNodeId").asInt();
                 TripComposite trip = new TripComposite(tripNodeId);
+//                TripComposite trip = TripComposite.find.byId(tripNodeId);
                 tripNodes.add(trip);
 
             } else {
                 int destinationId = tripDestinationJson.get("destinationId").asInt();
-                Date arrivalDate = new Date(tripDestinationJson.get("arrivalDate").asLong());
-                Integer arrivalTime = tripDestinationJson.get("arrivalTime").asInt();
-                Date departureDate = new Timestamp(tripDestinationJson.get("departureDate").asLong());
-                Integer departureTime = tripDestinationJson.get("departureTime").asInt();
+                Date arrivalDate = !tripDestinationJson.has("arrivalDate") ? null : new Date(tripDestinationJson.get("arrivalDate").asLong());
+                Integer arrivalTime = !tripDestinationJson.has("arrivalTime") ? null : tripDestinationJson.get("arrivalTime").asInt();
+                Date departureDate = !tripDestinationJson.has("departureDate") ? null : new Timestamp(tripDestinationJson.get("departureDate").asLong());
+                Integer departureTime = !tripDestinationJson.has("departureTime") ? null : tripDestinationJson.get("departureTime").asInt();
                 Destination destination = new Destination(destinationId);
                 TripDestinationLeaf tripDestination = new TripDestinationLeaf(destination, arrivalDate, arrivalTime, departureDate, departureTime);
                 tripNodes.add(tripDestination);
