@@ -73,9 +73,8 @@ public class TripController extends Controller {
         JsonNode jsonBody = request.body().asJson();
 
         String tripName = jsonBody.get("tripName").asText();
-        JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
+        JsonNode tripNodesJson = jsonBody.get("tripNodes");
         JsonNode userIdsJson = jsonBody.get("userIds");
-
 
 
         return userRepository.getUserById(userId)
@@ -86,12 +85,12 @@ public class TripController extends Controller {
 
                     User user = optionalUser.get();
 
-                   List<TripNode> tripDestinations;
+                   List<TripNode> tripNodes;
                    List<User> users;
 
                    try {
                        List<User> allUsers = User.find.all();
-                       tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+                       tripNodes = tripUtil.getTripDestinationsFromJson(tripNodesJson);
                        users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
                    } catch (BadRequestException e) {
                        return CompletableFuture.completedFuture(badRequest(e.getMessage()));
@@ -102,14 +101,14 @@ public class TripController extends Controller {
                    }
 
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
-                            tripDestinations);
+                            tripNodes);
 
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
-                                TripNode trip = new TripComposite(tripDestinations, users, tripName);
+                                TripComposite trip = new TripComposite(tripNodes, users, tripName);
                                 return tripRepository.saveTrip(trip);
                             })
-                            .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip.getTripId())));
+                            .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip.getTripNodeId())));
                 }, httpExecutionContext.current());
     }
 
@@ -134,7 +133,7 @@ public class TripController extends Controller {
                     if (!optionalTrip.isPresent()) {
                         return notFound();
                     }
-                    Trip trip = optionalTrip.get();
+                    TripComposite trip = optionalTrip.get();
                     JsonNode tripJson = Json.toJson(trip);
                     return ok(tripJson);
                 });
@@ -163,7 +162,8 @@ public class TripController extends Controller {
                     if (!optionalTrip.isPresent()) {
                         throw new CompletionException(new NotFoundException());
                     }
-                    Trip trip = optionalTrip.get();
+
+                    TripComposite trip = optionalTrip.get();
                     return tripRepository.deleteTrip(trip);
                 }, httpExecutionContext.current())
                 .thenApplyAsync((trip) -> (Result) ok(), httpExecutionContext.current())
@@ -206,7 +206,7 @@ public class TripController extends Controller {
                         throw new CompletionException(new NotFoundException());
                     }
 
-                    Trip trip = optionalTrip.get();
+                    TripComposite trip = optionalTrip.get();
                     if (!user.isAdmin() && user.getUserId() != userId) {
                         throw new CompletionException(new ForbiddenRequestException(
                                 "You do not have permission to undo this deletion."));
@@ -272,13 +272,13 @@ public class TripController extends Controller {
                     JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
                     JsonNode userIdsJson = jsonBody.get("userIds");
 
-                    List<TripDestination> tripDestinations;
+                    List<TripNode> tripNodes;
                     List<User> users;
                     try {
                         long startTime = System.currentTimeMillis();
                         List<User> allUsers = User.find.all();
                         User user = User.find.byId(userId);
-                        tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+                        tripNodes = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
                         users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
 
@@ -292,13 +292,13 @@ public class TripController extends Controller {
 
                     long startTime = System.currentTimeMillis();
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
-                            tripDestinations);
+                            tripNodes);
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
-                                Trip trip = optionalTrip.get();
+                                TripComposite trip = optionalTrip.get();
 
-                                trip.setTripDestinations(tripDestinations);
-                                trip.setTripName(tripName);
+                                trip.setTripNodes(tripNodes);
+                                trip.setName(tripName);
                                 trip.setUsers(users);
 
                                 return tripRepository.update(trip);
@@ -331,28 +331,30 @@ public class TripController extends Controller {
      * @param tripDestinations the destinations of the trip.
      * @return List&lt CompletionStage&lt Destination &gt &gt the list of completion stages.
      */
-    private List<CompletionStage<Destination>> checkAndUpdateOwners(int userId, List<TripDestinationLeaf> tripDestinations) {
+    private List<CompletionStage<Destination>> checkAndUpdateOwners(int userId, List<TripNode> tripDestinations) {
         List<CompletionStage<Destination>> updateDestinations = new ArrayList<>();
-        for (TripDestinationLeaf tripDestination : tripDestinations) {
-
-            CompletionStage<Destination> updateDestination = destinationRepository.getDestinationById(
-                    tripDestination.getDestination().getDestinationId())
-                    .thenApplyAsync(destination -> {
-                                if (destination.isPresent() &&  // The destination exists
-                                        // The destination is public
-                                        destination.get().getIsPublic() &&
-                                        // The owner is not already null
-                                        destination.get().getDestinationOwner() != null &&
-                                        // The user doesn't own the destination
-                                        !destination.get().getDestinationOwner().equals(userId)) {
-                                    destination.get().setDestinationOwner(null);
-                                    destinationRepository.update(destination.get());
-                                }
-                                return destination.get();
-                            }
-                    );
-            updateDestinations.add(updateDestination);
-        }
+//        for (TripNode tripDestination : tripDestinations) {
+//
+//            CompletionStage<Destination> updateDestination = destinationRepository.getDestinationById(
+//                    tripDestination.getDestination().getDestinationId())
+//                    .thenApplyAsync(destination -> {
+//                                if (destination.isPresent() &&  // The destination exists
+//                                        // The destination is public
+//                                        destination.get().getIsPublic() &&
+//                                        // The owner is not already null
+//                                        destination.get().getDestinationOwner() != null &&
+//                                        // The user doesn't own the destination
+//                                        !destination.get().getDestinationOwner().equals(userId)) {
+//                                    destination.get().setDestinationOwner(null);
+//                                    destinationRepository.update(destination.get());
+//                                }
+//                                return destination.get();
+//                            }
+//                    );
+//            updateDestinations.add(updateDestination);
+//        }
+//        return updateDestinations;
+        updateDestinations.add(supplyAsync(() -> new Destination(null, null, null, null, null, null, null, null, true)));
         return updateDestinations;
     }
 

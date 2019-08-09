@@ -2,6 +2,7 @@ package tasks;
 
 
 import akka.actor.ActorSystem;
+import models.TripComposite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.ExecutionContext;
@@ -38,10 +39,10 @@ public class DeleteExpiredTripsTask {
      *
      * @return the list of expired deleted trips.
      */
-    private CompletionStage<List<Trip>> getDeletedTrips() {
+    private CompletionStage<List<TripComposite>> getDeletedTrips() {
         return supplyAsync(() -> {
             Timestamp now = Timestamp.from(Instant.now());
-            return Trip.find.query().setIncludeSoftDeletes()
+            return TripComposite.find.query().setIncludeSoftDeletes()
                     .where().eq("deleted", true).and()
                     .le("deleted_expiry", now).findList();
         });
@@ -57,7 +58,7 @@ public class DeleteExpiredTripsTask {
                                 .thenApplyAsync(trips -> {
                                     log.info("-----------Cleaning up deleted trips-------------");
                                     System.out.println("-----------Cleaning up deleted trips-------------");
-                                    for (Trip trip : trips) {
+                                    for (TripComposite trip : trips) {
                                         trip.deletePermanent();
                                     }
                                     log.info(String.format("%d Trips deleted successfully", trips.size()));

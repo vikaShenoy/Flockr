@@ -1,5 +1,7 @@
 package repository;
 
+import models.TripComposite;
+
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -28,7 +30,7 @@ public class TripRepository {
      * @param trip The trip to save
      * @return The saved trip
      */
-    public CompletionStage<Trip> saveTrip(Trip trip) {
+    public CompletionStage<TripComposite> saveTrip(TripComposite trip) {
         return supplyAsync(() -> {
             trip.save();
             return trip;
@@ -41,7 +43,7 @@ public class TripRepository {
      * @param trip The trip to update changes.
      * @return The trip that was updated.
      */
-    public CompletionStage<Trip> update(Trip trip) {
+    public CompletionStage<TripComposite> update(TripComposite trip) {
         return supplyAsync(() -> {
             trip.update();
             return trip;
@@ -53,7 +55,7 @@ public class TripRepository {
      *
      * @param trip The trip to delete.
      */
-    public CompletionStage<Trip> deleteTrip(Trip trip) {
+    public CompletionStage<TripComposite> deleteTrip(TripComposite trip) {
         return supplyAsync(() -> {
             trip.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
             trip.delete(); // Soft delete
@@ -66,7 +68,7 @@ public class TripRepository {
      * @param trip the trip to be restored
      * @return
      */
-    public CompletionStage<Trip> restoreTrip(Trip trip) {
+    public CompletionStage<TripComposite> restoreTrip(TripComposite trip) {
         return supplyAsync(() -> {
             trip.setDeleted(false);
             trip.setDeletedExpiry(null);
@@ -82,9 +84,9 @@ public class TripRepository {
      * @param userId The user id of the trip to find.
      * @return the trip that matches given ids.
      */
-    public CompletionStage<Optional<Trip>> getTripByIds(int tripId, int userId) {
+    public CompletionStage<Optional<TripComposite>> getTripByIds(int tripId, int userId) {
         return supplyAsync(() -> {
-            Optional<Trip> trip = Trip.find.query()
+            Optional<TripComposite> trip = TripComposite.find.query()
                     .fetch("users")
                     .where().eq("trip_id", tripId)
                     .in("users.userId", userId)
@@ -99,9 +101,9 @@ public class TripRepository {
      * @param userId The user id of the owner of the trip
      * @return the trip that matches the given ids
      */
-    public CompletionStage<Optional<Trip>> getTripByIdsIncludingDeleted(int tripId, int userId) {
+    public CompletionStage<Optional<TripComposite>> getTripByIdsIncludingDeleted(int tripId, int userId) {
         return supplyAsync(() -> {
-            Optional<Trip> trip = Trip.find.query().setIncludeSoftDeletes()
+            Optional<TripComposite> trip = TripComposite.find.query().setIncludeSoftDeletes()
                     .fetch("users")
                     .where().eq("trip_id", tripId)
                     .in("users.userId", userId)
@@ -116,9 +118,9 @@ public class TripRepository {
      * @param travellerId The user id of the trips
      * @return The users trips
      */
-    public CompletionStage<List<Trip>> getTripsByIds(int travellerId) {
+    public CompletionStage<List<TripComposite>> getTripsByIds(int travellerId) {
         return supplyAsync(() -> {
-            List<Trip> trip = Trip.find.query()
+            List<TripComposite> trip = TripComposite.find.query()
                     .fetch("users")
                     .where()
                     .in("users.userId", travellerId)

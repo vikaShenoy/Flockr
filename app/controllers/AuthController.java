@@ -160,6 +160,7 @@ public class AuthController {
                 message.put(messageKey, e.getMessage());
                 return Results.status(Http.Status.CONFLICT, message);
             } catch (Throwable throwable) {
+                throwable.printStackTrace();
                 ObjectNode message = Json.newObject();
                 message.put(messageKey, "Something went wrong trying to sign up");
                 return internalServerError(message);

@@ -50,7 +50,7 @@ public class User extends Model {
     public List<Role> roles;
 
     @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    private List<Trip> trips;
+    private List<TripComposite> trips;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PersonalPhoto> personalPhotos;

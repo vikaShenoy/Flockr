@@ -35,12 +35,12 @@ public class TripControllerTest {
     Destination christchurch;
     Destination westMelton;
     Destination helkett;
-    TripDestination tripChristchurch;
-    TripDestination tripWestMelton;
-    TripDestination tripHelkett;
-    List<TripDestination> tripDestinations;
-    Trip trip;
-    Trip trip2;
+    TripDestinationLeaf tripChristchurch;
+    TripDestinationLeaf tripWestMelton;
+    TripDestinationLeaf tripHelkett;
+    List<TripNode> tripNodes;
+    TripComposite trip;
+    TripComposite trip2;
     ObjectNode tripDestination1;
     ObjectNode tripDestination2;
 
@@ -96,22 +96,22 @@ public class TripControllerTest {
 
         // Creating a trip
 
-        tripChristchurch = new TripDestination(christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
-        tripWestMelton = new TripDestination(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
-        tripHelkett = new TripDestination(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        tripChristchurch = new TripDestinationLeaf(christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
+        tripWestMelton = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        tripHelkett = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
         tripChristchurch.save();
         tripWestMelton.save();
         tripHelkett.save();
-        tripDestinations = new ArrayList<>();
-        tripDestinations.add(tripChristchurch);
-        tripDestinations.add(tripWestMelton);
+        tripNodes = new ArrayList<>();
+        tripNodes.add(tripChristchurch);
+        tripNodes.add(tripWestMelton);
         List<User> users = new ArrayList<>();
         users.add(user);
-        trip = new Trip(tripDestinations, users, "Testing Trip 1");
+        trip = new TripComposite(tripNodes, users, "Testing Trip 1");
         trip.save();
-        tripDestinations.remove(tripWestMelton);
-        tripDestinations.add(tripHelkett);
-        trip2 = new Trip(tripDestinations,users,"Find the family graves");
+        tripNodes.remove(tripWestMelton);
+        tripNodes.add(tripHelkett);
+        trip2 = new TripComposite(tripNodes,users,"Find the family graves");
         trip2.save();
         tripDestination1 = Json.newObject();
         tripDestination1.put("destinationId", 1);
@@ -128,25 +128,25 @@ public class TripControllerTest {
         tripDestination2.put("departureTime", 240);
     }
 
-    private void restore(Trip trip) {
+    private void restore(TripComposite trip) {
         trip.setDeleted(false);
         trip.setDeletedExpiry(null);
         trip.save();
-        Optional<Trip> optionalTrip = Trip.find.query()
-                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip = TripComposite.find.query()
+                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
         Assert.assertTrue(optionalTrip.isPresent());
     }
 
     @Test
     public void restoreTripOk() {
         trip.delete();
-        Optional<Trip> optionalTrip = Trip.find.query()
-                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip = TripComposite.find.query()
+                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
         Result result = fakeClient.makeRequestWithToken(
                 "PUT",
-                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore",
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore",
                 user.getToken()
         );
         Assert.assertEquals(200, result.status());
@@ -156,13 +156,13 @@ public class TripControllerTest {
     @Test
     public void restoreTripForbidden() {
         trip.delete();
-        Optional<Trip> optionalTrip = Trip.find.query()
-                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip = TripComposite.find.query()
+                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
         Result result = fakeClient.makeRequestWithToken(
                 "PUT",
-                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore",
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore",
                 otherUser.getToken()
         );
         Assert.assertEquals(403, result.status());
@@ -172,13 +172,13 @@ public class TripControllerTest {
     @Test
     public void restoreTripUnauthorized() {
         trip.delete();
-        Optional<Trip> optionalTrip = Trip.find.query()
-                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip = TripComposite.find.query()
+                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
         Result result = fakeClient.makeRequestWithNoToken(
                 "PUT",
-                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore"
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore"
         );
         Assert.assertEquals(401, result.status());
         restore(trip);
@@ -187,13 +187,13 @@ public class TripControllerTest {
     @Test
     public void restoreTripAdmin() {
         trip.delete();
-        Optional<Trip> optionalTrip = Trip.find.query()
-                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip = TripComposite.find.query()
+                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
         Result result = fakeClient.makeRequestWithToken(
                 "PUT",
-                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore",
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore",
                 adminUser.getToken()
         );
         Assert.assertEquals(200, result.status());
@@ -202,8 +202,8 @@ public class TripControllerTest {
     @Test
     public void restoreTripNotFound() {
         trip.delete();
-        Optional<Trip> optionalTrip = Trip.find.query()
-                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip = TripComposite.find.query()
+                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
         Result result = fakeClient.makeRequestWithToken(
@@ -218,13 +218,13 @@ public class TripControllerTest {
     @Test
     public void restoreTripBadRequest() {
 
-        Optional<Trip> optionalTrip = Trip.find.query()
-                .where().eq("trip_id", trip.getTripId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip = TripComposite.find.query()
+                .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
         Assert.assertTrue(optionalTrip.isPresent());
 
         Result result = fakeClient.makeRequestWithToken(
                 "PUT",
-                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId() + "/restore",
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore",
                 user.getToken()
         );
         Assert.assertEquals(400, result.status());
@@ -245,7 +245,7 @@ public class TripControllerTest {
         Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
         Assert.assertEquals(201, result.status());
         int tripId = PlayResultToJson.convertResultToJson(result).asInt();
-        Trip receivedTrip = Trip.find.byId(tripId);
+        TripComposite receivedTrip = TripComposite.find.byId(tripId);
         Assert.assertNotNull(receivedTrip);
         Assert.assertEquals(2, receivedTrip.getUsers().size());
     }
@@ -270,7 +270,7 @@ public class TripControllerTest {
 
     @Test
     public void editTripWithUsers() throws IOException {
-        String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId();
+        String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId();
         ObjectNode tripBody = Json.newObject();
         ArrayNode tripDestinations = Json.newArray();
         tripDestinations.add(tripDestination1);
@@ -287,7 +287,7 @@ public class TripControllerTest {
 
     @Test
     public void cannotHaveNoUsersInTrip() {
-        String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId();
+        String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId();
         ObjectNode tripBody = Json.newObject();
         ArrayNode tripDestinations = Json.newArray();
         tripDestinations.add(tripDestination1);

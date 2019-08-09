@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
-import models.Destination;
-import models.TripDestinationLeaf;
-import models.TripNode;
-import models.User;
+import models.*;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -16,7 +13,7 @@ import java.util.List;
 
 public class TripUtil {
     public List<TripNode> getTripDestinationsFromJson(JsonNode tripDestinationsJson) throws BadRequestException {
-        List<TripNode> tripDestinations = new ArrayList<>();
+        List<TripNode> tripNodes = new ArrayList<>();
 
         if (tripDestinationsJson.size() < 2) {
             throw new BadRequestException("tripDestinationJson has to be smaller or equal to 2");
@@ -24,28 +21,32 @@ public class TripUtil {
 
         int index = 0;
         for (JsonNode tripDestinationJson : tripDestinationsJson) {
-            int destinationId = tripDestinationJson.get("destinationId").asInt();
+            if (tripDestinationJson.get("tripNodes").size() > 0) {
+                int tripNodeId = tripDestinationJson.get("tripNodeId").asInt();
+                TripComposite trip = new TripComposite(tripNodeId);
+                tripNodes.add(trip);
 
-            // Check that destinations are not contiguous
-            if (index > 0 && destinationId == tripDestinations.get(tripDestinations.size() - 1).getTripNodeId()) {
-                throw new BadRequestException("Destinations are contiguous");
+            } else {
+                int destinationId = tripDestinationJson.get("destinationId").asInt();
+                Date arrivalDate = new Date(tripDestinationJson.get("arrivalDate").asLong());
+                Integer arrivalTime = tripDestinationJson.get("arrivalTime").asInt();
+                Date departureDate = new Timestamp(tripDestinationJson.get("departureDate").asLong());
+                Integer departureTime = tripDestinationJson.get("departureTime").asInt();
+                Destination destination = new Destination(destinationId);
+                TripDestinationLeaf tripDestination = new TripDestinationLeaf(destination, arrivalDate, arrivalTime, departureDate, departureTime);
+                tripNodes.add(tripDestination);
             }
 
-            Date arrivalDate = new Date(tripDestinationJson.get("arrivalDate").asLong());
-            Integer arrivalTime = tripDestinationJson.get("arrivalTime").asInt();
-            Date departureDate = new Timestamp(tripDestinationJson.get("departureDate").asLong());
-            Integer departureTime = tripDestinationJson.get("departureTime").asInt();
+//
+//            // Check that destinations are not contiguous
+//            if (index > 0 && destinationId == tripNodes.get(tripNodes.size() - 1).getTripNodeId()) {
+//                throw new BadRequestException("Destinations are contiguous");
+//            }
 
-            Destination destination = new Destination(null, null, null, null, null, null, -1, new ArrayList<>(), false);
-            destination.setDestinationId(destinationId);
-
-            TripDestinationLeaf tripDestination = new TripDestinationLeaf(destination, arrivalDate, arrivalTime, departureDate, departureTime);
-            tripDestinations.add(tripDestination);
 
             index++;
         }
-
-        return tripDestinations;
+        return tripNodes;
     }
 
     /**

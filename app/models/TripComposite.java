@@ -23,6 +23,10 @@ public class TripComposite extends TripNode {
         this.name = name;
     }
 
+    public TripComposite(int tripNodeId) {
+        this.setTripNodeId(tripNodeId);
+    }
+
     public TripComposite() {
         this.tripNodes = new ArrayList<>();
     }
