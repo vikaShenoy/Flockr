@@ -11,7 +11,7 @@
               id="add-destination-btn"
               @click="toggleEditor"
       >
-        <v-icon>add</v-icon>
+        <v-icon>{{ shouldShowEditor ? "close" : "add" }}</v-icon>
       </v-btn>
 
       <div id="undo-redo">
@@ -31,12 +31,12 @@
 
     <div id="destinations-list">
       <div v-if="shouldShowEditor">
-        <ModifyDestinationSidebar
+        <AddDestinationSidebar
+            ref="addSidebar"
             :editMode="false"
             v-on:addNewDestination="addNewDestination"
             v-on:dialogChanged="addDestDialogChanged"
-            v-on:closeEditor="toggleEditor"
-        ></ModifyDestinationSidebar>
+        ></AddDestinationSidebar>
       </div>
 
       <div v-else-if="shouldShowSpinner" id="spinner">
@@ -90,12 +90,12 @@
   import AlertDialog from "../../../components/AlertDialog/AlertDialog";
   import UndoRedo from "../../../components/UndoRedo/UndoRedo";
   import Command from '../../../components/UndoRedo/Command';
-  import ModifyDestinationSidebar from './ModifyDestinationSidebar/ModifyDestinationSidebar';
+  import AddDestinationSidebar from './AddDestinationSidebar/AddDestinationSidebar';
 
   export default {
     props: ["yourDestinations", "publicDestinations"],
     components: {
-      ModifyDestinationSidebar,
+      AddDestinationSidebar,
       DestinationSummary,
       PromptDialog,
       AlertDialog,
@@ -120,12 +120,12 @@
        * Get a user's trips.
        */
       async getUserTrips() {
-        const userTrips = await getUserTrips();
-        this.trips = userTrips;
+        this.trips = await getUserTrips();
       },
 
       toggleEditor() {
         this.shouldShowEditor = !this.shouldShowEditor;
+        this.$refs.addSidebar.closeDialog();
       },
 
       addNewDestination(destination) {
