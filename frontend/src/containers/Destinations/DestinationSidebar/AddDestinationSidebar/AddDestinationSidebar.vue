@@ -1,4 +1,4 @@
-<template>
+<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-card>
     <v-card-title class="primary title">
       <v-layout row>
@@ -23,8 +23,7 @@
                 :value="destination.destinationName"
                 :items="destinationTypes"
                 label="Name"
-                :rules="requiredRule"
-            />
+                :rules="requiredRule"></v-text-field>
           </v-flex>
 
           <v-flex>
@@ -35,8 +34,7 @@
                 item-value="destinationTypeId"
                 item-text="destinationTypeName"
                 label="Type"
-                :rules="requiredRule"
-            />
+                :rules="requiredRule"></v-select>
 
           </v-flex>
 
@@ -54,8 +52,7 @@
                 item-text="districtName"
                 :disabled="!destination.destinationCountry.countryId"
                 label="District"
-                :rules="requiredRule"
-            />
+                :rules="requiredRule"></v-select>
           </v-flex>
 
           <v-flex>
@@ -94,8 +91,7 @@
                   :value="destination.destinationLat"
                   label="Latitude"
                   :rules="latitudeRules"
-                  id="latitude"
-              />
+                  id="latitude"></v-text-field>
             </v-flex>
             <v-flex>
               <v-text-field
@@ -103,8 +99,7 @@
                   :value="destination.destinationLon"
                   label="Longitude"
                   :rules="longitudeRules"
-                  id="longitude"
-              />
+                  id="longitude"></v-text-field>
             </v-flex>
 
           </v-flex>
@@ -127,11 +122,6 @@
       <v-spacer align="right">
         <v-btn
             flat
-            color="error"
-            @click="closeDialog"
-        >Cancel</v-btn>
-        <v-btn
-            flat
             color="success"
             @click="checkSubmission"
             :loading="formIsLoading"
@@ -142,14 +132,14 @@
 </template>
 
 <script>
-  import { rules } from "../../../../utils/rules";
-  import { sendAddDestination } from "../../DestinationsService";
+  import {rules} from "../../../../utils/rules";
+  import {sendAddDestination} from "../../DestinationsService";
   import {
     requestCountries,
     requestDestinationTypes,
-    requestTravellerTypes,
-    requestDistricts
-  } from "./ModifyDestinationSidebarService";
+    requestDistricts,
+    requestTravellerTypes
+  } from "./AddDestinationSidebarService";
   import CountryPicker from "../../../../components/Country/CountryPicker"
 
   export default {
@@ -243,8 +233,7 @@
        */
       async getCountries() {
         try {
-          const countries = await requestCountries();
-          this.countries = countries;
+          this.countries = await requestCountries();
         } catch (e) {
           this.showError("Could not get countries");
         }
@@ -253,8 +242,7 @@
        * Gets destination types to populate destination types with and sets it as state
        */
       async getDestinationTypes() {
-        const destinationTypes = await requestDestinationTypes();
-        this.destinationTypes = destinationTypes;
+        this.destinationTypes = await requestDestinationTypes();
       },
       /**
        * Gets districts in a specific country and sets it as state
@@ -304,7 +292,6 @@
         };
         this.$refs.form.reset();
         this.$refs.form.resetValidation();
-        this.$emit('closeEditor');
       },
       /**
        * Removes a traveller type from chips
