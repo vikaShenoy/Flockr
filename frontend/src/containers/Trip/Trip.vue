@@ -2,26 +2,27 @@
   <div id="destinations">
     <div id="map">
       <DestinationMap
-              :destinations="mapTripDestinationsToDestinations()"
-              :isTripMap="true"
+        :destinations="mapTripNodesToDestinations()"
+        :isTripMap="true"
       />
     </div>
 
     <div id="undo-redo-btns">
       <UndoRedo ref="undoRedo" color="white"/>
-    </div>
+    </div>{
 
     <TripItemSidebar
-            :trip="trip"
-            v-on:destinationOrderChanged="destinationOrderChanged"
-            v-on:updatedTripDestinations="updatedTripDestinations"
-            v-on:deleteTripDestination="deleteTripDestination"
-            @newUsers="newUsers"
+      :trip="trip"
+      @destinationOrderChanged="destinationOrderChanged"
+      @updatedTripDestinations="updatedTripDestinations"
+      @deleteTripDestination="deleteTripDestination"
+      @newUsers="newUsers"
+      @toggleShowTripNodes="toggleShowTripNodes"
     />
 
     <Snackbar
-            :snackbarModel="snackbarModel"
-            v-on:dismissSnackbar="snackbarModel.show = false"
+      :snackbarModel="snackbarModel"
+      @dismissSnackbar="snackbarModel.show = false"
     />
   </div>
 </template>
@@ -35,7 +36,8 @@
     contiguousReorderedDestinations,
     editTrip,
     getTrip,
-    transformTripResponse
+    transformTripResponse,
+    mapTripNodesToDestinations
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command"
@@ -50,8 +52,69 @@
     },
     data() {
       return {
-        trip: null,
-
+        // trip: null,
+        trip: {
+          name: "My trip",
+          users: [],
+          nodeType: "TripComposite",
+          tripNodes: [
+            {
+              tripNodeId: 1,
+              name: "My favourite nested sub trip",
+              nodeType: "TripComposite",
+              arrivalDate: "03-04-2018",
+              arrivalTime: "13:00",
+              departureDate: "03-05-2018",
+              departureTime: "14:00",
+              isShowing: false,
+              tripNodes: [
+                {
+                  tripNodeId: 2,
+                  nodeType: "TripDestinationLeaf",
+                  name: "New Zealand",
+                  arrivalDate: "03-04-2018",
+                  arrivalTime: "13:00",
+                  departureDate: "04-04-2018",
+                  departureTime: "13:00",
+                  destination: {
+                    destinationId: 1,
+                    destinationLat: 34,
+                    destinationLon: 31
+                  }
+                },
+                {
+                  tripNodeId: 3,
+                  nodeType: "TripDestinationLeaf",
+                  name: "Some place",
+                  arrivalDate: "04-04-2018",
+                  arrivalTime: "13:00",
+                  departureDate: "3-05-2018",
+                  departureTime: "14:00",
+                  tripNodes: [],
+                  destination: {
+                    destinationId: 2,
+                    destinationLat: 69,
+                    destinationLon: 34
+                  }
+                }
+              ]
+            },
+            {
+              tripNodeId: 4,
+              nodeType: "TripDestinationLeaf",
+              name: "Some other place",
+              arrivalDate: "04-06-2018",
+              arrivalTime: "13:00",
+              departureDate: "3-09-2018",
+              departureTime: "14:00",
+              destination: {
+                destinationId: 3,
+                destinationLat: 59,
+                destinationLon: 36
+              }
+            }
+          ]
+        },
         snackbarModel: {
           show: false,
           timeout: 3000,
@@ -62,8 +125,9 @@
       };
     },
     mounted() {
-      this.getTrip();
-    },
+      // this.getTrip();
+      console.log(mapTripNodesToDestinations(this.trip));
+   },
     methods: {
       /**
        * Shows an snackbar error
@@ -86,13 +150,12 @@
       /**
        * Maps tripDestinations to destinations for map
        */
-      mapTripDestinationsToDestinations() {
+      mapTripNodesToDestinations() {
         if (!this.trip) {
           return [];
         }
-        return this.trip.tripDestinations.map((tripDest) => {
-          return tripDest.destination;
-        })
+
+        return mapTripNodesToDestinations(this.trip);
       },
       /**
        * Gets trip by it's ID

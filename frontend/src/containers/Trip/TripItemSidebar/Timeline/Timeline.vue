@@ -5,12 +5,12 @@
     >
       <!--data-destinationId is used to disable sorting items with the same destinationID-->
       <TripDestination
-              v-for="tripDestination in trip.tripDestinations"
-              v-bind:key="tripDestination.tripDestinationId"
-              :tripDestination="tripDestination"
-              alignRight
-              v-on:showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
-              v-on:deleteTripDestination="deleteTripDestination => $emit('deleteTripDestination', tripDestination)"
+              v-for="tripNode in trip.tripNodes"
+              v-bind:key="tripNode.tripNodeId"
+              :tripNode="tripNode"
+              :alignRight="false"
+              @showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
+              @deleteTripDestination="deleteTripDestination => $emit('deleteTripDestination', tripDestination)"
       />
     </v-timeline>
   </div>
@@ -22,7 +22,6 @@
   import TripDestination from "./TripDestination/TripDestination";
 
   export default {
-    name: "Trip",
     props: {
       trip: {
         tripName: String,

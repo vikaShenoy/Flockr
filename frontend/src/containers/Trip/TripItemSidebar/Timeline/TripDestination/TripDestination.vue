@@ -5,15 +5,16 @@
             color="primary"
             small
             :right="alignRight"
+            :hide-dot="tripNode.nodeType === 'TripComposite'"
     >
       <v-card>
         <v-card-title class="secondary trip-destination-title">
-          <h3 class="white--text font-weight-light">{{ tripDestination.destination.destinationName }}</h3>
+          <h3 class="white--text font-weight-light">{{ tripNode.name }}</h3>
           <v-spacer align="right">
-            <v-btn class="delete-btn" flat @click="$emit('deleteTripDestination', tripDestination)">
+            <v-btn class="delete-btn" flat @click="$emit('deleteTripDestination', tripNode)">
               <v-icon>delete</v-icon>
             </v-btn>
-            <v-btn class="edit-btn" flat @click="$emit('showEditTripDestination', tripDestination)">
+            <v-btn class="edit-btn" flat @click="$emit('showEditTripDestination', tripNode)">
               <v-icon>edit</v-icon>
             </v-btn>
           </v-spacer>
@@ -24,7 +25,7 @@
               <v-icon size="30">flight_takeoff</v-icon>
             </v-flex>
             <v-flex xs10 class="date-info">
-              <p>{{ formatDateTime(tripDestination.arrivalDate, tripDestination.arrivalTime) }}</p>
+              <p>{{ formatDateTime(tripNode.arrivalDate, tripNode.arrivalTime) }}</p>
             </v-flex>
           </v-layout>
           <v-layout>
@@ -32,27 +33,51 @@
               <v-icon size="30">flight_landing</v-icon>
             </v-flex>
             <v-flex xs10 class="date-info">
-              <p>{{ formatDateTime(tripDestination.departureDate, tripDestination.departureTime) }}</p>
+              <p>{{ formatDateTime(tripNode.departureDate, tripNode.departureTime) }}</p>
             </v-flex>
           </v-layout>
+        <v-spacer align="center" v-if="tripNode.nodeType === 'TripComposite'">
+          <v-icon class="expand-trip" color="secondary" @click="toggleShowTripNodes(tripNode)">{{ tripNode.isShowing ? "keyboard_arrow_up" : "keyboard_arrow_down"}}</v-icon>
+        </v-spacer>
+
+
+
         </div>
+
       </v-card>
+
+    <div v-if="tripNode.nodeType === 'TripComposite' && tripNode.isShowing">
+      <div>
+        <Timeline 
+          :trip="tripNode" 
+        />
+        </div>
+    </div>
+
+
+
     </v-timeline-item>
+
+
+
+
+
+
   </div>
 </template>
 
 
 <script>
   import moment from "moment";
+  
 
   export default {
+    components: {
+      Timeline: () => import("../Timeline")
+    },
     name: "TimelineDestination",
     props: {
-      tripDestination: {
-        destinationName: String,
-        arrivalDate: String,
-        departureDate: String
-      },
+      tripNode: Object,
       alignRight: Boolean
     },
     methods: {
@@ -72,6 +97,9 @@
         }
 
         return formattedDate;
+      },
+      toggleShowTripNodes(tripNode) {
+        tripNode.isShowing = !tripNode.isShowing;
       }
     }
   };
@@ -108,6 +136,23 @@
     font-size: 0.4rem;
   }
 
+  .expand-trip {
+    font-size: 2.5rem;
+    cursor: pointer;
+
+    
+  }
+
+
+
 
 </style>
+
+<style lang="scss">
+  .v-timeline--dense .v-timeline-item__body {
+    max-width: calc(100% - 34px) !important;
+  }
+
+</style>
+
 

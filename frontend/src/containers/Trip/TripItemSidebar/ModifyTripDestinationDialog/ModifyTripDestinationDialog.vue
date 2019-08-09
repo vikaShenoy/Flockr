@@ -312,20 +312,22 @@
     },
     computed: {
       filteredDestinations() {
+        // Returning this.destinations for now until we have trips within trips sorted
+        return this.destinations;
         if (this.editMode) {
-          const tripDestinationIndex = this.trip.tripDestinations.findIndex(tripDestination => tripDestination.tripDestinationId === this.tripDestination.tripDestinationId);
+          const tripNodesIndex = this.trip.tripNodes.findIndex(tripDestination => tripDestination.tripDestinationId === this.tripDestination.tripDestinationId);
 
           return this.destinations.filter(destination => {
             let filterPreviousDestination = true;
             let filterPastDestination = true;
             // Filter out destination before the edited destination (if exists)
             if (tripDestinationIndex > 0) {
-              filterPreviousDestination = destination.destinationId !== this.trip.tripDestinations[tripDestinationIndex - 1].destination.destinationId;
+              filterPreviousDestination = destination.destinationId !== this.trip.tripNodes[tripDestinationIndex - 1].destination.destinationId;
             }
 
             // Filter out destination after the edited destination (if exists)
-            if (tripDestinationIndex < this.trip.tripDestinations.length - 1) {
-              filterPastDestination = destination.destinationId !== this.trip.tripDestinations[tripDestinationIndex + 1].destination.destinationId;
+            if (tripDestinationIndex < this.trip.tripNodes.length - 1) {
+              filterPastDestination = destination.destinationId !== this.trip.tripNodes[tripDestinationIndex + 1].destination.destinationId;
             }
 
             return filterPreviousDestination && filterPastDestination;
@@ -335,7 +337,7 @@
             return [];
           }
           return this.destinations.filter(destination => {
-            return destination.destinationId !== this.trip.tripDestinations[this.trip.tripDestinations.length - 1].destination.destinationId;
+            return destination.destinationId !== this.trip.tripNodes[this.trip.tripDestinations.length - 1].destination.destinationId;
           });
         }
       }

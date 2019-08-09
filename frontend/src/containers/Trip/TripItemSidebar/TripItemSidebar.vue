@@ -14,7 +14,7 @@
       >Manage
       </v-btn>
 
-      <h2>{{ trip.tripName }}</h2>
+      <h2>{{ trip.name }}</h2>
     </div>
 
     <div id="trip-destinations-list">
@@ -30,10 +30,10 @@
 
       <div v-else>
         <Timeline
-                :trip="trip"
-                v-on:destinationOrderChanged="destinationOrderChanged"
-                v-on:showEditTripDestination="showEditTripDestination"
-                v-on:deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
+          :trip="trip"
+          @destinationOrderChanged="destinationOrderChanged"
+          @showEditTripDestination="showEditTripDestination"
+          @deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
         />
 
         <v-btn

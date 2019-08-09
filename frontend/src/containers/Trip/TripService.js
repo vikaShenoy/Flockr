@@ -112,6 +112,22 @@ export async function editTrip(tripId, tripName, tripDestinations, users) {
       tripDestinations: transformedTripDestinations,
       userIds: users.map(user => user.userId)
     });
+}
 
+/**
+ * Maps trip nodes (tree structure) to destinations (flat structure) using recursion
+ * @param {} tripNode The current trip node at a specific recursion level
+ */
+export function mapTripNodesToDestinations(tripNode) {
+  if (tripNode.nodeType === "TripDestinationLeaf") {
+    return tripNode.destination;
+  }
+  
+  let destinations = [];
+  for (const currentTripNode of tripNode.tripNodes) {
+    destinations = [...destinations, mapTripNodesToDestinations(currentTripNode)]; 
+  }
+
+  return destinations.flatMap(destination => destination)
 }
 
