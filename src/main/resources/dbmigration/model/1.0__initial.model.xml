@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="country" pkName="pk_country">
+            <column name="country_id" type="integer" primaryKey="true"/>
+            <column name="country_name" type="varchar"/>
+            <column name="isocode" type="varchar"/>
+            <column name="is_valid" type="boolean" defaultValue="false" notnull="true"/>
+        </createTable>
+        <createTable name="destination" pkName="pk_destination">
+            <column name="destination_id" type="integer" primaryKey="true"/>
+            <column name="destination_name" type="varchar"/>
+            <column name="destination_type_destination_type_id" type="integer" references="destination_type.destination_type_id" foreignKeyName="fk_destination_destination_type_destination_type_id" foreignKeyIndex="ix_destination_destination_type_destination_type_id"/>
+            <column name="destination_district_district_id" type="integer" references="district.district_id" foreignKeyName="fk_destination_destination_district_district_id" foreignKeyIndex="ix_destination_destination_district_district_id"/>
+            <column name="destination_lat" type="double"/>
+            <column name="destination_lon" type="double"/>
+            <column name="destination_country_country_id" type="integer" references="country.country_id" foreignKeyName="fk_destination_destination_country_country_id" foreignKeyIndex="ix_destination_destination_country_country_id"/>
+            <column name="destination_owner" type="integer"/>
+            <column name="is_public" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="deleted_expiry" type="timestamp"/>
+            <column name="deleted" type="BOOLEAN DEFAULT FALSE" notnull="true"/>
+        </createTable>
+        <createTable name="destination_photo" pkName="pk_destination_photo">
+            <column name="destination_photo_id" type="integer" primaryKey="true"/>
+            <column name="destination_destination_id" type="integer" references="destination.destination_id" foreignKeyName="fk_destination_photo_destination_destination_id" foreignKeyIndex="ix_destination_photo_destination_destination_id"/>
+            <column name="personal_photo_photo_id" type="integer" references="personal_photo.photo_id" foreignKeyName="fk_destination_photo_personal_photo_photo_id" foreignKeyIndex="ix_destination_photo_personal_photo_photo_id"/>
+            <column name="deleted_expiry" type="timestamp"/>
+            <column name="deleted" type="BOOLEAN DEFAULT FALSE" notnull="true"/>
+        </createTable>
+        <createTable name="destination_proposal" pkName="pk_destination_proposal">
+            <column name="destination_proposal_id" type="integer" primaryKey="true"/>
+            <column name="destination_destination_id" type="integer" references="destination.destination_id" foreignKeyName="fk_destination_proposal_destination_destination_id" foreignKeyIndex="ix_destination_proposal_destination_destination_id"/>
+            <column name="deleted_expiry" type="timestamp"/>
+            <column name="user_user_id" type="integer" references="user.user_id" foreignKeyName="fk_destination_proposal_user_user_id" foreignKeyIndex="ix_destination_proposal_user_user_id"/>
+            <column name="deleted" type="BOOLEAN DEFAULT FALSE" notnull="true"/>
+        </createTable>
+        <createTable name="destination_proposal_traveller_type" pkName="pk_destination_proposal_traveller_type">
+            <column name="destination_proposal_destination_proposal_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="traveller_type_traveller_type_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_destination_proposal_traveller_type_destination_proposal" columnNames="destination_proposal_destination_proposal_id" refColumnNames="destination_proposal_id" refTableName="destination_proposal" indexName="ix_destination_proposal_traveller_type_destination_proposal"/>
+            <foreignKey name="fk_destination_proposal_traveller_type_traveller_type" columnNames="traveller_type_traveller_type_id" refColumnNames="traveller_type_id" refTableName="traveller_type" indexName="ix_destination_proposal_traveller_type_traveller_type"/>
+        </createTable>
+        <createTable name="destination_type" pkName="pk_destination_type">
+            <column name="destination_type_id" type="integer" primaryKey="true"/>
+            <column name="destination_type_name" type="varchar"/>
+        </createTable>
+        <createTable name="district" pkName="pk_district">
+            <column name="district_id" type="integer" primaryKey="true"/>
+            <column name="district_name" type="varchar"/>
+            <column name="country_country_id" type="integer" references="country.country_id" foreignKeyName="fk_district_country_country_id" foreignKeyIndex="ix_district_country_country_id"/>
+        </createTable>
+        <createTable name="nationality" pkName="pk_nationality">
+            <column name="nationality_id" type="integer" primaryKey="true"/>
+            <column name="nationality_country_country_id" type="integer" uniqueOneToOne="uq_nationality_nationality_country_country_id" references="country.country_id" foreignKeyName="fk_nationality_nationality_country_country_id"/>
+            <column name="nationality_name" type="varchar"/>
+        </createTable>
+        <createTable name="nationality_user" pkName="pk_nationality_user">
+            <column name="nationality_nationality_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="user_user_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_nationality_user_nationality" columnNames="nationality_nationality_id" refColumnNames="nationality_id" refTableName="nationality" indexName="ix_nationality_user_nationality"/>
+            <foreignKey name="fk_nationality_user_user" columnNames="user_user_id" refColumnNames="user_id" refTableName="user" indexName="ix_nationality_user_user"/>
+        </createTable>
+        <createTable name="passport" pkName="pk_passport">
+            <column name="passport_id" type="integer" primaryKey="true"/>
+            <column name="passport_country" type="varchar"/>
+            <column name="country_country_id" type="integer" uniqueOneToOne="uq_passport_country_country_id" references="country.country_id" foreignKeyName="fk_passport_country_country_id"/>
+        </createTable>
+        <createTable name="passport_user" pkName="pk_passport_user">
+            <column name="passport_passport_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="user_user_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_passport_user_passport" columnNames="passport_passport_id" refColumnNames="passport_id" refTableName="passport" indexName="ix_passport_user_passport"/>
+            <foreignKey name="fk_passport_user_user" columnNames="user_user_id" refColumnNames="user_id" refTableName="user" indexName="ix_passport_user_user"/>
+        </createTable>
+        <createTable name="personal_photo" pkName="pk_personal_photo">
+            <column name="photo_id" type="integer" primaryKey="true"/>
+            <column name="user_user_id" type="integer" references="user.user_id" foreignKeyName="fk_personal_photo_user_user_id" foreignKeyIndex="ix_personal_photo_user_user_id"/>
+            <column name="is_public" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="is_primary" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="filename_hash" type="varchar"/>
+            <column name="thumbnail_name" type="varchar"/>
+            <column name="deleted_expiry" type="timestamp"/>
+            <column name="deleted" type="BOOLEAN DEFAULT FALSE" notnull="true"/>
+        </createTable>
+        <createTable name="role" pkName="pk_role">
+            <column name="role_id" type="integer" primaryKey="true"/>
+            <column name="role_type" type="varchar" unique="uq_role_role_type"/>
+        </createTable>
+        <createTable name="role_user" pkName="pk_role_user">
+            <column name="role_role_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="user_user_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_role_user_role" columnNames="role_role_id" refColumnNames="role_id" refTableName="role" indexName="ix_role_user_role"/>
+            <foreignKey name="fk_role_user_user" columnNames="user_user_id" refColumnNames="user_id" refTableName="user" indexName="ix_role_user_user"/>
+        </createTable>
+        <createTable name="traveller_type" pkName="pk_traveller_type">
+            <column name="traveller_type_id" type="integer" primaryKey="true"/>
+            <column name="traveller_type_name" type="varchar"/>
+        </createTable>
+        <createTable name="traveller_type_user" pkName="pk_traveller_type_user">
+            <column name="traveller_type_traveller_type_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="user_user_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_traveller_type_user_traveller_type" columnNames="traveller_type_traveller_type_id" refColumnNames="traveller_type_id" refTableName="traveller_type" indexName="ix_traveller_type_user_traveller_type"/>
+            <foreignKey name="fk_traveller_type_user_user" columnNames="user_user_id" refColumnNames="user_id" refTableName="user" indexName="ix_traveller_type_user_user"/>
+        </createTable>
+        <createTable name="traveller_type_destination" pkName="pk_traveller_type_destination">
+            <column name="traveller_type_traveller_type_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="destination_destination_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_traveller_type_destination_traveller_type" columnNames="traveller_type_traveller_type_id" refColumnNames="traveller_type_id" refTableName="traveller_type" indexName="ix_traveller_type_destination_traveller_type"/>
+            <foreignKey name="fk_traveller_type_destination_destination" columnNames="destination_destination_id" refColumnNames="destination_id" refTableName="destination" indexName="ix_traveller_type_destination_destination"/>
+        </createTable>
+        <createTable name="treasure_hunt" pkName="pk_treasure_hunt">
+            <column name="treasure_hunt_id" type="integer" primaryKey="true"/>
+            <column name="treasure_hunt_name" type="varchar"/>
+            <column name="treasure_hunt_destination_destination_id" type="integer" references="destination.destination_id" foreignKeyName="fk_treasure_hunt_treasure_hunt_destination_destination_id" foreignKeyIndex="ix_treasure_hunt_treasure_hunt_destination_destination_id"/>
+            <column name="owner_user_id" type="integer" references="user.user_id" foreignKeyName="fk_treasure_hunt_owner_user_id" foreignKeyIndex="ix_treasure_hunt_owner_user_id"/>
+            <column name="riddle" type="varchar"/>
+            <column name="start_date" type="timestamp"/>
+            <column name="end_date" type="timestamp"/>
+            <column name="deleted_expiry" type="timestamp"/>
+            <column name="deleted" type="BOOLEAN DEFAULT FALSE" notnull="true"/>
+        </createTable>
+        <createTable name="trip" pkName="pk_trip">
+            <column name="trip_id" type="integer" primaryKey="true"/>
+            <column name="user_user_id" type="integer" references="user.user_id" foreignKeyName="fk_trip_user_user_id" foreignKeyIndex="ix_trip_user_user_id"/>
+            <column name="trip_name" type="varchar"/>
+            <column name="deleted_expiry" type="timestamp"/>
+            <column name="deleted" type="BOOLEAN DEFAULT FALSE" notnull="true"/>
+        </createTable>
+        <createTable name="trip_destination" pkName="pk_trip_destination">
+            <column name="trip_destination_id" type="integer" primaryKey="true"/>
+            <column name="trip_trip_id" type="integer" references="trip.trip_id" foreignKeyName="fk_trip_destination_trip_trip_id" foreignKeyIndex="ix_trip_destination_trip_trip_id"/>
+            <column name="destination_destination_id" type="integer" references="destination.destination_id" foreignKeyName="fk_trip_destination_destination_destination_id" foreignKeyIndex="ix_trip_destination_destination_destination_id"/>
+            <column name="arrival_date" type="timestamp"/>
+            <column name="arrival_time" type="integer"/>
+            <column name="departure_date" type="timestamp"/>
+            <column name="departure_time" type="integer"/>
+        </createTable>
+        <createTable name="user" pkName="pk_user">
+            <column name="user_id" type="integer" primaryKey="true"/>
+            <column name="first_name" type="varchar"/>
+            <column name="middle_name" type="varchar"/>
+            <column name="last_name" type="varchar"/>
+            <column name="date_of_birth" type="timestamp"/>
+            <column name="gender" type="varchar"/>
+            <column name="email" type="varchar" unique="uq_user_email"/>
+            <column name="profile_photo_photo_id" type="integer" uniqueOneToOne="uq_user_profile_photo_photo_id" references="personal_photo.photo_id" foreignKeyName="fk_user_profile_photo_photo_id"/>
+            <column name="password_hash" type="varchar"/>
+            <column name="token" type="varchar"/>
+            <column name="deleted_expiry" type="timestamp"/>
+            <column name="timestamp" type="timestamp" notnull="true"/>
+            <column name="deleted" type="BOOLEAN DEFAULT FALSE" notnull="true"/>
+        </createTable>
+        <createTable name="user_role" pkName="pk_user_role">
+            <column name="user_role_id" type="integer" primaryKey="true"/>
+            <column name="role_id" type="integer" notnull="true"/>
+            <column name="user_id" type="integer" notnull="true"/>
+        </createTable>
+    </changeSet>
+</migration>
