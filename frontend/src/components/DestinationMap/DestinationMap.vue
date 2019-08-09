@@ -17,12 +17,12 @@
 
     <!--empty stylers object is used as it makes the google icon white-->
     <GmapMap
-            ref="map"
-            :center="{lat:10, lng:10}"
-            :zoom="7"
-            map-type-id="roadmap"
-            style="width: 100%; height: 100%"
-            :options="{
+      ref="map"
+      :center="{lat:10, lng:10}"
+      :zoom="7"
+      map-type-id="roadmap"
+      style="width: 100%; height: 100%"
+      :options="{
         mapTypeControl: false,
         fullscreenControl: false,
         styles: [{
@@ -31,6 +31,7 @@
         fullscreenControl: false,
         minZoom: 2
       }"
+      @dblclick="processDoubleClick"
     >
 
 
@@ -186,6 +187,13 @@
       },
       getPhotoUrl(photoId) {
         return endpoint(`/users/photos/${photoId}?Authorization=${localStorage.getItem("authToken")}`);
+      },
+      processDoubleClick(event) {
+        let { lat, lng } = event.latLng;
+        this.$emit('coordinates-selected', {
+          latitude: lat(),
+          longitude: lng()
+        });
       }
     },
     watch: {
