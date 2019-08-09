@@ -94,6 +94,11 @@ public class TripDestinationLeaf extends TripNode {
         return departureTime;
     }
 
+    @Override
+    public Class getNodeType() {
+        return this.getClass();
+    }
+
     public void setDepartureTime(Integer departureTime) {
         this.departureTime = departureTime;
     }

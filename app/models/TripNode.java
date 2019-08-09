@@ -32,6 +32,8 @@ public abstract class TripNode extends Model {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Timestamp deletedExpiry;
 
+    private boolean isComposite;
+
     /**
      * Constructor to create a new trip.
      * @param tripNodes list of TripDestinations which make up the trip.
@@ -94,6 +96,8 @@ public abstract class TripNode extends Model {
     public void setParent(TripNode parent) {
         this.parent = parent;
     }
+
+    public abstract Class getNodeType();
 
     /**
      * This is required by EBean to make queries on the database.

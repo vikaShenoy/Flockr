@@ -99,6 +99,11 @@ public class TripComposite extends TripNode {
         return null;
     }
 
+    @Override
+    public Class getNodeType() {
+        return this.getClass();
+    }
+
     public void setName(String name) {
         this.name = name;
     }
