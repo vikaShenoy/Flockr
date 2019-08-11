@@ -1,13 +1,12 @@
 package models;
 
 import io.ebean.Finder;
-
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 @Entity
 public class TripDestinationLeaf extends TripNode {
@@ -54,8 +53,8 @@ public class TripDestinationLeaf extends TripNode {
         return this.destination.getDestinationName();
     }
 
-    public Destination getDestination() {
-        return destination;
+    public Integer getDestinationId() {
+        return destination.getDestinationId();
     }
 
     public void setDestination(Destination destination) {
