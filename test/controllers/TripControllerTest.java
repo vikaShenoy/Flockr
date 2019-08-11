@@ -360,6 +360,24 @@ public class TripControllerTest {
     }
 
 
+//    @Test
+//    public void getTripsWithNoParent() {
+//        Optional<TripComposite> optionalTripComposite = TripComposite.find.query()
+//            .where().eq("user_user_id", user.getUserId())
+//            .where().eq("").findList();
+//        //TODO: Get rows  from trip node where trip_node_id not in
+//        // trip_node_parent.trip_node_parent_id
+//
+//        Result result = fakeClient.makeRequestWithToken(
+//            "GET",
+//            "/api/users/" + user.getUserId() + "/high-level-trips",
+//            user.getToken()
+//        );
+//
+//    }
+
+
+
     @After
     public void tearDown() {
         Helpers.stop(application);

@@ -122,30 +122,21 @@ public class TripRepository {
      * @param travellerId The user id of the trips
      * @return The users trips
      */
-    public CompletionStage<List<TripComposite>> getTripsByIds(int travellerId) {
+    public CompletionStage<List<TripComposite>> getTripsByUserId(int travellerId) {
         return supplyAsync(() -> {
-/*            List<TripComposite> trip = TripComposite.find.query()
+            List<TripComposite> trip = TripComposite.find.query()
                 .fetch("users")
                 .where()
                 .in("users.userId", travellerId)
                 .findList();
-            */
-            List<TripComposite> trip = TripComposite.find.all();
-            for (TripComposite t : trip) {
-                System.out.println(t.getTripNodeId());
-                System.out.println(t.getName());
-                System.out.println(t.getTripNodes().size());
 
-            }
-            List<TripNode> tripNodes = TripNode.find.all();
 
-            System.out.println(trip);
 
             return trip;
         }, executionContext);
     }
 
-    public Set<TripComposite> getTrips() {
+    public Set<TripComposite> getAllTrips() {
         return new HashSet<>(TripComposite.find.all());
     }
 
