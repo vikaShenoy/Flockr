@@ -8,7 +8,7 @@
 // (Any component under the App tree).vue
 // window.vue.$emit('show-snackbar', {options...})
 //
-// Snackbar.vue
+// GlobalSnackbar.vue
 // window.$on('show-snackbar', // handle this)
 
 <template>
@@ -41,7 +41,8 @@
         showSnackbar: false,
         timeout: 0,
         color: 'brown',
-        message: 'Snackbar message goes here!'
+        message: 'Snackbar message goes here!',
+        viewWindowTimeout: null
       }
     },
     methods: {
@@ -53,7 +54,18 @@
       }
     },
     mounted() {
-      window.vue.$on('show-snackbar', this.handleShowSnackbar);
+      if (window.vue) {
+        window.vue.$on('show-snackbar', this.handleShowSnackbar);
+      } else {
+        this.vueInWindowTimeout = setTimeout(function() {
+            if (window.vue) {
+              window.vue.$on('show-snackbar', this.handleShowSnackbar);
+              clearInterval(this.vueInWindowTimeout);
+            } else {
+              console.log('Did not find vue in the Window object, retrying soon to attach snackbar event listener');
+            }
+          }, 2000);
+      }
     }
   }
 </script>
