@@ -17,18 +17,12 @@
             v-on:updatedTripDestinations="updatedTripDestinations"
             v-on:deleteTripDestination="deleteTripDestination"
     />
-
-    <Snackbar
-            :snackbarModel="snackbarModel"
-            v-on:dismissSnackbar="snackbarModel.show = false"
-    />
   </div>
 </template>
 
 <script>
   import TripItemSidebar from "./TripItemSidebar/TripItemSidebar.vue";
   import DestinationMap from "../../components/DestinationMap/DestinationMap";
-  import Snackbar from "../../components/Snackbars/Snackbar";
   import {
     contiguousDestinations,
     contiguousReorderedDestinations,
@@ -44,20 +38,11 @@
     components: {
       TripItemSidebar,
       DestinationMap,
-      Snackbar,
       UndoRedo
     },
     data() {
       return {
         trip: null,
-
-        snackbarModel: {
-          show: false,
-          timeout: 3000,
-          text: "",
-          color: "",
-          snackbarId: 0
-        }
       };
     },
     mounted() {
@@ -65,14 +50,18 @@
     },
     methods: {
       showError(errorMessage) {
-        this.snackbarModel.text = errorMessage;
-        this.snackbarModel.color = "error";
-        this.snackbarModel.show = true;
+        window.vue.$emit("show-snackbar", {
+          message: errorMessage,
+          color: "error",
+          timeout: 3000
+        });
       },
       showSuccessMessage(successMessage) {
-        this.snackbarModel.text = successMessage;
-        this.snackbarModel.color = "success";
-        this.snackbarModel.show = true;
+        window.vue.$emit("show-snackbar", {
+          message: successMessage,
+          color: "success",
+          timeout: 3000
+        });
       },
       mapTripDestinationsToDestinations() {
         if (!this.trip) {

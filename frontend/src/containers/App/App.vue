@@ -5,6 +5,8 @@
 
       <Sidebar/>
 
+      <GlobalSnackbar />
+
       <div class="container-fluid" id="content">
         <router-view></router-view>
       </div>
@@ -17,12 +19,14 @@
 
   import Sidebar from "./Sidebar/Sidebar";
   import Navbar from "./Navbar/Navbar";
+  import GlobalSnackbar from "../../components/Snackbars/GlobalSnackbar";
 
 
   export default {
     components: {
       Sidebar,
-      Navbar
+      Navbar,
+      GlobalSnackbar
     },
     name: "App",
     data() {

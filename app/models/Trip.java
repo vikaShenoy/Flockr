@@ -9,93 +9,87 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
 
-/**
- * Model for trip. A trip is a planned journey between destinations.
- */
+/** Model for trip. A trip is a planned journey between destinations. */
 @Entity
 public class Trip extends Model {
 
-    @Id
-    private int tripId;
+  @Id private int tripId;
 
-    @ManyToOne()
-    private User user;
+  @ManyToOne() private User user;
 
-    private String tripName;
+  private String tripName;
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
-    private List<TripDestination> tripDestinations;
+  @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+  private List<TripDestination> tripDestinations;
 
-    @JsonIgnore
-    @SoftDelete
-    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean deleted;
+  @JsonIgnore
+  @SoftDelete
+  @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+  private boolean deleted;
 
-    @JsonIgnore
-    private Timestamp deletedExpiry;
+  @JsonIgnore private Timestamp deletedExpiry;
 
-    /**
-     * Constructor to create a new trip.
-     * @param tripDestinations list of TripDestinations which make up the trip.
-     * @param user user who is going on the trip.
-     * @param tripName name of the trip.
-     */
-    public Trip(List<TripDestination> tripDestinations, User user, String tripName) {
-        this.tripDestinations = tripDestinations;
-        this.user = user;
-        this.tripName = tripName;
-    }
+  /**
+   * Constructor to create a new trip.
+   *
+   * @param tripDestinations list of TripDestinations which make up the trip.
+   * @param user user who is going on the trip.
+   * @param tripName name of the trip.
+   */
+  public Trip(List<TripDestination> tripDestinations, User user, String tripName) {
+    this.tripDestinations = tripDestinations;
+    this.user = user;
+    this.tripName = tripName;
+  }
 
-    public int getTripId() {
-        return tripId;
-    }
+  public int getTripId() {
+    return tripId;
+  }
 
-    public void setTripId(int tripId) {
-        this.tripId = tripId;
-    }
+  public void setTripId(int tripId) {
+    this.tripId = tripId;
+  }
 
-    public List<TripDestination> getTripDestinations() {
-        return tripDestinations;
-    }
+  public List<TripDestination> getTripDestinations() {
+    return tripDestinations;
+  }
 
-    public void setTripDestinations(List<TripDestination> tripDestinations) {
-        this.tripDestinations = tripDestinations;
-    }
+  public void setTripDestinations(List<TripDestination> tripDestinations) {
+    this.tripDestinations = tripDestinations;
+  }
 
-    public User getUser() {
-        return user;
-    }
+  public User getUser() {
+    return user;
+  }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+  public void setUser(User user) {
+    this.user = user;
+  }
 
-    public String getTripName() {
-        return tripName;
-    }
+  public String getTripName() {
+    return tripName;
+  }
 
-    public void setTripName(String tripName) {
-        this.tripName = tripName;
-    }
+  public void setTripName(String tripName) {
+    this.tripName = tripName;
+  }
 
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
+  public void setDeleted(boolean deleted) {
+    this.deleted = deleted;
+  }
 
-    public void setDeletedExpiry(Timestamp deletedExpiry) {
-        this.deletedExpiry = deletedExpiry;
-    }
+  public void setDeletedExpiry(Timestamp deletedExpiry) {
+    this.deletedExpiry = deletedExpiry;
+  }
 
-    public boolean isDeleted() {
-        return deleted;
-    }
+  public boolean isDeleted() {
+    return deleted;
+  }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
+  public Timestamp getDeletedExpiry() {
+    return deletedExpiry;
+  }
 
-    /**
-     * This is required by EBean to make queries on the database.
-     */
-    public static final Finder<Integer, Trip> find = new Finder<>(Trip.class);
+  /** This is required by EBean to make queries on the database. */
+  public static final Finder<Integer, Trip> find = new Finder<>(Trip.class);
 }

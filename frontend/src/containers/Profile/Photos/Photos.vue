@@ -51,7 +51,6 @@
             @displayErrorMessage="displayErrorMessage"
             @changedPermission="changedPermission"
     />
-    <snackbar :snackbarModel="this.snackbarModel" @dismissSnackbar="snackbarModel.show=false"/>
     <prompt-dialog
             :onConfirm="promptDialog.deleteFunction"
             :dialog="promptDialog.show"
@@ -67,7 +66,6 @@
   import {endpoint} from "../../../utils/endpoint";
   import PhotoPanel from "../../UserGallery/PhotoPanel/PhotoPanel";
   import PromptDialog from "../../../components/PromptDialog/PromptDialog";
-  import Snackbar from "../../../components/Snackbars/Snackbar";
   import {deleteUserPhoto, undoDeleteUserPhoto} from "../../UserGallery/UserGalleryService";
   import Command from "../../../components/UndoRedo/Command";
 
@@ -76,7 +74,6 @@
       photos: Array
     },
     components: {
-      Snackbar,
       PromptDialog,
       PhotoPanel,
       AddPhotoDialog
@@ -95,13 +92,6 @@
           show: false,
           deleteFunction: null,
           message: "Are you sure you would like to delete this photo?"
-        },
-        snackbarModel: {
-          show: false,
-          timeout: 5000,
-          text: "",
-          color: "green",
-          snackbarId: 1
         }
       };
     },
@@ -138,9 +128,11 @@
        * @param message {String} the text to be displayed.
        */
       displayErrorMessage(message) {
-        this.snackbarModel.text = message;
-        this.snackbarModel.color = "red";
-        this.snackbarModel.show = true;
+        window.vue.$emit("show-snackbar", {
+          message: message,
+          color: "error",
+          timeout: 5000
+        });
       },
       /**
        * Called when the permission of a photo is updated in the photo panel.

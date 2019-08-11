@@ -194,9 +194,22 @@
     },
     methods: {
       /**
+       * @param {String} message the message to show in the snackbar
+       * @param {String} color the colour for the snackbar
+       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       */
+      showSnackbar(message, color, timeout) {
+        window.vue.$emit('show-snackbar', {
+          message: message,
+          color: color,
+          timeout: timeout
+        });
+      },
+      /**
        * Toggles into edit state or saves from edit state
        */
       toggleEditSave() {
+        this.showSnackbar('Snackbar!', 'yellow', 3000);
         if (this.isEditing) {
           // if user was editing and has now submitted their changes
           if (!this.$refs.form.validate()) {

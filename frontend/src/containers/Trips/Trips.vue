@@ -20,10 +20,10 @@
               fab
               dark
               color="secondary"
+              @click="addButtonClicked"
       >
         <v-icon
                 dark
-                @click="isAddingATrip = true"
         >add
         </v-icon>
       </v-btn>
@@ -115,6 +115,11 @@
        */
       refreshTrips() {
         this.tripListKey += 1;
+      },
+
+      addButtonClicked() {
+        console.log("Add button clicked")
+        this.isAddingATrip = true;
       }
     }
   };
