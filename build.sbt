@@ -83,7 +83,7 @@ dist := (dist dependsOn `build-frontend`).value
 
 javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
 
-
+testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a"))
 
 
 

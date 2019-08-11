@@ -23,12 +23,12 @@ public class TasksController extends AbstractModule {
         bind(DeleteExpiredTreasureHunts.class).asEagerSingleton();
         bind(DeleteExpiredDestinationPhotos.class).asEagerSingleton();
 
-        // Config conf = ConfigFactory.load();
-        // String environment = conf.getString("environment_test");
-        // System.out.println(environment);
+        Config conf = ConfigFactory.load();
+        String environment = conf.getString("environment");
+        System.out.println(environment);
         //System.out.println(Play.current().configuration().get());
         //if (environment.equals("dev")) {
-        //bind(PopulateTask.class).asEagerSingleton();
+        bind(PopulateTask.class).asEagerSingleton();
         //}
 
         // you may add more tasks here

@@ -4,6 +4,7 @@ import akka.actor.ActorSystem;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.*;
 import org.slf4j.LoggerFactory;
+import play.Environment;
 import play.Logger;
 import play.libs.Json;
 import scala.concurrent.ExecutionContext;
@@ -23,17 +24,24 @@ public class PopulateTask {
     private final ActorSystem actorSystem;
     private final ExecutionContext executionContext;
     private final Security security;
+    private final Environment environment;
 
     @Inject
-    public PopulateTask(ActorSystem actorSystem, ExecutionContext executionContext, Security security) {
+    public PopulateTask(ActorSystem actorSystem, ExecutionContext executionContext, Security security, Environment environment) {
         this.actorSystem = actorSystem;
         this.executionContext = executionContext;
         this.security = security;
+        this.environment = environment;
         this.initialise();
     }
 
 
     private void initialise() {
+
+        if (!environment.isDev()) {
+            return;
+        }
+
         this.actorSystem
                 .scheduler()
                 .scheduleOnce(Duration.create(0, TimeUnit.SECONDS), () -> {
