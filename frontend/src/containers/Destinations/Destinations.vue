@@ -7,24 +7,15 @@
     </div>
 
     <DestinationSidebar
-            :viewOption="viewOption"
-            :yourDestinations="yourDestinations"
-            :publicDestinations="publicDestinations"
-            v-on:viewOptionChanged="viewOptionChanged"
-            v-on:addDestinationClicked="addDestinationClicked"
-            @addNewDestination="addNewDestination"
-            @refreshDestinations="refreshDestinations"
-            ref="sidebar"
+      :viewOption="viewOption"
+      :yourDestinations="yourDestinations"
+      :publicDestinations="publicDestinations"
+      v-on:viewOptionChanged="viewOptionChanged"
+      v-on:addDestinationClicked="addDestinationClicked"
+      @addNewDestination="addNewDestination"
+      @refreshDestinations="refreshDestinations"
+      ref="sidebar"
     />
-
-    <ModifyDestinationDialog
-            :dialog="showCreateDestDialog"
-            :editMode="false"
-            v-on:addNewDestination="addNewDestination"
-            v-on:dialogChanged="addDestDialogChanged"
-    >
-
-    </ModifyDestinationDialog>
     <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
@@ -32,7 +23,6 @@
 <script>
   import DestinationSidebar from "./DestinationSidebar/DestinationSidebar";
   import DestinationMap from "../../components/DestinationMap/DestinationMap";
-  import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
   import {
     getPublicDestinations,
     getYourDestinations,
@@ -46,8 +36,7 @@
     components: {
       Snackbar,
       DestinationSidebar,
-      DestinationMap,
-      ModifyDestinationDialog
+      DestinationMap
     },
     data() {
       return {
