@@ -1,8 +1,8 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
-import io.ebean.annotation.JsonIgnore;
 import io.ebean.annotation.SoftDelete;
 
 import javax.persistence.*;

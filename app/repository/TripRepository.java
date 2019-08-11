@@ -88,7 +88,7 @@ public class TripRepository {
         return supplyAsync(() -> {
             Optional<TripComposite> trip = TripComposite.find.query()
                     .fetch("users")
-                    .where().eq("trip_id", tripId)
+                    .where().eq("tripNodeId", tripId)
                     .in("users.userId", userId)
                     .findOneOrEmpty();
             return trip;
@@ -105,7 +105,7 @@ public class TripRepository {
         return supplyAsync(() -> {
             Optional<TripComposite> trip = TripComposite.find.query().setIncludeSoftDeletes()
                     .fetch("users")
-                    .where().eq("trip_id", tripId)
+                    .where().eq("tripNodeId", tripId)
                     .in("users.userId", userId)
                     .findOneOrEmpty();
             return trip;

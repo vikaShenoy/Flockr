@@ -93,8 +93,9 @@ public class TripNodeTest {
         List<TripNode> tripNodes = new ArrayList<>();
         tripNodes.add(leaf1);
         tripNodes.add(leaf2);
-
-        trip = new TripComposite(tripNodes, new ArrayList<>(), "test trip");
+        ArrayList<User> users = new ArrayList<>();
+        users.add(user);
+        trip = new TripComposite(tripNodes, users, "test trip");
         trip.save();
     }
 
@@ -163,6 +164,102 @@ public class TripNodeTest {
 
         Result result = fakeClient.makeRequestWithToken("POST", (ObjectNode) newTripJson,"/api/users/" + user.getUserId() + "/trips", user.getToken());
         Assert.assertEquals(201, result.status());
+
+    }
+
+    @Test
+    public void userUpdatesTrip() {
+
+        String date = null;
+        ObjectNode updatedTripJson = Json.newObject();
+        updatedTripJson.put("name", "Updated Trip");
+
+        ObjectNode firstNode = Json.newObject();
+        firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
+        firstNode.put("nodeType", "TripDestinationLeaf");
+        firstNode.put("arrivalDate", date);
+        firstNode.put("arrivalTime", date);
+        firstNode.put("departureDate", date);
+        firstNode.put("departureTime", date);
+
+        ObjectNode secondNode = Json.newObject();
+        secondNode.put("tripNodeId", trip.getTripNodeId());
+        secondNode.put("nodeType", "TripComposite");
+
+
+        updatedTripJson.putArray("tripNodes")
+                .add(firstNode)
+                .add(secondNode);
+        updatedTripJson.putArray("userIds")
+                .add(user.getUserId());
+
+        System.out.println(trip.getUsers());
+        Result result = fakeClient.makeRequestWithToken("PUT", (ObjectNode) updatedTripJson,"/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId(), user.getToken());
+        Assert.assertEquals(200, result.status());
+
+    }
+
+    @Test
+    public void updateTripAdmin() {
+
+        String date = null;
+        ObjectNode updatedTripJson = Json.newObject();
+        updatedTripJson.put("name", "Updated Trip");
+
+        ObjectNode firstNode = Json.newObject();
+        firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
+        firstNode.put("nodeType", "TripDestinationLeaf");
+        firstNode.put("arrivalDate", date);
+        firstNode.put("arrivalTime", date);
+        firstNode.put("departureDate", date);
+        firstNode.put("departureTime", date);
+
+        ObjectNode secondNode = Json.newObject();
+        secondNode.put("tripNodeId", trip.getTripNodeId());
+        secondNode.put("nodeType", "TripComposite");
+
+
+        updatedTripJson.putArray("tripNodes")
+                .add(firstNode)
+                .add(secondNode);
+        updatedTripJson.putArray("userIds")
+                .add(user.getUserId());
+
+        System.out.println(trip.getUsers());
+        Result result = fakeClient.makeRequestWithToken("PUT", (ObjectNode) updatedTripJson,"/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId(), adminUser.getToken());
+        Assert.assertEquals(200, result.status());
+
+    }
+
+    @Test
+    public void updateTripForbidden() {
+
+        String date = null;
+        ObjectNode updatedTripJson = Json.newObject();
+        updatedTripJson.put("name", "Updated Trip");
+
+        ObjectNode firstNode = Json.newObject();
+        firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
+        firstNode.put("nodeType", "TripDestinationLeaf");
+        firstNode.put("arrivalDate", date);
+        firstNode.put("arrivalTime", date);
+        firstNode.put("departureDate", date);
+        firstNode.put("departureTime", date);
+
+        ObjectNode secondNode = Json.newObject();
+        secondNode.put("tripNodeId", trip.getTripNodeId());
+        secondNode.put("nodeType", "TripComposite");
+
+
+        updatedTripJson.putArray("tripNodes")
+                .add(firstNode)
+                .add(secondNode);
+        updatedTripJson.putArray("userIds")
+                .add(user.getUserId());
+
+        System.out.println(trip.getUsers());
+        Result result = fakeClient.makeRequestWithToken("PUT", (ObjectNode) updatedTripJson,"/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId(), otherUser.getToken());
+        Assert.assertEquals(403, result.status());
 
     }
 
