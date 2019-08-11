@@ -32,6 +32,7 @@
         minZoom: 2
       }"
       @dblclick="processDoubleClick"
+      @click="getClickedLatandLong"
     >
 
 
@@ -120,6 +121,8 @@
       return {
         publicIcon,
         privateIcon,
+        latitude: null,
+        longitude: null,
         infoWindowPos: null,
         infoContent: null,
         currentOpenedIndex: null,
@@ -194,6 +197,14 @@
           latitude: lat(),
           longitude: lng()
         });
+      },
+      /**
+       * Gets the latitude and longitude of the clicked location
+       */
+      getClickedLatandLong(event) {
+        this.latitude = event.latLng.lat();
+        this.longitude = event.latLng.lng();
+        this.$emit("addCoordinates", this.latitude, this.longitude);
       }
     },
     watch: {

@@ -3,6 +3,9 @@
     <div id="map">
       <DestinationMap
               :destinations="getDestinationsCurrentlyViewing()"
+              :latitude="latitude"
+              :longitude="longitude"
+              @addCoordinates="addCoordinates"
       />
     </div>
 
@@ -15,6 +18,8 @@
             @addNewDestination="addNewDestination"
             @refreshDestinations="refreshDestinations"
             ref="sidebar"
+            :latitude="latitude"
+            :longitude="longitude"
     />
 
     <ModifyDestinationDialog
@@ -51,6 +56,9 @@
     },
     data() {
       return {
+        destination: null,
+        latitude: null,
+        longitude: null,
         yourDestinations: null,
         publicDestinations: null,
         showCreateDestDialog: false,
@@ -68,6 +76,13 @@
       this.getYourDestinations();
     },
     methods: {
+      /**
+       * Sets the latitude and longitude coordinates to the given coordinates
+       */
+      addCoordinates(latitude, longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+      },
       refreshDestinations() {
         if (this.viewOption === "your") {
           this.getYourDestinations();
@@ -155,6 +170,7 @@
 
       },
       addDestDialogChanged(dialogValue) {
+        this.resetCoordinates();
         this.showCreateDestDialog = dialogValue;
       },
       /**

@@ -36,6 +36,8 @@
             :editMode="false"
             v-on:addNewDestination="addNewDestination"
             v-on:dialogChanged="addDestDialogChanged"
+            :latitude="latitude"
+            :longitude="longitude"
         ></AddDestinationSidebar>
       </div>
 
@@ -93,7 +95,12 @@
   import AddDestinationSidebar from './AddDestinationSidebar/AddDestinationSidebar';
 
   export default {
-    props: ["yourDestinations", "publicDestinations"],
+    props: {
+      yourDestinations: null,
+      publicDestinations: null,
+      latitude: null,
+      longitude: null
+    },
     components: {
       AddDestinationSidebar,
       DestinationSummary,
@@ -117,6 +124,13 @@
     },
     methods: {
       /**
+       * Resets the coordinates to nothing
+       */
+      resetCoordinates() {
+        this.latitude = null;
+        this.longitude = null;
+      },
+      /**
        * Get a user's trips.
        */
       async getUserTrips() {
@@ -124,6 +138,7 @@
       },
 
       toggleEditor() {
+        this.resetCoordinates();
         this.shouldShowEditor = !this.shouldShowEditor;
         this.$refs.addSidebar.closeDialog();
       },
