@@ -1,5 +1,5 @@
 <template>
-  <div id="destinations">
+  <div id="trip">
     <div id="map">
       <DestinationMap
         :destinations="mapTripNodesToDestinations()"
@@ -9,7 +9,7 @@
 
     <div id="undo-redo-btns">
       <UndoRedo ref="undoRedo" color="white"/>
-    </div>{
+    </div>
 
     <TripItemSidebar
       :trip="trip"
@@ -36,7 +36,8 @@
     editTrip,
     getTrip,
     transformTripResponse,
-    mapTripNodesToDestinations
+    mapTripNodesToDestinations,
+    findDeepestNodeLevel
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command"
@@ -74,6 +75,32 @@
                   arrivalDate: "03-04-2018",
                   arrivalTime: "13:00",
                   departureDate: "04-04-2018",
+                  tripNodes: [],
+                  departureTime: "13:00",
+                  destination: {
+                    destinationId: 1,
+                    destinationLat: 34,
+                    destinationLon: 31
+                  }
+                },
+              {
+              tripNodeId: 1,
+              name: "My favourite nested sub trip",
+              nodeType: "TripComposite",
+              arrivalDate: "03-04-2018",
+              arrivalTime: "13:00",
+              departureDate: "03-05-2018",
+              departureTime: "14:00",
+              isShowing: false,
+              tripNodes: [
+                {
+                  tripNodeId: 2,
+                  nodeType: "TripDestinationLeaf",
+                  name: "New Zealand",
+                  arrivalDate: "03-04-2018",
+                  arrivalTime: "13:00",
+                  departureDate: "04-04-2018",
+                  tripNodes: [],
                   departureTime: "13:00",
                   destination: {
                     destinationId: 1,
@@ -98,6 +125,9 @@
                 }
               ]
             },
+ 
+              ]
+            },
             {
               tripNodeId: 4,
               nodeType: "TripDestinationLeaf",
@@ -105,6 +135,7 @@
               arrivalDate: "04-06-2018",
               arrivalTime: "13:00",
               departureDate: "3-09-2018",
+              tripNodes: [],
               departureTime: "14:00",
               destination: {
                 destinationId: 3,
@@ -125,7 +156,6 @@
     },
     mounted() {
       // this.getTrip();
-      console.log(mapTripNodesToDestinations(this.trip));
    },
     methods: {
       /**
@@ -318,16 +348,16 @@
 </script>
 
 <style lang="scss" scoped>
-  #destinations {
+  #trip {
     width: 100%;
-  }
+    display: flex;
+    flex-direction: row;
 
-  #map {
-    width: calc(100% - 555px);
-    display: inline-block;
-    height: 100%;
-    position: fixed;
+    #map {
+      flex-grow: 1;
+    }
   }
+  
 
   #undo-redo-btns {
     position: absolute;

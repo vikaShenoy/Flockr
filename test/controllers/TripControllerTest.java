@@ -18,6 +18,7 @@ import utils.FakePlayClient;
 import utils.PlayResultToJson;
 import utils.TestState;
 import play.mvc.Result;
+import util.TripUtil;
 
 
 import java.io.IOException;
@@ -43,6 +44,8 @@ public class TripControllerTest {
     TripComposite trip2;
     ObjectNode tripDestination1;
     ObjectNode tripDestination2;
+    ObjectNode tripDestination3;
+    TripUtil tripUtil;
 
     @Before
     public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
@@ -54,6 +57,7 @@ public class TripControllerTest {
         testSettings.put("play.evolutions.db.default.enabled", "true");
         testSettings.put("play.evolutions.db.default.autoApply", "true");
         testSettings.put("play.evolutions.db.default.autoApplyDowns", "true");
+        tripUtil = new TripUtil();
 
         // Fake Client
         application = Helpers.fakeApplication(testSettings);
@@ -69,13 +73,14 @@ public class TripControllerTest {
                 "testing");
 
         // Making an admin
-        Role role = new Role(RoleType.ADMIN);
-        role.save();
-        List<Role> roles = new ArrayList<>();
-        roles.add(role);
-        adminUser = User.find.byId(adminUser.getUserId());
-        adminUser.setRoles(roles);
-        adminUser.save();
+        // TODO - investigate why this code causes duplicate key exception. Must be to do with population script.
+//        Role role = new Role(RoleType.ADMIN);
+//        //role.save();
+//        List<Role> roles = new ArrayList<>();
+//        roles.add(role);
+//        adminUser = User.find.byId(adminUser.getUserId());
+//        adminUser.setRoles(roles);
+//        adminUser.save();
 
         // Creating some initial destinations
         DestinationType destinationType = new DestinationType("city");
@@ -85,13 +90,16 @@ public class TripControllerTest {
         District district = new District("Canterbury", country);
         district.save();
 
-        christchurch = new Destination("Christchurch", destinationType, district,0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
+        christchurch = new Destination("Christchurch", destinationType, district,
+                0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
         christchurch.save();
 
-        westMelton = new Destination("West Melton", destinationType, district,0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
+        westMelton = new Destination("West Melton", destinationType, district,
+                0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
         westMelton.save();
 
-        helkett = new Destination("Helkett", destinationType, district,0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
+        helkett = new Destination("Helkett", destinationType, district,0.0,
+                0.0, country, user.getUserId(), new ArrayList<>(), true);
         helkett.save();
 
         // Creating a trip
@@ -113,7 +121,9 @@ public class TripControllerTest {
         tripNodes.add(tripHelkett);
         trip2 = new TripComposite(tripNodes,users,"Find the family graves");
         trip2.save();
+
         tripDestination1 = Json.newObject();
+        tripDestination1.put("nodeType", "TripDestinationLeaf");
         tripDestination1.put("destinationId", 1);
         tripDestination1.put("arrivalDate", 123456789);
         tripDestination1.put("arrivalTime", 450);
@@ -121,11 +131,20 @@ public class TripControllerTest {
         tripDestination1.put("departureTime", 240);
 
         tripDestination2 = Json.newObject();
+        tripDestination2.put("nodeType", "TripComposite");
         tripDestination2.put("destinationId", 2);
         tripDestination2.put("arrivalDate", 123456789);
         tripDestination2.put("arrivalTime", 450);
         tripDestination2.put("departureDate", 123856789);
         tripDestination2.put("departureTime", 240);
+
+        tripDestination3 = Json.newObject();
+        tripDestination3.put("nodeType", "TripDestinationLeaf");
+        tripDestination3.put("destinationId", 1);
+        tripDestination3.put("arrivalDate", 123456789);
+        tripDestination3.put("arrivalTime", 450);
+        tripDestination3.put("departureDate", 123856789);
+        tripDestination3.put("departureTime", 240);
     }
 
     private void restore(TripComposite trip) {
@@ -135,6 +154,35 @@ public class TripControllerTest {
         Optional<TripComposite> optionalTrip = TripComposite.find.query()
                 .where().eq("trip_id", trip.getTripNodeId()).findOneOrEmpty();
         Assert.assertTrue(optionalTrip.isPresent());
+    }
+
+    @Test
+    public void destinationsAreContiguous() {
+        ArrayNode nodes = Json.newArray();
+        nodes.add(tripDestination1);
+        nodes.add(tripDestination3);
+        boolean isContiguous = tripUtil.checkContiguousDestinations(nodes);
+        Assert.assertTrue(isContiguous);
+    }
+
+    @Test
+    public void destinationsNotContiguous() {
+        ArrayNode nodes = Json.newArray();
+        nodes.add(tripDestination1);
+        nodes.add(tripDestination2);
+        boolean isContiguous = tripUtil.checkContiguousDestinations(nodes);
+        Assert.assertFalse(isContiguous);
+    }
+
+    @Test
+    public void destinationsAreContiguousSeparated() {
+        // Check function still returns true for contiguous destinations separated by a TripComposite(sub-trip)
+        ArrayNode nodes = Json.newArray();
+        nodes.add(tripDestination1);
+        nodes.add(tripDestination2);
+        nodes.add(tripDestination3);
+        boolean isContiguous = tripUtil.checkContiguousDestinations(nodes);
+        Assert.assertTrue(isContiguous);
     }
 
     @Test
@@ -237,8 +285,8 @@ public class TripControllerTest {
         ArrayNode tripDestinations = Json.newArray();
         tripDestinations.add(tripDestination1);
         tripDestinations.add(tripDestination2);
-        tripBody.put("tripName", "Some trip");
-        tripBody.putArray("tripDestinations").addAll(tripDestinations);
+        tripBody.put("name", "Some trip");
+        tripBody.putArray("tripNodes").addAll(tripDestinations);
         List<Integer> userIds = new ArrayList<>();
         userIds.add(otherUser.getUserId());
         tripBody.set("userIds", Json.toJson(userIds));

@@ -14,6 +14,7 @@ import java.util.List;
 public class TripUtil {
     public List<TripNode> getTripDestinationsFromJson(JsonNode tripDestinationsJson) throws BadRequestException {
         List<TripNode> tripNodes = new ArrayList<>();
+        System.out.println(tripDestinationsJson);
 
         if (tripDestinationsJson.size() < 2) {
             throw new BadRequestException("tripDestinationJson has to be smaller or equal to 2");
@@ -44,10 +45,31 @@ public class TripUtil {
 //                throw new BadRequestException("Destinations are contiguous");
 //            }
 
-
             index++;
         }
         return tripNodes;
+    }
+
+    /**
+     * Check the array of trip nodes to find whether it contains contiguous destinations.
+     * @param tripNodes JsonNode containing an array of TripNode json objects.
+     * @return true if contiguous destinations are present, false otherwise.
+     */
+    public boolean checkContiguousDestinations(JsonNode tripNodes) {
+        int lastDestinationId = 0;
+        int currentDestinationId;
+        String nodeType;
+        for (JsonNode tripNode : tripNodes) {
+            nodeType = tripNode.get("nodeType").asText();
+            if (nodeType.equals("TripDestinationLeaf")) {
+                currentDestinationId = tripNode.get("destinationId").asInt();
+                if (currentDestinationId == lastDestinationId) {
+                    return true;
+                }
+                lastDestinationId = currentDestinationId;
+            }
+        }
+        return false;
     }
 
     /**

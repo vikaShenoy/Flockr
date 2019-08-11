@@ -1,6 +1,6 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
-import moment from "moment";
+import moment, { max } from "moment";
 
 /**
  * Sends a request to get a trip
@@ -130,4 +130,6 @@ export function mapTripNodesToDestinations(tripNode) {
 
   return destinations.flatMap(destination => destination)
 }
+
+
 
