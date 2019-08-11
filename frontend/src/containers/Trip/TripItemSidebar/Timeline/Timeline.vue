@@ -2,6 +2,7 @@
   <div id="trip-container">
     <v-timeline
             dense
+						:data-trip-node-id="trip.tripNodeId"
     >
       <!--data-destinationId is used to disable sorting items with the same destinationID-->
       <TripNode
@@ -24,7 +25,8 @@
   export default {
     props: {
       trip: {
-        tripNodes: Object
+        tripNodes: Object,
+				tripNodeId: Number
       },
       isSubTrip: {
         type: Boolean
@@ -42,13 +44,6 @@
     },
     methods: {
       initSorting() {
-        // const table = document.querySelector(".v-timeline");
-        // Sortable.create(table, {
-        //   animation: 150,
-        //   onEnd: ({newIndex, oldIndex}) => {
-        //     this.$emit("destinationOrderChanged", {newIndex, oldIndex});
-        //   }
-        // });
         // Loop through each nested sortable element
         const sortableTimelines = document.querySelectorAll(".v-timeline");
         console.log(sortableTimelines);
@@ -58,6 +53,19 @@
             animation: 500,
             fallbackOnBody: true,
             swapThreshold: 0.65,
+						onEnd: (event) => {
+              const previousParentTripNodeId = Number(event.from.getAttribute("data-trip-node-id"));
+							const currentParentTripNodeId = Number(event.to.getAttribute("data-trip-node-id"));
+							const newIndex = event.newIndex;
+							const oldIndex = event.oldIndex;
+
+							this.$emit("tripNodeOrderChanged", {
+                previousParentTripNodeId,
+								currentParentTripNodeId,
+								newIndex,
+								oldIndex
+							});
+						}
           });
         }
       }

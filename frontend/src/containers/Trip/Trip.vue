@@ -13,7 +13,7 @@
 
     <TripItemSidebar
       :trip="trip"
-      @destinationOrderChanged="destinationOrderChanged"
+      @tripNodeOrderChanged="tripNodeOrderChanged"
       @updatedTripDestinations="updatedTripDestinations"
       @deleteTripDestination="deleteTripDestination"
       @newUsers="newUsers"
@@ -54,6 +54,7 @@
       return {
         // trip: null,
         trip: {
+          tripNodeId: 69,
           name: "My trip",
           users: [],
           nodeType: "TripComposite",
@@ -84,7 +85,7 @@
                   }
                 },
               {
-              tripNodeId: 1,
+              tripNodeId: 3,
               name: "My favourite nested sub trip",
               nodeType: "TripComposite",
               arrivalDate: "03-04-2018",
@@ -94,7 +95,7 @@
               isShowing: false,
               tripNodes: [
                 {
-                  tripNodeId: 2,
+                  tripNodeId: 4,
                   nodeType: "TripDestinationLeaf",
                   name: "New Zealand",
                   arrivalDate: "03-04-2018",
@@ -109,7 +110,7 @@
                   }
                 },
                 {
-                  tripNodeId: 3,
+                  tripNodeId: 5,
                   nodeType: "TripDestinationLeaf",
                   name: "Some place",
                   arrivalDate: "04-04-2018",
@@ -129,7 +130,7 @@
               ]
             },
             {
-              tripNodeId: 4,
+              tripNodeId: 6,
               nodeType: "TripDestinationLeaf",
               name: "Some other place",
               arrivalDate: "04-06-2018",
@@ -222,7 +223,9 @@
       /**
        * Changes order of destination
        */
-      async destinationOrderChanged(indexes) {
+      async tripNodeOrderChanged(indexes) {
+        console.log(indexes);
+        return;
         try {
           const tripId = this.$route.params.tripId;
 
