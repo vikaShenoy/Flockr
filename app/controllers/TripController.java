@@ -142,115 +142,112 @@ public class TripController extends Controller {
               JsonNode tripJson = Json.toJson(trip);
               return ok(tripJson);
             });
-  }
+    }
+    /**
+     * Endpoint to delete a user's trip.
+     *
+     * @param userId The user who's trip is deleted.
+     * @param tripId The trip to delete.
+     * @param request HTTP req
+     * @return A result object, with status code 200 if successful. 400 if the trip isn't found. 500
+     *     for other errors.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
 
-  /**
-   * Endpoint to delete a user's trip.
-   *
-   * @param userId The user who's trip is deleted.
-   * @param tripId The trip to delete.
-   * @param request HTTP req
-   * @return A result object, with status code 200 if successful. 400 if the trip isn't found. 500
-   *     for other errors.
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
-    User user = request.attrs().get(ActionState.USER);
+        if (!security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
 
-    if (!security.userHasPermission(user, userId)) {
-      return supplyAsync(Controller::forbidden);
+        return tripRepository
+                .getTripByIds(tripId, userId)
+                .thenComposeAsync(
+                        (optionalTrip) -> {
+                            if (!optionalTrip.isPresent()) {
+                                throw new CompletionException(new NotFoundException());
+                            }
+
+                            TripComposite trip = optionalTrip.get();
+                            return tripRepository.deleteTrip(trip);
+                        },
+                        httpExecutionContext.current())
+                .thenApplyAsync((trip) -> (Result) ok(), httpExecutionContext.current())
+                // Exceptions / error checking
+                .exceptionally(
+                        e -> {
+                            try {
+                                throw e.getCause();
+                            } catch (NotFoundException notFoundError) {
+                                return notFound("Trip id was not found");
+                            } catch (Throwable serverError) {
+                                return internalServerError();
+                            }
+                        });
     }
 
-    return tripRepository
-        .getTripByIds(tripId, userId)
-        .thenComposeAsync(
-            (optionalTrip) -> {
-              if (!optionalTrip.isPresent()) {
-                throw new CompletionException(new NotFoundException());
-              }
 
-              TripComposite trip = optionalTrip.get();
-              return tripRepository.deleteTrip(trip);
-            },
-            httpExecutionContext.current())
-        .thenApplyAsync((trip) -> (Result) ok(), httpExecutionContext.current())
-        // Exceptions / error checking
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundError) {
-                return notFound("Trip id was not found");
-              } catch (Throwable serverError) {
-                return internalServerError();
-              }
-            });
-  }
+    /**
+     * Undo the soft-delete for a trip.
+     * @param userId user who owns the trip.
+     * @param tripId id of the trip to un-soft delete.
+     * @param request HTTP request object.
+     * @return
+     * - 200 with trip if successful
+     * - 400 bad request if the trip hasn't been deleted
+     * - 401 unauthorized if the user is unauthorized
+     * - 403 forbidden if the user isn't allowed to undo the delete
+     * - 404 not found if the trip can't be found in the db
+     * - 500 internal server error for other errors
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
 
-  /**
-   * Undo the soft-delete for a trip.
-   *
-   * @param userId user who owns the trip.
-   * @param tripId id of the trip to un-soft delete.
-   * @param request HTTP request object.
-   * @return - 200 with trip if successful - 400 bad request if the trip hasn't been deleted - 401
-   *     unauthorized if the user is unauthorized - 403 forbidden if the user isn't allowed to undo
-   *     the delete - 404 not found if the trip can't be found in the db - 500 internal server error
-   *     for other errors
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
-    User user = request.attrs().get(ActionState.USER);
+        if (!security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
 
-    if (!security.userHasPermission(user, userId)) {
-      return supplyAsync(Controller::forbidden);
+        return tripRepository.getTripByIdsIncludingDeleted(tripId, userId).
+                thenComposeAsync((optionalTrip) -> {
+                    if (!optionalTrip.isPresent()) {
+                        throw new CompletionException(new NotFoundException());
+                    }
+
+                    TripNode trip = optionalTrip.get();
+                    if (!user.isAdmin() && user.getUserId() != userId) {
+                        throw new CompletionException(new ForbiddenRequestException(
+                                "You do not have permission to undo this deletion."));
+                    }
+                    if (!trip.isDeleted()) {
+                        throw new CompletionException(new BadRequestException("This trip has not been deleted."));
+                    }
+
+                    return tripRepository.restoreTrip(trip);
+                })
+                .thenApplyAsync(trip -> ok(Json.toJson(trip)))
+                .exceptionally(error -> {
+                    ObjectNode message = Json.newObject();
+                    try {
+                        throw error.getCause();
+                    } catch (BadRequestException e) {
+                        message.put("message", e.getMessage());
+                        return badRequest(message);
+                    } catch (UnauthorizedException e) {
+                        message.put("message", e.getMessage());
+                        return unauthorized(message);
+                    } catch (ForbiddenRequestException e) {
+                        message.put("message", e.getMessage());
+                        return forbidden(message);
+                    } catch (NotFoundException e) {
+                        message.put("message", e.getMessage());
+                        return notFound(message);
+                    } catch (Throwable e) {
+                        log.error("An unexpected error has occurred", e);
+                        return internalServerError();
+                    }
+                });
     }
-
-    return tripRepository
-        .getTripByIdsIncludingDeleted(tripId, userId)
-        .thenComposeAsync(
-            (optionalTrip) -> {
-              if (!optionalTrip.isPresent()) {
-                throw new CompletionException(new NotFoundException());
-              }
-
-              TripComposite trip = optionalTrip.get();
-              if (!user.isAdmin() && user.getUserId() != userId) {
-                throw new CompletionException(
-                    new ForbiddenRequestException(
-                        "You do not have permission to undo this deletion."));
-              }
-              if (!trip.isDeleted()) {
-                throw new CompletionException(
-                    new BadRequestException("This trip has not been deleted."));
-              }
-
-              return tripRepository.restoreTrip(trip);
-            })
-        .thenApplyAsync(trip -> ok(Json.toJson(trip)))
-        .exceptionally(
-            error -> {
-              ObjectNode message = Json.newObject();
-              try {
-                throw error.getCause();
-              } catch (BadRequestException e) {
-                message.put("message", e.getMessage());
-                return badRequest(message);
-              } catch (UnauthorizedException e) {
-                message.put("message", e.getMessage());
-                return unauthorized(message);
-              } catch (ForbiddenRequestException e) {
-                message.put("message", e.getMessage());
-                return forbidden(message);
-              } catch (NotFoundException e) {
-                message.put("message", e.getMessage());
-                return notFound(message);
-              } catch (Throwable e) {
-                log.error("An unexpected error has occurred", e);
-                return internalServerError();
-              }
-            });
-  }
 
   /**
    * Endpoint to update a trips destinations.
