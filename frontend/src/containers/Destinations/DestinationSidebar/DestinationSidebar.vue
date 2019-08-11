@@ -32,12 +32,10 @@
     <div id="destinations-list">
       <div v-if="shouldShowEditor">
         <AddDestinationSidebar
-            ref="addSidebar"
-            :editMode="false"
             v-on:addNewDestination="addNewDestination"
-            v-on:dialogChanged="addDestDialogChanged"
             :latitude="latitude"
             :longitude="longitude"
+            ref="addDestination"
         ></AddDestinationSidebar>
       </div>
 
@@ -140,7 +138,7 @@
       toggleEditor() {
         this.resetCoordinates();
         this.shouldShowEditor = !this.shouldShowEditor;
-        this.$refs.addSidebar.closeDialog();
+        this.$refs.addDestination.closeDialog();
       },
 
       addNewDestination(destination) {
