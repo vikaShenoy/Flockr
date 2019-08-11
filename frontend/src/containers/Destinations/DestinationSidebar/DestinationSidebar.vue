@@ -35,7 +35,6 @@
             v-on:addNewDestination="addNewDestination"
             :latitude="latitude"
             :longitude="longitude"
-            ref="addDestination"
         ></AddDestinationSidebar>
       </div>
 
@@ -138,11 +137,11 @@
       toggleEditor() {
         this.resetCoordinates();
         this.shouldShowEditor = !this.shouldShowEditor;
-        this.$refs.addDestination.closeDialog();
       },
 
       addNewDestination(destination) {
         this.$emit('addNewDestination', destination);
+        this.toggleEditor();
       },
       /**
        * Delete a destination. Refresh the destination list to remove it. Add the undo/redo commands to the stack.
