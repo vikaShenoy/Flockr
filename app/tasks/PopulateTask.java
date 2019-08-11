@@ -95,6 +95,7 @@ public class PopulateTask {
         TripDestinationLeaf tripChristchurch = new TripDestinationLeaf(christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
         TripDestinationLeaf tripWestMelton = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
         TripDestinationLeaf tripHelkett = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
+
         tripChristchurch.save();
         tripWestMelton.save();
         tripHelkett.save();
@@ -107,6 +108,23 @@ public class PopulateTask {
         trip.save();
         tripNodes.remove(tripWestMelton);
         tripNodes.add(tripHelkett);
+
+        Destination morocco = new Destination("Morocco", destinationType, district, 12.0, 45.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        morocco.save();
+
+        TripDestinationLeaf tripMorocco = new TripDestinationLeaf(morocco, new Date(1564273000), 43200, new Date(1564359000), 43200);
+        tripMorocco.save();
+
+/*      ArrayList<TripNode> tripNodes2 = new ArrayList<>();
+        tripNodes2.add(tripMorocco);
+        tripNodes2.add(tripChristchurch);*/
+
+
+        trip.addTripNodes(tripMorocco);
+        trip.addTripNodes(tripChristchurch);
+        trip.save();
+
+
 
         TripComposite trip2 = new TripComposite(tripNodes, users, "Find the family graves");
         trip2.save();

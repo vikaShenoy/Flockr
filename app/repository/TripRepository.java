@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import models.TripNode;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -123,11 +124,23 @@ public class TripRepository {
      */
     public CompletionStage<List<TripComposite>> getTripsByIds(int travellerId) {
         return supplyAsync(() -> {
-            List<TripComposite> trip = TripComposite.find.query()
-                    .fetch("users")
-                    .where()
-                    .in("users.userId", travellerId)
-                    .findList();
+/*            List<TripComposite> trip = TripComposite.find.query()
+                .fetch("users")
+                .where()
+                .in("users.userId", travellerId)
+                .findList();
+            */
+            List<TripComposite> trip = TripComposite.find.all();
+            for (TripComposite t : trip) {
+                System.out.println(t.getTripNodeId());
+                System.out.println(t.getName());
+                System.out.println(t.getTripNodes().size());
+
+            }
+            List<TripNode> tripNodes = TripNode.find.all();
+
+            System.out.println(trip);
+
             return trip;
         }, executionContext);
     }
