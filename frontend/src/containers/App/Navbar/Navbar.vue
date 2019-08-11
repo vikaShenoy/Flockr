@@ -1,10 +1,10 @@
 <template>
-  <v-toolbar id="navbar">
+  <v-app-bar id="navbar">
     <v-toolbar-title>Travel EA</v-toolbar-title>
-    <v-spacer></v-spacer>
+    <v-spacer/>
     <v-toolbar-items class="hidden-sm-and-down">
     </v-toolbar-items>
-  </v-toolbar>
+  </v-app-bar>
 </template>
 
 <style lang="scss" scoped>
@@ -14,7 +14,6 @@
     width: 100%;
     background-color: $secondary;
     color: white;
-    position: fixed;
     z-index: 3;
   }
 </style>
