@@ -150,17 +150,20 @@
 
 <style lang="scss">
   .v-timeline--dense .v-timeline-item__body {
-    max-width: calc(100% - 34px) !important;
+    max-width: calc(100% - 22px) !important;
+    
   }
 
   #trip-nodes {
     max-height: 0px;
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
   }
 
   .expanded {
-    max-height: 15rem !important;
+    // You can't transition a height to auto so need to specify
+    // an arbitrarily large max height
+    max-height: 300rem !important;
   }
 
 </style>
