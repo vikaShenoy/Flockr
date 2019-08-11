@@ -23,6 +23,7 @@ import util.TripUtil;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -90,7 +91,8 @@ public class TripController extends Controller {
 
                    try {
                        List<User> allUsers = User.find.all();
-                       tripNodes = tripUtil.getTripDestinationsFromJson(tripNodesJson);
+                       Set<TripComposite> trips = tripRepository.getTrips();
+                       tripNodes = tripUtil.getTripDestinationsFromJson(tripNodesJson, trips);
                        users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
                    } catch (BadRequestException e) {
                        return CompletableFuture.completedFuture(badRequest(e.getMessage()));
@@ -278,7 +280,9 @@ public class TripController extends Controller {
                         long startTime = System.currentTimeMillis();
                         List<User> allUsers = User.find.all();
                         User user = User.find.byId(userId);
-                        tripNodes = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+                        Set<TripComposite> trips = tripRepository.getTrips();
+                        tripNodes = tripUtil.getTripDestinationsFromJson(tripDestinationsJson, trips);
+
                         users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
 

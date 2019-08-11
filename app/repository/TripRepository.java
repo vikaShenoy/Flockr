@@ -6,8 +6,10 @@ import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -128,4 +130,9 @@ public class TripRepository {
             return trip;
         }, executionContext);
     }
+
+    public Set<TripComposite> getTrips() {
+        return new HashSet<>(TripComposite.find.all());
+    }
+
 }

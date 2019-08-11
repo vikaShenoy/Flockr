@@ -162,8 +162,9 @@ public class TripNodeTest {
 
 
         Result result = fakeClient.makeRequestWithToken("POST", (ObjectNode) newTripJson,"/api/users/" + user.getUserId() + "/trips", user.getToken());
-        Assert.assertEquals(201, result.status());
 
+
+        Assert.assertEquals(201, result.status());
     }
 
 }

@@ -103,6 +103,7 @@ public abstract class TripNode extends Model {
 
     public abstract Class getNodeType();
 
+
     /**
      * This is required by EBean to make queries on the database.
      */

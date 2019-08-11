@@ -10,11 +10,26 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 public class TripUtil {
-    public List<TripNode> getTripDestinationsFromJson(JsonNode tripDestinationsJson) throws BadRequestException {
+    public TripComposite getTripToUpdate(JsonNode tripDestinationJson, Set<TripComposite> trips) throws NotFoundException {
+        int tripNodeId = tripDestinationJson.get("tripNodeId").asInt();
+        TripComposite tripComposite = null;
+
+        for (TripComposite currentCompositeTrip : trips) {
+            tripComposite = currentCompositeTrip;
+        }
+
+        if (tripComposite == null) {
+            throw new NotFoundException("Trip not found");
+        }
+
+        return tripComposite;
+    }
+
+    public List<TripNode> getTripDestinationsFromJson(JsonNode tripDestinationsJson, Set<TripComposite> trips) throws BadRequestException, NotFoundException {
         List<TripNode> tripNodes = new ArrayList<>();
-        System.out.println(tripDestinationsJson);
 
         if (tripDestinationsJson.size() < 2) {
             throw new BadRequestException("tripDestinationJson has to be smaller or equal to 2");
@@ -23,10 +38,8 @@ public class TripUtil {
         int index = 0;
         for (JsonNode tripDestinationJson : tripDestinationsJson) {
             if (tripDestinationJson.get("nodeType").asText().equals("TripComposite")) {
-                int tripNodeId = tripDestinationJson.get("tripNodeId").asInt();
-//                TripComposite trip = new TripComposite(tripNodeId);
-                TripComposite trip = TripComposite.find.byId(tripNodeId);
-                tripNodes.add(trip);
+                TripComposite tripComposite = getTripToUpdate(tripDestinationJson, trips);
+                tripNodes.add(tripComposite);
 
             } else {
                 int destinationId = tripDestinationJson.get("destinationId").asInt();

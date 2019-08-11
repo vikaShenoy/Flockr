@@ -4,10 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
+import exceptions.NotFoundException;
+import models.TripComposite;
 import org.junit.Before;
 import org.junit.Test;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import play.libs.Json;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -16,6 +21,7 @@ public class TripUtilTest {
     JsonNode testData1;
     JsonNode testData2;
     JsonNode testData3;
+    Set<TripComposite> tripComposites;
 
     @Before
     public void setUp() throws Exception {
@@ -60,6 +66,9 @@ public class TripUtilTest {
         testArray3.add(testNode1);
         testArray3.add(testNode3);
         testData3 = testArray3;
+
+        tripComposites = new HashSet<>();
+
     }
 
     /**
@@ -67,9 +76,9 @@ public class TripUtilTest {
      * the data list.
      */
     @Test
-    public void getTripDestinationsFromJsonInsufficientDestinations() {
+    public void getTripDestinationsFromJsonInsufficientDestinations() throws NotFoundException {
         try {
-            util.getTripDestinationsFromJson(testData1);
+            util.getTripDestinationsFromJson(testData1, tripComposites);
             fail("Method should throw BadRequestException, as there is only 1 tripdest.");
         } catch(BadRequestException e) {
             assertTrue("Exception correctly thrown", true);
@@ -81,9 +90,9 @@ public class TripUtilTest {
      * the data list.
      */
     @Test
-    public void getTripDestinationsFromJsonContiguousDestinations() {
+    public void getTripDestinationsFromJsonContiguousDestinations() throws NotFoundException {
         try {
-            util.getTripDestinationsFromJson(testData2);
+            util.getTripDestinationsFromJson(testData2, tripComposites);
             fail("Method should throw BadRequestException, as there is a repeated tripDest.");
         } catch(BadRequestException e) {
             assertTrue("Exception correctly thrown", true);
@@ -94,9 +103,9 @@ public class TripUtilTest {
      * Should throw no errors as the data is valid (2 different trip destinations)
      */
     @Test
-    public void getTripDestinationsFromJsonValid() {
+    public void getTripDestinationsFromJsonValid() throws NotFoundException {
         try {
-            util.getTripDestinationsFromJson(testData3);
+            util.getTripDestinationsFromJson(testData3, tripComposites);
             assertTrue("Valid data throws no errors", true);
         } catch(BadRequestException e) {
             fail("Method should throw no errors for valid data.");
