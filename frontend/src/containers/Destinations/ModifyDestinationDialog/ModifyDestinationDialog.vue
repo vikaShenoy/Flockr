@@ -76,31 +76,37 @@
           </v-stepper-content>
 
           <v-stepper-content step="2">
-            <v-card class="mb-5" flat>
-              <v-text-field
-                v-model="destination.destinationLat"
-                :value="destination.destinationLat"
-                label="Latitude"
-                :rules="latitudeRules"
-                id="latitude"
-              />
+            <v-card id="location-stepper" class="mb-5" flat>
+              <div id="map">
+                <DestinationMap
+                  :destinations="mapDestinations"
+                  @coordinates-selected="handleCoordinateSelection"
+                />
+              </div>
 
-              <v-text-field
-                v-model="destination.destinationLon"
-                :value="destination.destinationLon"
-                label="Longitude"
-                :rules="longitudeRules"
-                id="longitude"
-              />
+              <div id="not-map">
+                <v-container grid-list-md text-xs-center>
+                  <v-layout row wrap>
+                    <v-flex xs6>
+                      <v-text-field v-model="destination.destinationLat" :value="destination.destinationLat"
+                        label="Latitude" :rules="latitudeRules" id="latitude" />
+                    </v-flex>
+                    <v-flex xs6>
+                      <v-text-field v-model="destination.destinationLon" :value="destination.destinationLon"
+                        label="Longitude" :rules="longitudeRules" id="longitude" />
+                    </v-flex>
+                      
+                    <v-flex xs12>
+                      <v-btn id="use-my-location-button" flat color="secondary" @click="getUserLocation">
+                        Use My Current Location
+                      </v-btn>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
 
-              <v-btn flat color="secondary" @click="getUserLocation">
-                Use My Current Location
-              </v-btn>
-              
-              <v-divider />
-
-              <v-btn @click="currStepperStep = 1">Go back</v-btn>
-              <v-btn color="success" @click="checkSubmission" :loading="formIsLoading">Done</v-btn>
+                <v-btn @click="currStepperStep = 1">Go back</v-btn>
+                <v-btn color="success" @click="checkSubmission" :loading="formIsLoading">Done</v-btn>
+              </div>
             </v-card>
           </v-stepper-content>
         </v-stepper-items>
@@ -131,10 +137,11 @@ import {
 } from "./ModifyDestinationDialogService";
 import ErrorSnackbar from "../../../components/Snackbars/ErrorSnackbar";
 import CountryPicker from "../../../components/Country/CountryPicker"
+import DestinationMap from "../../../components/DestinationMap/DestinationMap";
 export default {
   name: "add-destination-dialog",
   components: {
-    CountryPicker
+    CountryPicker, DestinationMap
   },
   props: {
     dialog: {
@@ -228,9 +235,39 @@ export default {
   computed: {
     destCountry() {
       return this.destination.destinationCountry.countryId;
+    },
+    /**
+     * Returns the destinations used by the map.
+     * @returns {Array<Object>} a list with either no destination or one destination
+     */
+    mapDestinations() {
+      if (!this.editMode) {
+        return []
+      } else {
+        const destination = { ...this.destinationToEdit };
+
+        // overwrite coordinates from prop with coordinates from form
+        // to update the map marker when new coordinates are selected
+        const { destinationLat, destinationLon } = this.destination;
+        if (destinationLat && destinationLon) {
+          destination.destinationLat = destinationLat;
+          destination.destinationLon = destinationLon;
+        }
+        return [destination];
+      }
+      editMode ? [destinationToEdit] : []
     }
   },
   methods: {
+    /**
+     * Called when the user selects coordinates in the map.
+     * @param {Object} coordinates contains the selected coordinates
+     */
+    handleCoordinateSelection(coordinates) {
+      const { latitude, longitude } = coordinates;
+      this.destination.destinationLat = latitude;
+      this.destination.destinationLon = longitude;
+    },
     /**
      * Gets the users current geo location if permitted.
      */
@@ -380,7 +417,6 @@ export default {
       this.destination.destinationCountry = newValue;
     }
   },
-
   watch: {
     /**
      * Called when the dialog prop is modified.
@@ -430,11 +466,20 @@ export default {
   -webkit-text-fill-color: $darker-white;
 }
 
-#latitude {
-  padding: 0 10px 0 0;
-}
+#location-stepper {
 
-#longitude {
-  padding: 0 0 0 10px;
+  #map {
+    width: 100%;
+    height: 30vh;
+  }
+
+  #not-map {
+    margin-top: 20px;
+    margin-bottom: -30px;
+
+    .container {
+      padding: 0;
+    }
+  }
 }
 </style>
