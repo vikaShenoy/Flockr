@@ -1,6 +1,7 @@
 package repository;
 
 import models.TripComposite;
+import models.TripNode;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -70,7 +71,7 @@ public class TripRepository {
      * @param trip the trip to be restored
      * @return
      */
-    public CompletionStage<TripComposite> restoreTrip(TripComposite trip) {
+    public CompletionStage<TripNode> restoreTrip(TripNode trip) {
         return supplyAsync(() -> {
             trip.setDeleted(false);
             trip.setDeletedExpiry(null);
@@ -90,7 +91,7 @@ public class TripRepository {
         return supplyAsync(() -> {
             Optional<TripComposite> trip = TripComposite.find.query()
                     .fetch("users")
-                    .where().eq("trip_id", tripId)
+                    .where().eq("tripNodeId", tripId)
                     .in("users.userId", userId)
                     .findOneOrEmpty();
             return trip;
@@ -103,11 +104,11 @@ public class TripRepository {
      * @param userId The user id of the owner of the trip
      * @return the trip that matches the given ids
      */
-    public CompletionStage<Optional<TripComposite>> getTripByIdsIncludingDeleted(int tripId, int userId) {
+    public CompletionStage<Optional<TripNode>> getTripByIdsIncludingDeleted(int tripId, int userId) {
         return supplyAsync(() -> {
-            Optional<TripComposite> trip = TripComposite.find.query().setIncludeSoftDeletes()
+            Optional<TripNode> trip = TripNode.find.query().setIncludeSoftDeletes()
                     .fetch("users")
-                    .where().eq("trip_id", tripId)
+                    .where().eq("tripNodeId", tripId)
                     .in("users.userId", userId)
                     .findOneOrEmpty();
             return trip;

@@ -150,9 +150,7 @@ create table treasure_hunt (
 create table trip_node (
   dtype                         varchar(31) not null,
   trip_node_id                  integer auto_increment not null,
-  parent_trip_node_id           integer,
   deleted_expiry                timestamp,
-  is_composite                  boolean default false not null,
   deleted                       BOOLEAN DEFAULT FALSE not null,
   name                          varchar(255),
   destination_destination_id    integer,
@@ -161,6 +159,12 @@ create table trip_node (
   departure_date                timestamp,
   departure_time                integer,
   constraint pk_trip_node primary key (trip_node_id)
+);
+
+create table trip_node_parent (
+  trip_node_child_id            integer not null,
+  trip_node_parent_id           integer not null,
+  constraint pk_trip_node_parent primary key (trip_node_child_id,trip_node_parent_id)
 );
 
 create table trip_node_user (
@@ -268,11 +272,14 @@ alter table treasure_hunt add constraint fk_treasure_hunt_treasure_hunt_destinat
 create index ix_treasure_hunt_owner_user_id on treasure_hunt (owner_user_id);
 alter table treasure_hunt add constraint fk_treasure_hunt_owner_user_id foreign key (owner_user_id) references user (user_id) on delete restrict on update restrict;
 
-create index ix_trip_node_parent_trip_node_id on trip_node (parent_trip_node_id);
-alter table trip_node add constraint fk_trip_node_parent_trip_node_id foreign key (parent_trip_node_id) references trip_node (trip_node_id) on delete restrict on update restrict;
-
 create index ix_trip_node_destination_destination_id on trip_node (destination_destination_id);
 alter table trip_node add constraint fk_trip_node_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
+
+create index ix_trip_node_parent_trip_node_1 on trip_node_parent (trip_node_child_id);
+alter table trip_node_parent add constraint fk_trip_node_parent_trip_node_1 foreign key (trip_node_child_id) references trip_node (trip_node_id) on delete restrict on update restrict;
+
+create index ix_trip_node_parent_trip_node_2 on trip_node_parent (trip_node_parent_id);
+alter table trip_node_parent add constraint fk_trip_node_parent_trip_node_2 foreign key (trip_node_parent_id) references trip_node (trip_node_id) on delete restrict on update restrict;
 
 create index ix_trip_node_user_trip_node on trip_node_user (trip_node_trip_node_id);
 alter table trip_node_user add constraint fk_trip_node_user_trip_node foreign key (trip_node_trip_node_id) references trip_node (trip_node_id) on delete restrict on update restrict;
@@ -358,11 +365,14 @@ drop index if exists ix_treasure_hunt_treasure_hunt_destination_destination_id;
 alter table treasure_hunt drop constraint if exists fk_treasure_hunt_owner_user_id;
 drop index if exists ix_treasure_hunt_owner_user_id;
 
-alter table trip_node drop constraint if exists fk_trip_node_parent_trip_node_id;
-drop index if exists ix_trip_node_parent_trip_node_id;
-
 alter table trip_node drop constraint if exists fk_trip_node_destination_destination_id;
 drop index if exists ix_trip_node_destination_destination_id;
+
+alter table trip_node_parent drop constraint if exists fk_trip_node_parent_trip_node_1;
+drop index if exists ix_trip_node_parent_trip_node_1;
+
+alter table trip_node_parent drop constraint if exists fk_trip_node_parent_trip_node_2;
+drop index if exists ix_trip_node_parent_trip_node_2;
 
 alter table trip_node_user drop constraint if exists fk_trip_node_user_trip_node;
 drop index if exists ix_trip_node_user_trip_node;
@@ -409,6 +419,8 @@ drop table if exists traveller_type_destination;
 drop table if exists treasure_hunt;
 
 drop table if exists trip_node;
+
+drop table if exists trip_node_parent;
 
 drop table if exists trip_node_user;
 

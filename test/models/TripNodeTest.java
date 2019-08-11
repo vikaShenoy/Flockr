@@ -14,6 +14,7 @@ import play.mvc.Result;
 import play.test.Helpers;
 import utils.FakeClient;
 import utils.FakePlayClient;
+import utils.PlayResultToJson;
 import utils.TestState;
 
 import java.io.IOException;
@@ -36,6 +37,9 @@ public class TripNodeTest {
     private TripComposite trip;
     private TripDestinationLeaf leaf1;
     private TripDestinationLeaf leaf2;
+    private TripDestinationLeaf leaf3;
+    private TripDestinationLeaf leaf4;
+    private TripComposite trip2;
 
     @Before
     public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
@@ -93,9 +97,19 @@ public class TripNodeTest {
         List<TripNode> tripNodes = new ArrayList<>();
         tripNodes.add(leaf1);
         tripNodes.add(leaf2);
-
-        trip = new TripComposite(tripNodes, new ArrayList<>(), "test trip");
+        ArrayList<User> users = new ArrayList<>();
+        users.add(user);
+        trip = new TripComposite(tripNodes, users, "test trip");
         trip.save();
+
+        leaf3 = new TripDestinationLeaf(destination1, null, null, null, null);
+        leaf4 = new TripDestinationLeaf(destination2, null, null, null, null);
+        List<TripNode> tripNodes2 = new ArrayList<>();
+
+        trip2 = new TripComposite(tripNodes, users, "test trip2");
+        trip2.addTripNodes(leaf3);
+        trip2.addTripNodes(leaf4);
+        trip2.save();
     }
 
     @After
@@ -128,7 +142,7 @@ public class TripNodeTest {
     }
 
     @Test
-    public void secondTest() {
+    public void secondTest() throws IOException {
         String date = null;
         ObjectNode newTripJson = Json.newObject();
         newTripJson.put("name", "New Trip");
@@ -159,12 +173,121 @@ public class TripNodeTest {
                 .add(thirdNode);
         newTripJson.putArray("userIds");
 
-
-
         Result result = fakeClient.makeRequestWithToken("POST", (ObjectNode) newTripJson,"/api/users/" + user.getUserId() + "/trips", user.getToken());
-
-
         Assert.assertEquals(201, result.status());
+
+        JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
+        int tripId = jsonNode.asInt();
+
+        TripComposite receivedTrip = TripComposite.find.byId(tripId);
+        Assert.assertEquals(3, receivedTrip.getTripNodes().size());
+
+
+    }
+
+    @Test
+    public void userUpdatesTrip() throws IOException {
+
+        String date = null;
+        ObjectNode updatedTripJson = Json.newObject();
+        updatedTripJson.put("name", "Updated Trip");
+
+        ObjectNode firstNode = Json.newObject();
+        firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
+        firstNode.put("nodeType", "TripDestinationLeaf");
+        firstNode.put("arrivalDate", date);
+        firstNode.put("arrivalTime", date);
+        firstNode.put("departureDate", date);
+        firstNode.put("departureTime", date);
+
+        ObjectNode secondNode = Json.newObject();
+        secondNode.put("tripNodeId", trip2.getTripNodeId());
+        secondNode.put("nodeType", "TripComposite");
+
+
+        updatedTripJson.putArray("tripNodes")
+                .add(firstNode)
+                .add(secondNode);
+        updatedTripJson.putArray("userIds")
+                .add(user.getUserId());
+
+        Result result = fakeClient.makeRequestWithToken("PUT", (ObjectNode) updatedTripJson,"/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId(), user.getToken());
+        Assert.assertEquals(200, result.status());
+        JsonNode tripJson = PlayResultToJson.convertResultToJson(result);
+        int receivedTripNodeId = tripJson.get("tripNodeId").asInt();
+        TripComposite receivedTrip = TripComposite.find.byId(receivedTripNodeId);
+        Assert.assertNotNull(receivedTrip);
+        Assert.assertEquals(2, receivedTrip.getTripNodes().size());
+
+    }
+
+    @Test
+    public void updateTripAdmin() throws IOException {
+
+        String date = null;
+        ObjectNode updatedTripJson = Json.newObject();
+        updatedTripJson.put("name", "Updated Trip");
+
+        ObjectNode firstNode = Json.newObject();
+        firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
+        firstNode.put("nodeType", "TripDestinationLeaf");
+        firstNode.put("arrivalDate", date);
+        firstNode.put("arrivalTime", date);
+        firstNode.put("departureDate", date);
+        firstNode.put("departureTime", date);
+
+        ObjectNode secondNode = Json.newObject();
+        secondNode.put("tripNodeId", trip2.getTripNodeId());
+        secondNode.put("nodeType", "TripComposite");
+
+
+        updatedTripJson.putArray("tripNodes")
+                .add(firstNode)
+                .add(secondNode);
+        updatedTripJson.putArray("userIds")
+                .add(user.getUserId());
+
+        Result result = fakeClient.makeRequestWithToken("PUT", (ObjectNode) updatedTripJson,"/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId(), adminUser.getToken());
+        Assert.assertEquals(200, result.status());
+        int receivedTripId = PlayResultToJson.convertResultToJson(result).get("tripNodeId").asInt();
+        TripComposite tripComposite = TripComposite.find.byId(receivedTripId);
+
+        Assert.assertNotNull(tripComposite);
+
+        Assert.assertEquals(2, tripComposite.getTripNodes().size());
+        Assert.assertTrue(tripComposite.getTripNodes().contains(trip2));
+    }
+
+    @Test
+    public void updateTripForbidden() {
+
+        String date = null;
+        ObjectNode updatedTripJson = Json.newObject();
+        updatedTripJson.put("name", "Updated Trip");
+
+        ObjectNode firstNode = Json.newObject();
+        firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
+        firstNode.put("nodeType", "TripDestinationLeaf");
+        firstNode.put("arrivalDate", date);
+        firstNode.put("arrivalTime", date);
+        firstNode.put("departureDate", date);
+        firstNode.put("departureTime", date);
+
+        ObjectNode secondNode = Json.newObject();
+        secondNode.put("tripNodeId", trip.getTripNodeId());
+        secondNode.put("nodeType", "TripComposite");
+
+
+        updatedTripJson.putArray("tripNodes")
+                .add(firstNode)
+                .add(secondNode);
+        updatedTripJson.putArray("userIds")
+                .add(user.getUserId());
+
+        System.out.println(trip.getUsers());
+        Result result = fakeClient.makeRequestWithToken("PUT", (ObjectNode) updatedTripJson,"/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId(), otherUser.getToken());
+        Assert.assertEquals(403, result.status());
+
     }
 
 }

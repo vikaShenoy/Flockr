@@ -1,8 +1,8 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
-import io.ebean.annotation.JsonIgnore;
 import io.ebean.annotation.SoftDelete;
 
 import javax.persistence.*;
@@ -17,12 +17,15 @@ public abstract class TripNode extends Model {
     @Id
     protected int tripNodeId;
 
-    @OneToMany(mappedBy="parent", cascade=CascadeType.PERSIST)
+    @ManyToMany(mappedBy = "parents", cascade=CascadeType.PERSIST)
     protected List<TripNode> tripNodes = new ArrayList<>();
 
     @JsonIgnore
-    @ManyToOne
-    private TripNode parent;
+    @ManyToMany
+    // Ebean does not support @ManyToMany on the same entity without manually setting the columns
+    @JoinTable(name = "trip_node_parent", joinColumns = @JoinColumn(name = "trip_node_child_id"), inverseJoinColumns = @JoinColumn(name = "trip_node_parent_id"))
+    private List<TripNode> parents;
+
 
     @com.fasterxml.jackson.annotation.JsonIgnore
     @SoftDelete
@@ -31,8 +34,6 @@ public abstract class TripNode extends Model {
 
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Timestamp deletedExpiry;
-
-    private boolean isComposite;
 
     /**
      * Constructor to create a new trip.
@@ -77,10 +78,6 @@ public abstract class TripNode extends Model {
         this.tripNodeId = id;
     }
 
-    public TripNode getParent() {
-        return parent;
-    }
-
     public boolean isDeleted() {
         return deleted;
     }
@@ -88,6 +85,8 @@ public abstract class TripNode extends Model {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
+
+
 
     public Timestamp getDeletedExpiry() {
         return deletedExpiry;
@@ -97,8 +96,12 @@ public abstract class TripNode extends Model {
         this.deletedExpiry = deletedExpiry;
     }
 
-    public void setParent(TripNode parent) {
-        this.parent = parent;
+    public List<TripNode> getParents() {
+        return parents;
+    }
+
+    public void setParents(List<TripNode> parents) {
+        this.parents = parents;
     }
 
     public abstract Class getNodeType();

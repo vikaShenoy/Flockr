@@ -78,7 +78,7 @@ public class TripUtilTest {
     @Test
     public void getTripDestinationsFromJsonInsufficientDestinations() throws NotFoundException {
         try {
-            util.getTripDestinationsFromJson(testData1, tripComposites);
+            util.getTripNodesFromJson(testData1, tripComposites);
             fail("Method should throw BadRequestException, as there is only 1 tripdest.");
         } catch(BadRequestException e) {
             assertTrue("Exception correctly thrown", true);
@@ -92,7 +92,7 @@ public class TripUtilTest {
     @Test
     public void getTripDestinationsFromJsonContiguousDestinations() throws NotFoundException {
         try {
-            util.getTripDestinationsFromJson(testData2, tripComposites);
+            util.getTripNodesFromJson(testData2, tripComposites);
             fail("Method should throw BadRequestException, as there is a repeated tripDest.");
         } catch(BadRequestException e) {
             assertTrue("Exception correctly thrown", true);
@@ -105,7 +105,7 @@ public class TripUtilTest {
     @Test
     public void getTripDestinationsFromJsonValid() throws NotFoundException {
         try {
-            util.getTripDestinationsFromJson(testData3, tripComposites);
+            util.getTripNodesFromJson(testData3, tripComposites);
             assertTrue("Valid data throws no errors", true);
         } catch(BadRequestException e) {
             fail("Method should throw no errors for valid data.");

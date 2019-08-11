@@ -17,7 +17,13 @@ public class TripComposite extends TripNode {
     @ManyToMany()
     private List<User> users;
 
-    public TripComposite(List<TripNode> tripNodes, List<User> users, String name) {
+    public TripComposite(List<User> users, String name) {
+//        super(tripNodes);
+        this.users = users;
+        this.name = name;
+    }
+
+   public TripComposite(List<TripNode> tripNodes, List<User> users, String name) {
         super(tripNodes);
         this.users = users;
         this.name = name;

@@ -13,8 +13,15 @@ import java.util.List;
 import java.util.Set;
 
 public class TripUtil {
-    public TripComposite getTripToUpdate(JsonNode tripDestinationJson, Set<TripComposite> trips) throws NotFoundException {
-        int tripNodeId = tripDestinationJson.get("tripNodeId").asInt();
+    /**
+     * Gets trip to update from from list of trip objects based on ID
+     * @param tripNodeJson JSON representation of trip node
+     * @param trips Set of all possible trips
+     * @return Object representation of trip node
+     * @throws NotFoundException Gets thrown when a trip isn't found
+     */
+    public TripComposite getTripToUpdate(JsonNode tripNodeJson, Set<TripComposite> trips) throws NotFoundException {
+        int tripNodeId = tripNodeJson.get("tripNodeId").asInt();
         TripComposite tripComposite = null;
 
         for (TripComposite currentCompositeTrip : trips) {
@@ -28,38 +35,42 @@ public class TripUtil {
         return tripComposite;
     }
 
-    public List<TripNode> getTripDestinationsFromJson(JsonNode tripDestinationsJson, Set<TripComposite> trips) throws BadRequestException, NotFoundException {
+    /**
+     * Converts tripNodes from json to objects
+     * @param tripNodesJson JSON representation of trip nodes
+     * @param trips List of all trips to filter out of
+     * @return Object representation of trip notes
+     * @throws BadRequestException when there are less than 2 destinations or destinations are contiguous
+     * @throws NotFoundException Gets thrown when a trip is not found
+     */
+    public List<TripNode> getTripNodesFromJson(JsonNode tripNodesJson, Set<TripComposite> trips) throws BadRequestException, NotFoundException {
         List<TripNode> tripNodes = new ArrayList<>();
 
-        if (tripDestinationsJson.size() < 2) {
-            throw new BadRequestException("tripDestinationJson has to be smaller or equal to 2");
+        if (tripNodesJson.size() < 2) {
+            throw new BadRequestException("trip nodes has to be larger or equal to 2");
         }
 
-        int index = 0;
-        for (JsonNode tripDestinationJson : tripDestinationsJson) {
-            if (tripDestinationJson.get("nodeType").asText().equals("TripComposite")) {
-                TripComposite tripComposite = getTripToUpdate(tripDestinationJson, trips);
-                tripNodes.add(tripComposite);
+        if (checkContiguousDestinations(tripNodesJson)) {
+            throw new BadRequestException("Destinations cannot be contiguous");
+        }
 
+        for (JsonNode tripNodeJson : tripNodesJson) {
+            if (tripNodeJson.get("nodeType").asText().equals("TripComposite")) {
+                TripComposite tripComposite = getTripToUpdate(tripNodeJson, trips);
+                tripNodes.add(tripComposite);
             } else {
-                int destinationId = tripDestinationJson.get("destinationId").asInt();
-                Date arrivalDate = !tripDestinationJson.has("arrivalDate") ? null : new Date(tripDestinationJson.get("arrivalDate").asLong());
-                Integer arrivalTime = !tripDestinationJson.has("arrivalTime") ? null : tripDestinationJson.get("arrivalTime").asInt();
-                Date departureDate = !tripDestinationJson.has("departureDate") ? null : new Timestamp(tripDestinationJson.get("departureDate").asLong());
-                Integer departureTime = !tripDestinationJson.has("departureTime") ? null : tripDestinationJson.get("departureTime").asInt();
+                int destinationId = tripNodeJson.get("destinationId").asInt();
+                Date arrivalDate = !tripNodeJson.has("arrivalDate") ? null : new Date(tripNodeJson.get("arrivalDate").asLong());
+                Integer arrivalTime = !tripNodeJson.has("arrivalTime") ? null : tripNodeJson.get("arrivalTime").asInt();
+                Date departureDate = !tripNodeJson.has("departureDate") ? null : new Timestamp(tripNodeJson.get("departureDate").asLong());
+                Integer departureTime = !tripNodeJson.has("departureTime") ? null : tripNodeJson.get("departureTime").asInt();
                 Destination destination = new Destination(destinationId);
                 TripDestinationLeaf tripDestination = new TripDestinationLeaf(destination, arrivalDate, arrivalTime, departureDate, departureTime);
                 tripNodes.add(tripDestination);
             }
 
-//
-//            // Check that destinations are not contiguous
-//            if (index > 0 && destinationId == tripNodes.get(tripNodes.size() - 1).getTripNodeId()) {
-//                throw new BadRequestException("Destinations are contiguous");
-//            }
-
-            index++;
         }
+
         return tripNodes;
     }
 
