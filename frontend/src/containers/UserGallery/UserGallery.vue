@@ -49,7 +49,6 @@
             :currentPhotoIndex="currentPhotoIndex"
             @displayErrorMessage="displayErrorMessage"
             @changedPermission="changedPermission"/>
-    <snackbar :snackbarModel="this.snackbarModel" @dismissSnackbar="snackbarModel.show=false"/>
     <prompt-dialog
             :dialog="promptDialog.show"
             :message="promptDialog.message"
@@ -63,7 +62,6 @@
 
   import PhotoPanel from "./PhotoPanel/PhotoPanel";
   import {deleteUserPhoto, getPhotosForUser, undoDeleteUserPhoto} from "./UserGalleryService";
-  import Snackbar from "../../components/Snackbars/Snackbar";
   import PromptDialog from "../../components/PromptDialog/PromptDialog";
   import UndoRedo from "../../components/UndoRedo/UndoRedo"
   import Command from "../../components/UndoRedo/Command";
@@ -71,7 +69,7 @@
   export default {
 
     name: "UserGallery",
-    components: {UndoRedo, PromptDialog, Snackbar, PhotoPanel},
+    components: {UndoRedo, PromptDialog, PhotoPanel},
     data() {
       return {
         userId: null,
@@ -86,13 +84,6 @@
         },                // The photo being displayed in the photo panel, resets to default values when the panel is closed.
         currentPhotoIndex: null,            // The index in the photos list of the current photo being displayed in the photo panel.
         showPhotoDialog: false,             // Whether or not to show the photo panel dialog.
-        snackbarModel: {
-          show: false, // whether the snackbar is currently shown or not
-          timeout: 5000, // how long the snackbar will be shown for, it will not update the show property automatically though
-          text: '', // the text to show in the snackbar
-          color: '', // green, red, yellow, red, etc
-          snackbarId: 0 // used to know which snackbar was manually dismissed
-        },       // The snack bar variables
         promptDialog: {
           show: false,
           onConfirm: null,
@@ -177,14 +168,24 @@
         }
       },
       /**
+       * @param {String} message the message to show in the snackbar
+       * @param {String} color the colour for the snackbar
+       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       */
+      showSnackbar(message, color, timeout) {
+        window.$vue.$emit({
+          message: message,
+          color: color,
+          timeout: timeout
+        });
+      },
+      /**
        * Displays an error message using the snack bar component.
        *
        * @param message {String} the text to be displayed.
        */
       displayErrorMessage(message) {
-        this.snackbarModel.text = message;
-        this.snackbarModel.color = "red";
-        this.snackbarModel.show = true;
+        this.showSnackbar(message, "error", 3000);
       },
       /**
        * Called after a photo is successfully deleted.
@@ -196,9 +197,7 @@
         this.photos.splice(index, 1);
         this.updatePhotoDialog(false);
         if (displaySnackbar) {
-          this.snackbarModel.text = "Photo Successfully Deleted.";
-          this.snackbarModel.color = "green";
-          this.snackbarModel.show = true;
+          this.showSnackbar("Successfully deleted the photo", "error", 3000);
         }
       },
       /**
