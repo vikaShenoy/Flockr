@@ -3,18 +3,23 @@
     <div id="map">
       <DestinationMap
               :destinations="getDestinationsCurrentlyViewing()"
+              :latitude="latitude"
+              :longitude="longitude"
+              @addCoordinates="addCoordinates"
       />
     </div>
 
     <DestinationSidebar
-      :viewOption="viewOption"
-      :yourDestinations="yourDestinations"
-      :publicDestinations="publicDestinations"
-      v-on:viewOptionChanged="viewOptionChanged"
-      v-on:addDestinationClicked="addDestinationClicked"
-      @addNewDestination="addNewDestination"
-      @refreshDestinations="refreshDestinations"
-      ref="sidebar"
+            :viewOption="viewOption"
+            :yourDestinations="yourDestinations"
+            :publicDestinations="publicDestinations"
+            v-on:viewOptionChanged="viewOptionChanged"
+            v-on:addDestinationClicked="addDestinationClicked"
+            @addNewDestination="addNewDestination"
+            @refreshDestinations="refreshDestinations"
+            ref="sidebar"
+            :latitude="latitude"
+            :longitude="longitude"
     />
     <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
@@ -40,6 +45,9 @@
     },
     data() {
       return {
+        destination: null,
+        latitude: null,
+        longitude: null,
         yourDestinations: null,
         publicDestinations: null,
         showCreateDestDialog: false,
@@ -57,6 +65,13 @@
       this.getYourDestinations();
     },
     methods: {
+      /**
+       * Sets the latitude and longitude coordinates to the given coordinates
+       */
+      addCoordinates(latitude, longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+      },
       refreshDestinations() {
         if (this.viewOption === "your") {
           this.getYourDestinations();
@@ -144,6 +159,7 @@
 
       },
       addDestDialogChanged(dialogValue) {
+        this.resetCoordinates();
         this.showCreateDestDialog = dialogValue;
       },
       /**

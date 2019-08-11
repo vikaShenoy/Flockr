@@ -87,16 +87,16 @@
           <v-flex>
             <v-flex>
               <v-text-field
-                  v-model="destination.destinationLat"
-                  :value="destination.destinationLat"
+                  v-model="latitude"
+                  :value="latitude"
                   label="Latitude"
                   :rules="latitudeRules"
                   id="latitude"></v-text-field>
             </v-flex>
             <v-flex>
               <v-text-field
-                  v-model="destination.destinationLon"
-                  :value="destination.destinationLon"
+                  v-model="longitude"
+                  :value="longitude"
                   label="Longitude"
                   :rules="longitudeRules"
                   id="longitude"></v-text-field>
@@ -148,6 +148,8 @@
       CountryPicker
     },
     props: {
+      latitude: null,
+      longitude: null
     },
     data() {
       return {
@@ -288,7 +290,7 @@
           destinationCountry: {
             countryId: null,
             countryName: null
-          }
+          },
         };
         this.$refs.form.reset();
         this.$refs.form.resetValidation();
@@ -308,6 +310,8 @@
         if (this.isValidForm) {
           this.formIsLoading = true;
           try {
+            this.destination.destinationLat = this.latitude;
+            this.destination.destinationLon = this.longitude;
             const insertedDestination = await sendAddDestination(this.destination);
             this.$emit("addNewDestination", insertedDestination);
             this.closeDialog();
