@@ -31,7 +31,7 @@ public class TripDestinationLeaf extends TripNode {
     }
 
     public TripDestinationLeaf() {
-        this.tripNodes = new ArrayList<>();
+        super(new ArrayList<>());
     }
 
     @Override

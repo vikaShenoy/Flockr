@@ -23,8 +23,8 @@ public class TripUtil {
         for (JsonNode tripDestinationJson : tripDestinationsJson) {
             if (tripDestinationJson.get("nodeType").asText().equals("TripComposite")) {
                 int tripNodeId = tripDestinationJson.get("tripNodeId").asInt();
-                TripComposite trip = new TripComposite(tripNodeId);
-//                TripComposite trip = TripComposite.find.byId(tripNodeId);
+//                TripComposite trip = new TripComposite(tripNodeId);
+                TripComposite trip = TripComposite.find.byId(tripNodeId);
                 tripNodes.add(trip);
 
             } else {

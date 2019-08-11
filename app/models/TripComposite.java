@@ -24,6 +24,7 @@ public class TripComposite extends TripNode {
     }
 
     public TripComposite(int tripNodeId) {
+        super();
         this.setTripNodeId(tripNodeId);
     }
 

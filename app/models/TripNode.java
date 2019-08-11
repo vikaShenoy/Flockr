@@ -15,7 +15,7 @@ import java.util.List;
 @Inheritance
 public abstract class TripNode extends Model {
     @Id
-    private int tripNodeId;
+    protected int tripNodeId;
 
     @OneToMany(mappedBy="parent", cascade=CascadeType.PERSIST)
     protected List<TripNode> tripNodes = new ArrayList<>();
@@ -43,6 +43,10 @@ public abstract class TripNode extends Model {
     }
 
     public TripNode() {
+    }
+
+    public TripNode(int tripNodeId) {
+        this.tripNodeId = tripNodeId;
     }
 
     public abstract List<TripNode> getTripNodes();

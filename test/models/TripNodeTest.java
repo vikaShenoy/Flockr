@@ -45,6 +45,7 @@ public class TripNodeTest {
         testSettings.put("play.evolutions.db.default.enabled", "true");
         testSettings.put("play.evolutions.db.default.autoApply", "true");
         testSettings.put("play.evolutions.db.default.autoApplyDowns", "true");
+        testSettings.put("environment_test", "test");
 
         application = Helpers.fakeApplication(testSettings);
         Helpers.start(application);
@@ -121,6 +122,7 @@ public class TripNodeTest {
         Assert.assertEquals(3, superTrip.getTripNodes().size());
 
         TripComposite afterSavedTripNode = TripComposite.find.byId(superTrip.getTripNodeId());
+
         Assert.assertEquals("Composite Trip", afterSavedTripNode.getName());
         Assert.assertEquals(3, afterSavedTripNode.getTripNodes().size());
     }
@@ -160,7 +162,7 @@ public class TripNodeTest {
 
 
         Result result = fakeClient.makeRequestWithToken("POST", (ObjectNode) newTripJson,"/api/users/" + user.getUserId() + "/trips", user.getToken());
-        Assert.assertEquals(200, result.status());
+        Assert.assertEquals(201, result.status());
 
     }
 
