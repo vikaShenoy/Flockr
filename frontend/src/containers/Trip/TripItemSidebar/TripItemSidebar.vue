@@ -14,7 +14,7 @@
       >Manage
       </v-btn>
 
-      <h2>{{ trip.tripName }}</h2>
+      <h2 id="trip-name">{{ trip.tripName }}</h2>
     </div>
 
     <div id="trip-destinations-list">
@@ -135,7 +135,7 @@
 
 
     #title {
-      height: 50px;
+      height: 80px;
       background-color: $primary;
       color: #FFF;
       z-index: 0;
@@ -189,10 +189,17 @@
 
     #manage-trip-btn {
       position: absolute;
-      left: 5px;
-      margin-top: 0px;
+      top: 0;
+      left: 0;
+    }
 
-
+    #trip-name {
+      margin-top: 30px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      margin-left: 10px;
+      margin-right: 10px;
     }
   }
 
