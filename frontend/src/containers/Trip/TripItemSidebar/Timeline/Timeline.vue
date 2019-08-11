@@ -25,23 +25,41 @@
     props: {
       trip: {
         tripNodes: Object
+      },
+      isSubTrip: {
+        type: Boolean
       }
     },
     components: {
-     TripNode 
+      TripNode
     },
     mounted() {
-      this.initSorting();
+      if (!this.isSubTrip) {
+        setTimeout(() => {
+          this.initSorting();
+        }, 0);
+      }
     },
     methods: {
       initSorting() {
-        const table = document.querySelector(".v-timeline");
-        Sortable.create(table, {
-          animation: 150,
-          onEnd: ({newIndex, oldIndex}) => {
-            this.$emit("destinationOrderChanged", {newIndex, oldIndex});
-          }
-        });
+        // const table = document.querySelector(".v-timeline");
+        // Sortable.create(table, {
+        //   animation: 150,
+        //   onEnd: ({newIndex, oldIndex}) => {
+        //     this.$emit("destinationOrderChanged", {newIndex, oldIndex});
+        //   }
+        // });
+        // Loop through each nested sortable element
+        const sortableTimelines = document.querySelectorAll(".v-timeline");
+        console.log(sortableTimelines);
+        for (let i = 0; i < sortableTimelines.length; i++) {
+          new Sortable(sortableTimelines[i], {
+            group: 'nested',
+            animation: 500,
+            fallbackOnBody: true,
+            swapThreshold: 0.65,
+          });
+        }
       }
     }
   }

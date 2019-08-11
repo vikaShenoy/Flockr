@@ -46,10 +46,12 @@
 
       </v-card>
 
-    <div v-bind:class="{ expanded: tripNode.nodeType === 'TripComposite' && tripNode.isShowing}" id="trip-nodes">
+    <div v-if="tripNode.nodeType === 'TripComposite'" v-bind:class="{ expanded: tripNode.nodeType === 'TripComposite'
+    && tripNode.isShowing}" id="trip-nodes">
       <div>
         <Timeline 
-          :trip="tripNode" 
+          :trip="tripNode"
+					isSubTrip
         />
         </div>
     </div>
