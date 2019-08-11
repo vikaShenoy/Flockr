@@ -72,10 +72,10 @@
       </div>
 
       <GmapInfoWindow
-              :options="infoOptions"
-              :position="infoWindowPos"
-              :opened="infoWindowOpen"
-              @closeclick="infoWindowOpen=false"
+        :options="infoOptions"
+        :position="infoWindowPos"
+        :opened="infoWindowOpen"
+        @closeclick="infoWindowOpen=false"
       >
         <div v-if="infoContent">
           <h4
@@ -189,7 +189,7 @@
         return endpoint(`/users/photos/${photoId}?Authorization=${localStorage.getItem("authToken")}`);
       },
       processDoubleClick(event) {
-        let { lat, lng } = event.latLng;
+        const { lat, lng } = event.latLng;
         this.$emit('coordinates-selected', {
           latitude: lat(),
           longitude: lng()
