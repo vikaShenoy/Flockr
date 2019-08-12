@@ -52,16 +52,18 @@
     },
     data() {
       return {
-        // trip: null,
         trip: {
-          tripNodeId: 5,
-          name: "Trip5",
+          tripNodeId: 6,
+          name: "Trip6",
           users: [],
           nodeType: "TripComposite",
+          users: [{
+            userId: 1
+          }],
           tripNodes: [
             {
-              tripNodeId: 4,
-              name: "Trip4",
+              tripNodeId: 5,
+              name: "Trip5",
               nodeType: "TripComposite",
               arrivalDate: "03-04-2018",
               arrivalTime: "13:00",
@@ -209,6 +211,30 @@
         this.showSuccessMessage("Successfully updated users");
       },
       /**
+       * Reorders trips and sends to backend
+       * @param {Object} indexes Indexes of what to reorder
+       */
+      async reorderTrips(indexes) {
+          const oldParentTripNode = getTripNodeById(indexes.oldParentTripNodeId, this.trip);
+          if (indexes.oldParentTripNodeId === indexes.newParentTripNodeId) {
+            const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
+            oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
+            oldParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
+            await editTrip(oldParentTripNode);
+          } else {
+            const newParentTripNode = getTripNodeById(indexes.newParentTripNodeId, this.trip);
+            const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
+            oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
+            newParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
+
+            const editTripPromises = [
+              editTrip(oldParentTripNode),
+              editTrip(newParentTripNode)
+            ];
+            await Promise.all(editTripPromises);
+					}
+      },
+      /**
        * Changes order of destination
        */
       async tripNodeOrderChanged(indexes) {
@@ -225,27 +251,7 @@
 
           const oldTripNodes = [...this.trip.tripNodes];
 
-          // Reorder elements for new trip destinations
-
-          const oldParentTripNode = getTripNodeById(indexes.oldParentTripNodeId, this.trip);
-          if (indexes.oldParentTripNodeId === indexes.newParentTripNodeId) {
-            const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
-            oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
-            oldParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
-            await editTrip(oldParentTripNode);
-          } else {
-            const newParentTripNode = getTripNodeById(indexes.newParentTripNodeId, this.trip);
-            const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
-            oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
-            newParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
-
-            const editTripPromises = [
-                editTrip(oldParentTripNode.tripNodeId, oldParentTripNode.name,
-										oldParentTripNode.tripNodes, oldParentTripNode.users),
-                editTrip(newParentTripNode.tripNodeId, newParentTripNode.name,
-										newParentTripNode.tripNodes, newParentTripNode.users)];
-            await Promise.all(editTripPromises);
-					}
+          this.reorderTrips(indexes);
 
           // const oldTrip = {
           //   tripId: this.trip.tripId,

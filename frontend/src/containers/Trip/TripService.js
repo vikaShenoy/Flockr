@@ -97,10 +97,8 @@ export async function editTrip(trip) {
    const userId = localStorage.getItem("userId");
    const authToken = localStorage.getItem("authToken");
 
-   console.log(trip.tripNodes);
 
    const transformedTripNodes = trip.tripNodes.map((tripNode) => {
-     console.log("Bing");
      if (tripNode.nodeType === "TripComposite") {
        return {
          nodeType: tripNode.nodeType,
@@ -114,15 +112,16 @@ export async function editTrip(trip) {
          departureDate: tripNode.departureDate ? moment(tripNode.departureDate).valueOf() : null,
          departureTime: tripNode.departureTime ? tripNode.departureTime === null
          || tripNode.departureTime === ""? null : moment.duration(tripNode.departureTime).asMinutes() : null,
+         nodeType: tripNode.nodeType
        }
      }
    });
-   let tripData = {
+   const tripData = {
      name: trip.name,
      tripNodes: transformedTripNodes,
    };
+
    if (trip.users) {
-     console.log("Boom");
      tripData.userIds = trip.users.map(user => user.userId);
    }
    await superagent.put(endpoint(`/users/${userId}/trips/${trip.tripNodeId}`))
@@ -147,13 +146,19 @@ export function mapTripNodesToDestinations(tripNode) {
   return destinations.flatMap(destination => destination)
 }
 
+/**
+ * Recursively finds a trip node by it's trip node ID 
+ * @param {number} tripNodeId The ID to find
+ * @param {Object} tripNode The current trip node that is being searched
+ * @return {Object} The tripNode object that was found
+ */
 export function getTripNodeById(tripNodeId, tripNode) {
 
   if (tripNode.tripNodeId === tripNodeId) {
     return tripNode;
   }
 
-  let tripNodeToFind = null; null
+  let tripNodeToFind = null;
 
   for (const currentTripNode of tripNode.tripNodes) {
     tripNodeToFind = getTripNodeById(tripNodeId, currentTripNode);

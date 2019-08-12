@@ -25,7 +25,9 @@ public class TripUtil {
         TripComposite tripComposite = null;
 
         for (TripComposite currentCompositeTrip : trips) {
-            tripComposite = currentCompositeTrip;
+            if (tripNodeId == currentCompositeTrip.getTripNodeId()) {
+                tripComposite = currentCompositeTrip;
+            }
         }
 
         if (tripComposite == null) {

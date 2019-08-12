@@ -112,20 +112,20 @@ public class PopulateTask {
         List<User> users = new ArrayList<>();
         users.add(adminUser);
 
-        TripComposite tripComposite4 = new TripComposite(tripNodes, users,"Trip4");
+        TripComposite tripComposite5 = new TripComposite(tripNodes, users,"Trip5");
         List<TripNode> tripNodes2 = new ArrayList<>();
 
-        tripNodes2.add(tripComposite4);
+        tripNodes2.add(tripComposite5);
         tripNodes2.add(tripDestination4);
 
-        TripComposite tripComposite5 = new TripComposite(tripNodes2, users, "Trip5");
+        TripComposite tripComposite6 = new TripComposite(tripNodes2, users, "Trip6");
 
         tripDestination1.save();
         tripDestination2.save();
         tripDestination3.save();
         tripDestination4.save();
-        tripComposite4.save();
         tripComposite5.save();
+        tripComposite6.save();
 
 //        TripDestinationLeaf tripDestination8 = new TripDestinationLeaf(destination8, new Date(1564358400), 50400, new Date(1564358400), 68400);
 //

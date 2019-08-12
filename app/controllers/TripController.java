@@ -268,6 +268,8 @@ public class TripController extends Controller {
       return supplyAsync(Controller::forbidden);
     }
 
+    System.out.println("The trip ID is: " + tripId);
+
     return tripRepository
         .getTripByIds(tripId, userId)
         .thenComposeAsync(
@@ -317,6 +319,9 @@ public class TripController extends Controller {
                         if (tripNodesJson != null) {
                             trip.setUsers(users);
                         }
+
+
+
 
                         return tripRepository.update(trip);
                       })
