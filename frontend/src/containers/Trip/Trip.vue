@@ -18,18 +18,12 @@
             v-on:deleteTripDestination="deleteTripDestination"
             @newUsers="newUsers"
     />
-
-    <Snackbar
-            :snackbarModel="snackbarModel"
-            v-on:dismissSnackbar="snackbarModel.show = false"
-    />
   </div>
 </template>
 
 <script>
   import TripItemSidebar from "./TripItemSidebar/TripItemSidebar.vue";
   import DestinationMap from "../../components/DestinationMap/DestinationMap";
-  import Snackbar from "../../components/Snackbars/Snackbar";
   import {
     contiguousDestinations,
     contiguousReorderedDestinations,
@@ -45,20 +39,11 @@
     components: {
       TripItemSidebar,
       DestinationMap,
-      Snackbar,
       UndoRedo
     },
     data() {
       return {
         trip: null,
-
-        snackbarModel: {
-          show: false,
-          timeout: 3000,
-          text: "",
-          color: "",
-          snackbarId: 0
-        }
       };
     },
     mounted() {
@@ -70,18 +55,22 @@
        * @param {string} errorMessage errorMessage to show to user
        */
       showError(errorMessage) {
-        this.snackbarModel.text = errorMessage;
-        this.snackbarModel.color = "error";
-        this.snackbarModel.show = true;
+        window.vue.$emit("show-snackbar", {
+          message: errorMessage,
+          color: "error",
+          timeout: 3000
+        });
       },
       /**
        * Shows a success snackbar
        * @param {string} successMessage Success message to show
        */
       showSuccessMessage(successMessage) {
-        this.snackbarModel.text = successMessage;
-        this.snackbarModel.color = "success";
-        this.snackbarModel.show = true;
+        window.vue.$emit("show-snackbar", {
+          message: successMessage,
+          color: "success",
+          timeout: 3000
+        });
       },
       /**
        * Maps tripDestinations to destinations for map

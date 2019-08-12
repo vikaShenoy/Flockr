@@ -20,7 +20,7 @@
       {{ this.destination.isPublic ? "lock_open" : "lock" }}
     </v-icon>
 
-    <v-icon color="error" class="delete-destination" v-if="this.destination.destinationOwner ===  userStore.data.userId"
+    <v-icon color="error" class="delete-destination" v-if="this.destination.destinationOwner ===  userStore.data.userId || userStore.methods.isAdmin()"
             @click="event => showDeletePrompt(event, destination.destinationId)">
       delete
     </v-icon>

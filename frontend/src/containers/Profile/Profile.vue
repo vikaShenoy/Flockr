@@ -67,7 +67,6 @@
         </div>
       </div>
     </div>
-    <Snackbar :snackbarModel="errorSnackbar" v-on:dismissSnackbar="errorSnackbar.show=false"></Snackbar>
   </div>
 </template>
 
@@ -89,13 +88,11 @@
   import {updatePassports} from "./Passports/PassportService";
   import {updateTravellerTypes} from "./TravellerTypes/TravellerTypesService";
   import {setProfilePictureToOldPicture} from "./ProfilePic/ProfilePicService";
-  import Snackbar from "../../components/Snackbars/Snackbar";
   import {endpoint} from "../../utils/endpoint";
   import {deleteUserPhoto, undoDeleteUserPhoto} from '../UserGallery/UserGalleryService';
 
   export default {
     components: {
-      Snackbar,
       ProfilePic,
       Nationalities,
       Passports,
@@ -108,14 +105,7 @@
     data() {
       return {
         userProfile: null,
-        photos: null,
-        errorSnackbar: {
-          show: false,
-          text: "",
-          color: "error",
-          duration: 3000,
-          snackbarId: 1
-        }
+        photos: null
       };
     },
     mounted() {
@@ -194,6 +184,18 @@
         redoCommand(newBasicInfo); // actually make the update
       },
       /**
+       * @param {String} message the message to show in the snackbar
+       * @param {String} color the colour for the snackbar
+       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       */
+      showSnackbar(message, color, timeout) {
+        window.vue.$emit({
+          message: message,
+          color: color,
+          timeout: timeout
+        });
+      },
+      /**
        * Called when a deletePhoto event is emitted from the photos component.
        * Removes the photo at the given index.
        *
@@ -202,9 +204,7 @@
       deletePhoto(index, shouldShowSnackbar) {
         this.userProfile.personalPhotos.splice(index, 1);
         if (shouldShowSnackbar) {
-          this.errorSnackbar.color = "success";
-          this.errorSnackbar.text = "Photo deleted successfully";
-          this.errorSnackbar.show = true;
+          this.showSnackbar("Photo deleted successfully", "success", 3000);
         }
       },
       /**
@@ -273,9 +273,7 @@
        * @param {string} text the text to display on the snackbar
        */
       showError(text) {
-        this.errorSnackbar.text = text;
-        this.errorSnackbar.show = true;
-        this.errorSnackbar.color = "error";
+        this.showSnackbar(text, "error", 3000);
       },
       /**
        * Update an image in the front end and create and store undo/redo commands

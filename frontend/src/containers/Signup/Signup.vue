@@ -127,6 +127,7 @@
         currStepperStep: 1,
         rules: rules,
         loading: false,
+        isEmailTaken: true,
         signedUpUserId: 0 // used to cache the id of the signed up user, used when admin signs up another user
       };
     },
@@ -152,8 +153,8 @@
        * Return true if all the required fields in the login info stepper are completed
        */
       isLoginInfoStepperCompleted: function () {
-        const {email, password, confirmPassword} = this;
-        return [email, password].every(s => s.length > 0) && password === confirmPassword;
+        const {email, password, confirmPassword, isEmailTaken} = this;
+        return [email, password].every(s => s.length > 0) && password === confirmPassword && !isEmailTaken;
       },
       /**
        * Return true if all the required fields in the travelling info stepper are completed
@@ -206,8 +207,10 @@
           this.emailErrors = ["Email is not valid"];
         } else if (await emailTaken(this.email)) {
           this.emailErrors = ["Email is already taken"];
+          this.isEmailTaken = true;
         } else {
           this.emailErrors = [];
+          this.isEmailTaken = false;
         }
         return this.emailErrors.length === 0;
       },

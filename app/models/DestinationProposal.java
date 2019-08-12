@@ -7,7 +7,6 @@ import io.ebean.annotation.SoftDelete;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity

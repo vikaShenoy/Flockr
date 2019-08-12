@@ -15,16 +15,6 @@
             @refreshDestinations="refreshDestinations"
             ref="sidebar"
     />
-
-    <ModifyDestinationDialog
-            :dialog="showCreateDestDialog"
-            :editMode="false"
-            v-on:addNewDestination="addNewDestination"
-            v-on:dialogChanged="addDestDialogChanged"
-    >
-
-    </ModifyDestinationDialog>
-    <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
 
@@ -39,11 +29,9 @@
     sendUndoDeleteDestination
   } from "./DestinationsService";
   import Command from "../../components/UndoRedo/Command";
-  import Snackbar from "../../components/Snackbars/Snackbar";
 
   export default {
     components: {
-      Snackbar,
       DestinationSidebar,
       DestinationMap,
       ModifyDestinationDialog
@@ -53,14 +41,7 @@
         yourDestinations: null,
         publicDestinations: null,
         showCreateDestDialog: false,
-        viewOption: "your",
-        snackbarModel: {
-          show: false,
-          text: "",
-          color: "error",
-          duration: 3000,
-          snackbarId: 1
-        }
+        viewOption: "your"
       };
     },
     mounted() {
@@ -82,7 +63,7 @@
           const yourDestinations = await getYourDestinations();
           this.yourDestinations = yourDestinations;
         } catch (e) {
-          console.log("Could not get your destinations");
+          this.showSnackbar("Could not get your destinations", "error", 3000);
         }
       },
       /**
@@ -92,7 +73,7 @@
         try {
           this.publicDestinations = await getPublicDestinations();
         } catch (e) {
-          console.log("Could not get public destinations");
+          this.showSnackbar("Could not get public destinations", "error", 3000);
         }
       },
       /**
@@ -107,6 +88,18 @@
         }
       },
       /**
+       * @param {String} message the message to show in the snackbar
+       * @param {String} color the colour for the snackbar
+       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       */
+      showSnackbar(message, color, timeout) {
+        window.vue.$emit({
+          message: message,
+          color: color,
+          timeout: timeout
+        });
+      },
+      /**
        * Shows create destination dialog
        */
       addDestinationClicked() {
@@ -118,15 +111,17 @@
        */
       addNewDestination(destination) {
         this.yourDestinations.push(destination);
+        this.getYourDestinations();
+        this.getPublicDestinations();
 
         const undoCommand = async (destination) => {
           try {
             await sendDeleteDestination(destination.destinationId);
             this.yourDestinations.splice(this.yourDestinations.indexOf(destination));
+            this.getYourDestinations();
+            this.getPublicDestinations();
           } catch (error) {
-            this.snackbarModel.text = error.message;
-            this.snackbarModel.color = "error";
-            this.snackbarModel.show = true;
+            this.showSnackbar("Could not undo the action", "error", 3000);
           }
         };
 
@@ -134,11 +129,11 @@
           try {
             await sendUndoDeleteDestination(destination.destinationId);
             this.yourDestinations.push(destination);
+            this.getYourDestinations();
+            this.getPublicDestinations();
             [].shift()
           } catch (error) {
-            this.snackbarModel.text = error.message;
-            this.snackbarModel.color = "error";
-            this.snackbarModel.show = true;
+            this.showSnackbar("Could not redo the action", "error", 3000);
           }
         };
 

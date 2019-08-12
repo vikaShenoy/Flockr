@@ -104,7 +104,7 @@
             <td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
               <v-chip class="table-chip" v-for="nationality in props.item.nationalities"
                       v-bind:key="nationality">
-                <CountryDisplay v-bind:country="nationality"></CountryDisplay>
+                <CountryDisplay v-bind:country="nationality.nationalityCountry"></CountryDisplay>
               </v-chip>
             </td>
             <td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
@@ -221,7 +221,7 @@
               .filter(traveller => traveller.userId !== Number(userId))
               .map(traveller => {
                 const age = moment().diff(moment(traveller.dateOfBirth), "years");
-                const nationalityNames = traveller.nationalities.map(nationality => nationality.nationalityName);
+                const nationalityNames = traveller.nationalities.map(nationality => nationality);
                 const travellerTypes = traveller.travellerTypes.map(travellerType => travellerType.travellerTypeName);
                 return {...traveller, age, nationalities: nationalityNames, travellerTypes}
               });

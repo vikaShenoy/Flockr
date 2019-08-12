@@ -17,7 +17,12 @@ Vue.use(VueGoogleMaps, {
 
 Vue.config.productionTip = false;
 
-new Vue({
+/**
+ * Save a reference to the Vue instance so that it's accessible from any
+ * child component. Used by child components that want to show something
+ * in a Snackbar with minimum overhead and code duplication.
+ */
+window.vue = new Vue({
   el: "#app",
   router,
   render: h => h(App),
