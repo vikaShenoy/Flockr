@@ -37,7 +37,7 @@
     getTrip,
     transformTripResponse,
     mapTripNodesToDestinations,
-    findDeepestNodeLevel
+		getTripNodeById,
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command"
@@ -225,32 +225,47 @@
        */
       async tripNodeOrderChanged(indexes) {
         console.log(indexes);
-        return;
         try {
           const tripId = this.$route.params.tripId;
 
-          if (contiguousReorderedDestinations(this.trip.tripDestinations, indexes.newIndex, indexes.oldIndex)) {
-
+          if (contiguousReorderedDestinations(this.trip.tripNodes, indexes)) {
             this.showError("Cannot have contiguous destinations");
-            const tripDestinations = [...this.trip.tripDestinations];
-            this.trip.tripDestinations = [];
+            const tripNodes = [...this.trip.tripNodes];
+            this.trip.tripNodes = [];
             setTimeout(() => {
-              this.trip.tripDestinations = tripDestinations;
+              this.trip.tripNodes = tripNodes;
             }, 0);
-
-            return
           }
-          const oldTripDestinations = [...this.trip.tripDestinations];
+
+          const oldTripNodes = [...this.trip.tripNodes];
 
           // Reorder elements for new trip destinations
-          const temp = {...this.trip.tripDestinations[indexes.oldIndex]};
-          this.trip.tripDestinations.splice(indexes.oldIndex, 1);
-          this.trip.tripDestinations.splice(indexes.newIndex, 0, temp);
+
+          const oldParentTripNode = getTripNodeById(indexes.oldParentTripNodeId, this.trip);
+          console.log("Returned from function= " + oldParentTripNode);
+          if (indexes.oldParentTripNodeId === indexes.newParentTripNodeId) {
+            const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
+            oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
+            oldParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
+            await editTrip(oldParentTripNode.tripNodeId, oldParentTripNode.name, oldParentTripNode.tripNodes,
+                oldParentTripNode.users);
+          } else {
+            const newParentTripNode = getTripNodeById(indexes.newParentTripNodeId, this.trip);
+            const temp = {...newParentTripNode.tripNodes[indexes.oldIndex]};
+            oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
+            newParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
+            await editTrip(oldParentTripNode.tripNodeId, oldParentTripNode.name, oldParentTripNode.tripNodes,
+                oldParentTripNode.users);
+            await editTrip(newParentTripNode.tripNodeId, newParentTripNode.name, newParentTripNode.tripNodes,
+                newParentTripNode.users);
+					}
+
+          console.log(this.trip.tripNodes);
 
           const oldTrip = {
             tripId: this.trip.tripId,
             tripName: this.trip.tripName,
-            tripDestinations: oldTripDestinations,
+            tripDestinations: oldTripNodes,
             users: this.trip.users
           };
 
@@ -263,9 +278,9 @@
 
           this.addEditTripCommand(oldTrip, newTrip);
 
-          await editTrip(tripId, this.trip.tripName, this.trip.tripDestinations, this.trip.users);
           this.showSuccessMessage("Successfully changed order");
         } catch (e) {
+          console.log(e);
           this.showError("Could not change order");
         }
       },

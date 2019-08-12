@@ -54,14 +54,14 @@
             fallbackOnBody: true,
             swapThreshold: 0.65,
 						onEnd: (event) => {
-              const previousParentTripNodeId = Number(event.from.getAttribute("data-trip-node-id"));
-							const currentParentTripNodeId = Number(event.to.getAttribute("data-trip-node-id"));
+              const oldParentTripNodeId = Number(event.from.getAttribute("data-trip-node-id"));
+							const newParentTripNodeId = Number(event.to.getAttribute("data-trip-node-id"));
 							const newIndex = event.newIndex;
 							const oldIndex = event.oldIndex;
 
 							this.$emit("tripNodeOrderChanged", {
-                previousParentTripNodeId,
-								currentParentTripNodeId,
+                oldParentTripNodeId,
+								newParentTripNodeId,
 								newIndex,
 								oldIndex
 							});

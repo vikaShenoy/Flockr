@@ -72,14 +72,16 @@ export function contiguousDestinations(tripDestinations) {
  * @param {number} oldIndex index to be swapped by
  * @returns {boolean} True if the trip destinations are contiguous, false otherwise
  */
-export function contiguousReorderedDestinations(tripDestinations, newIndex, oldIndex) {
+export function contiguousReorderedDestinations(tripNodes, indexes) {
 
-  const copiedTripDestinations = [...tripDestinations];
-  //[copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
-  let temp = copiedTripDestinations[oldIndex];
-  copiedTripDestinations.splice(oldIndex, 1);
-  copiedTripDestinations.splice(newIndex, 0, temp);
-  return contiguousDestinations(copiedTripDestinations);
+  // TODO - needs to be implemented. See task 5867.
+  // const copiedTripDestinations = [...tripDestinations];
+  // //[copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
+  // let temp = copiedTripDestinations[oldIndex];
+  // copiedTripDestinations.splice(oldIndex, 1);
+  // copiedTripDestinations.splice(newIndex, 0, temp);
+  // return contiguousDestinations(copiedTripDestinations);
+  return false;
 }
 
 
@@ -130,6 +132,26 @@ export function mapTripNodesToDestinations(tripNode) {
 
   return destinations.flatMap(destination => destination)
 }
+
+export function getTripNodeById(tripNodeId, tripNode) {
+  console.log("TripNodeId = " + tripNode.tripNodeId);
+
+  if (tripNode.tripNodeId === tripNodeId) {
+    console.log("BOOM");
+    return tripNode;
+  }
+
+  let tripNodeToFind;
+
+  for (const currentTripNode of tripNode.tripNodes) {
+    console.log(currentTripNode);
+    tripNodeToFind = getTripNodeById(tripNodeId, currentTripNode);
+  }
+
+  return tripNodeToFind;
+}
+
+
 
 
 
