@@ -33,6 +33,7 @@ export function transformTripResponse(trip) {
   return {
     tripId: trip.tripId,
     tripName: trip.tripName,
+    users: trip.users,
     tripDestinations: trip.tripDestinations.map(tripDestination => {
       return {
         tripDestinationId: tripDestination.tripDestinationId,
@@ -91,7 +92,7 @@ export function contiguousReorderedDestinations(tripDestinations, newIndex, oldI
  * @param {string} tripName - The edited trip name
  * @param {Object[]} tripDestinations - The edited trip destinations
  */
-export async function editTrip(tripId, tripName, tripDestinations) {
+export async function editTrip(tripId, tripName, tripDestinations, users) {
    const userId = localStorage.getItem("userId");
 
    const transformedTripDestinations = tripDestinations.map(tripDestination  => ({
@@ -108,7 +109,8 @@ export async function editTrip(tripId, tripName, tripDestinations) {
     .set("Authorization", authToken)
     .send({
       tripName,
-      tripDestinations: transformedTripDestinations
+      tripDestinations: transformedTripDestinations,
+      userIds: users.map(user => user.userId)
     });
 
 }

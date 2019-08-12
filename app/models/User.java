@@ -49,7 +49,7 @@ public class User extends Model {
     @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
     public List<Role> roles;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
     private List<Trip> trips;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

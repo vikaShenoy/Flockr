@@ -66,6 +66,7 @@
         try {
           await command.execute();
           this.undoStack.push(command);
+          console.log("I made it here");
           this.showSuccessSnackbar("Successfully Re-did action");
         } catch (e) {
           this.showErrorSnackbar("Could not undo action");
