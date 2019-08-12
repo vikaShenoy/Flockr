@@ -195,7 +195,7 @@
     float: right;
 
     #title {
-      height: 125px;
+      height: 100px;
       background-color: $primary;
       color: $darker-white;
       text-align: center;
@@ -226,7 +226,7 @@
 
     #destinations-list {
       height: calc(100% - 100px);
-      margin-top: 125px;
+      margin-top: 100px;
     }
 
     #spinner {
