@@ -3,7 +3,7 @@
     <Navbar/>
     <Sidebar/>
     <v-content>
-      <v-container fluid fill-height>
+      <v-container fluid fill-height id="container">
         <v-layout>
           <v-flex>
             <GlobalSnackbar />
@@ -38,6 +38,10 @@
 <style lang="scss">
   @import url("https://fonts.googleapis.com/css?family=Roboto");
   @import "../../styles/_defaults.scss";
+
+  #container {
+    padding: 0;
+  }
 
 </style>
 

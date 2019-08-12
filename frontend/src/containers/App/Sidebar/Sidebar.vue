@@ -2,6 +2,7 @@
   <v-navigation-drawer
     permanent
     :mini-variant="isCollapsed"
+    :width="240"
     :style="{'margin-top': '60px'}"
     app
     id="sidebar"
