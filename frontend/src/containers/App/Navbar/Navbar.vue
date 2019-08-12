@@ -15,6 +15,7 @@
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
+    position: fixed;
     padding-left: 15px;
     width: 100%;
     background-color: $secondary;
