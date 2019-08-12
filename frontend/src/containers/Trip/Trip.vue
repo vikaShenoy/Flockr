@@ -216,13 +216,24 @@
        */
       async reorderTrips(indexes) {
           const oldParentTripNode = getTripNodeById(indexes.oldParentTripNodeId, this.trip);
+          const oldParentTripNodes = [...oldParentTripNode.tripNodes];
+          // If indexes of parent trip nodes are the same, we only need to do one edit
           if (indexes.oldParentTripNodeId === indexes.newParentTripNodeId) {
             const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
             oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
             oldParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
             await editTrip(oldParentTripNode);
+
+            // Drag and drop for one level of editing
+            this.addEditTripCommand({
+              ...this.trip,
+              tripNodes: oldParentTripNodes               
+            }, this.trip);
           } else {
+            // If parent trip nodes are different, we need to edit two trips
             const newParentTripNode = getTripNodeById(indexes.newParentTripNodeId, this.trip);
+            const newParentTripNodes = [...newParentTripNode.tripNodes];
+
             const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
             oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
             newParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
@@ -231,6 +242,20 @@
               editTrip(oldParentTripNode),
               editTrip(newParentTripNode)
             ];
+
+            // Drag and drop for trip node being dragged
+            this.addEditTripCommand({
+              ...this.trip,
+              tripNodes: oldParentTripNodes               
+            }, this.trip);
+
+            // Drag and drop for trip node being dragged into
+            // Drag and drop for trip node being dragged
+            this.addEditTripCommand({
+              ...this.trip,
+              tripNodes: newParentTripNodes               
+            }, this.trip);
+
             await Promise.all(editTripPromises);
 					}
       },
@@ -249,27 +274,8 @@
             }, 0);
           }
 
-          const oldTripNodes = [...this.trip.tripNodes];
-
           this.reorderTrips(indexes);
-
-          // const oldTrip = {
-          //   tripId: this.trip.tripId,
-          //   tripName: this.trip.tripName,
-          //   tripDestinations: oldTripNodes,
-          //   users: this.trip.users
-          // };
-					//
-          // const newTrip = {
-          //   tripId: this.trip.tripId,
-          //   tripName: this.trip.tripName,
-          //   tripDestinations: this.trip.tripDestinations,
-          //   users: this.trip.users
-          // };
-					//
-          // this.addEditTripCommand(oldTrip, newTrip);
-					//
-          // this.showSuccessMessage("Successfully changed order");
+          this.showSuccessMessage("Successfully changed order");
         } catch (e) {
           console.log(e);
           this.showError("Could not change order");
@@ -277,16 +283,17 @@
       },
       /**
        * Adds an edit trip command to the undo stack
+       * @param {Object} oldTrip The oldTrip to go back to when pressing undo
+       * @param {Object} newTrip The new trip to redo to when pressing redo
        */
       addEditTripCommand(oldTrip, newTrip) {
         const undoCommand = async (oldTrip) => {
-          console.log(oldTrip);
-          await editTrip(oldTrip.tripId, oldTrip.tripName, oldTrip.tripDestinations, oldTrip.users);
+          await editTrip(oldTrip);
           this.trip = oldTrip;
         };
 
         const redoCommand = async (newTrip) => {
-          await editTrip(newTrip.tripId, newTrip.tripName, newTrip.tripDestinations, oldTrip.users);
+          await editTrip(newTrip);
           this.trip = newTrip;
         };
 
