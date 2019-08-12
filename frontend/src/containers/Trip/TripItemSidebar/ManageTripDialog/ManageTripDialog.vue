@@ -109,7 +109,6 @@ export default {
   data() {
     return {
       isShowingDialog: false,
-      // copy selected users
       selectedUsers: [],
       users: [],
       isLoading: false,
@@ -169,7 +168,7 @@ export default {
   },
   watch: {
     /**
-     * Refreshses selectedUsers when opening up modal
+     * Refreshes selectedUsers when opening up modal
      */
     isShowingDialog(value) {
       if (value) {

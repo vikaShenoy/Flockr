@@ -63,7 +63,12 @@ public class TripController extends Controller {
      *
      * @param userId  id of the user to add a trip for.
      * @param request Used to retrieve trip JSON.
-     * @return 200 status code if successful. 400 if bad request error.
+     * @return A completion stage with an HTTP result which can be
+     *  - 200 - Trip was successfully created
+     *  - 403 - User does not have permission to add trip
+     *  - 400 - Problem with request body
+     *  - 404 - User or trip could not be found
+     *  - 500 - Any other internal server error
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
@@ -254,6 +259,9 @@ public class TripController extends Controller {
      * @param userId  The id of the user that the trip belongs to
      * @return Returns the http response which can be
      * - 200 - Trip was updated successfully
+     * - 401 - User was not authenticated
+     * - 403 - User does not have permission to create the trip
+     * - 404 - User or trip could not be found
      * - 400 - there was an error with the request.
      * - 500 - there was an internal server error.
      */
@@ -278,13 +286,9 @@ public class TripController extends Controller {
                     List<TripDestination> tripDestinations;
                     List<User> users;
                     try {
-                        long startTime = System.currentTimeMillis();
                         List<User> allUsers = User.find.all();
-                        User user = User.find.byId(userId);
                         tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
                         users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
-
-
                     } catch (BadRequestException e) {
                         throw new CompletionException(new BadRequestException());
                     }  catch (ForbiddenRequestException e) {
@@ -293,7 +297,6 @@ public class TripController extends Controller {
                        return CompletableFuture.completedFuture(notFound(e.getMessage()));
                    }
 
-                    long startTime = System.currentTimeMillis();
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
                             tripDestinations);
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))

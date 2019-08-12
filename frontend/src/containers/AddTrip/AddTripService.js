@@ -34,6 +34,10 @@ export async function addTrip(tripName, tripDestinations, userIds) {
   return res.body;
 }
 
+/**
+ * Gets all users
+ * @returns {Array} Returns a list of users
+ */
 export async function getAllUsers() {
   const authToken = localStorage.getItem("authToken");
   const res = await superagent.get(endpoint(`/users`))

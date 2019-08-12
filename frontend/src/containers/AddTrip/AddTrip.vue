@@ -84,10 +84,12 @@
       };
     },
     mounted() {
-      console.log("I made it here");
       this.getUsers();
     },
     methods: {
+      /**
+       * Gets all users and filters out the logged in user
+       */
       async getUsers() {
         const users = (await getAllUsers())
           .filter(user => user.userId !== UserStore.data.userId)
@@ -143,6 +145,9 @@
         const tripId = await addTrip(this.tripName, this.tripDestinations, userIds);
         this.$emit("new-trip-was-added", tripId);
       },
+      /**
+       * Formats a users full name by their first name and last name
+       */
       formatName(user) {
         return `${user.firstName} ${user.lastName}`;
       }

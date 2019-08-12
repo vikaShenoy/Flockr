@@ -72,7 +72,6 @@ public class TripUtil {
                 }
             }
 
-
             if (currentUser == null) {
                 throw new NotFoundException("User not found");
             }

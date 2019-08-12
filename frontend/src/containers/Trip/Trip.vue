@@ -168,7 +168,6 @@
        */
       addEditTripCommand(oldTrip, newTrip) {
         const undoCommand = async (oldTrip) => {
-          console.log(oldTrip);
           await editTrip(oldTrip.tripId, oldTrip.tripName, oldTrip.tripDestinations, oldTrip.users);
           this.trip = oldTrip;
         };
