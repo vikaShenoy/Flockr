@@ -128,7 +128,7 @@
        * @param message {String} the text to be displayed.
        */
       displayErrorMessage(message) {
-        window.vue.$emit("show-snackbar", {
+        this.$root.$emit("show-snackbar", {
           message: message,
           color: "error",
           timeout: 5000

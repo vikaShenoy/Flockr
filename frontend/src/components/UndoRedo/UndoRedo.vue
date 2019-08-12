@@ -82,7 +82,7 @@
        * Shows a success snackbar
        */
       showSuccessSnackbar(text) {
-        window.vue.$emit("show-snackbar", {
+        this.$root.$emit("show-snackbar", {
           message: text,
           color: "success",
           timeout: 5000
@@ -92,7 +92,7 @@
        * Shows an error snackbar
        */
       showErrorSnackbar(text) {
-        window.vue.$emit("show-snackbar", {
+        this.$root.$emit("show-snackbar", {
           message: text,
           color: "error",
           timeout: 5000

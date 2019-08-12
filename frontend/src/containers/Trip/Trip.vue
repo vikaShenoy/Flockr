@@ -50,14 +50,14 @@
     },
     methods: {
       showError(errorMessage) {
-        window.vue.$emit("show-snackbar", {
+        this.$root.$emit("show-snackbar", {
           message: errorMessage,
           color: "error",
           timeout: 3000
         });
       },
       showSuccessMessage(successMessage) {
-        window.vue.$emit("show-snackbar", {
+        this.$root.$emit("show-snackbar", {
           message: successMessage,
           color: "success",
           timeout: 3000

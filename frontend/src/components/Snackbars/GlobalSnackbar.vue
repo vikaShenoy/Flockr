@@ -2,14 +2,11 @@
 // This is so that it can listen for the events emitted by the Vue
 // instance.
 //
-// main.js
-// window.vue = new Vue({...});
-//
 // (Any component under the App tree).vue
-// window.vue.$emit('show-snackbar', {options...})
+// this.$root.$emit('show-snackbar', {options...})
 //
 // GlobalSnackbar.vue
-// window.$on('show-snackbar', // handle this)
+// this.$root.$on('show-snackbar', // handle this)
 
 <template>
   <v-snackbar
@@ -54,18 +51,7 @@
       }
     },
     mounted() {
-      if (window.vue) {
-        window.vue.$on('show-snackbar', this.handleShowSnackbar);
-      } else {
-        this.vueInWindowTimeout = setTimeout(function() {
-            if (window.vue) {
-              window.vue.$on('show-snackbar', this.handleShowSnackbar);
-              clearInterval(this.vueInWindowTimeout);
-            } else {
-              console.log('Did not find vue in the Window object, retrying soon to attach snackbar event listener');
-            }
-          }, 2000);
-      }
+      this.$root.$on('show-snackbar', this.handleShowSnackbar);
     }
   }
 </script>
