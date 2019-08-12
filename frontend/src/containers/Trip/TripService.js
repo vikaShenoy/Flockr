@@ -86,34 +86,48 @@ export function contiguousReorderedDestinations(tripNodes, indexes) {
 
 
 
-
 /**
  * Edit a trip. Send a request to the edit trip backend endpoint with
  * the trip data to edit.
  * @param {number} tripId - The ID of the trip to edit
  * @param {string} tripName - The edited trip name
- * @param {Object[]} tripDestinations - The edited trip destinations
+ * @param {Object[]} tripNodes - The edited trip destinations
  */
-export async function editTrip(tripId, tripName, tripDestinations, users) {
+export async function editTrip(trip) {
    const userId = localStorage.getItem("userId");
+   const authToken = localStorage.getItem("authToken");
 
-   const transformedTripDestinations = tripDestinations.map(tripDestination  => ({
-    destinationId: tripDestination.destination.destinationId,
-    arrivalDate: tripDestination.arrivalDate ? moment(tripDestination.arrivalDate).valueOf() : null,
-    arrivalTime: tripDestination.arrivalTime ? moment.duration(tripDestination.arrivalTime).asMinutes() : null,
-    departureDate: tripDestination.departureDate ? moment(tripDestination.departureDate).valueOf() : null,
-    departureTime: tripDestination.departureTime ? tripDestination.departureTime === null || tripDestination.departureTime === ""? null : moment.duration(tripDestination.departureTime).asMinutes() : null,
-   })); 
+   console.log(trip.tripNodes);
 
-  const authToken = localStorage.getItem("authToken");
-
-  await superagent.put(endpoint(`/users/${userId}/trips/${tripId}`))
+   const transformedTripNodes = trip.tripNodes.map((tripNode) => {
+     console.log("Bing");
+     if (tripNode.nodeType === "TripComposite") {
+       return {
+         nodeType: tripNode.nodeType,
+         tripNodeId: tripNode.tripNodeId
+       };
+      } else {
+       return {
+         destinationId: tripNode.destination.destinationId,
+         arrivalDate: tripNode.arrivalDate ? moment(tripNode.arrivalDate).valueOf() : null,
+         arrivalTime: tripNode.arrivalTime ? moment.duration(tripNode.arrivalTime).asMinutes() : null,
+         departureDate: tripNode.departureDate ? moment(tripNode.departureDate).valueOf() : null,
+         departureTime: tripNode.departureTime ? tripNode.departureTime === null
+         || tripNode.departureTime === ""? null : moment.duration(tripNode.departureTime).asMinutes() : null,
+       }
+     }
+   });
+   let tripData = {
+     name: trip.name,
+     tripNodes: transformedTripNodes,
+   };
+   if (trip.users) {
+     console.log("Boom");
+     tripData.userIds = trip.users.map(user => user.userId);
+   }
+   await superagent.put(endpoint(`/users/${userId}/trips/${trip.tripNodeId}`))
     .set("Authorization", authToken)
-    .send({
-      tripName,
-      tripDestinations: transformedTripDestinations,
-      userIds: users.map(user => user.userId)
-    });
+    .send(tripData);
 }
 
 /**
@@ -134,18 +148,16 @@ export function mapTripNodesToDestinations(tripNode) {
 }
 
 export function getTripNodeById(tripNodeId, tripNode) {
-  console.log("TripNodeId = " + tripNode.tripNodeId);
 
   if (tripNode.tripNodeId === tripNodeId) {
-    console.log("BOOM");
     return tripNode;
   }
 
-  let tripNodeToFind;
+  let tripNodeToFind = null; null
 
   for (const currentTripNode of tripNode.tripNodes) {
-    console.log(currentTripNode);
     tripNodeToFind = getTripNodeById(tripNodeId, currentTripNode);
+    if (tripNodeToFind) return tripNodeToFind
   }
 
   return tripNodeToFind;

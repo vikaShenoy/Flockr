@@ -138,7 +138,14 @@ public class TripUtil {
      * Gets users from user IDS for editing a trip
      * @return the list of users
      */
-    public List<User> getUsersFromJsonEdit(JsonNode userIdsJson, List<User> allUsers) throws NotFoundException, ForbiddenRequestException {
+    public List<User> getUsersFromJsonEdit(JsonNode userIdsJson, List<User> allUsers) throws NotFoundException,
+            ForbiddenRequestException {
+        // Used in the case where a user is editing a trip node and doesn't send any user ids.
+        // Not ideal but this is the simplest way to handle it.
+        if (userIdsJson == null) {
+            return null;
+        }
+
         List<User> users = new ArrayList<>();
 
         for (JsonNode userIdJson : userIdsJson) {

@@ -81,35 +81,88 @@ public class PopulateTask {
         District district = new District("Canterbury", country);
         district.save();
 
-        Destination christchurch = new Destination("Christchurch", destinationType, district, 0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
-        christchurch.save();
+        Destination destination1 = new Destination("destination3", destinationType, district, 0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination1.save();
 
-        Destination westMelton = new Destination("West Melton", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
-        westMelton.save();
+        Destination destination2 = new Destination("destination5", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination2.save();
 
-        Destination helkett = new Destination("Helkett", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
-        helkett.save();
+        Destination destination3 = new Destination("destination6", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination3.save();
+
+        Destination destination4 = new Destination("destination7", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination4.save();
+
+        Destination destination8 = new Destination("destination8", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination8.save();
 
         // Creating a trip
 
-        TripDestinationLeaf tripChristchurch = new TripDestinationLeaf(christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
-        TripDestinationLeaf tripWestMelton = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
-        TripDestinationLeaf tripHelkett = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
-        tripChristchurch.save();
-        tripWestMelton.save();
-        tripHelkett.save();
-        ArrayList<TripNode> tripNodes = new ArrayList<>();
-        tripNodes.add(tripChristchurch);
-        tripNodes.add(tripWestMelton);
+        TripDestinationLeaf tripDestination1 = new TripDestinationLeaf(destination1, new Date(1564272000), 43200, new Date(1564358400), 43200);
+        TripDestinationLeaf tripDestination2 = new TripDestinationLeaf(destination2, new Date(1564272000), 43200, new Date(1564358400), 43200);
+        TripDestinationLeaf tripDestination3 = new TripDestinationLeaf(destination3, new Date(1564358400), 50400, new Date(1564358400), 68400);
+
+        TripDestinationLeaf tripDestination4 = new TripDestinationLeaf(destination4, new Date(1564358400), 50400, new Date(1564358400), 68400);
+
+        List<TripNode> tripNodes = new ArrayList<>();
+        tripNodes.add(tripDestination1);
+        tripNodes.add(tripDestination2);
+        tripNodes.add(tripDestination3);
+
         List<User> users = new ArrayList<>();
         users.add(adminUser);
-        TripComposite trip = new TripComposite(tripNodes, users, "Testing Trip 1");
-        trip.save();
-        tripNodes.remove(tripWestMelton);
-        tripNodes.add(tripHelkett);
 
-        TripComposite trip2 = new TripComposite(tripNodes, users, "Find the family graves");
-        trip2.save();
+        TripComposite tripComposite4 = new TripComposite(tripNodes, users,"Trip4");
+        List<TripNode> tripNodes2 = new ArrayList<>();
+
+        tripNodes2.add(tripComposite4);
+        tripNodes2.add(tripDestination4);
+
+        TripComposite tripComposite5 = new TripComposite(tripNodes2, users, "Trip5");
+
+        tripDestination1.save();
+        tripDestination2.save();
+        tripDestination3.save();
+        tripDestination4.save();
+        tripComposite4.save();
+        tripComposite5.save();
+
+//        TripDestinationLeaf tripDestination8 = new TripDestinationLeaf(destination8, new Date(1564358400), 50400, new Date(1564358400), 68400);
+//
+//        List<TripNode> tripNodes2 = new ArrayList<>();
+//        tripNodes2.add(tripDestination3);
+//        tripNodes2.add(tripDestination4);
+//        tripNodes2.add(trip5);
+//
+//        TripComposite trip2 = new TripComposite(tripNodes2, users, "Trip2");
+//        trip2.save();
+//
+//        tripDestination3.save();
+//        tripDestination4.save();
+//        tripDestination5.save();
+//        tripDestination6.save();
+//        tripDestination7.save();
+//        tripDestination8.save();
+//
+//        List<User> users = new ArrayList<>();
+//
+//        List<TripNode> tripNodes5 = new ArrayList<>();
+//        tripNodes5.add(tripDestination6);
+//        tripNodes5.add(tripDestination7);
+//
+//        TripComposite trip5 = new TripComposite(tripNodes5, users, "Trip5");
+//        trip5.save();
+//
+//        users.add(adminUser);
+//
+//        List<TripNode> tripNodes1 = new ArrayList<>();
+//
+//        tripNodes1.add(trip2);
+//        tripNodes1.add(tripDestination8);
+//
+//        TripComposite trip = new TripComposite(tripNodes1, users, "Trip1");
+//        trip.save();
+
         System.out.println("Ended populating data");
     }, this.executionContext);
    }

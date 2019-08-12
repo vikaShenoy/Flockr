@@ -54,14 +54,14 @@
       return {
         // trip: null,
         trip: {
-          tripNodeId: 69,
-          name: "My trip",
+          tripNodeId: 5,
+          name: "Trip5",
           users: [],
           nodeType: "TripComposite",
           tripNodes: [
             {
-              tripNodeId: 1,
-              name: "My favourite nested sub trip",
+              tripNodeId: 4,
+              name: "Trip4",
               nodeType: "TripComposite",
               arrivalDate: "03-04-2018",
               arrivalTime: "13:00",
@@ -70,76 +70,64 @@
               isShowing: false,
               tripNodes: [
                 {
+                  tripNodeId: 1,
+                  nodeType: "TripDestinationLeaf",
+                  name: "Destination1",
+                  arrivalDate: "03-04-2018",
+                  arrivalTime: "13:00",
+                  departureDate: "04-04-2018",
+                  tripNodes: [],
+                  departureTime: "13:00",
+                  destination: {
+                    destinationId: 1,
+                    destinationLat: 34,
+                    destinationLon: 31
+                  }
+                },
+								{
                   tripNodeId: 2,
                   nodeType: "TripDestinationLeaf",
-                  name: "New Zealand",
+                  name: "Destination2",
                   arrivalDate: "03-04-2018",
                   arrivalTime: "13:00",
                   departureDate: "04-04-2018",
                   tripNodes: [],
                   departureTime: "13:00",
-                  destination: {
-                    destinationId: 1,
-                    destinationLat: 34,
-                    destinationLon: 31
-                  }
-                },
-              {
-              tripNodeId: 3,
-              name: "My favourite nested sub trip",
-              nodeType: "TripComposite",
-              arrivalDate: "03-04-2018",
-              arrivalTime: "13:00",
-              departureDate: "03-05-2018",
-              departureTime: "14:00",
-              isShowing: false,
-              tripNodes: [
-                {
-                  tripNodeId: 4,
-                  nodeType: "TripDestinationLeaf",
-                  name: "New Zealand",
-                  arrivalDate: "03-04-2018",
-                  arrivalTime: "13:00",
-                  departureDate: "04-04-2018",
-                  tripNodes: [],
-                  departureTime: "13:00",
-                  destination: {
-                    destinationId: 1,
-                    destinationLat: 34,
-                    destinationLon: 31
-                  }
-                },
-                {
-                  tripNodeId: 5,
-                  nodeType: "TripDestinationLeaf",
-                  name: "Some place",
-                  arrivalDate: "04-04-2018",
-                  arrivalTime: "13:00",
-                  departureDate: "3-05-2018",
-                  departureTime: "14:00",
-                  tripNodes: [],
                   destination: {
                     destinationId: 2,
-                    destinationLat: 69,
-                    destinationLon: 34
+                    destinationLat: 34,
+                    destinationLon: 31
                   }
-                }
-              ]
-            },
- 
+								},
+                {
+                  tripNodeId: 3,
+                  nodeType: "TripDestinationLeaf",
+                  name: "Destination3",
+                  arrivalDate: "03-04-2018",
+                  arrivalTime: "13:00",
+                  departureDate: "04-04-2018",
+                  tripNodes: [],
+                  departureTime: "13:00",
+                  destination: {
+                    destinationId: 3,
+                    destinationLat: 34,
+                    destinationLon: 31
+                  }
+                },
+
               ]
             },
             {
-              tripNodeId: 6,
+              tripNodeId: 4,
               nodeType: "TripDestinationLeaf",
-              name: "Some other place",
+              name: "Destination4",
               arrivalDate: "04-06-2018",
               arrivalTime: "13:00",
               departureDate: "3-09-2018",
               tripNodes: [],
               departureTime: "14:00",
               destination: {
-                destinationId: 3,
+                destinationId: 4,
                 destinationLat: 59,
                 destinationLon: 36
               }
@@ -224,9 +212,7 @@
        * Changes order of destination
        */
       async tripNodeOrderChanged(indexes) {
-        console.log(indexes);
         try {
-          const tripId = this.$route.params.tripId;
 
           if (contiguousReorderedDestinations(this.trip.tripNodes, indexes)) {
             this.showError("Cannot have contiguous destinations");
@@ -242,43 +228,42 @@
           // Reorder elements for new trip destinations
 
           const oldParentTripNode = getTripNodeById(indexes.oldParentTripNodeId, this.trip);
-          console.log("Returned from function= " + oldParentTripNode);
           if (indexes.oldParentTripNodeId === indexes.newParentTripNodeId) {
             const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
             oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
             oldParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
-            await editTrip(oldParentTripNode.tripNodeId, oldParentTripNode.name, oldParentTripNode.tripNodes,
-                oldParentTripNode.users);
+            await editTrip(oldParentTripNode);
           } else {
             const newParentTripNode = getTripNodeById(indexes.newParentTripNodeId, this.trip);
-            const temp = {...newParentTripNode.tripNodes[indexes.oldIndex]};
+            const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
             oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
             newParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
-            await editTrip(oldParentTripNode.tripNodeId, oldParentTripNode.name, oldParentTripNode.tripNodes,
-                oldParentTripNode.users);
-            await editTrip(newParentTripNode.tripNodeId, newParentTripNode.name, newParentTripNode.tripNodes,
-                newParentTripNode.users);
+
+            const editTripPromises = [
+                editTrip(oldParentTripNode.tripNodeId, oldParentTripNode.name,
+										oldParentTripNode.tripNodes, oldParentTripNode.users),
+                editTrip(newParentTripNode.tripNodeId, newParentTripNode.name,
+										newParentTripNode.tripNodes, newParentTripNode.users)];
+            await Promise.all(editTripPromises);
 					}
 
-          console.log(this.trip.tripNodes);
-
-          const oldTrip = {
-            tripId: this.trip.tripId,
-            tripName: this.trip.tripName,
-            tripDestinations: oldTripNodes,
-            users: this.trip.users
-          };
-
-          const newTrip = {
-            tripId: this.trip.tripId,
-            tripName: this.trip.tripName,
-            tripDestinations: this.trip.tripDestinations,
-            users: this.trip.users
-          };
-
-          this.addEditTripCommand(oldTrip, newTrip);
-
-          this.showSuccessMessage("Successfully changed order");
+          // const oldTrip = {
+          //   tripId: this.trip.tripId,
+          //   tripName: this.trip.tripName,
+          //   tripDestinations: oldTripNodes,
+          //   users: this.trip.users
+          // };
+					//
+          // const newTrip = {
+          //   tripId: this.trip.tripId,
+          //   tripName: this.trip.tripName,
+          //   tripDestinations: this.trip.tripDestinations,
+          //   users: this.trip.users
+          // };
+					//
+          // this.addEditTripCommand(oldTrip, newTrip);
+					//
+          // this.showSuccessMessage("Successfully changed order");
         } catch (e) {
           console.log(e);
           this.showError("Could not change order");
