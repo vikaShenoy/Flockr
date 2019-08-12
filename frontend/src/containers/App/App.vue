@@ -3,7 +3,7 @@
     <Navbar/>
     <Sidebar/>
     <v-content>
-      <v-container fluid>
+      <v-container fluid fill-height>
         <v-layout>
           <v-flex>
             <GlobalSnackbar />

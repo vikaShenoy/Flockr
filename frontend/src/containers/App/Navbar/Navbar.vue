@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar id="navbar">
+  <v-app-bar id="navbar" app>
     <v-toolbar-title>Travel EA</v-toolbar-title>
     <v-spacer/>
     <v-toolbar-items class="hidden-sm-and-down">
@@ -15,6 +15,7 @@
     background-color: $secondary;
     color: white;
     z-index: 3;
+    height: 60px;
   }
 </style>
 

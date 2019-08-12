@@ -1,5 +1,11 @@
 <template>
-  <v-navigation-drawer permanent :mini-variant="isCollapsed" app id="sidebar">
+  <v-navigation-drawer
+    permanent
+    :mini-variant="isCollapsed"
+    :style="{'margin-top': '60px'}"
+    app
+    id="sidebar"
+  >
     <v-list dense class="pt-0">
       <!-- Sidebar toggling -->
       <v-list-tile
