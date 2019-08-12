@@ -57,6 +57,11 @@ public class TripDestinationLeaf extends TripNode {
         return destination.getDestinationId();
     }
 
+  @Override
+  public List<User> getUsers() {
+    return new ArrayList<>();
+  }
+
     public void setDestination(Destination destination) {
         this.destination = destination;
     }

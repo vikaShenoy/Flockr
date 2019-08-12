@@ -112,6 +112,8 @@ public abstract class TripNode extends Model {
 
     public abstract Integer getDestinationId();
 
+    public abstract List<User> getUsers();
+
     /**
      * This is required by EBean to make queries on the database.
      */
