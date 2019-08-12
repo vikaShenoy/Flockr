@@ -164,7 +164,6 @@
   }
 
   #map {
-    width: calc(100% - 555px);
     display: inline-block;
     height: 100%;
     position: fixed;

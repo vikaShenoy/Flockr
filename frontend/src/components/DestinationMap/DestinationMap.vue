@@ -254,7 +254,7 @@
   }
 
   #overlay {
-    top: 64px;
+    top: 0px;
     background-color: rgba(0, 0, 0, 0.4);
     pointer-events: none;
     position: absolute;
