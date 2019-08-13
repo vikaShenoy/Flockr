@@ -54,13 +54,13 @@
       return {
         // trip: null,
         trip: {
-          name: "My trip",
+          name: "Trip1",
           users: [],
           nodeType: "TripComposite",
           tripNodes: [
             {
               tripNodeId: 1,
-              name: "My favourite nested sub trip",
+              name: "SubTrip1",
               nodeType: "TripComposite",
               arrivalDate: "03-04-2018",
               arrivalTime: "13:00",
@@ -71,7 +71,7 @@
                 {
                   tripNodeId: 2,
                   nodeType: "TripDestinationLeaf",
-                  name: "New Zealand",
+                  name: "Destination1",
                   arrivalDate: "03-04-2018",
                   arrivalTime: "13:00",
                   departureDate: "04-04-2018",
@@ -85,7 +85,7 @@
                 },
               {
               tripNodeId: 1,
-              name: "My favourite nested sub trip",
+              name: "SubTrip2",
               nodeType: "TripComposite",
               arrivalDate: "03-04-2018",
               arrivalTime: "13:00",
@@ -96,7 +96,7 @@
                 {
                   tripNodeId: 2,
                   nodeType: "TripDestinationLeaf",
-                  name: "New Zealand",
+                  name: "Destination2",
                   arrivalDate: "03-04-2018",
                   arrivalTime: "13:00",
                   departureDate: "04-04-2018",
@@ -111,7 +111,7 @@
                 {
                   tripNodeId: 3,
                   nodeType: "TripDestinationLeaf",
-                  name: "Some place",
+                  name: "Destination3",
                   arrivalDate: "04-04-2018",
                   arrivalTime: "13:00",
                   departureDate: "3-05-2018",
@@ -131,7 +131,7 @@
             {
               tripNodeId: 4,
               nodeType: "TripDestinationLeaf",
-              name: "Some other place",
+              name: "Destination4",
               arrivalDate: "04-06-2018",
               arrivalTime: "13:00",
               departureDate: "3-09-2018",

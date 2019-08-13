@@ -41,15 +41,29 @@
           @showEditTripDestination="showEditTripDestination"
           @deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
         />
+				<v-btn
+								depressed
+								color="secondary"
+								id="add-trip-destination-btn"
+								@click="isShowingAddDestinationDialog = true"
+				>
+					Add Destination
+				</v-btn>
 
-        <v-btn
-          depressed
-          color="secondary"
-          id="add-trip-destination-btn"
-          @click="isShowingAddDestinationDialog = true"
-        >
-          Add Destination
-        </v-btn>
+				<v-btn
+								depressed
+								color="secondary"
+								id="add-subtrip-btn"
+								@click="isShowingAddSubtripDialog = true"
+				>
+					Add Subtrip
+				</v-btn>
+
+				<ModifySubtripDialog
+					:editMode="false"
+					:isShowing.sync="isShowingAddSubtripDialog"
+					:trip="trip"
+				/>
 
         <ModifyTripDestinationDialog
           :isShowing.sync="isShowingAddDestinationDialog"
@@ -82,9 +96,11 @@
 import Timeline from "./Timeline/Timeline.vue";
 import ModifyTripDestinationDialog from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
 import ManageTripDialog from "./ManageTripDialog/ManageTripDialog";
+import ModifySubtripDialog from "./ModifySubtripDialog/ModifySubtripDialog";
 
 export default {
   components: {
+    ModifySubtripDialog,
     Timeline,
     ModifyTripDestinationDialog,
     ManageTripDialog
@@ -93,6 +109,7 @@ export default {
     return {
       isShowingAddDestinationDialog: false,
       isShowingUpdateDestinationDialog: false,
+			isShowingAddSubtripDialog: false,
       editedTripDestination: null,
       isShowingManageTripDialog: false
     };
