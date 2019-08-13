@@ -14,7 +14,9 @@ import javax.inject.Inject;
 import models.TripComposite;
 import models.TripNode;
 
-/** Contains all trip related db interactions */
+/**
+ * Contains all trip related db interactions
+ */
 public class TripRepository {
 
   private final DatabaseExecutionContext executionContext;
@@ -73,7 +75,6 @@ public class TripRepository {
    * Restore a deleted trip
    *
    * @param trip the trip to be restored
-   * @return
    */
   public CompletionStage<TripNode> restoreTrip(TripNode trip) {
     return supplyAsync(
@@ -166,16 +167,7 @@ public class TripRepository {
           List<TripComposite> trip =
               TripComposite.find
                   .query()
-//                  .select("users")
-//                  .fetch("tripComposite", "users")
-                    .fetch("tripNodes")
-
-
-
-                  .where()
-//                  .eq("users.userId", userId)
-//                  .where()
-//                  .notIn("")
+                  .fetch("tripNodes")
                   .findList();
 
           return trip;

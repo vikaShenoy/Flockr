@@ -422,6 +422,12 @@ public class TripControllerTest {
     Assert.assertEquals(400, result.status());
   }
 
+  /**
+   * Gets the high level trips (the trips without a parent)
+   * @param token the token of the user that wants to get the trip
+   * @param userId the user ID that wants to get the trip
+   * @param statusCode
+   */
   private void getHighLevelTrips(String token, int userId, int statusCode) {
     Result result = fakeClient.makeRequestWithToken(
         "GET",

@@ -115,13 +115,6 @@ public class PopulateTask {
         TripDestinationLeaf tripMorocco = new TripDestinationLeaf(morocco, new Date(1564273000), 43200, new Date(1564359000), 43200);
         tripMorocco.save();
 
-/*      ArrayList<TripNode> tripNodes2 = new ArrayList<>();
-        tripNodes2.add(tripMorocco);
-        tripNodes2.add(tripChristchurch);*/
-
-
-        trip.addTripNodes(tripMorocco);
-        trip.addTripNodes(tripChristchurch);
         trip.save();
 
 
