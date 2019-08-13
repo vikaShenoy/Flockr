@@ -407,7 +407,7 @@ public class TripController extends Controller {
     User middlewareUser = request.attrs().get(ActionState.USER);
 
     if (userId != middlewareUser.getUserId() && !middlewareUser.isAdmin()) {
-      return supplyAsync(() -> ok(Json.toJson(new ArrayList<>())));
+      return supplyAsync(Controller::forbidden);
     }
 
     return tripRepository
@@ -421,14 +421,8 @@ public class TripController extends Controller {
                 }
               }
 
-              for (TripComposite tripComposite : tripComposites) {
-                System.out.println(tripComposite.getName());
-                System.out.println(tripComposite.getTripNodes());
-              }
-
               PathProperties pathProperties = PathProperties.parse("tripNodeId, name");
               String tripsJson = Ebean.json().toJson(tripComposites,pathProperties);
-              System.out.println(tripComposites.size());
               return ok(Json.parse(tripsJson));
             },
             httpExecutionContext.current());

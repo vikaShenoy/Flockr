@@ -1,6 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
@@ -423,20 +422,40 @@ public class TripControllerTest {
     Assert.assertEquals(400, result.status());
   }
 
-  @Test
-  public void getTripsWithNoParent() throws IOException {
+  private void getHighLevelTrips(String token, int userId, int statusCode) {
     Result result = fakeClient.makeRequestWithToken(
-            "GET", "/api/users/" + user.getUserId() + "/trips/high-level-trips", user.getToken());
+        "GET",
+        "/api/users/" + userId + "/trips/high-level-trips",
+        token);
 
-    JsonNode json = PlayResultToJson.convertResultToJson(result);
-    System.out.println(json);
-    for (JsonNode tripJson : json) {
-
-
-      //Assert.assertEquals(0, tripJson.get("parents").size());
-    }
+    Assert.assertEquals(result.status(), statusCode);
   }
 
+  @Test
+  public void getHighLevelTripsUserOk() {
+    getHighLevelTrips(user.getToken(), user.getUserId(), 200);
+  }
+
+  @Test
+  public void getHighLevelTripsAdminOk() {
+    getHighLevelTrips(adminUser.getToken(), user.getUserId(), 200);
+  }
+
+  @Test
+  public void getHighLevelTripsUnauthorised() {
+    Result result = fakeClient.makeRequestWithNoToken(
+        "GET",
+        "/api/users/" + user.getUserId() + "/trips/high-level-trips");
+
+    Assert.assertEquals(401, result.status());
+  }
+
+  @Test
+  public void getHighLevelTripsForbidden() {
+    getHighLevelTrips(otherUser.getToken(), user.getUserId(), 403);
+  }
+
+  
   @After
   public void tearDown() {
     Helpers.stop(application);
