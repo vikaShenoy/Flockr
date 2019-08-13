@@ -392,5 +392,31 @@ public class TripController extends Controller {
             },
             httpExecutionContext.current());
   }
+
+
+  /**
+   * Retrieves a list of a user's trips that have no parent (High Level)
+   * @param userId of the owner of the trips
+   * @param request
+   * @return
+   */
+  public CompletionStage<Result> getHighLevelTrips(int userId, Http.Request request){
+
+    User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+    if (!userFromMiddleware.isAdmin() && userId != userFromMiddleware.getUserId()) {
+      return supplyAsync(() -> ok(Json.toJson(new ArrayList<>())));
+    }
+
+    return tripRepository
+        .getHighLevelTripsByUserId(userId)
+        .thenApplyAsync(
+            (trips) -> {
+              JsonNode tripsJson = Json.toJson(trips);
+              return ok(tripsJson);
+            },
+            httpExecutionContext.current());
+
+  }
 }
 
