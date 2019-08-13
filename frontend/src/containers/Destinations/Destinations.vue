@@ -170,14 +170,14 @@
 
 <style lang="scss" scoped>
   #destinations {
+    display: flex;
     width: 100%;
-  }
-
-  #map {
-    width: calc(100% - 555px);
-    display: inline-block;
     height: 100%;
-    position: fixed;
+
+    #map {
+      flex-grow: 1;
+      height: 100%;
+    }
   }
 
 </style>

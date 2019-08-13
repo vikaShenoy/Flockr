@@ -192,7 +192,9 @@
   #destination-sidebar {
     height: 100%;
     width: 315px;
-    float: right;
+    justify-self: flex-end;
+    display: flex;
+    flex-direction: column;
 
     #title {
       height: 100px;
@@ -203,7 +205,10 @@
       align-items: center;
       flex-direction: column;
       justify-content: space-between;
-      position: fixed;
+    }
+
+    #destinations-list {
+      flex-grow: 1;
     }
 
     h2 {
@@ -222,11 +227,6 @@
 
     .theme--light.v-btn-toggle {
       background: none !important;
-    }
-
-    #destinations-list {
-      height: calc(100% - 100px);
-      margin-top: 100px;
     }
 
     #spinner {
