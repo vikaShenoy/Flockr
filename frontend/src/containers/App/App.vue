@@ -42,6 +42,7 @@
   #container {
     padding: 0;
     margin-top: 60px;
+    height: calc(100% - 60px);
   }
 
 </style>
