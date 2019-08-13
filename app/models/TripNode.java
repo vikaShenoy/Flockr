@@ -58,7 +58,7 @@ public abstract class TripNode extends Model {
 
     public abstract List<TripNode> getTripNodes();
 
-    public abstract void addTripNodes(TripNode tripNode);
+    public abstract void addTripNode(TripNode tripNode);
 
     public abstract void removeTripNode(TripNode tripNode);
 
@@ -106,6 +106,14 @@ public abstract class TripNode extends Model {
 
     public void setParents(List<TripNode> parents) {
         this.parents = parents;
+    }
+
+    public void addParent(TripNode parent) {
+        this.parents.add(parent);
+    }
+
+    public void removeParent(TripNode parent) {
+        this.parents.remove(parent);
     }
 
     public abstract Class getNodeType();

@@ -1,20 +1,20 @@
 package util;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.NotFoundException;
-import models.TripComposite;
-import org.junit.Before;
-import org.junit.Test;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
-import play.libs.Json;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.junit.Assert.*;
+import models.TripComposite;
+import org.junit.Before;
+import org.junit.Test;
+import play.libs.Json;
 
 public class TripUtilTest {
     TripUtil util;
@@ -24,7 +24,7 @@ public class TripUtilTest {
     Set<TripComposite> tripComposites;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         util = new TripUtil();
         Date arrivalDate = new Date();
         Date departureDate = new Date();

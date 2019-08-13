@@ -46,7 +46,7 @@ public class TripComposite extends TripNode {
   }
 
   @Override
-  public void addTripNodes(TripNode tripNode) {
+  public void addTripNode(TripNode tripNode) {
     this.tripNodes.add(tripNode);
   }
 
@@ -144,5 +144,13 @@ public class TripComposite extends TripNode {
 
   public void setUsers(List<User> users) {
     this.users = users;
+  }
+
+  public void addUser(User user) {
+    users.add(user);
+  }
+
+  public void removeUser(User user) {
+    users.remove(user);
   }
 }
