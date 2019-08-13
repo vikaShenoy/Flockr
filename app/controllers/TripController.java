@@ -8,6 +8,8 @@ import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import exceptions.UnauthorizedException;
+import io.ebean.Ebean;
+import io.ebean.text.PathProperties;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -409,11 +411,25 @@ public class TripController extends Controller {
     }
 
     return tripRepository
-        .getTripsByUserId(userId)
+        .getHighLevelTripsByUserId(userId)
         .thenApplyAsync(
             (trips) -> {
-              JsonNode tripsJson = Json.toJson(trips);
-              return ok(tripsJson);
+              List<TripComposite> tripComposites = new ArrayList<>();
+              for (TripComposite tripComposite : trips) {
+                if (tripComposite.getParents().size() == 0) {
+                  tripComposites.add(tripComposite);
+                }
+              }
+
+              for (TripComposite tripComposite : tripComposites) {
+                System.out.println(tripComposite.getName());
+                System.out.println(tripComposite.getTripNodes());
+              }
+
+              PathProperties pathProperties = PathProperties.parse("tripNodeId, name");
+              String tripsJson = Ebean.json().toJson(tripComposites,pathProperties);
+              System.out.println(tripComposites.size());
+              return ok(Json.parse(tripsJson));
             },
             httpExecutionContext.current());
   }

@@ -166,8 +166,12 @@ public class TripRepository {
           List<TripComposite> trip =
               TripComposite.find
                   .query()
-                  .select("users")
+//                  .select("users")
 //                  .fetch("tripComposite", "users")
+                    .fetch("tripNodes")
+
+
+
                   .where()
 //                  .eq("users.userId", userId)
 //                  .where()

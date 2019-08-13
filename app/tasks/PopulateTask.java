@@ -126,8 +126,12 @@ public class PopulateTask {
 
 
 
+
+
         TripComposite trip2 = new TripComposite(tripNodes, users, "Find the family graves");
+        //trip2.setParents(tripNodes);
         trip2.save();
+
         System.out.println("Ended populating data");
     }, this.executionContext);
    }
