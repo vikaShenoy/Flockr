@@ -1,21 +1,21 @@
 package models;
 
 import io.ebean.Finder;
-
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
 
 @Entity
 public class TripComposite extends TripNode {
 
-    private String name;
-
-    @ManyToMany()
-    private List<User> users;
+  /**
+   * This is required by EBean to make queries on the database.
+   */
+  public static final Finder<Integer, TripComposite> find = new Finder<>(TripComposite.class);
+  private String name;
 
     public TripComposite(List<User> users, String name) {
 //        super(tripNodes);
@@ -33,97 +33,124 @@ public class TripComposite extends TripNode {
         super(tripNodeId);
     }
 
-    public TripComposite() {
-        this.tripNodes = new ArrayList<>();
-    }
+  @ManyToMany()
+  private List<User> users;
 
-    @Override
-    public List<TripNode> getTripNodes() {
-        return this.tripNodes;
-    }
+  public TripComposite() {
+    this.tripNodes = new ArrayList<>();
+  }
 
-    @Override
-    public void addTripNodes(TripNode tripNode) {
-        this.tripNodes.add(tripNode);
-    }
+  @Override
+  public List<TripNode> getTripNodes() {
+    return this.tripNodes;
+  }
 
-    @Override
-    public void removeTripNode(TripNode tripNode) {
-        this.tripNodes.remove(tripNode);
-    }
+  @Override
+  public void addTripNode(TripNode tripNode) {
+    this.tripNodes.add(tripNode);
+  }
 
-    @Override
-    public String getName() {
-        return name;
-    }
+  @Override
+  public void removeTripNode(TripNode tripNode) {
+    this.tripNodes.remove(tripNode);
+  }
 
-    @Override
-    public Date getArrivalDate() {
-        for (TripNode node: this.tripNodes)  {
-            Date arrival = node.getArrivalDate();
-            if (arrival != null) return arrival;
-            Date departure = node.getDepartureDate();
-            if (departure != null) return departure;
-        }
-        return null;
-    }
+  @Override
+  public String getName() {
+    return name;
+  }
 
-    @Override
-    public Integer getArrivalTime() {
-        for (TripNode node: this.tripNodes)  {
-            Date arrival = node.getArrivalDate();
-            if (arrival != null) return node.getArrivalTime();
-            Date departure = node.getDepartureDate();
-            if (departure != null) return node.getDepartureTime();
-        }
-        return null;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    @Override
-    public Date getDepartureDate() {
-        List<TripNode> reverse = new ArrayList<>(this.tripNodes);
-        Collections.reverse(reverse);
-        for (TripNode node: reverse)  {
-            Date departure = node.getDepartureDate();
-            if (departure != null) return departure;
-            Date arrival = node.getArrivalDate();
-            if (arrival != null) return arrival;
-        }
-        return null;
+  @Override
+  public Date getArrivalDate() {
+    for (TripNode node : this.tripNodes) {
+      Date arrival = node.getArrivalDate();
+      if (arrival != null) {
+        return arrival;
+      }
+      Date departure = node.getDepartureDate();
+      if (departure != null) {
+        return departure;
+      }
     }
+    return null;
+  }
 
-    @Override
-    public Integer getDepartureTime() {
-        List<TripNode> reverse = new ArrayList<>(this.tripNodes);
-        Collections.reverse(reverse);
-        for (TripNode node: reverse)  {
-            Date departure = node.getDepartureDate();
-            if (departure != null) return node.getDepartureTime();
-            Date arrival = node.getArrivalDate();
-            if (arrival != null) return node.getArrivalTime();
-        }
-        return null;
+  @Override
+  public Integer getArrivalTime() {
+    for (TripNode node : this.tripNodes) {
+      Date arrival = node.getArrivalDate();
+      if (arrival != null) {
+        return node.getArrivalTime();
+      }
+      Date departure = node.getDepartureDate();
+      if (departure != null) {
+        return node.getDepartureTime();
+      }
     }
+    return null;
+  }
 
-    @Override
-    public Class getNodeType() {
-        return this.getClass();
+  @Override
+  public Date getDepartureDate() {
+    List<TripNode> reverse = new ArrayList<>(this.tripNodes);
+    Collections.reverse(reverse);
+    for (TripNode node : reverse) {
+      Date departure = node.getDepartureDate();
+      if (departure != null) {
+        return departure;
+      }
+      Date arrival = node.getArrivalDate();
+      if (arrival != null) {
+        return arrival;
+      }
     }
+    return null;
+  }
 
-    public void setName(String name) {
-        this.name = name;
+  @Override
+  public Integer getDepartureTime() {
+    List<TripNode> reverse = new ArrayList<>(this.tripNodes);
+    Collections.reverse(reverse);
+    for (TripNode node : reverse) {
+      Date departure = node.getDepartureDate();
+      if (departure != null) {
+        return node.getDepartureTime();
+      }
+      Date arrival = node.getArrivalDate();
+      if (arrival != null) {
+        return node.getArrivalTime();
+      }
     }
+    return null;
+  }
 
-    public List<User> getUsers() {
-        return users;
-    }
+  @Override
+  public Class getNodeType() {
+    return this.getClass();
+  }
 
-    public void setUsers(List<User> users) {
-        this.users = users;
-    }
+  @Override
+  public Integer getDestinationId() {
+    return null;
+  }
 
-    /**
-     * This is required by EBean to make queries on the database.
-     */
-    public static final Finder<Integer, TripComposite> find = new Finder<>(TripComposite.class);
+  public List<User> getUsers() {
+    return users;
+  }
+
+  public void setUsers(List<User> users) {
+    this.users = users;
+  }
+
+  public void addUser(User user) {
+    users.add(user);
+  }
+
+  public void removeUser(User user) {
+    users.remove(user);
+  }
 }
