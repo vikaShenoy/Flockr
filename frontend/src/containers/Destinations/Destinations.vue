@@ -2,19 +2,29 @@
   <div id="destinations">
     <div id="map">
       <DestinationMap
-              :destinations="getDestinationsCurrentlyViewing()"
+        :destinations="getDestinationsCurrentlyViewing()"
       />
     </div>
 
     <DestinationSidebar
-            :viewOption="viewOption"
-            :yourDestinations="yourDestinations"
-            :publicDestinations="publicDestinations"
-            v-on:viewOptionChanged="viewOptionChanged"
-            v-on:addDestinationClicked="addDestinationClicked"
-            @refreshDestinations="refreshDestinations"
-            ref="sidebar"
+      :viewOption="viewOption"
+      :yourDestinations="yourDestinations"
+      :publicDestinations="publicDestinations"
+      v-on:viewOptionChanged="viewOptionChanged"
+      v-on:addDestinationClicked="addDestinationClicked"
+      @refreshDestinations="refreshDestinations"
+      ref="sidebar"
     />
+
+    <ModifyDestinationDialog
+      :dialog="showCreateDestDialog"
+      :editMode="false"
+      v-on:addNewDestination="addNewDestination"
+      v-on:dialogChanged="addDestDialogChanged"
+    >
+
+    </ModifyDestinationDialog>
+
   </div>
 </template>
 
@@ -93,7 +103,7 @@
        * @param {Number} the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
-        window.vue.$emit({
+        this.$root.$emit({
           message: message,
           color: color,
           timeout: timeout

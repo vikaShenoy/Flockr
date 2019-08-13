@@ -189,7 +189,7 @@
        * @param {Number} the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
-        window.vue.$emit({
+        this.$root.$emit({
           message: message,
           color: color,
           timeout: timeout

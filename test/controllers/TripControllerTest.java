@@ -1,5 +1,8 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import models.*;
@@ -8,15 +11,19 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import play.Application;
+import play.libs.Json;
 import play.test.Helpers;
 import utils.FakeClient;
 import utils.FakePlayClient;
+import utils.PlayResultToJson;
 import utils.TestState;
 import play.mvc.Result;
 
 
 import java.io.IOException;
 import java.util.*;
+
+import static utils.PlayResultToJson.convertResultToJson;
 
 public class TripControllerTest {
 
@@ -31,6 +38,8 @@ public class TripControllerTest {
     TripDestination tripWestMelton;
     List<TripDestination> tripDestinations;
     Trip trip;
+    ObjectNode tripDestination1;
+    ObjectNode tripDestination2;
 
     @Before
     public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
@@ -88,8 +97,23 @@ public class TripControllerTest {
         tripDestinations = new ArrayList<>();
         tripDestinations.add(tripChristchurch);
         tripDestinations.add(tripWestMelton);
-        trip = new Trip(tripDestinations, user, "Testing Trip 1");
+        List<User> users = new ArrayList<>();
+        users.add(user);
+        trip = new Trip(tripDestinations, users, "Testing Trip 1");
         trip.save();
+        tripDestination1 = Json.newObject();
+        tripDestination1.put("destinationId", 1);
+        tripDestination1.put("arrivalDate", 123456789);
+        tripDestination1.put("arrivalTime", 450);
+        tripDestination1.put("departureDate", 123856789);
+        tripDestination1.put("departureTime", 240);
+
+        tripDestination2 = Json.newObject();
+        tripDestination2.put("destinationId", 2);
+        tripDestination2.put("arrivalDate", 123456789);
+        tripDestination2.put("arrivalTime", 450);
+        tripDestination2.put("departureDate", 123856789);
+        tripDestination2.put("departureTime", 240);
     }
 
     private void restore(Trip trip) {
@@ -193,6 +217,81 @@ public class TripControllerTest {
         );
         Assert.assertEquals(400, result.status());
     }
+
+    @Test
+    public void createTripWithUsers() throws IOException {
+        String endpoint = "/api/users/" + user.getUserId() + "/trips";
+        ObjectNode tripBody = Json.newObject();
+        ArrayNode tripDestinations = Json.newArray();
+        tripDestinations.add(tripDestination1);
+        tripDestinations.add(tripDestination2);
+        tripBody.put("tripName", "Some trip");
+        tripBody.putArray("tripDestinations").addAll(tripDestinations);
+        List<Integer> userIds = new ArrayList<>();
+        userIds.add(otherUser.getUserId());
+        tripBody.set("userIds", Json.toJson(userIds));
+        Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
+        Assert.assertEquals(201, result.status());
+        int tripId = PlayResultToJson.convertResultToJson(result).asInt();
+        Trip receivedTrip = Trip.find.byId(tripId);
+        Assert.assertNotNull(receivedTrip);
+        Assert.assertEquals(2, receivedTrip.getUsers().size());
+    }
+
+    @Test
+    public void cannotCreateTripWithUser() {
+        String endpoint = "/api/users/" + user.getUserId() + "/trips";
+        ObjectNode tripBody = Json.newObject();
+        ArrayNode tripDestinations = Json.newArray();
+        tripDestinations.add(tripDestination1);
+        tripDestinations.add(tripDestination2);
+
+
+        tripBody.put("tripName", "Some trip");
+        tripBody.putArray("tripDestinations").addAll(tripDestinations);
+        List<Integer> userIds = new ArrayList<>();
+        userIds.add(user.getUserId());
+        tripBody.set("userIds", Json.toJson(userIds));
+        Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
+        Assert.assertEquals(403, result.status());
+    }
+
+    @Test
+    public void editTripWithUsers() throws IOException {
+        String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId();
+        ObjectNode tripBody = Json.newObject();
+        ArrayNode tripDestinations = Json.newArray();
+        tripDestinations.add(tripDestination1);
+        tripDestinations.add(tripDestination2);
+
+        tripBody.put("tripName", "Some trip");
+        tripBody.putArray("tripDestinations").addAll(tripDestinations);
+        List<Integer> userIds = new ArrayList<>();
+        userIds.add(otherUser.getUserId());
+        tripBody.set("userIds", Json.toJson(userIds));
+        Result result = fakeClient.makeRequestWithToken("PUT", tripBody, endpoint, user.getToken());
+        Assert.assertEquals(200, result.status());
+    }
+
+    @Test
+    public void cannotHaveNoUsersInTrip() {
+        String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripId();
+        ObjectNode tripBody = Json.newObject();
+        ArrayNode tripDestinations = Json.newArray();
+        tripDestinations.add(tripDestination1);
+        tripDestinations.add(tripDestination2);
+
+        tripBody.put("tripName", "Some trip");
+        tripBody.putArray("tripDestinations").addAll(tripDestinations);
+        List<Integer> userIds = new ArrayList<>();
+        tripBody.set("userIds", Json.toJson(userIds));
+        Result result = fakeClient.makeRequestWithToken("PUT", tripBody, endpoint, user.getToken());
+        Assert.assertEquals(403, result.status());
+    }
+
+
+
+
 
     @After
     public void tearDown() {

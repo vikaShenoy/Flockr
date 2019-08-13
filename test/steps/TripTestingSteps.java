@@ -16,6 +16,7 @@ import play.test.Helpers;
 import utils.FakeClient;
 import utils.TestState;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +58,7 @@ public class TripTestingSteps {
         ObjectNode jsonBody = Json.newObject();
         jsonBody.set("tripName", Json.toJson(this.tripName));
         jsonBody.set("tripDestinations", Json.toJson(this.tripDestinations));
+        jsonBody.set("userIds", Json.toJson(new ArrayList<>()));
 
         this.result = fakeClient.makeRequestWithToken("POST", jsonBody, "/api/users/1/trips", user.getToken());
         Assert.assertNotNull(this.result);

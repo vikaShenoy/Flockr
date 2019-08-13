@@ -40,7 +40,11 @@ export async function editTrip(tripId, trip) {
    const authToken = localStorage.getItem("authToken");
 
    await superagent.put(endpoint(`/users/${userId}/trips/${tripId}`))
-    .send(trip)
+    .send({
+      tripName: trip.tripName,
+      tripDestinations: trip.tripDestinations,
+      userIds:  trip.users.map(user => user.userId)
+    })
     .set("Authorization", authToken);
     
 } 

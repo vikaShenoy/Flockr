@@ -197,7 +197,7 @@
     flex-direction: column;
 
     #title {
-      height: 125px;
+      height: 100px;
       background-color: $primary;
       color: $darker-white;
       text-align: center;

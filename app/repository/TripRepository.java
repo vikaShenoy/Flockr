@@ -86,9 +86,10 @@ public class TripRepository {
      */
     public CompletionStage<Optional<Trip>> getTripByIds(int tripId, int userId) {
         return supplyAsync(() -> {
-            Optional<Trip> trip = Trip.find.query().
-                    where().eq("trip_id", tripId)
-                    .eq("user_user_id", userId)
+            Optional<Trip> trip = Trip.find.query()
+                    .fetch("users")
+                    .where().eq("trip_id", tripId)
+                    .in("users.userId", userId)
                     .findOneOrEmpty();
             return trip;
         }, executionContext);
@@ -102,9 +103,10 @@ public class TripRepository {
      */
     public CompletionStage<Optional<Trip>> getTripByIdsIncludingDeleted(int tripId, int userId) {
         return supplyAsync(() -> {
-            Optional<Trip> trip = Trip.find.query().setIncludeSoftDeletes().
-                    where().eq("trip_id", tripId)
-                    .eq("user_user_id", userId)
+            Optional<Trip> trip = Trip.find.query().setIncludeSoftDeletes()
+                    .fetch("users")
+                    .where().eq("trip_id", tripId)
+                    .in("users.userId", userId)
                     .findOneOrEmpty();
             return trip;
         }, executionContext);
@@ -119,8 +121,9 @@ public class TripRepository {
     public CompletionStage<List<Trip>> getTripsByIds(int travellerId) {
         return supplyAsync(() -> {
             List<Trip> trip = Trip.find.query()
+                    .fetch("users")
                     .where()
-                    .eq("user_user_id", travellerId)
+                    .in("users.userId", travellerId)
                     .findList();
             return trip;
         }, executionContext);
