@@ -165,11 +165,8 @@
     height: 100%;
 
     #map {
-      flex-basis: 80%;
       flex-grow: 1;
-      // display: inline-block;
       height: 100%;
-      // position: fixed;
     }
   }
 
