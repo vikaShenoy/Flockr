@@ -4,12 +4,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
-
-import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 
 @Entity
 @Inheritance
@@ -52,7 +58,7 @@ public abstract class TripNode extends Model {
 
     public abstract List<TripNode> getTripNodes();
 
-    public abstract void addTripNodes(TripNode tripNode);
+    public abstract void addTripNode(TripNode tripNode);
 
     public abstract void removeTripNode(TripNode tripNode);
 
@@ -86,8 +92,6 @@ public abstract class TripNode extends Model {
         this.deleted = deleted;
     }
 
-
-
     public Timestamp getDeletedExpiry() {
         return deletedExpiry;
     }
@@ -104,8 +108,19 @@ public abstract class TripNode extends Model {
         this.parents = parents;
     }
 
+    public void addParent(TripNode parent) {
+        this.parents.add(parent);
+    }
+
+    public void removeParent(TripNode parent) {
+        this.parents.remove(parent);
+    }
+
     public abstract Class getNodeType();
 
+    public abstract Integer getDestinationId();
+
+    public abstract List<User> getUsers();
 
     /**
      * This is required by EBean to make queries on the database.
