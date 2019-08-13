@@ -55,7 +55,7 @@
        * @param {string} errorMessage errorMessage to show to user
        */
       showError(errorMessage) {
-        window.vue.$emit("show-snackbar", {
+        this.$root.$emit("show-snackbar", {
           message: errorMessage,
           color: "error",
           timeout: 3000
@@ -66,7 +66,7 @@
        * @param {string} successMessage Success message to show
        */
       showSuccessMessage(successMessage) {
-        window.vue.$emit("show-snackbar", {
+        this.$root.$emit("show-snackbar", {
           message: successMessage,
           color: "success",
           timeout: 3000

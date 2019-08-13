@@ -92,14 +92,14 @@
         this.users = allUsers;
       },
       showSuccessSnackbar(message) {
-        window.vue.$emit("show-snackbar", {
+        this.$root.$emit("show-snackbar", {
           message: message,
           color: "success",
           timeout: 3000
         });
       },
       showErrorSnackbar(errorMessage) {
-        window.vue.$emit("show-snackbar", {
+        this.$root.$emit("show-snackbar", {
           message: errorMessage,
           color: "error",
           timeout: 3000
