@@ -36,7 +36,10 @@
       TripNode
     },
     mounted() {
+      /* Initialising sorting should only be done by the root timeline hence the conditional */
       if (!this.isSubTrip) {
+        // setTimeout enforces that the function runs only when the whole view has rendered, meaning 
+        // that we initialise drag and drop for every level
         setTimeout(() => {
           this.initSorting();
         }, 0);
