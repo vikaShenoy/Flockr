@@ -1,10 +1,10 @@
 <template>
-  <v-app-bar id="navbar" app>
+  <v-toolbar id="navbar" >
     <v-toolbar-title>Flockr</v-toolbar-title>
     <v-spacer/>
     <v-toolbar-items class="hidden-sm-and-down">
     </v-toolbar-items>
-  </v-app-bar>
+  </v-toolbar>
 </template>
 
 <style lang="scss" scoped>
