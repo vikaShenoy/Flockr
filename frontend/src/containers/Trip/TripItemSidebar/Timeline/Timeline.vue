@@ -46,7 +46,6 @@
       initSorting() {
         // Loop through each nested sortable element
         const sortableTimelines = document.querySelectorAll(".v-timeline");
-        console.log(sortableTimelines);
         for (let i = 0; i < sortableTimelines.length; i++) {
           new Sortable(sortableTimelines[i], {
             group: 'nested',

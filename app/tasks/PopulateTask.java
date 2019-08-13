@@ -126,44 +126,6 @@ public class PopulateTask {
         tripDestination4.save();
         tripComposite5.save();
         tripComposite6.save();
-
-//        TripDestinationLeaf tripDestination8 = new TripDestinationLeaf(destination8, new Date(1564358400), 50400, new Date(1564358400), 68400);
-//
-//        List<TripNode> tripNodes2 = new ArrayList<>();
-//        tripNodes2.add(tripDestination3);
-//        tripNodes2.add(tripDestination4);
-//        tripNodes2.add(trip5);
-//
-//        TripComposite trip2 = new TripComposite(tripNodes2, users, "Trip2");
-//        trip2.save();
-//
-//        tripDestination3.save();
-//        tripDestination4.save();
-//        tripDestination5.save();
-//        tripDestination6.save();
-//        tripDestination7.save();
-//        tripDestination8.save();
-//
-//        List<User> users = new ArrayList<>();
-//
-//        List<TripNode> tripNodes5 = new ArrayList<>();
-//        tripNodes5.add(tripDestination6);
-//        tripNodes5.add(tripDestination7);
-//
-//        TripComposite trip5 = new TripComposite(tripNodes5, users, "Trip5");
-//        trip5.save();
-//
-//        users.add(adminUser);
-//
-//        List<TripNode> tripNodes1 = new ArrayList<>();
-//
-//        tripNodes1.add(trip2);
-//        tripNodes1.add(tripDestination8);
-//
-//        TripComposite trip = new TripComposite(tripNodes1, users, "Trip1");
-//        trip.save();
-
-        System.out.println("Ended populating data");
     }, this.executionContext);
    }
 }

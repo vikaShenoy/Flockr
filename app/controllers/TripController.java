@@ -268,8 +268,6 @@ public class TripController extends Controller {
       return supplyAsync(Controller::forbidden);
     }
 
-    System.out.println("The trip ID is: " + tripId);
-
     return tripRepository
         .getTripByIds(tripId, userId)
         .thenComposeAsync(
@@ -289,8 +287,6 @@ public class TripController extends Controller {
               List<TripNode> tripNodes;
               List<User> users;
               try {
-
-                  long startTime = System.currentTimeMillis();
                   List<User> allUsers = User.find.all();
                   Set<TripComposite> trips = tripRepository.getTrips();
                   tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
