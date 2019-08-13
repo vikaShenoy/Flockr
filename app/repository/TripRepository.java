@@ -169,7 +169,7 @@ public class TripRepository {
                   .select("users")
 //                  .fetch("tripComposite", "users")
                   .where()
-//                  .eq("user_user_id", userId)
+//                  .eq("users.userId", userId)
 //                  .where()
 //                  .notIn("")
                   .findList();

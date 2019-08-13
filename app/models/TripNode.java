@@ -20,6 +20,7 @@ public abstract class TripNode extends Model {
     @ManyToMany(mappedBy = "parents", cascade=CascadeType.PERSIST)
     protected List<TripNode> tripNodes = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToMany
     // Ebean does not support @ManyToMany on the same entity without manually setting the columns
     @JoinTable(name = "trip_node_parent", joinColumns = @JoinColumn(name = "trip_node_child_id"), inverseJoinColumns = @JoinColumn(name = "trip_node_parent_id"))

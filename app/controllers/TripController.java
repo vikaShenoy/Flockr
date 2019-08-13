@@ -400,23 +400,22 @@ public class TripController extends Controller {
    * @param request
    * @return
    */
+  @With(LoggedIn.class)
   public CompletionStage<Result> getHighLevelTrips(int userId, Http.Request request){
+    User middlewareUser = request.attrs().get(ActionState.USER);
 
-    User userFromMiddleware = request.attrs().get(ActionState.USER);
-
-    if (!userFromMiddleware.isAdmin() && userId != userFromMiddleware.getUserId()) {
+    if (userId != middlewareUser.getUserId() && !middlewareUser.isAdmin()) {
       return supplyAsync(() -> ok(Json.toJson(new ArrayList<>())));
     }
 
     return tripRepository
-        .getHighLevelTripsByUserId(userId)
+        .getTripsByUserId(userId)
         .thenApplyAsync(
             (trips) -> {
               JsonNode tripsJson = Json.toJson(trips);
               return ok(tripsJson);
             },
             httpExecutionContext.current());
-
   }
 }
 
