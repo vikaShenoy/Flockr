@@ -20,8 +20,9 @@
 								label="Select existing trip"
 							/>
 							<AddTrip
-							:sidebarComponent="false"
+							:isSidebarComponent="true"
 							:users="trip.users"
+							:parentTrip="trip"
 							@new-trip-was-added="newTripWasAdded"
 							@cancel-trip-creation="isShowingDialog = false"
 							>

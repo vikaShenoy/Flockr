@@ -4,7 +4,7 @@
           class="col-lg-10 offset-lg-1"
   >
 
-    <h2 v-if="sidebarComponent">Add Trip</h2>
+    <h2 v-if="!isSidebarComponent">Add Trip</h2>
 
 
     <v-form ref="addTripForm">
@@ -17,7 +17,7 @@
       >
       </v-text-field>
 
-    <v-combobox v-if="sidebarComponent" :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
+    <v-combobox v-if="!isSidebarComponent" :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
 
 
       <TripTable :tripDestinations="tripDestinations"/>
@@ -55,7 +55,7 @@
 
 <script>
   import TripTable from "../../components/TripTable/TripTable";
-  import {addTrip, getAllUsers} from "./AddTripService.js";
+  import {addTrip, addSubtrip, getAllUsers} from "./AddTripService.js";
   import UserStore from "../../stores/UserStore";
 
   const rules = {
@@ -75,10 +75,14 @@
       TripTable
     },
 		props: {
-      sidebarComponent: {
+      isSidebarComponent: {
         type: Boolean,
 				required: false
 			},
+			parentTrip: {
+        type: Object,
+				required: false
+			}
 
 		},
     data() {
@@ -146,6 +150,10 @@
         // Specifies the extra users that should be added to the trip
         const userIds = this.selectedUsers.map(selectedUser => selectedUser.userId);
         const tripId = await addTrip(this.tripName, this.tripDestinations, userIds);
+        if (this.isSidebarComponent) {
+          console.log(1);
+					await addSubtrip(this.parentTrip, tripId, this.tripDestinations);
+				}
         this.$emit("new-trip-was-added", tripId);
       },
       formatName(user) {
