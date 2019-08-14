@@ -765,13 +765,17 @@ public class DestinationController extends Controller {
      * @param destinationProposalId the id of the destination proposal to modify
      * @param request the HTTP request object containing a list of traveller type ids
      * @return A response that complies with the API spec
+     *    http status codes:
+     *    - 200 - OK - Successfully updated proposal.
+     *    - 400 - Bad Request - Request body incorrect.
+     *    - 404 - Not Found - Destination proposal not found.
      */
     @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> modifyProposal(int destinationProposalId, Http.Request request) {
         return destinationRepository.getDestinationProposalById(destinationProposalId)
                 .thenComposeAsync(optionalDestinationProposal -> {
                     if (!optionalDestinationProposal.isPresent()) {
-                        throw new CompletionException(new BadRequestException("Destination proposal not found"));
+                        throw new CompletionException(new NotFoundException("Destination proposal not found"));
                     }
                     DestinationProposal destinationProposal = optionalDestinationProposal.get();
                     JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");

@@ -21,6 +21,8 @@
                   v-bind:key="travellerType.travellerTypeId"
                   color="primary"
                   text-color="white"
+                  close
+                  v-on:input="removeTravellerTypeFromProposal(travellerType, props.item)"
           >
             {{ travellerType.travellerTypeName }}
           </v-chip>
@@ -54,7 +56,8 @@
     acceptProposal,
     declineProposal,
     getDestinationProposal,
-    getDestinationProposals
+    getDestinationProposals,
+    updateProposal
   } from "./DestinationProposalsService";
   import Command from "../../../components/UndoRedo/Command";
   import {sendUpdateDestination} from "../../Destinations/DestinationsService";
@@ -93,13 +96,61 @@
      */
     async mounted() {
       try {
-        const destinationProposals = await getDestinationProposals();
-        this.destinationProposals = destinationProposals;
+        this.destinationProposals = await getDestinationProposals();
       } catch (e) {
         this.$emit("showError", "Could not get proposals");
       }
     },
     methods: {
+      /**
+       * Called when a close button is clicked on a traveller type chip.
+       * Modifies a destination proposal to remove the said traveller type.
+       * Sets undo and redo commands for this process.
+       *
+       * @param travellerType the traveller type object.
+       * @param proposal the destination proposal to modify.
+       */
+      async removeTravellerTypeFromProposal(travellerType, proposal) {
+        const proposalIndex = this.destinationProposals.indexOf(proposal);
+        const typeIndex = proposal.travellerTypes.indexOf(travellerType);
+
+        let originalProposal = Object.assign({}, proposal);
+        originalProposal.travellerTypeIds =
+            originalProposal.travellerTypes.map(travellerTypeId => travellerTypeId.travellerTypeId);
+
+        let modifiedProposal = {
+          destinationProposalId: proposal.destinationProposalId
+        };
+        modifiedProposal.travellerTypeIds = [...originalProposal.travellerTypeIds];
+        modifiedProposal.travellerTypeIds.splice(typeIndex, 1);
+
+        try {
+          this.destinationProposals[proposalIndex] = await updateProposal(modifiedProposal);
+          this.getAllProposals();
+
+          const undoCommand = async (proposal) => {
+            this.destinationProposals[proposalIndex] = await updateProposal(proposal);
+            this.getAllProposals();
+          };
+
+          const redoCommand = async (proposal) => {
+            this.destinationProposals[proposalIndex] = await updateProposal(proposal);
+            this.getAllProposals();
+          };
+
+          const modifyProposalCommand = new Command(undoCommand.bind(null, originalProposal),
+              redoCommand.bind(null, modifiedProposal));
+          this.$emit("addUndoCommand", modifyProposalCommand);
+        } catch (error) {
+          if (error.status === 400) {
+            this.$emit("showError", "There was an error updating the proposal.")
+          }
+          if (error.status === 404) {
+            this.$emit("showError", "This destination Proposal does not exist.");
+            this.getAllProposals();
+          }
+        }
+      },
       /**
        * Accept proposal for traveller type change
        */
@@ -124,7 +175,7 @@
 
           const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId),
               redoCommand.bind(null, destinationProposalId));
-          this.$emit("acceptProposalCommand", acceptProposalCommand);
+          this.$emit("addUndoCommand", acceptProposalCommand);
 
           this.filterOutDestinationProposalId(destinationProposalId);
           this.$emit("showMessage", "Accepted Proposal");
@@ -152,7 +203,7 @@
 
           const declineProposalCommand = new Command(undoCommand.bind(null, destinationProposalId),
               redoCommand.bind(null, destinationProposalId));
-          this.$emit("declineProposalCommand", declineProposalCommand);
+          this.$emit("addUndoCommand", declineProposalCommand);
           this.filterOutDestinationProposalId(destinationProposalId);
           this.$emit("showMessage", "Rejected Proposal");
         } catch (e) {
