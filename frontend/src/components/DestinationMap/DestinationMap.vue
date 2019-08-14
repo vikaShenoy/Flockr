@@ -213,6 +213,7 @@
   #map {
     width: 100%;
     height: 100%;
+    position: relative;
   }
 
   #key {
@@ -220,6 +221,13 @@
     top: 10px;
     left: 10px;
     padding: 10px;
+
+    .map-key {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 5px;
+    }
   }
 
   .destination-name {
@@ -246,15 +254,8 @@
     margin-top: -20px;
   }
 
-  .map-key {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 5px;
-  }
-
   #overlay {
-    top: 64px;
+    top: 0px;
     background-color: rgba(0, 0, 0, 0.4);
     pointer-events: none;
     position: absolute;

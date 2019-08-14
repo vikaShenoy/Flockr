@@ -6,6 +6,7 @@
 
     <h2>Add Trip</h2>
 
+
     <v-form ref="addTripForm">
       <v-text-field
               v-model="tripName"
@@ -15,6 +16,9 @@
               :rules="tripNameRules"
       >
       </v-text-field>
+
+    <v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
+
 
       <TripTable :tripDestinations="tripDestinations"/>
 
@@ -51,7 +55,8 @@
 
 <script>
   import TripTable from "../../components/TripTable/TripTable";
-  import {addTrip} from "./AddTripService.js";
+  import {addTrip, getAllUsers} from "./AddTripService.js";
+  import UserStore from "../../stores/UserStore";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -74,9 +79,22 @@
         tripName: "",
         tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
         tripNameRules: [rules.required],
+        selectedUsers: [],
+        users: []
       };
     },
+    mounted() {
+      this.getUsers();
+    },
     methods: {
+      /**
+       * Gets all users and filters out the logged in user
+       */
+      async getUsers() {
+        const users = (await getAllUsers())
+          .filter(user => user.userId !== UserStore.data.userId)
+        this.users = users;
+      },
       /**
        * Adds an empty destination
        */
@@ -122,9 +140,16 @@
       async addTrip() {
         const validFields = this.validate();
         if (!validFields) return;
-        const userId = localStorage.getItem("userId");
-        const tripId = await addTrip(this.tripName, this.tripDestinations, userId);
+        // Specifies the extra users that should be added to the trip
+        const userIds = this.selectedUsers.map(selectedUser => selectedUser.userId);
+        const tripId = await addTrip(this.tripName, this.tripDestinations, userIds);
         this.$emit("new-trip-was-added", tripId);
+      },
+      /**
+       * Formats a users full name by their first name and last name
+       */
+      formatName(user) {
+        return `${user.firstName} ${user.lastName}`;
       }
     }
   };

@@ -6,10 +6,11 @@ import moment from "moment";
  * Sends a request to add a trip.
  * @param {string} tripName name of the trip to add.
  * @param {object[]} tripDestinations list of trip destinations to add as part of the trip.
- * @param {number} userId The userID to create the trip for
+ * @param {Array<number>} userIds The userID's to add to the trip
  * @return response from backend.
  */
-export async function addTrip(tripName, tripDestinations, userId) {
+export async function addTrip(tripName, tripDestinations, userIds) {
+  const userId = localStorage.getItem("userId");
   const transformedTripDestinations = tripDestinations.map(tripDestination => {
     const transformedTripDestination = {};
 
@@ -27,7 +28,20 @@ export async function addTrip(tripName, tripDestinations, userId) {
   .set("Authorization", localStorage.getItem("authToken"))
   .send({
     tripName,
-    tripDestinations: transformedTripDestinations
+    tripDestinations: transformedTripDestinations,
+    userIds
   });
+  return res.body;
+}
+
+/**
+ * Gets all users
+ * @returns {Array} Returns a list of users
+ */
+export async function getAllUsers() {
+  const authToken = localStorage.getItem("authToken");
+  const res = await superagent.get(endpoint(`/users`))
+    .set("Authorization", authToken);
+
   return res.body;
 }

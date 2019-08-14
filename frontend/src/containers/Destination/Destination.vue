@@ -76,11 +76,6 @@
       </v-container>
     </div>
 
-    <Snackbar
-            :snackbarModel="snackbarModel"
-            v-on:dismissSnackbar="dismissSnackbar"
-    />
-
     <RequestTravellerTypes
             :isShowingTravellerTypesDialog.sync="isShowingTravellerTypesDialog"
             :destination="destination"
@@ -113,7 +108,6 @@
   import DestinationDetails from "./DestinationDetails/DestinationDetails";
   import Carousel from "./Carousel/Carousel";
   import PromptDialog from "../../components/PromptDialog/PromptDialog";
-  import Snackbar from "../../components/Snackbars/Snackbar";
   import RequestTravellerTypes from "./RequestTravellerTypes/RequestTravellerTypes";
   import {sendUpdateDestination} from "../Destinations/DestinationsService";
   import UserStore from '../../stores/UserStore';
@@ -130,7 +124,6 @@
       Carousel,
       DestinationDetails,
       ModifyDestinationDialog,
-      Snackbar,
       PromptDialog,
       RequestTravellerTypes,
       UndoRedo
@@ -142,13 +135,6 @@
         destinationPhotos: [],
         hasOwnerRights: false,
         showingEditDestDialog: false,
-        snackbarModel: {
-          show: false,
-          timeout: 3000,
-          text: "",
-          color: null,
-          snackbarId: 1
-        },
         isShowingTravellerTypesDialog: false,
         promptDialog: {
           show: false,
@@ -196,17 +182,10 @@
         this.$refs.undoRedo.addUndo(updateDestCommand);
         this.destination = updatedDestination;
         this.showingEditDestDialog = false;
-        this.snackbarModel.color = "success";
-        this.snackbarModel.text = "Updated destination";
-        this.snackbarModel.show = true;
+        this.showSnackbar("Updated the destination", "success", 3500)
       },
       showError(errorMessage) {
-        this.snackbarModel.text = errorMessage;
-        this.snackbarModel.color = "error";
-        this.snackbarModel.show = true;
-      },
-      dismissSnackbar() {
-        this.snackbarModel.show = false;
+        this.showSnackbar(errorMessage, "error", 3000);
       },
       /**
        * Send a proposal for traveller types for a destination.
@@ -228,9 +207,7 @@
             redoCommand.bind(null, proposal.destinationProposalId));
         this.$refs.undoRedo.addUndo(sendProposalCommand);
 
-        this.snackbarModel.color = "success";
-        this.snackbarModel.text = "Proposal Sent";
-        this.snackbarModel.show = true;
+        this.showSnackbar("Proposal sent", "success", 2500);
       },
       /**
        * Adds the photo to a destination with undo and redo functionality.
@@ -269,12 +246,16 @@
         this.destinationPhotos.push(photo)
       },
       /**
-       * Displays a message using the snackbar.
+       * @param {String} message the message to show in the snackbar
+       * @param {String} color the colour for the snackbar
+       * @param {Number} the amount of time (in ms) for which we show the snackbar
        */
-      displayMessage(text, color) {
-        this.snackbarModel.text = text;
-        this.snackbarModel.color = color;
-        this.snackbarModel.show = true;
+      showSnackbar(message, color, timeout) {
+        this.$root.$emit({
+          message: message,
+          color: color,
+          timeout: timeout
+        });
       },
 
       /**
@@ -287,7 +268,6 @@
         const destinationId = this.destination.destinationId;
         const removePhoto = this.removePhoto;
         const addPhotoToDisplay = this.addPhotoToDisplay;
-        const displayMessage = this.displayMessage;
         this.index = index;
         const removeFunction = async () => {
           try {
@@ -312,10 +292,10 @@
             await removePhotoFromDestination(destinationId, destinationPhotoId);
             removePhoto(index);
             closeDialog(false);
-            displayMessage("The photo has been successfully removed.", "green");
+            this.showSnackbar('The photo was removed', 'success', 3000);
 
           } catch (error) {
-            displayMessage(error.message, "red");
+            this.showSnackbar('Could not remove the photo', 'error', 3000);
           }
         };
 
@@ -340,7 +320,7 @@
           await deleteDestination(destinationId);
           this.$router.push("/destinations");
         } catch (e) {
-          this.showError("Could not delete destination");
+          this.showSnackbar('Could not delete the destination', 'error', 3000);
         }
       },
 
@@ -364,9 +344,9 @@
       permissionUpdated(newValue, index) {
         this.destinationPhotos[index].personalPhoto.isPublic = newValue;
         if (newValue) {
-          this.displayMessage("This photo is now public", "green");
+          this.showSnackbar("This photo is now public", "success", 2500);
         } else {
-          this.displayMessage("This photo is now private", "green");
+          this.showSnackbar("This photo is now public", "success", 2500);
         }
       }
     }

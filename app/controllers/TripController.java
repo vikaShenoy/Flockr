@@ -26,15 +26,11 @@ import util.Security;
 import util.TripUtil;
 
 import javax.inject.Inject;
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 
@@ -71,7 +67,12 @@ public class TripController extends Controller {
      *
      * @param userId  id of the user to add a trip for.
      * @param request Used to retrieve trip JSON.
-     * @return 200 status code if successful. 400 if bad request error.
+     * @return A completion stage with an HTTP result which can be
+     *  - 200 - Trip was successfully created
+     *  - 403 - User does not have permission to add trip
+     *  - 400 - Problem with request body
+     *  - 404 - User or trip could not be found
+     *  - 500 - Any other internal server error
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
@@ -85,13 +86,9 @@ public class TripController extends Controller {
 
         String tripName = jsonBody.get("tripName").asText();
         JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
-        List<TripDestination> tripDestinations;
-        try {
-            tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+        JsonNode userIdsJson = jsonBody.get("userIds");
 
-        } catch (BadRequestException e) {
-            return supplyAsync(Results::badRequest);
-        }
+
 
         return userRepository.getUserById(userId)
                 .thenComposeAsync(optionalUser -> {
@@ -101,20 +98,31 @@ public class TripController extends Controller {
 
                     User user = optionalUser.get();
 
+                   List<TripDestination> tripDestinations;
+                   List<User> users;
+
+                   try {
+                       List<User> allUsers = User.find.all();
+                       tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+                       users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
+                   } catch (BadRequestException e) {
+                       return CompletableFuture.completedFuture(badRequest(e.getMessage()));
+                   } catch (ForbiddenRequestException e) {
+                       return CompletableFuture.completedFuture(forbidden(e.getMessage()));
+                   } catch (NotFoundException e) {
+                       return CompletableFuture.completedFuture(notFound(e.getMessage()));
+                   }
+
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
                             tripDestinations);
 
                     return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
                             .thenComposeAsync(destinations -> {
-                                Trip trip = new Trip(tripDestinations, user, tripName);
-
+                                Trip trip = new Trip(tripDestinations, users, tripName);
                                 return tripRepository.saveTrip(trip);
-                            });
-                }, httpExecutionContext.current())
-                .thenApplyAsync(updatedTrip -> {
-                    JsonNode tripIdJson = Json.toJson(updatedTrip.getTripId());
-                    return created(tripIdJson);
-                });
+                            })
+                            .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip.getTripId())));
+                }, httpExecutionContext.current());
     }
 
     /**
@@ -255,6 +263,9 @@ public class TripController extends Controller {
      * @param userId  The id of the user that the trip belongs to
      * @return Returns the http response which can be
      * - 200 - Trip was updated successfully
+     * - 401 - User was not authenticated
+     * - 403 - User does not have permission to create the trip
+     * - 404 - User or trip could not be found
      * - 400 - there was an error with the request.
      * - 500 - there was an internal server error.
      */
@@ -274,12 +285,20 @@ public class TripController extends Controller {
                     JsonNode jsonBody = request.body().asJson();
                     String tripName = jsonBody.get("tripName").asText();
                     JsonNode tripDestinationsJson = jsonBody.get("tripDestinations");
+                    JsonNode userIdsJson = jsonBody.get("userIds");
 
                     List<TripDestination> tripDestinations;
+                    List<User> users;
                     try {
+                        List<User> allUsers = User.find.all();
                         tripDestinations = tripUtil.getTripDestinationsFromJson(tripDestinationsJson);
+                        users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
                     } catch (BadRequestException e) {
                         throw new CompletionException(new BadRequestException());
+                    }  catch (ForbiddenRequestException e) {
+                        return CompletableFuture.completedFuture(forbidden(e.getMessage()));
+                    } catch (NotFoundException e) {
+                        return CompletableFuture.completedFuture(notFound(e.getMessage()));
                     }
 
                     List<CompletionStage<Destination>> updateDestinations = checkAndUpdateOwners(userId,
@@ -290,15 +309,13 @@ public class TripController extends Controller {
 
                                 trip.setTripDestinations(tripDestinations);
                                 trip.setTripName(tripName);
+                                trip.setUsers(users);
 
                                 return tripRepository.update(trip);
-                            });
+                            })
+                            .thenApplyAsync(trip -> ok(Json.toJson(trip)));
+
                 }, httpExecutionContext.current())
-                .thenApplyAsync(trip -> {
-                    User userFromUrl = User.find.byId(userId);
-                    tripNotifier.notifyTripUpdate(userFromUrl, trip, ConnectedUsers.getInstance().getConnectedUsers());
-                    return ok(Json.toJson(trip));
-                    }, httpExecutionContext.current())
                 .exceptionally(e -> {
                     try {
                         throw e.getCause();

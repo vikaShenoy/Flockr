@@ -198,11 +198,16 @@ create table treasure_hunt (
 
 create table trip (
   trip_id                       integer auto_increment not null,
-  user_user_id                  integer,
   trip_name                     varchar(255),
   deleted_expiry                datetime(6),
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_trip primary key (trip_id)
+);
+
+create table trip_user (
+  trip_trip_id                  integer not null,
+  user_user_id                  integer not null,
+  constraint pk_trip_user primary key (trip_trip_id,user_user_id)
 );
 
 create table trip_destination (
@@ -315,8 +320,11 @@ alter table treasure_hunt add constraint fk_treasure_hunt_treasure_hunt_destinat
 create index ix_treasure_hunt_owner_user_id on treasure_hunt (owner_user_id);
 alter table treasure_hunt add constraint fk_treasure_hunt_owner_user_id foreign key (owner_user_id) references user (user_id) on delete restrict on update restrict;
 
-create index ix_trip_user_user_id on trip (user_user_id);
-alter table trip add constraint fk_trip_user_user_id foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+create index ix_trip_user_trip on trip_user (trip_trip_id);
+alter table trip_user add constraint fk_trip_user_trip foreign key (trip_trip_id) references trip (trip_id) on delete restrict on update restrict;
+
+create index ix_trip_user_user on trip_user (user_user_id);
+alter table trip_user add constraint fk_trip_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
 create index ix_trip_destination_trip_trip_id on trip_destination (trip_trip_id);
 alter table trip_destination add constraint fk_trip_destination_trip_trip_id foreign key (trip_trip_id) references trip (trip_id) on delete restrict on update restrict;
@@ -402,8 +410,11 @@ drop index ix_treasure_hunt_treasure_hunt_destination_destination_id on treasure
 alter table treasure_hunt drop foreign key fk_treasure_hunt_owner_user_id;
 drop index ix_treasure_hunt_owner_user_id on treasure_hunt;
 
-alter table trip drop foreign key fk_trip_user_user_id;
-drop index ix_trip_user_user_id on trip;
+alter table trip_user drop foreign key fk_trip_user_trip;
+drop index ix_trip_user_trip on trip_user;
+
+alter table trip_user drop foreign key fk_trip_user_user;
+drop index ix_trip_user_user on trip_user;
 
 alter table trip_destination drop foreign key fk_trip_destination_trip_trip_id;
 drop index ix_trip_destination_trip_trip_id on trip_destination;
@@ -450,6 +461,8 @@ drop table if exists traveller_type_destination;
 drop table if exists treasure_hunt;
 
 drop table if exists trip;
+
+drop table if exists trip_user;
 
 drop table if exists trip_destination;
 

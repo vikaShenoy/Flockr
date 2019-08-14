@@ -1,13 +1,36 @@
 <template>
-  <v-navigation-drawer permanent id="navbar" :width="240">
+  <v-navigation-drawer
+    permanent
+    :mini-variant="isCollapsed"
+    :width="240"
+    :style="{'margin-top': '60px'}"
+    app
+    id="sidebar"
+  >
     <v-list dense class="pt-0">
+      <!-- Sidebar toggling -->
       <v-list-tile
-              v-for="item in itemsToShow"
-              :key="item.title"
-              :to="item.url == '#' ? '' : item.url"
-              @click="navClicked(item.url)"
-              class="nav-item"
-              active-class="secondary-text"
+        @click="isCollapsed = !isCollapsed"
+        class="nav-item"
+        active-class="secondary-text"
+      >
+        <v-list-tile-action>
+          <v-icon class="nav-icon">{{ isCollapsed ? "toggle_off" : "toggle_on" }}</v-icon>
+        </v-list-tile-action>
+
+        <v-list-tile-content>
+          <v-list-tile-title>{{ isCollapsed ? "Expand sidebar" : "Collapse sidebar" }}</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+
+      <!-- Routes buttons -->
+      <v-list-tile
+        v-for="item in itemsToShow"
+        :key="item.title"
+        :to="item.url == '#' ? '' : item.url"
+        @click="navClicked(item.url)"
+        class="nav-item"
+        active-class="secondary-text"
       >
         <v-list-tile-action>
           <v-icon class="nav-icon">{{ item.icon }}</v-icon>
@@ -18,11 +41,12 @@
         </v-list-tile-content>
       </v-list-tile>
 
-
+      <!-- Button to go back to own account, shown if admin
+      viewing as another user -->
       <v-list-tile
-              @click="goBackToOwnAccount()"
-              class="nav-item"
-              v-if="userStore.viewingAsAnotherUser"
+        @click="goBackToOwnAccount()"
+        class="nav-item"
+        v-if="userStore.viewingAsAnotherUser"
       >
         <v-list-tile-action>
           <v-icon class="nav-icon">arrow_back</v-icon>
@@ -32,7 +56,6 @@
           <v-list-tile-title>Back to own account</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
-
 
     </v-list>
   </v-navigation-drawer>
@@ -46,6 +69,7 @@
   export default {
     data() {
       return {
+        isCollapsed: false,
         userStore: UserStore.data,
         items: [
           {
@@ -198,18 +222,8 @@
 <style lang="scss" scoped>
   @import "../../../styles/_variables.scss";
 
-  #navbar {
+  #sidebar {
     background-color: $primary;
-    position: fixed !important;
-    top: 64px;
-  }
-
-  #title-box {
-    background-color: $secondary;
-  }
-
-  #title {
-    color: $darker-white;
   }
 
   .nav-icon {
