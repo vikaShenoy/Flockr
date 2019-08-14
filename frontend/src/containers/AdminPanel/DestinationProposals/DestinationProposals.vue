@@ -6,37 +6,37 @@
     <v-divider></v-divider>
 
     <v-data-table
-            :headers="headers"
-            :items="destinationProposals || []"
-            :loading="!destinationProposals"
-            color="secondary"
-            hide-actions
-            :no-data-text="destinationProposals ? 'No Proposals' : ''"
+        :headers="headers"
+        :items="destinationProposals || []"
+        :loading="!destinationProposals"
+        color="secondary"
+        hide-actions
+        :no-data-text="destinationProposals ? 'No Proposals' : ''"
     >
       <template v-slot:items="props">
         <td>{{ props.item.destination.destinationName }}</td>
         <td class="text-xs-left">
           <v-chip
-                  v-for="travellerType in props.item.travellerTypes"
-                  v-bind:key="travellerType.travellerTypeId"
-                  color="primary"
-                  text-color="white"
-                  close
-                  v-on:input="removeTravellerTypeFromProposal(travellerType, props.item)"
+              v-for="travellerType in props.item.travellerTypes"
+              v-bind:key="travellerType.travellerTypeId"
+              color="primary"
+              text-color="white"
+              close
+              v-on:input="removeTravellerTypeFromProposal(travellerType, props.item)"
           >
             {{ travellerType.travellerTypeName }}
           </v-chip>
         </td>
         <td>
           <v-combobox
-                  v-if="getAvailableTravellerTypes(props.item.travellerTypes).length !== 0"
-                  :items="getAvailableTravellerTypes(props.item.travellerTypes)"
-                  :ref="props.item.destinationProposalId"
-                  item-text="travellerTypeName"
-                  label="Add Another Type"
-                  append-outer-icon="add"
-                  multiple
-                  @click:append-outer="addTravellerTypesFromProposal(props.item)"
+              v-if="getAvailableTravellerTypes(props.item.travellerTypes).length !== 0"
+              :items="getAvailableTravellerTypes(props.item.travellerTypes)"
+              :ref="props.item.destinationProposalId"
+              item-text="travellerTypeName"
+              label="Add Another Type"
+              append-outer-icon="add"
+              multiple
+              @click:append-outer="addTravellerTypesFromProposal(props.item)"
           />
           <h4 v-else>
             All types selected
@@ -44,16 +44,16 @@
         </td>
         <td class="text-xs-center">
           <v-btn
-                  flat
-                  color="success"
-                  @click="acceptProposal(props.item.destinationProposalId)"
+              flat
+              color="success"
+              @click="acceptProposal(props.item.destinationProposalId)"
           >
             <v-icon>check_circle</v-icon>
           </v-btn>
           <v-btn
-                  flat
-                  color="error"
-                  @click="declineProposal(props.item.destinationProposalId)"
+              flat
+              color="error"
+              @click="declineProposal(props.item.destinationProposalId)"
           >
             <v-icon>delete</v-icon>
           </v-btn>
@@ -106,7 +106,6 @@
             value: "actions",
             sortable: false,
             align: "center",
-            width: "260px"
           }
         ],
         destinationProposals: null,
@@ -140,7 +139,8 @@
        */
       getAvailableTravellerTypes(travellerTypes) {
         return this.allTravellerTypes.filter(travellerType => {
-          return !travellerTypes.some(type => type.travellerTypeId === travellerType.travellerTypeId)
+          return !travellerTypes.some(
+              type => type.travellerTypeId === travellerType.travellerTypeId)
         });
       },
       /**
@@ -155,14 +155,14 @@
         const proposalIndex = this.destinationProposals.indexOf(proposal);
         const typeIndex = proposal.travellerTypes.indexOf(travellerType);
 
-        let originalProposal = Object.assign({}, proposal);
+        const originalProposal = {...proposal};
         originalProposal.travellerTypeIds =
             originalProposal.travellerTypes.map(travellerTypeId => travellerTypeId.travellerTypeId);
 
-        let modifiedProposal = {
-          destinationProposalId: proposal.destinationProposalId
+        const modifiedProposal = {
+          destinationProposalId: proposal.destinationProposalId,
+          travellerTypeIds: [...originalProposal.travellerTypeIds]
         };
-        modifiedProposal.travellerTypeIds = [...originalProposal.travellerTypeIds];
         modifiedProposal.travellerTypeIds.splice(typeIndex, 1);
 
         try {
@@ -201,20 +201,19 @@
        */
       async addTravellerTypesFromProposal(proposal) {
         const travellerTypes = this.$refs[proposal.destinationProposalId].selectedItems;
+        const travellerTypeIdsToAdd =
+            travellerTypes.map(travellerType => travellerType.travellerTypeId);
 
         const proposalIndex = this.destinationProposals.indexOf(proposal);
 
-        let originalProposal = Object.assign({}, proposal);
+        const originalProposal = {...proposal};
         originalProposal.travellerTypeIds =
             originalProposal.travellerTypes.map(travellerTypeId => travellerTypeId.travellerTypeId);
 
-        let modifiedProposal = {
-          destinationProposalId: proposal.destinationProposalId
+        const modifiedProposal = {
+          destinationProposalId: proposal.destinationProposalId,
+          travellerTypeIds: originalProposal.travellerTypeIds.concat(travellerTypeIdsToAdd)
         };
-        modifiedProposal.travellerTypeIds = [...originalProposal.travellerTypeIds];
-        for (let i = 0; i < travellerTypes.length; i++) {
-          modifiedProposal.travellerTypeIds.push(travellerTypes[i].travellerTypeId);
-        }
 
         try {
           this.destinationProposals[proposalIndex] = await updateProposal(modifiedProposal);
@@ -308,15 +307,12 @@
        * or rejected
        */
       filterOutDestinationProposalId(destinationProposalId) {
-        const newDestinationProposals = this.destinationProposals.filter(destinationProposal => {
+        this.destinationProposals = this.destinationProposals.filter(destinationProposal => {
           return destinationProposal.destinationProposalId !== destinationProposalId;
         });
-
-        this.destinationProposals = newDestinationProposals;
       },
       async getAllProposals() {
-        const proposals = await getDestinationProposals();
-        this.destinationProposals = proposals;
+        this.destinationProposals = await getDestinationProposals();
       },
     }
   };
