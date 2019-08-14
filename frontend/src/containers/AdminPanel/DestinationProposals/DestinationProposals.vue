@@ -26,7 +26,21 @@
           >
             {{ travellerType.travellerTypeName }}
           </v-chip>
-
+        </td>
+        <td>
+          <v-combobox
+                  v-if="getAvailableTravellerTypes(props.item.travellerTypes).length !== 0"
+                  :items="getAvailableTravellerTypes(props.item.travellerTypes)"
+                  :ref="props.item.destinationProposalId"
+                  item-text="travellerTypeName"
+                  label="Add Another Type"
+                  append-outer-icon="add"
+                  multiple
+                  @click:append-outer="addTravellerTypesFromProposal(props.item)"
+          />
+          <h4 v-else>
+            All types selected
+          </h4>
         </td>
         <td class="text-xs-center">
           <v-btn
@@ -62,6 +76,7 @@
   import Command from "../../../components/UndoRedo/Command";
   import {sendUpdateDestination} from "../../Destinations/DestinationsService";
   import {undeleteProposal} from "../../Destination/DestinationService";
+  import {getAllTravellerTypes} from "../../Profile/TravellerTypes/TravellerTypesService";
 
   export default {
     data() {
@@ -74,25 +89,34 @@
             value: "destinationName"
           },
           {
-            text: "Traveller Types",
+            text: "Current Suggested Traveller Types",
             value: "travellerTypes",
             sortable: false,
             align: "left"
           },
           {
+            text: "Add Traveller Type",
+            value: "addTravellerType",
+            sortable: false,
+            align: "center",
+            width: "400px"
+          },
+          {
             text: "Actions",
             value: "actions",
             sortable: false,
-            align: "center"
+            align: "center",
+            width: "260px"
           }
         ],
         destinationProposals: null,
         oldDestination: null,
         destinationId: null,
+        allTravellerTypes: []
       };
     },
     /**
-     * Gets all proposals used for rendering in table
+     * Gets all traveller types and proposals used for rendering in table
      */
     async mounted() {
       try {
@@ -100,8 +124,25 @@
       } catch (e) {
         this.$emit("showError", "Could not get proposals");
       }
+
+      try {
+        this.allTravellerTypes = await getAllTravellerTypes();
+      } catch (e) {
+        this.$emit("showError", "Could not get traveller types");
+      }
     },
     methods: {
+      /**
+       * Returns a list of traveller types not in the given list.
+       *
+       * @param travellerTypes the unavailable traveller types.
+       * @return Array<Object> the traveller types still available.
+       */
+      getAvailableTravellerTypes(travellerTypes) {
+        return this.allTravellerTypes.filter(travellerType => {
+          return !travellerTypes.some(type => type.travellerTypeId === travellerType.travellerTypeId)
+        });
+      },
       /**
        * Called when a close button is clicked on a traveller type chip.
        * Modifies a destination proposal to remove the said traveller type.
@@ -127,6 +168,58 @@
         try {
           this.destinationProposals[proposalIndex] = await updateProposal(modifiedProposal);
           this.getAllProposals();
+
+          const undoCommand = async (proposal) => {
+            this.destinationProposals[proposalIndex] = await updateProposal(proposal);
+            this.getAllProposals();
+          };
+
+          const redoCommand = async (proposal) => {
+            this.destinationProposals[proposalIndex] = await updateProposal(proposal);
+            this.getAllProposals();
+          };
+
+          const modifyProposalCommand = new Command(undoCommand.bind(null, originalProposal),
+              redoCommand.bind(null, modifiedProposal));
+          this.$emit("addUndoCommand", modifyProposalCommand);
+        } catch (error) {
+          if (error.status === 400) {
+            this.$emit("showError", "There was an error updating the proposal.")
+          }
+          if (error.status === 404) {
+            this.$emit("showError", "This destination Proposal does not exist.");
+            this.getAllProposals();
+          }
+        }
+      },
+      /**
+       * Called when the add button is selected on the add traveller type combobox.
+       * Modifies a destination proposal to add the said traveller type.
+       * Sets undo and redo commands for this process.
+       *
+       * @param proposal the destination proposal to modify.
+       */
+      async addTravellerTypesFromProposal(proposal) {
+        const travellerTypes = this.$refs[proposal.destinationProposalId].selectedItems;
+
+        const proposalIndex = this.destinationProposals.indexOf(proposal);
+
+        let originalProposal = Object.assign({}, proposal);
+        originalProposal.travellerTypeIds =
+            originalProposal.travellerTypes.map(travellerTypeId => travellerTypeId.travellerTypeId);
+
+        let modifiedProposal = {
+          destinationProposalId: proposal.destinationProposalId
+        };
+        modifiedProposal.travellerTypeIds = [...originalProposal.travellerTypeIds];
+        for (let i = 0; i < travellerTypes.length; i++) {
+          modifiedProposal.travellerTypeIds.push(travellerTypes[i].travellerTypeId);
+        }
+
+        try {
+          this.destinationProposals[proposalIndex] = await updateProposal(modifiedProposal);
+          this.getAllProposals();
+          this.$refs[proposal.destinationProposalId].reset();
 
           const undoCommand = async (proposal) => {
             this.destinationProposals[proposalIndex] = await updateProposal(proposal);
