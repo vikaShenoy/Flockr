@@ -9,52 +9,74 @@ import moment from "moment";
  * @param {Array<number>} userIds The userID's to add to the trip
  * @return response from backend.
  */
-export async function addTrip(name, tripDestinations, userIds) {
+export async function addTrip(name, tripNodes, userIds) {
   const userId = localStorage.getItem("userId");
-  const transformedTripDestinations = transformTripNodes(tripDestinations);
+  const transformedTripNodes = transformTripNodes(tripNodes);
 
   const res = await superagent.post(endpoint(`/users/${userId}/trips`))
   .set("Authorization", localStorage.getItem("authToken"))
   .send({
     name,
-    tripNodes: transformedTripDestinations,
+    tripNodes: transformedTripNodes,
     userIds
   });
   return res.body;
 }
 
 
-export async function addSubtrip(parentTrip, tripId, tripNodes) {
+/**
+ * Add a sub trip to a parent trip using the PUT endpoint.
+ * Called after the user creates a new subtrip in the trip item sidebar.
+ * @param parentTrip the trip which is being updated.
+ * @param subtripId id of the subtrip
+ * @param subtripNodes tripNodes of the subtrip
+ * @returns {Promise<*>}
+ */
+export async function addSubTrip(parentTrip, subTripId, subTripNodes) {
   const userId = localStorage.getItem("userId");
-  const transformedTripNodes = transformTripNodes(tripNodes);
+  const transformedTripNodes = transformTripNodes(subTripNodes);
   const subTrip = {
-    tripNodeId: tripId,
+    tripNodeId: subTripId,
     nodeType: "TripComposite",
     tripNodes: transformedTripNodes
-  }
-  // TODO - finish off this request
+  };
+  let updatedTripNodes = parentTrip.tripNodes;
+  updatedTripNodes.push(subTrip);
+  console.log("Updated trip nodes: ");
+  console.log(updatedTripNodes);
+  // Send a put request which adds the sub trip to the parent trip's tripNodes list.
+  const res = await superagent.put(endpoint(`/users/${userId}/trips/${parentTrip.tripNodeId}`))
+      .set("Authorization", localStorage.getItem("authToken"))
+      .send({
+        name: parentTrip.name,
+        userIds: parentTrip.userIds,
+        tripNodes: updatedTripNodes
+      });
+  return res.body;
 }
 
+// TODO - edit this so if the object contains destination it goes into the object to get the destination id.
+function transformTripNodes(tripNodes) {
+  let transformedTripNodes = tripNodes.map(tripNode => {
+    const transformedTripDestination = {};
+    transformedTripDestination.nodeType = "TripDestinationLeaf";
+    transformedTripDestination.arrivalDate = moment(tripNode.arrivalDate).valueOf();
+    transformedTripDestination.arrivalTime =
+        tripNode.arrivalTime === null ? null : moment.duration(tripNode.arrivalTime).asMinutes();
+    transformedTripDestination.departureDate = moment(tripNode.departureDate).valueOf();
+    transformedTripDestination.departureTime =
+        tripNode.departureTime === null ? null : moment.duration(tripNode.departureTime).asMinutes();
+    return transformedTripDestination;
+  });
+  return transformedTripNodes;
+}
 
 
 export async function getAllUsers() {
   const authToken = localStorage.getItem("authToken");
   const res = await superagent.get(endpoint(`/users`))
-    .set("Authorization", authToken);
+      .set("Authorization", authToken);
 
   return res.body;
 }
 
-
-function transformTripNodes(tripDestination) {
-  const transformedTripDestination = {};
-  transformedTripDestination.nodeType = "TripDestinationLeaf";
-  transformedTripDestination.destinationId = tripDestination.destinationId;
-  transformedTripDestination.arrivalDate = moment(tripDestination.arrivalDate).valueOf();
-  transformedTripDestination.arrivalTime =
-      tripDestination.arrivalTime === null ? null : moment.duration(tripDestination.arrivalTime).asMinutes();
-  transformedTripDestination.departureDate = moment(tripDestination.departureDate).valueOf();
-  transformedTripDestination.departureTime =
-      tripDestination.departureTime === null ? null : moment.duration(tripDestination.departureTime).asMinutes();
-  return transformedTripDestination;
-}

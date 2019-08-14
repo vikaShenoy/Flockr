@@ -73,7 +73,6 @@
 			}
 		},
 		mounted() {
-      console.log(this.trip.users);
 		},
 		watch: {
       // Synchronize both isShowing state and props

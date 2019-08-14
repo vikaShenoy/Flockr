@@ -54,6 +54,7 @@
       return {
         // trip: null,
         trip: {
+          tripNodeId: 4,
           name: "Trip1",
           users: [],
           nodeType: "TripComposite",
@@ -129,7 +130,7 @@
               ]
             },
             {
-              tripNodeId: 4,
+              tripNodeId: 5,
               nodeType: "TripDestinationLeaf",
               name: "Destination4",
               arrivalDate: "04-06-2018",
@@ -271,7 +272,6 @@
        */
       addEditTripCommand(oldTrip, newTrip) {
         const undoCommand = async (oldTrip) => {
-          console.log(oldTrip);
           await editTrip(oldTrip.tripId, oldTrip.tripName, oldTrip.tripDestinations, oldTrip.users);
           this.trip = oldTrip;
         };
