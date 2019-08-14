@@ -11,6 +11,26 @@
 					</v-spacer>
 				</v-layout>
 			</v-card-title>
+			<v-form ref="form">
+				<v-container grid-list-md>
+					<v-layout row wrap>
+						<v-flex xs12>
+							<v-select
+								:items="trips"
+								label="Select existing trip"
+							/>
+							<AddTrip
+							:sidebarComponent="false"
+							:users="trip.users"
+							@new-trip-was-added="newTripWasAdded"
+							@cancel-trip-creation="isShowingDialog = false"
+							>
+							</AddTrip>
+
+						</v-flex>
+					</v-layout>
+				</v-container>
+			</v-form>
 		</v-card>
 
 	></v-dialog>
@@ -18,8 +38,10 @@
 </template>
 
 <script>
+	import AddTrip from "../../../AddTrip/AddTrip"
   export default {
-		props: {
+    components: {AddTrip},
+    props: {
       isShowing: {
         type: Boolean,
 				required: false
@@ -35,8 +57,22 @@
 		},
 		data() {
       return {
-        isShowingDialog: false
+        isShowingDialog: false,
+				trips: [],
 			}
+		},
+		methods: {
+      /**
+			 * Pass the created trip Id to the trip item sidebar component
+			 * when the user creates a trip in the dialog..
+       * @param tripId id of the newly created trip.
+       */
+      newTripWasAdded(tripId) {
+        this.$emit("new-trip-was-added", tripId);
+			}
+		},
+		mounted() {
+      console.log(this.trip.users);
 		},
 		watch: {
       // Synchronize both isShowing state and props

@@ -63,6 +63,7 @@
 					:editMode="false"
 					:isShowing.sync="isShowingAddSubtripDialog"
 					:trip="trip"
+					@new-trip-was-added="newTripWasAdded"
 				/>
 
         <ModifyTripDestinationDialog
@@ -120,6 +121,10 @@ export default {
     }
   },
   methods: {
+    newTripWasAdded(tripId) {
+      console.log("Trip item sidebar. Trip added with id = " + tripId);
+      // TODO - add this trip to the list
+		},
     /**
      * Emitted when the order of destinations have changed
      */

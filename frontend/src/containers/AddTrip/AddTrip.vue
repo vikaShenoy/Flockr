@@ -4,7 +4,7 @@
           class="col-lg-10 offset-lg-1"
   >
 
-    <h2>Add Trip</h2>
+    <h2 v-if="sidebarComponent">Add Trip</h2>
 
 
     <v-form ref="addTripForm">
@@ -17,7 +17,7 @@
       >
       </v-text-field>
 
-    <v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
+    <v-combobox v-if="sidebarComponent" :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
 
 
       <TripTable :tripDestinations="tripDestinations"/>
@@ -74,17 +74,22 @@
     components: {
       TripTable
     },
+		props: {
+      sidebarComponent: {
+        type: Boolean,
+				required: false
+			},
+
+		},
     data() {
       return {
         tripName: "",
         tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
         tripNameRules: [rules.required],
         selectedUsers: [],
-        users: []
       };
     },
     mounted() {
-      console.log("I made it here");
       this.getUsers();
     },
     methods: {
