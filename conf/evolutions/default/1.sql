@@ -52,6 +52,18 @@ BEGIN
   EXECUTE stmt;
 END
 $$
+create table chat_group (
+  chat_group_id                 integer auto_increment not null,
+  name                          varchar(255),
+  constraint pk_chat_group primary key (chat_group_id)
+);
+
+create table chat_group_user (
+  chat_group_chat_group_id      integer not null,
+  user_user_id                  integer not null,
+  constraint pk_chat_group_user primary key (chat_group_chat_group_id,user_user_id)
+);
+
 create table country (
   country_id                    integer auto_increment not null,
   country_name                  varchar(255),
@@ -110,6 +122,14 @@ create table district (
   district_name                 varchar(255),
   country_country_id            integer,
   constraint pk_district primary key (district_id)
+);
+
+create table message (
+  message_id                    integer auto_increment not null,
+  chat_group_chat_group_id      integer,
+  contents                      varchar(255),
+  timestamp                     datetime(6),
+  constraint pk_message primary key (message_id)
 );
 
 create table nationality (
@@ -247,6 +267,12 @@ create table user_role (
   constraint pk_user_role primary key (user_role_id)
 );
 
+create index ix_chat_group_user_chat_group on chat_group_user (chat_group_chat_group_id);
+alter table chat_group_user add constraint fk_chat_group_user_chat_group foreign key (chat_group_chat_group_id) references chat_group (chat_group_id) on delete restrict on update restrict;
+
+create index ix_chat_group_user_user on chat_group_user (user_user_id);
+alter table chat_group_user add constraint fk_chat_group_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
 create index ix_destination_destination_type_destination_type_id on destination (destination_type_destination_type_id);
 alter table destination add constraint fk_destination_destination_type_destination_type_id foreign key (destination_type_destination_type_id) references destination_type (destination_type_id) on delete restrict on update restrict;
 
@@ -276,6 +302,9 @@ alter table destination_proposal_traveller_type add constraint fk_destination_pr
 
 create index ix_district_country_country_id on district (country_country_id);
 alter table district add constraint fk_district_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
+
+create index ix_message_chat_group_chat_group_id on message (chat_group_chat_group_id);
+alter table message add constraint fk_message_chat_group_chat_group_id foreign key (chat_group_chat_group_id) references chat_group (chat_group_id) on delete restrict on update restrict;
 
 alter table nationality add constraint fk_nationality_nationality_country_country_id foreign key (nationality_country_country_id) references country (country_id) on delete restrict on update restrict;
 
@@ -337,6 +366,12 @@ alter table user add constraint fk_user_profile_photo_photo_id foreign key (prof
 
 # --- !Downs
 
+alter table chat_group_user drop foreign key fk_chat_group_user_chat_group;
+drop index ix_chat_group_user_chat_group on chat_group_user;
+
+alter table chat_group_user drop foreign key fk_chat_group_user_user;
+drop index ix_chat_group_user_user on chat_group_user;
+
 alter table destination drop foreign key fk_destination_destination_type_destination_type_id;
 drop index ix_destination_destination_type_destination_type_id on destination;
 
@@ -366,6 +401,9 @@ drop index ix_destination_proposal_traveller_type_traveller_type on destination_
 
 alter table district drop foreign key fk_district_country_country_id;
 drop index ix_district_country_country_id on district;
+
+alter table message drop foreign key fk_message_chat_group_chat_group_id;
+drop index ix_message_chat_group_chat_group_id on message;
 
 alter table nationality drop foreign key fk_nationality_nationality_country_country_id;
 
@@ -424,6 +462,10 @@ drop index ix_trip_destination_destination_destination_id on trip_destination;
 
 alter table user drop foreign key fk_user_profile_photo_photo_id;
 
+drop table if exists chat_group;
+
+drop table if exists chat_group_user;
+
 drop table if exists country;
 
 drop table if exists destination;
@@ -437,6 +479,8 @@ drop table if exists destination_proposal_traveller_type;
 drop table if exists destination_type;
 
 drop table if exists district;
+
+drop table if exists message;
 
 drop table if exists nationality;
 
