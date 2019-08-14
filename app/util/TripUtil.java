@@ -52,6 +52,8 @@ public class TripUtil {
             throw new BadRequestException("trip nodes has to be larger or equal to 2");
         }
 
+
+
         if (checkContiguousDestinations(tripNodesJson)) {
             throw new BadRequestException("Destinations cannot be contiguous");
         }
@@ -84,9 +86,9 @@ public class TripUtil {
     public boolean checkContiguousDestinations(JsonNode tripNodes) {
         int lastDestinationId = 0;
         int currentDestinationId;
-        String nodeType;
         for (JsonNode tripNode : tripNodes) {
-            nodeType = tripNode.get("nodeType").asText();
+            System.out.println(tripNode);
+            String nodeType = tripNode.get("nodeType").asText();
             if (nodeType.equals("TripDestinationLeaf")) {
                 currentDestinationId = tripNode.get("destinationId").asInt();
                 if (currentDestinationId == lastDestinationId) {
