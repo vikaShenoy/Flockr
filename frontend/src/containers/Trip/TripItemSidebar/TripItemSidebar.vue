@@ -37,7 +37,7 @@
       <div v-else>
         <Timeline
           :trip="trip"
-          @destinationOrderChanged="destinationOrderChanged"
+          @tripNodeOrderChanged="tripNodeOrderChanged"
           @showEditTripDestination="showEditTripDestination"
           @deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
         />
@@ -128,8 +128,8 @@ export default {
     /**
      * Emitted when the order of destinations have changed
      */
-    destinationOrderChanged(indexes) {
-      this.$emit("destinationOrderChanged", indexes);
+    tripNodeOrderChanged(indexes) {
+      this.$emit("tripNodeOrderChanged", indexes);
     },
     /**
      * Called when the edit button has been pressed on

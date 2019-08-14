@@ -129,8 +129,8 @@ public class TripComposite extends TripNode {
   }
 
   @Override
-  public Class getNodeType() {
-    return this.getClass();
+  public String getNodeType() {
+    return "TripComposite";
   }
 
   @Override

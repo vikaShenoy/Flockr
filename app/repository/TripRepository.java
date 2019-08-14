@@ -48,7 +48,7 @@ public class TripRepository {
      */
     public CompletionStage<TripComposite> update(TripComposite trip) {
         return supplyAsync(() -> {
-            trip.update();
+            trip.save();
             return trip;
         }, executionContext);
     }

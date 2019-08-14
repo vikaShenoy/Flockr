@@ -56,6 +56,7 @@
 <script>
   import TripTable from "../../components/TripTable/TripTable";
   import {addTrip, addSubTrip, getAllUsers} from "./AddTripService.js";
+  import {editTrip} from "../EditTrip/EditTripService"
   import UserStore from "../../stores/UserStore";
 
   const rules = {
@@ -149,10 +150,11 @@
         if (!validFields) return;
         // Specifies the extra users that should be added to the trip
         const userIds = this.selectedUsers.map(selectedUser => selectedUser.userId);
-        const subtripId = await addTrip(this.tripName, this.tripDestinations, userIds);
+        const subTrip = await addTrip(this.tripName, this.tripDestinations, userIds);
+        this.parentTrip.tripNodes.push(subTrip);
         // If this is happening on the sidebar, the new trip is a subtrip. This uses PUT to add it to parent trip.
         if (this.isSidebarComponent) {
-					await addSubTrip(this.parentTrip, subtripId, this.tripDestinations);
+					await editTrip(this.parentTrip);
 				}
         //this.$emit("new-trip-was-added", subtripId);
       },

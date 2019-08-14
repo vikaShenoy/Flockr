@@ -1,6 +1,7 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 import moment from "moment";
+import {editTrip} from "../EditTrip/EditTripService";
 
 /**
  * Sends a request to add a trip.
@@ -23,43 +24,10 @@ export async function addTrip(name, tripNodes, userIds) {
 }
 
 
-/**
- * Add a sub trip to a parent trip using the PUT endpoint.
- * Called after the user creates a new subtrip in the trip item sidebar.
- * @param parentTrip the trip which is being updated.
- * @param subtripId id of the subtrip
- * @param subtripNodes tripNodes of the subtrip
- * @returns {Promise<*>}
- */
-export async function addSubTrip(parentTrip, subTripId, subTripNodes) {
-  const userId = localStorage.getItem("userId");
-  const subTripNode = {
-    tripNodeId: subTripId,
-    nodeType: "TripComposite",
-    tripNodes: transform(subTripNodes)
-  };
-
-  let transformedParentTripNodes = transform(parentTrip.tripNodes);
-  transformedParentTripNodes.push(subTripNode);
-
-  // TODO - check whether this is necessary.
-  let users = parentTrip.users;
-  users.push(userId);
-
-  // Send a put request which adds the sub trip to the parent trip's tripNodes list.
-  const res = await superagent.put(endpoint(`/users/${userId}/trips/${parentTrip.tripNodeId}`))
-      .set("Authorization", localStorage.getItem("authToken"))
-      .send({
-        name: parentTrip.name,
-        userIds: users,
-        tripNodes: transformedParentTripNodes,
-      });
-  return res.body;
-}
-
 function transform(tripNodes) {
   return tripNodes.map(tripNode => {
     let transformedTripNode = {};
+
     // TODO - is this necessary?
     if (tripNode.hasOwnProperty("tripNodeId")) {
       transformedTripNode.tripNodeId = tripNode.tripNodeId;

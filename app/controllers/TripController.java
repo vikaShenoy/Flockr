@@ -113,7 +113,7 @@ public class TripController extends Controller {
                         TripComposite trip = new TripComposite(tripNodes, users, tripName);
                         return tripRepository.saveTrip(trip);
                       })
-                  .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip.getTripNodeId())));
+                  .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)));
             },
             httpExecutionContext.current());
   }
@@ -278,16 +278,19 @@ public class TripController extends Controller {
               JsonNode jsonBody = request.body().asJson();
               String tripName = jsonBody.get("name").asText();
               JsonNode tripNodesJson = jsonBody.get("tripNodes");
-              JsonNode userIdsJson = jsonBody.get("userIds");
+              JsonNode userIdsJson = null;
 
-                    List<TripNode> tripNodes;
-                    List<User> users;
-                    try {
-                        long startTime = System.currentTimeMillis();
-                        List<User> allUsers = User.find.all();
-                        Set<TripComposite> trips = tripRepository.getTrips();
-                        tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
-                        users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
+              if (jsonBody.has("userIds")) {
+                  userIdsJson = jsonBody.get("userIds");
+              }
+
+              List<TripNode> tripNodes;
+              List<User> users;
+              try {
+                  List<User> allUsers = User.find.all();
+                  Set<TripComposite> trips = tripRepository.getTrips();
+                  tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
+                  users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
               } catch (BadRequestException e) {
                 e.printStackTrace();
@@ -295,6 +298,7 @@ public class TripController extends Controller {
               } catch (ForbiddenRequestException e) {
                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
               } catch (NotFoundException e) {
+                  e.printStackTrace();
                 return CompletableFuture.completedFuture(notFound(e.getMessage()));
               }
 
@@ -308,7 +312,13 @@ public class TripController extends Controller {
 
                         trip.setTripNodes(tripNodes);
                         trip.setName(tripName);
-                        trip.setUsers(users);
+
+                        if (tripNodesJson != null) {
+                            trip.setUsers(users);
+                        }
+
+
+
 
                         return tripRepository.update(trip);
                       })
@@ -320,6 +330,7 @@ public class TripController extends Controller {
               try {
                 throw e.getCause();
               } catch (NotFoundException notFoundError) {
+                  notFoundError.printStackTrace();
                 return notFound();
               } catch (BadRequestException badRequestError) {
                 badRequestError.printStackTrace();

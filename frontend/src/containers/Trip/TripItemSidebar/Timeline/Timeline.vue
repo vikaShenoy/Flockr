@@ -2,6 +2,7 @@
   <div id="trip-container">
     <v-timeline
             dense
+						:data-trip-node-id="trip.tripNodeId"
     >
       <!--data-destinationId is used to disable sorting items with the same destinationID-->
       <TripNode
@@ -24,24 +25,51 @@
   export default {
     props: {
       trip: {
-        tripNodes: Object
+        tripNodes: Object,
+				tripNodeId: Number
+      },
+      isSubTrip: {
+        type: Boolean
       }
     },
     components: {
-     TripNode 
+      TripNode
     },
     mounted() {
-      this.initSorting();
+      /* Initialising sorting should only be done by the root timeline hence the conditional */
+      if (!this.isSubTrip) {
+        // setTimeout enforces that the function runs only when the whole view has rendered, meaning 
+        // that we initialise drag and drop for every level
+        setTimeout(() => {
+          this.initSorting();
+        }, 0);
+      }
     },
     methods: {
       initSorting() {
-        const table = document.querySelector(".v-timeline");
-        Sortable.create(table, {
-          animation: 150,
-          onEnd: ({newIndex, oldIndex}) => {
-            this.$emit("destinationOrderChanged", {newIndex, oldIndex});
-          }
-        });
+        // Loop through each nested sortable element
+        const sortableTimelines = document.querySelectorAll(".v-timeline");
+        for (let i = 0; i < sortableTimelines.length; i++) {
+          new Sortable(sortableTimelines[i], {
+            group: 'nested',
+            animation: 500,
+            fallbackOnBody: true,
+            swapThreshold: 0.65,
+						onEnd: (event) => {
+              const oldParentTripNodeId = Number(event.from.getAttribute("data-trip-node-id"));
+							const newParentTripNodeId = Number(event.to.getAttribute("data-trip-node-id"));
+							const newIndex = event.newIndex;
+							const oldIndex = event.oldIndex;
+
+							this.$emit("tripNodeOrderChanged", {
+                oldParentTripNodeId,
+								newParentTripNodeId,
+								newIndex,
+								oldIndex
+							});
+						}
+          });
+        }
       }
     }
   }

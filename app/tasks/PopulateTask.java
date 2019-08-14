@@ -81,36 +81,51 @@ public class PopulateTask {
         District district = new District("Canterbury", country);
         district.save();
 
-        Destination christchurch = new Destination("Christchurch", destinationType, district, 0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
-        christchurch.save();
+        Destination destination1 = new Destination("destination3", destinationType, district, 0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination1.save();
 
-        Destination westMelton = new Destination("West Melton", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
-        westMelton.save();
+        Destination destination2 = new Destination("destination5", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination2.save();
 
-        Destination helkett = new Destination("Helkett", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
-        helkett.save();
+        Destination destination3 = new Destination("destination6", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination3.save();
+
+        Destination destination4 = new Destination("destination7", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination4.save();
+
+        Destination destination8 = new Destination("destination8", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination8.save();
 
         // Creating a trip
 
-        TripDestinationLeaf tripChristchurch = new TripDestinationLeaf(christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
-        TripDestinationLeaf tripWestMelton = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
-        TripDestinationLeaf tripHelkett = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
-        tripChristchurch.save();
-        tripWestMelton.save();
-        tripHelkett.save();
-        ArrayList<TripNode> tripNodes = new ArrayList<>();
-        tripNodes.add(tripChristchurch);
-        tripNodes.add(tripWestMelton);
+        TripDestinationLeaf tripDestination1 = new TripDestinationLeaf(destination1, new Date(1564272000), 43200, new Date(1564358400), 43200);
+        TripDestinationLeaf tripDestination2 = new TripDestinationLeaf(destination2, new Date(1564272000), 43200, new Date(1564358400), 43200);
+        TripDestinationLeaf tripDestination3 = new TripDestinationLeaf(destination3, new Date(1564358400), 50400, new Date(1564358400), 68400);
+
+        TripDestinationLeaf tripDestination4 = new TripDestinationLeaf(destination4, new Date(1564358400), 50400, new Date(1564358400), 68400);
+
+        List<TripNode> tripNodes = new ArrayList<>();
+        tripNodes.add(tripDestination1);
+        tripNodes.add(tripDestination2);
+        tripNodes.add(tripDestination3);
+
         List<User> users = new ArrayList<>();
         users.add(adminUser);
-        TripComposite trip = new TripComposite(tripNodes, users, "Testing Trip 1");
-        trip.save();
-        tripNodes.remove(tripWestMelton);
-        tripNodes.add(tripHelkett);
 
-        TripComposite trip2 = new TripComposite(tripNodes, users, "Find the family graves");
-        trip2.save();
-        System.out.println("Ended populating data");
+        TripComposite tripComposite5 = new TripComposite(tripNodes, users,"Trip5");
+        List<TripNode> tripNodes2 = new ArrayList<>();
+
+        tripNodes2.add(tripComposite5);
+        tripNodes2.add(tripDestination4);
+
+        TripComposite tripComposite6 = new TripComposite(tripNodes2, users, "Trip6");
+
+        tripDestination1.save();
+        tripDestination2.save();
+        tripDestination3.save();
+        tripDestination4.save();
+        tripComposite5.save();
+        tripComposite6.save();
     }, this.executionContext);
    }
 }

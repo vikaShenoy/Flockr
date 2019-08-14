@@ -25,7 +25,9 @@ public class TripUtil {
         TripComposite tripComposite = null;
 
         for (TripComposite currentCompositeTrip : trips) {
-            tripComposite = currentCompositeTrip;
+            if (tripNodeId == currentCompositeTrip.getTripNodeId()) {
+                tripComposite = currentCompositeTrip;
+            }
         }
 
         if (tripComposite == null) {
@@ -49,6 +51,8 @@ public class TripUtil {
         if (tripNodesJson.size() < 2) {
             throw new BadRequestException("trip nodes has to be larger or equal to 2");
         }
+
+
 
         if (checkContiguousDestinations(tripNodesJson)) {
             throw new BadRequestException("Destinations cannot be contiguous");
@@ -82,9 +86,9 @@ public class TripUtil {
     public boolean checkContiguousDestinations(JsonNode tripNodes) {
         int lastDestinationId = 0;
         int currentDestinationId;
-        String nodeType;
         for (JsonNode tripNode : tripNodes) {
-            nodeType = tripNode.get("nodeType").asText();
+            System.out.println(tripNode);
+            String nodeType = tripNode.get("nodeType").asText();
             if (nodeType.equals("TripDestinationLeaf")) {
                 currentDestinationId = tripNode.get("destinationId").asInt();
                 if (currentDestinationId == lastDestinationId) {
@@ -138,7 +142,14 @@ public class TripUtil {
      * Gets users from user IDS for editing a trip
      * @return the list of users
      */
-    public List<User> getUsersFromJsonEdit(JsonNode userIdsJson, List<User> allUsers) throws NotFoundException, ForbiddenRequestException {
+    public List<User> getUsersFromJsonEdit(JsonNode userIdsJson, List<User> allUsers) throws NotFoundException,
+            ForbiddenRequestException {
+        // Used in the case where a user is editing a trip node and doesn't send any user ids.
+        // Not ideal but this is the simplest way to handle it.
+        if (userIdsJson == null) {
+            return null;
+        }
+
         List<User> users = new ArrayList<>();
 
         for (JsonNode userIdJson : userIdsJson) {

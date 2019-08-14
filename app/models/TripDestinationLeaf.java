@@ -112,7 +112,7 @@ public class TripDestinationLeaf extends TripNode {
   }
 
   @Override
-  public Class getNodeType() {
-    return this.getClass();
+  public String getNodeType() {
+    return "TripDestinationLeaf";
   }
 }
