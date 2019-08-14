@@ -290,6 +290,7 @@ public class TripController extends Controller {
                         users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
               } catch (BadRequestException e) {
+                e.printStackTrace();
                 throw new CompletionException(new BadRequestException());
               } catch (ForbiddenRequestException e) {
                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
@@ -321,6 +322,7 @@ public class TripController extends Controller {
               } catch (NotFoundException notFoundError) {
                 return notFound();
               } catch (BadRequestException badRequestError) {
+                badRequestError.printStackTrace();
                 return badRequest();
               } catch (Throwable serverError) {
                 serverError.printStackTrace();

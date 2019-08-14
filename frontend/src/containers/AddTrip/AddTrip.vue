@@ -154,7 +154,7 @@
         if (this.isSidebarComponent) {
 					await addSubTrip(this.parentTrip, subtripId, this.tripDestinations);
 				}
-        this.$emit("new-trip-was-added", subtripId);
+        //this.$emit("new-trip-was-added", subtripId);
       },
       formatName(user) {
         return `${user.firstName} ${user.lastName}`;

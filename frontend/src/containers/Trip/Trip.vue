@@ -78,6 +78,7 @@
                   departureDate: "04-04-2018",
                   tripNodes: [],
                   departureTime: "13:00",
+									destinationId: 4,
                   destination: {
                     destinationId: 1,
                     destinationLat: 34,
@@ -207,12 +208,12 @@
         const undoCommand = async (oldUsers) => {
           await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, oldUsers);
           this.getTrip();
-        } 
+        };
 
         const redoCommand = async (users) => {
           await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, users);
           this.getTrip();
-        }
+        };
 
         const command = new Command(undoCommand.bind(null, [...this.trip.users]), redoCommand.bind(null, users));
         this.$refs.undoRedo.addUndo(command);

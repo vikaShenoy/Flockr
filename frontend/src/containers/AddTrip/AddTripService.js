@@ -11,8 +11,7 @@ import moment from "moment";
  */
 export async function addTrip(name, tripNodes, userIds) {
   const userId = localStorage.getItem("userId");
-  const transformedTripNodes = transformTripNodes(tripNodes);
-
+  const transformedTripNodes = transform(tripNodes);
   const res = await superagent.post(endpoint(`/users/${userId}/trips`))
   .set("Authorization", localStorage.getItem("authToken"))
   .send({
@@ -34,42 +33,86 @@ export async function addTrip(name, tripNodes, userIds) {
  */
 export async function addSubTrip(parentTrip, subTripId, subTripNodes) {
   const userId = localStorage.getItem("userId");
-  const transformedTripNodes = transformTripNodes(subTripNodes);
-  const subTrip = {
+  const subTripNode = {
     tripNodeId: subTripId,
     nodeType: "TripComposite",
-    tripNodes: transformedTripNodes
+    tripNodes: transform(subTripNodes)
   };
-  let updatedTripNodes = parentTrip.tripNodes;
-  updatedTripNodes.push(subTrip);
-  console.log("Updated trip nodes: ");
-  console.log(updatedTripNodes);
+
+  let transformedParentTripNodes = transform(parentTrip.tripNodes);
+  transformedParentTripNodes.push(subTripNode);
+
+  // TODO - check whether this is necessary.
+  let users = parentTrip.users;
+  users.push(userId);
+
   // Send a put request which adds the sub trip to the parent trip's tripNodes list.
   const res = await superagent.put(endpoint(`/users/${userId}/trips/${parentTrip.tripNodeId}`))
       .set("Authorization", localStorage.getItem("authToken"))
       .send({
         name: parentTrip.name,
-        userIds: parentTrip.userIds,
-        tripNodes: updatedTripNodes
+        userIds: users,
+        tripNodes: transformedParentTripNodes,
       });
   return res.body;
 }
 
-// TODO - edit this so if the object contains destination it goes into the object to get the destination id.
+function transform(tripNodes) {
+  return tripNodes.map(tripNode => {
+    let transformedTripNode = {};
+    // TODO - is this necessary?
+    if (tripNode.hasOwnProperty("tripNodeId")) {
+      transformedTripNode.tripNodeId = tripNode.tripNodeId;
+    }
+    if (tripNode.nodeType === "TripComposite") {
+      transformedTripNode.nodeType = "TripComposite";
+      transformedTripNode.tripNodes = transform(tripNode.tripNodes);
+    } else {
+      transformedTripNode.nodeType = "TripDestinationLeaf";
+      // TODO - Check. Frontend test data has it structured like this.
+      if (tripNode.hasOwnProperty("destination")) {
+        transformedTripNode.destinationId = tripNode.destination.destinationId;
+      } else {
+        transformedTripNode.destinationId = tripNode.destinationId;
+      }
+    }
+
+    transformedTripNode.arrivalDate = moment(tripNode.arrivalDate).valueOf();
+    transformedTripNode.arrivalTime =
+        tripNode.arrivalTime === null ? null : moment.duration(tripNode.arrivalTime).asMinutes();
+    transformedTripNode.departureDate = moment(tripNode.departureDate).valueOf();
+    transformedTripNode.departureTime =
+        tripNode.departureTime === null ? null : moment.duration(tripNode.departureTime).asMinutes();
+    return transformedTripNode;
+  });
+}
+
+// Old function. Delete at the end of task.
+/*
 function transformTripNodes(tripNodes) {
   let transformedTripNodes = tripNodes.map(tripNode => {
-    const transformedTripDestination = {};
-    transformedTripDestination.nodeType = "TripDestinationLeaf";
-    transformedTripDestination.arrivalDate = moment(tripNode.arrivalDate).valueOf();
-    transformedTripDestination.arrivalTime =
+
+    let transformedTripNode = {};
+
+    if (tripNode.hasOwnProperty("destination")) {
+      transformedTripNode.destinationId = tripNode.destination.destinationId;
+    } else {
+      transformedTripNode.destinationId = tripNode.destinationId;
+    }
+    if (tripNode.nodeType === "TripComposite") {
+
+    }
+    transformedTripNode.nodeType = "TripDestinationLeaf";
+    transformedTripNode.arrivalDate = moment(tripNode.arrivalDate).valueOf();
+    transformedTripNode.arrivalTime =
         tripNode.arrivalTime === null ? null : moment.duration(tripNode.arrivalTime).asMinutes();
-    transformedTripDestination.departureDate = moment(tripNode.departureDate).valueOf();
-    transformedTripDestination.departureTime =
+    transformedTripNode.departureDate = moment(tripNode.departureDate).valueOf();
+    transformedTripNode.departureTime =
         tripNode.departureTime === null ? null : moment.duration(tripNode.departureTime).asMinutes();
-    return transformedTripDestination;
+    return transformedTripNode;
   });
   return transformedTripNodes;
-}
+}*/
 
 
 export async function getAllUsers() {
