@@ -9,7 +9,7 @@
     >
       <v-card>
         <v-card-title class="secondary trip-destination-title">
-          <h3 class="white--text font-weight-light">{{ tripNode.name }}</h3>
+          <h3 v-bind:class="[(tripNode.arrivalDate && tripNode.departureDate) ? 'white--text' : 'grey--text', font-weight-light]">{{ tripNode.name }}</h3>
           <v-spacer align="right">
             <v-btn class="delete-btn" flat @click="$emit('deleteTripDestination', tripNode)">
               <v-icon>delete</v-icon>
