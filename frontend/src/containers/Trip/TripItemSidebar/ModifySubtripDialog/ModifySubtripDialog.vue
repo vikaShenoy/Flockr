@@ -1,7 +1,7 @@
 <template>
 	<v-dialog
 		v-model="isShowingDialog"
-		width="600px"
+		width="850px"
 	>
 		<v-card id="modify-subtrip-dialog">
 			<v-card-title class="primary title">
@@ -11,27 +11,43 @@
 					</v-spacer>
 				</v-layout>
 			</v-card-title>
-			<v-form ref="form">
 				<v-container grid-list-md>
 					<v-layout row wrap>
 						<v-flex xs12>
-							<v-select
-								:items="trips"
-								label="Select existing trip"
-							/>
+							<v-form ref="addTripForm">
+
+								<v-select
+												label="Select existing trip"
+												:items="existingTrips"
+												item-text="name"
+												v-model="selectedExistingTrip"
+												:rules="fieldRules"
+												return-object
+								/>
+								<v-btn
+												depressed
+												color="secondary"
+												@click="addExistingTrip"
+								>
+									Add
+								</v-btn>
+
+
+							</v-form>
+
 							<AddTrip
 							:isSidebarComponent="true"
-							:users="trip.users"
-							:parentTrip="trip"
+							:users="parentTrip.users"
+							:parentTrip="parentTrip"
 							@new-trip-was-added="newTripWasAdded"
 							@cancel-trip-creation="isShowingDialog = false"
+							@close-dialog="isShowingDialog = false"
 							>
 							</AddTrip>
 
 						</v-flex>
 					</v-layout>
 				</v-container>
-			</v-form>
 		</v-card>
 
 	></v-dialog>
@@ -39,7 +55,8 @@
 </template>
 
 <script>
-	import AddTrip from "../../../AddTrip/AddTrip"
+	import AddTrip from "../../../AddTrip/AddTrip";
+	import { getTrips, editTrip } from "../../TripService";
   export default {
     components: {AddTrip},
     props: {
@@ -51,7 +68,7 @@
         type: Boolean,
 				required: true
 			},
-			trip: {
+			parentTrip: {
         type: Object,
 				required: true
 			}
@@ -59,7 +76,9 @@
 		data() {
       return {
         isShowingDialog: false,
-				trips: [],
+				existingTrips: [],
+				fieldRules: [field => !!field || "Field is required"],
+				selectedExistingTrip: null,
 			}
 		},
 		methods: {
@@ -70,9 +89,27 @@
        */
       newTripWasAdded(tripId) {
         this.$emit("new-trip-was-added", tripId);
-			}
+			},
+			async addExistingTrip() {
+        const validFields = this.validate();
+        if (!validFields) return false;
+
+        // TODO - fix this so can be expanded
+        this.selectedExistingTrip.isShowing = false;
+
+        this.parentTrip.tripNodes.push(this.selectedExistingTrip);
+        await editTrip(this.parentTrip);
+        this.isShowingDialog = false;
+			},
+			validate() {
+        return this.$refs.addTripForm.validate();
+      }
+
 		},
-		mounted() {
+		async mounted() {
+      this.existingTrips = await getTrips();
+      // TODO - filter out child tripcomposites
+      this.existingTrips = this.existingTrips.filter(trip => trip.tripNodeId !== this.parentTrip.tripNodeId);
 		},
 		watch: {
       // Synchronize both isShowing state and props

@@ -2,11 +2,10 @@
   <v-card
           id="add-trip"
           class="col-lg-10 offset-lg-1"
+					:flat="!!isSidebarComponent"
   >
-
     <h2 v-if="!isSidebarComponent">Add Trip</h2>
-
-
+		<h3 v-else>Create New Subtrip</h3>
     <v-form ref="addTripForm">
       <v-text-field
               v-model="tripName"
@@ -17,7 +16,9 @@
       >
       </v-text-field>
 
-    <v-combobox v-if="!isSidebarComponent" :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
+    <v-combobox v-if="!isSidebarComponent"
+								:items="users" :item-text="formatName"
+								v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
 
 
       <TripTable :tripDestinations="tripDestinations"/>
@@ -45,7 +46,7 @@
               depressed
               color="secondary"
               id="add-trip-btn"
-              @click="addTrip()"
+              @click="addTrip"
       >
         Create
       </v-btn>
@@ -55,9 +56,10 @@
 
 <script>
   import TripTable from "../../components/TripTable/TripTable";
-  import {addTrip, addSubTrip, getAllUsers} from "./AddTripService.js";
-  import {editTrip} from "../EditTrip/EditTripService"
+  import {createTrip, getAllUsers} from "./AddTripService.js";
+
   import UserStore from "../../stores/UserStore";
+  import {editTrip} from "../Trip/TripService";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -100,7 +102,7 @@
     methods: {
       async getUsers() {
         const users = (await getAllUsers())
-          .filter(user => user.userId !== UserStore.data.userId)
+          .filter(user => user.userId !== UserStore.data.userId);
         this.users = users;
       },
       /**
@@ -150,13 +152,14 @@
         if (!validFields) return;
         // Specifies the extra users that should be added to the trip
         const userIds = this.selectedUsers.map(selectedUser => selectedUser.userId);
-        const subTrip = await addTrip(this.tripName, this.tripDestinations, userIds);
+        const subTrip = await createTrip(this.tripName, this.tripDestinations, userIds);
+        subTrip.isShowing = false;
         this.parentTrip.tripNodes.push(subTrip);
         // If this is happening on the sidebar, the new trip is a subtrip. This uses PUT to add it to parent trip.
         if (this.isSidebarComponent) {
 					await editTrip(this.parentTrip);
 				}
-        //this.$emit("new-trip-was-added", subtripId);
+        this.$emit("close-dialog");
       },
       formatName(user) {
         return `${user.firstName} ${user.lastName}`;

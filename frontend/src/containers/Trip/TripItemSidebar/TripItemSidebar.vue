@@ -41,28 +41,32 @@
           @showEditTripDestination="showEditTripDestination"
           @deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
         />
-				<v-btn
-								depressed
-								color="secondary"
-								id="add-trip-destination-btn"
-								@click="isShowingAddDestinationDialog = true"
-				>
-					Add Destination
-				</v-btn>
+				<v-spacer align="center">
+					<v-btn
+									depressed
+									color="secondary"
+									id="add-trip-destination-btn"
+									@click="isShowingAddDestinationDialog = true"
+					>
+						Add Destination
+					</v-btn>
 
-				<v-btn
-								depressed
-								color="secondary"
-								id="add-subtrip-btn"
-								@click="isShowingAddSubtripDialog = true"
-				>
-					Add Subtrip
-				</v-btn>
+					<v-btn
+									depressed
+									color="secondary"
+									id="add-subtrip-btn"
+									@click="isShowingAddSubtripDialog = true"
+					>
+						Add Subtrip
+					</v-btn>
+
+
+				</v-spacer>
 
 				<ModifySubtripDialog
 					:editMode="false"
 					:isShowing.sync="isShowingAddSubtripDialog"
-					:trip="trip"
+					:parentTrip="trip"
 					@new-trip-was-added="newTripWasAdded"
 				/>
 
@@ -226,11 +230,6 @@ export default {
     position: absolute;
     margin-top: 13px;
     left: 0;
-  }
-
-  #add-trip-destination-btn {
-    margin: 0 auto;
-    display: block;
   }
 
   #manage-trip-btn {
