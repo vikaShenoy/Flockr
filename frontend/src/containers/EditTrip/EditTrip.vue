@@ -49,7 +49,6 @@
   import TripTable from "../../components/TripTable/TripTable";
   import {getTrip, transformTripResponse} from "./EditTripService.js";
   import {editTrip} from "../Trip/TripService";
-  import Snackbar from "../../components/Snackbars/Snackbar";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -66,7 +65,6 @@
 
   export default {
     components: {
-      Snackbar,
       TripTable
     },
     data() {
@@ -74,13 +72,7 @@
         tripName: "",
         tripDestinations: [],
         tripNameRules: [rules.required],
-        travellerId: 0,
-        snackbarModel: {
-          text: "",
-          color: "",
-          show: false,
-          timeout: 2000
-        }
+        travellerId: 0
       };
     },
     mounted() {
@@ -88,13 +80,23 @@
       this.travellerId = this.$route.params.travellerId;
     },
     methods: {
+        /**
+         * @param {String} message the message to show in the snackbar
+         * @param {String} color the colour for the snackbar
+         * @param {Number} the amount of time (in ms) for which we show the snackbar
+         */
+        showSnackbar(message, color, timeout) {
+            this.$root.$emit("show-snackbar", {
+                message: message,
+                color: color,
+                timeout: timeout
+            });
+        },
       /**
 			 * Displays a snackbar with an error message.
 			 */
       showErrorSnackbar(message) {
-        this.snackbarModel.text = message;
-        this.snackbarModel.color = "error";
-        this.snackbarModel.show = true;
+                this.showSnackbar(message, "error", 3000);
 			},
       /**
        * Gets a users trip for editing

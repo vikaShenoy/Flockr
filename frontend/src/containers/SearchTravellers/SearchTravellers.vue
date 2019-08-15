@@ -116,11 +116,6 @@
         </v-data-table>
       </v-card>
     </div>
-		<Snackbar
-			:snackbarModel="snackbarModel"
-			v-on:dismissSnackbar="dismissSnackbar"
-		></Snackbar>
-
   </div>
 </template>
 
@@ -131,10 +126,9 @@
   import {endpoint} from "../../utils/endpoint";
   import moment from "moment";
   import CountryDisplay from "../../components/Country/CountryDisplay";
-  import Snackbar from "../../components/Snackbars/Snackbar";
 
   export default {
-    components: {Snackbar, CountryDisplay},
+    components: {CountryDisplay},
     data() {
       return {
         nationalities: {
@@ -152,13 +146,6 @@
         nationality: "",
         travellerType: "",
         gender: "",
-				snackbarModel: {
-          show: false,
-					timeout: 3000,
-					text: "",
-					color: null,
-					snackbarId: 1
-				},
         headers: [
           {text: 'Photo', align: 'left', sortable: false, value: 'profilePhoto'},
           {text: 'First Name', align: 'left', sortable: true, value: 'firstName'},
@@ -203,13 +190,20 @@
       }
     },
     methods: {
+        /**
+         * @param {String} message the message to show in the snackbar
+         * @param {String} color the colour for the snackbar
+         * @param {Number} the amount of time (in ms) for which we show the snackbar
+         */
+        showSnackbar(message, color, timeout) {
+            this.$root.$emit("show-snackbar", {
+                message: message,
+                color: color,
+                timeout: timeout
+            });
+        },
       showError(errorMessage) {
-        this.snackbarModel.text = errorMessage;
-        this.snackbarModel.show = true;
-        this.snackbarModel.color = "error"
-			},
-      dismissSnackbar() {
-        this.snackbarModel.show = false;
+        this.showSnackbar(errorMessage, "error", 3000);
 			},
       search: async function () {
         // get the queries from the selector variables

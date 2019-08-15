@@ -3,8 +3,18 @@
           id="trip-item-sidebar"
           :elevation="20"
   >
+
+  
     <div id="title" v-if="trip">
-      <h2>{{ trip.tripName }}</h2>
+      <v-btn
+        flat
+        color="secondary"
+        id="manage-trip-btn"
+        @click="isShowingManageTripDialog = true"
+      >Manage
+      </v-btn>
+
+      <h2 id="trip-name">{{ trip.tripName }}</h2>
     </div>
 
     <div id="trip-destinations-list">
@@ -49,6 +59,13 @@
                 v-on:updatedTripDestinations="tripDestinationsUpdated"
                 :editedTripDestination="editedTripDestination"
         />
+
+        <ManageTripDialog 
+          :isShowing.sync="isShowingManageTripDialog" 
+          :trip="trip"
+          v-if="trip"
+          @newUsers="newUsers"
+        />
       </div>
     </div>
 
@@ -58,18 +75,20 @@
 <script>
   import Timeline from "./Timeline/Timeline.vue";
   import ModifyTripDestinationDialog from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
-
+  import ManageTripDialog from "./ManageTripDialog/ManageTripDialog";
 
   export default {
     components: {
       Timeline,
-      ModifyTripDestinationDialog
+      ModifyTripDestinationDialog,
+      ManageTripDialog
     },
     data() {
       return {
         isShowingAddDestinationDialog: false,
         isShowingUpdateDestinationDialog: false,
         editedTripDestination: null,
+        isShowingManageTripDialog: false
       };
     },
     props: {
@@ -94,15 +113,15 @@
       },
       tripDestinationsUpdated(tripDestinations) {
         this.$emit("updatedTripDestinations", tripDestinations);
+      },
+      newUsers(newUsers) {
+        this.$emit("newUsers", newUsers); 
       }
     }
   }
-
 </script>
 
-
 <style lang="scss" scoped>
-
   @import "../../../styles/_variables.scss";
 
   #trip-item-sidebar {
@@ -113,7 +132,7 @@
 
 
     #title {
-      height: 50px;
+      height: 80px;
       background-color: $primary;
       color: #FFF;
       z-index: 0;
@@ -163,6 +182,21 @@
     #add-trip-destination-btn {
       margin: 0 auto;
       display: block;
+    }
+
+    #manage-trip-btn {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #trip-name {
+      margin-top: 30px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      margin-left: 10px;
+      margin-right: 10px;
     }
   }
 

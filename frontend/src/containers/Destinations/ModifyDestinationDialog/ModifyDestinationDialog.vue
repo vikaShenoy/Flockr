@@ -256,7 +256,6 @@ import {
   requestTravellerTypes,
   requestDistricts
 } from "./ModifyDestinationDialogService";
-import ErrorSnackbar from "../../../components/Snackbars/ErrorSnackbar";
 import CountryPicker from "../../../components/Country/CountryPicker"
 export default {
   name: "add-destination-dialog",
