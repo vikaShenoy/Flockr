@@ -150,11 +150,9 @@ public class TripController extends Controller {
                     }
                     Trip trip = optionalTrip.get();
                     JsonNode tripJson = Json.toJson(trip);
-                    System.out.println("Connected users is: ");
                     List<User> connectedUsersInTrip = new ArrayList<>();
                     List<User> usersInTrip = trip.getUsers();
                     Map<User, ActorRef> connectedUsers = ConnectedUsers.getInstance().getConnectedUsers();
-                    System.out.println(connectedUsers.size());
 
 
                     for (User currentUser : usersInTrip) {
