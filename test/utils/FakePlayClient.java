@@ -1,5 +1,7 @@
 package utils;
 
+import static play.test.Helpers.route;
+
 import akka.stream.javadsl.FileIO;
 import akka.stream.javadsl.Source;
 import akka.util.ByteString;
@@ -10,6 +12,11 @@ import exceptions.FailedToLoginException;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import models.Destination;
 import models.User;
 import play.Application;
@@ -17,14 +24,6 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static play.test.Helpers.route;
 
 /**
  * A fake client for the Play application.
@@ -128,11 +127,7 @@ public class FakePlayClient implements FakeClient {
             throw new FailedToSignUpException("Failed to sign up the user.");
         } else if (result.status() == 201) {
             JsonNode userAsJsonNode = PlayResultToJson.convertResultToJson(result);
-            User user = new User(userAsJsonNode.get("firstName").asText(), "",
-                    userAsJsonNode.get("lastName").asText(), userAsJsonNode.get("email").asText(),
-                    userAsJsonNode.get("passwordHash").asText(), userAsJsonNode.get("token").asText());
-            user.setUserId(userAsJsonNode.get("userId").asInt());
-            return user;
+            return User.find.byId(userAsJsonNode.get("userId").asInt());
         } else {
             throw new ServerErrorException();
         }
