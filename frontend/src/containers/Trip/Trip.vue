@@ -1,10 +1,13 @@
 <template>
-  <div id="destinations">
+  <div id="trip">
     <div id="map">
       <DestinationMap
               :destinations="mapTripDestinationsToDestinations()"
               :isTripMap="true"
       />
+
+    <ConnectedUsers v-if="trip" :users="trip.users"/>
+
     </div>
 
     <div id="undo-redo-btns">
@@ -24,6 +27,7 @@
 <script>
   import TripItemSidebar from "./TripItemSidebar/TripItemSidebar.vue";
   import DestinationMap from "../../components/DestinationMap/DestinationMap";
+  import ConnectedUsers from "./ConnectedUsers/ConnectedUsers";
   import {
     contiguousDestinations,
     contiguousReorderedDestinations,
@@ -40,7 +44,8 @@ import UserStore from '../../stores/UserStore';
     components: {
       TripItemSidebar,
       DestinationMap,
-      UndoRedo
+      UndoRedo,
+      ConnectedUsers
     },
     data() {
       return {
@@ -249,15 +254,13 @@ import UserStore from '../../stores/UserStore';
 </script>
 
 <style lang="scss" scoped>
-  #destinations {
-    width: 100%;
+  #trip {
+    display: flex;
   }
 
   #map {
-    width: calc(100% - 555px);
-    display: inline-block;
-    height: 100%;
-    position: fixed;
+    flex: 1;
+    position: relative;
   }
 
   #undo-redo-btns {

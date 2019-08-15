@@ -45,6 +45,7 @@
           Add Destination
         </v-btn>
 
+
         <ModifyTripDestinationDialog
                 :isShowing.sync="isShowingAddDestinationDialog"
                 :editMode="false"
@@ -125,10 +126,8 @@
   @import "../../../styles/_variables.scss";
 
   #trip-item-sidebar {
-    position: fixed;
     width: 315px;
-    right: 0;
-    height: calc(100vh - 64px);
+    height: calc(100vh - 60px);
 
 
     #title {
@@ -148,7 +147,7 @@
     #trip-destinations-list {
       padding-bottom: 10px;
       overflow-y: auto;
-      height: calc(100vh - 114px);
+      height: calc(100vh - 145px);
     }
 
     .option {
