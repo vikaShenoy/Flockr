@@ -38,8 +38,8 @@ public class ConnectedUsersTest {
     @Test
     public void addUser() {
         connectedUsers.addConnectedUser(user1, actorRef1);
-        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(actorRef1));
-        Assert.assertEquals(user1, connectedUsers.getConnectedUsers().get(actorRef1));
+        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(user1));
+        Assert.assertEquals(actorRef1, connectedUsers.getConnectedUsers().get(user1));
     }
 
     /**
@@ -49,24 +49,22 @@ public class ConnectedUsersTest {
     public void addTwoUsers() {
         connectedUsers.addConnectedUser(user1, actorRef1);
         connectedUsers.addConnectedUser(user2, actorRef2);
-        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(actorRef1));
-        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(actorRef2));
+        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(user1));
+        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(user2));
 
-        Assert.assertEquals(user1, connectedUsers.getConnectedUsers().get(actorRef1));
-        Assert.assertEquals(user2, connectedUsers.getConnectedUsers().get(actorRef2));
+        Assert.assertEquals(actorRef1, connectedUsers.getConnectedUsers().get(user1));
+        Assert.assertEquals(actorRef2, connectedUsers.getConnectedUsers().get(user2));
     }
 
     /**
-     * Test that the same user can have two clients open
+     * Test that the same user somehow connects, then they only have one connection open
      */
     @Test
-    public void userHasTwoClients() {
+    public void sameUserConnects() {
         connectedUsers.addConnectedUser(user1, actorRef1);
         connectedUsers.addConnectedUser(user1, actorRef2);
-        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(actorRef1));
-        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(actorRef2));
-        Assert.assertEquals(user1, connectedUsers.getConnectedUsers().get(actorRef1));
-        Assert.assertEquals(user1, connectedUsers.getConnectedUsers().get(actorRef2));
+        Assert.assertEquals(1, connectedUsers.getConnectedUsers().size());
+        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(user1));
     }
 
     @Test
