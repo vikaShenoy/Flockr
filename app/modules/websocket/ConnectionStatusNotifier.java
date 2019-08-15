@@ -64,10 +64,10 @@ public class ConnectionStatusNotifier {
 
       if (connectionStatus == ConnectionStatus.CONNECTED) {
           JsonNode frameJson = Json.toJson(new ConnectedFrame(user));
-          receiverWebsocket.tell(frameJson.toString(), receiverWebsocket);
+          receiverWebsocket.tell(frameJson.toString(), userWebsocket);
       } else {
           JsonNode frameJson = Json.toJson(new DisconnectedFrame(user));
-          receiverWebsocket.tell(frameJson.toString(), receiverWebsocket);
+          receiverWebsocket.tell(frameJson.toString(), userWebsocket);
       }
     }
   }

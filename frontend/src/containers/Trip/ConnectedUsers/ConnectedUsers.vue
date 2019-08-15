@@ -18,7 +18,7 @@
         >
 
         <v-avatar size="30">
-          <img :src="getPhotoUrl(user)" class="connected-user">
+          <img :src="getPhotoUrl(user)" :class="{'connected-user': userIsConnected(user.userId)}">
         </v-avatar>
 
         
@@ -38,7 +38,8 @@
 import { endpoint } from '../../../utils/endpoint';
 export default {
   props: {
-    users: Object
+    users: Array,
+    connectedUsers: Array
   },
   methods: {
     getPhotoUrl(user) {
@@ -46,8 +47,13 @@ export default {
         return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
       }
       return endpoint(`/users/photos/${user.profilePhoto}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+    },
+    userIsConnected(userId) {
+      const userIds = this.connectedUsers.map(user => user.userId);
+      const userIdSet = new Set(userIds)
+      return userIdSet.has(userId);
     }
-  }
+  },
 }
 </script>
 

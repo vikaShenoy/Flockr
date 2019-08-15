@@ -2,6 +2,8 @@ package controllers;
 
 import actions.ActionState;
 import actions.LoggedIn;
+import akka.actor.ActorRef;
+import modules.websocket.ConnectedUsers;
 import modules.websocket.TripNotifier;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,6 +29,7 @@ import util.TripUtil;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -147,6 +150,19 @@ public class TripController extends Controller {
                     }
                     Trip trip = optionalTrip.get();
                     JsonNode tripJson = Json.toJson(trip);
+                    System.out.println("Connected users is: ");
+                    List<User> connectedUsersInTrip = new ArrayList<>();
+                    List<User> usersInTrip = trip.getUsers();
+                    Map<User, ActorRef> connectedUsers = ConnectedUsers.getInstance().getConnectedUsers();
+                    System.out.println(connectedUsers.size());
+
+
+                    for (User currentUser : usersInTrip) {
+                        if (connectedUsers.containsKey(currentUser)) {
+                            connectedUsersInTrip.add(currentUser);
+                        }
+                    }
+                    ((ObjectNode) tripJson).set("connectedUsers", Json.toJson(connectedUsersInTrip));
                     return ok(tripJson);
                 });
     }

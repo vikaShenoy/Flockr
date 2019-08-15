@@ -47,6 +47,10 @@ public class WebSocket extends AbstractActor {
 
     }
 
+    /**
+     * Notifies to all users that have trips with the connected user that they are connected
+     * @return CompletionStage to run the task in the background
+     */
     private CompletionStage<Void> notifyTripConnected() {
         return runAsync(() -> {
             tripRepository.getTripsByIds(user.getUserId())
@@ -65,9 +69,10 @@ public class WebSocket extends AbstractActor {
     public void postStop() {
         tripRepository.getTripsByIds(user.getUserId())
                 .thenApplyAsync(trips -> {
-                    connectionStatusNotifier.notifyDisconnectedUser(user, trips);
+                    System.out.println("I have start notified disconnected users");
                     ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
                     connectedUsers.removeConnectedUser(user);
+                    connectionStatusNotifier.notifyDisconnectedUser(user, trips);
                     return null;
                 });
     }
