@@ -2,8 +2,7 @@ package controllers;
 
 import actions.ActionState;
 import actions.LoggedIn;
-import actors.ConnectedUsers;
-import actors.TripNotifier;
+import modules.websocket.TripNotifier;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;

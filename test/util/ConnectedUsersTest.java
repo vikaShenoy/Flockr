@@ -1,9 +1,8 @@
 package util;
 
-import actors.ConnectedUsers;
+import modules.websocket.ConnectedUsers;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import akka.actor.dsl.Creators;
 import akka.testkit.TestProbe;
 import models.User;
 import org.junit.After;

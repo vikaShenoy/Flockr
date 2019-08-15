@@ -1,7 +1,6 @@
-package actors;
+package modules.websocket;
 
 import akka.actor.ActorRef;
-import com.google.inject.Inject;
 import models.User;
 
 import java.util.HashMap;
