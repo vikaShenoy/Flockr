@@ -81,14 +81,20 @@ public class PopulateTask {
         District district = new District("Canterbury", country);
         district.save();
 
-        Destination christchurch = new Destination("Christchurch", destinationType, district, 0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
-        christchurch.save();
+        Destination destination1 = new Destination("destination3", destinationType, district, 0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination1.save();
 
-        Destination westMelton = new Destination("West Melton", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
-        westMelton.save();
+        Destination destination2 = new Destination("destination5", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination2.save();
 
-        Destination helkett = new Destination("Helkett", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
-        helkett.save();
+        Destination destination3 = new Destination("destination6", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination3.save();
+
+        Destination destination4 = new Destination("destination7", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination4.save();
+
+        Destination destination8 = new Destination("destination8", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        destination8.save();
 
         // Creating a trip
 

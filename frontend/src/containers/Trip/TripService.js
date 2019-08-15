@@ -72,16 +72,17 @@ export function contiguousDestinations(tripDestinations) {
  * @param {number} oldIndex index to be swapped by
  * @returns {boolean} True if the trip destinations are contiguous, false otherwise
  */
-export function contiguousReorderedDestinations(tripDestinations, newIndex, oldIndex) {
+export function contiguousReorderedDestinations(tripNodes, indexes) {
 
-  const copiedTripDestinations = [...tripDestinations];
-  //[copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
-  let temp = copiedTripDestinations[oldIndex];
-  copiedTripDestinations.splice(oldIndex, 1);
-  copiedTripDestinations.splice(newIndex, 0, temp);
-  return contiguousDestinations(copiedTripDestinations);
+  // TODO - needs to be implemented. See task 5867.
+  // const copiedTripDestinations = [...tripDestinations];
+  // //[copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
+  // let temp = copiedTripDestinations[oldIndex];
+  // copiedTripDestinations.splice(oldIndex, 1);
+  // copiedTripDestinations.splice(newIndex, 0, temp);
+  // return contiguousDestinations(copiedTripDestinations);
+  return false;
 }
-
 
 
 
@@ -90,28 +91,42 @@ export function contiguousReorderedDestinations(tripDestinations, newIndex, oldI
  * the trip data to edit.
  * @param {number} tripId - The ID of the trip to edit
  * @param {string} tripName - The edited trip name
- * @param {Object[]} tripDestinations - The edited trip destinations
+ * @param {Object[]} tripNodes - The edited trip destinations
  */
-export async function editTrip(tripId, tripName, tripDestinations, users) {
+export async function editTrip(trip) {
    const userId = localStorage.getItem("userId");
+   const authToken = localStorage.getItem("authToken");
 
-   const transformedTripDestinations = tripDestinations.map(tripDestination  => ({
-    destinationId: tripDestination.destination.destinationId,
-    arrivalDate: tripDestination.arrivalDate ? moment(tripDestination.arrivalDate).valueOf() : null,
-    arrivalTime: tripDestination.arrivalTime ? moment.duration(tripDestination.arrivalTime).asMinutes() : null,
-    departureDate: tripDestination.departureDate ? moment(tripDestination.departureDate).valueOf() : null,
-    departureTime: tripDestination.departureTime ? tripDestination.departureTime === null || tripDestination.departureTime === ""? null : moment.duration(tripDestination.departureTime).asMinutes() : null,
-   })); 
 
-  const authToken = localStorage.getItem("authToken");
+   const transformedTripNodes = trip.tripNodes.map((tripNode) => {
+     if (tripNode.nodeType === "TripComposite") {
+       return {
+         nodeType: tripNode.nodeType,
+         tripNodeId: tripNode.tripNodeId
+       };
+      } else {
+       return {
+         destinationId: tripNode.destination.destinationId,
+         arrivalDate: tripNode.arrivalDate ? moment(tripNode.arrivalDate).valueOf() : null,
+         arrivalTime: tripNode.arrivalTime ? moment.duration(tripNode.arrivalTime).asMinutes() : null,
+         departureDate: tripNode.departureDate ? moment(tripNode.departureDate).valueOf() : null,
+         departureTime: tripNode.departureTime ? tripNode.departureTime === null
+         || tripNode.departureTime === ""? null : moment.duration(tripNode.departureTime).asMinutes() : null,
+         nodeType: tripNode.nodeType
+       }
+     }
+   });
+   const tripData = {
+     name: trip.name,
+     tripNodes: transformedTripNodes,
+   };
 
-  await superagent.put(endpoint(`/users/${userId}/trips/${tripId}`))
+   if (trip.users) {
+     tripData.userIds = trip.users.map(user => user.userId);
+   }
+   await superagent.put(endpoint(`/users/${userId}/trips/${trip.tripNodeId}`))
     .set("Authorization", authToken)
-    .send({
-      tripName,
-      tripDestinations: transformedTripDestinations,
-      userIds: users.map(user => user.userId)
-    });
+    .send(tripData);
 }
 
 /**
@@ -130,6 +145,30 @@ export function mapTripNodesToDestinations(tripNode) {
 
   return destinations.flatMap(destination => destination)
 }
+
+/**
+ * Recursively finds a trip node by it's trip node ID 
+ * @param {number} tripNodeId The ID to find
+ * @param {Object} tripNode The current trip node that is being searched
+ * @return {Object} The tripNode object that was found
+ */
+export function getTripNodeById(tripNodeId, tripNode) {
+
+  if (tripNode.tripNodeId === tripNodeId) {
+    return tripNode;
+  }
+
+  let tripNodeToFind = null;
+
+  for (const currentTripNode of tripNode.tripNodes) {
+    tripNodeToFind = getTripNodeById(tripNodeId, currentTripNode);
+    if (tripNodeToFind) return tripNodeToFind
+  }
+
+  return tripNodeToFind;
+}
+
+
 
 
 

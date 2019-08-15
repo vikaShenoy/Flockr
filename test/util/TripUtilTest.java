@@ -39,18 +39,21 @@ public class TripUtilTest {
         testNode1.put("departureDate", departureDate.toString());
         testNode1.put("arrivalTime", arrivalTime);
         testNode1.put("departureTime", departureTime);
+        testNode1.put("nodeType", "TripDestinationLeaf");
 
         testNode2.put("destinationId", 1);
         testNode2.put("arrivalDate", arrivalDate.toString());
         testNode2.put("departureDate", departureDate.toString());
         testNode2.put("arrivalTime", arrivalTime);
         testNode2.put("departureTime", departureTime);
+        testNode2.put("nodeType", "TripDestinationLeaf");
 
         testNode3.put("destinationId", 2);
         testNode3.put("arrivalDate", arrivalDate.toString());
         testNode3.put("departureDate", departureDate.toString());
         testNode3.put("arrivalTime", arrivalTime);
         testNode3.put("departureTime", departureTime);
+        testNode3.put("nodeType", "TripDestinationLeaf");
 
         // Make a list
         ArrayNode testArray = Json.newArray();
@@ -111,4 +114,5 @@ public class TripUtilTest {
             fail("Method should throw no errors for valid data.");
         }
     }
+
 }
