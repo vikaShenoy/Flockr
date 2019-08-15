@@ -98,9 +98,9 @@ public class PopulateTask {
 
         // Creating a trip
 
-        TripDestinationLeaf tripChristchurch = new TripDestinationLeaf(christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
-        TripDestinationLeaf tripWestMelton = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
-        TripDestinationLeaf tripHelkett = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        TripDestinationLeaf tripChristchurch = new TripDestinationLeaf(destination1, new Date(1564272000), 43200, new Date(1564358400), 43200);
+        TripDestinationLeaf tripWestMelton = new TripDestinationLeaf(destination2, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        TripDestinationLeaf tripHelkett = new TripDestinationLeaf(destination3, new Date(1564358400), 50400, new Date(1564358400), 68400);
 
         tripChristchurch.save();
         tripWestMelton.save();

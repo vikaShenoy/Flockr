@@ -279,7 +279,7 @@ public class TripController extends Controller {
               JsonNode jsonBody = request.body().asJson();
               String tripName = jsonBody.get("name").asText();
               JsonNode tripNodesJson = jsonBody.get("tripNodes");
-              JsonNode userIdsJson = null;
+              JsonNode userIdsJson = jsonBody.get("userIds");
 
                     List<TripNode> tripNodes;
                     List<User> users;
