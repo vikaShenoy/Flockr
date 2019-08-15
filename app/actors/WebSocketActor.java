@@ -22,6 +22,7 @@ public class WebSocketActor extends AbstractActor {
     }
 
     private final ActorRef out;
+    private User user;
 
 
     /**
@@ -33,6 +34,7 @@ public class WebSocketActor extends AbstractActor {
     public WebSocketActor(ActorRef out, User user) {
         ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
         this.out = out;
+        this.user = user;
         connectedUsers.addConnectedUser(user, out);
 
     }
@@ -43,7 +45,7 @@ public class WebSocketActor extends AbstractActor {
      */
     public void postStop() {
         ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
-        connectedUsers.removeConnectedUser(out);
+        connectedUsers.removeConnectedUser(user);
 
     }
 
