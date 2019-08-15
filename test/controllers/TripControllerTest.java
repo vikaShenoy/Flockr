@@ -1,52 +1,61 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
-import models.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import models.Country;
+import models.Destination;
+import models.DestinationType;
+import models.District;
+import models.Role;
+import models.RoleType;
+import models.TripComposite;
+import models.TripDestinationLeaf;
+import models.TripNode;
+import models.User;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import play.Application;
 import play.libs.Json;
+import play.mvc.Result;
 import play.test.Helpers;
+import util.TripUtil;
 import utils.FakeClient;
 import utils.FakePlayClient;
 import utils.PlayResultToJson;
 import utils.TestState;
-import play.mvc.Result;
-import util.TripUtil;
-
-
-import java.io.IOException;
-import java.util.*;
-
-import static utils.PlayResultToJson.convertResultToJson;
 
 public class TripControllerTest {
 
-    Application application;
-    FakeClient fakeClient;
-    User user;
-    User otherUser;
-    User adminUser;
-    Destination christchurch;
-    Destination westMelton;
-    Destination helkett;
-    TripDestinationLeaf tripChristchurch;
-    TripDestinationLeaf tripWestMelton;
-    TripDestinationLeaf tripHelkett;
-    List<TripNode> tripNodes;
-    TripComposite trip;
-    TripComposite trip2;
-    ObjectNode tripDestination1;
-    ObjectNode tripDestination2;
-    ObjectNode tripDestination3;
-    ObjectNode tripComposite1;
-    TripUtil tripUtil;
+    private Application application;
+    private FakeClient fakeClient;
+    private User user;
+    private User otherUser;
+    private User adminUser;
+    private Destination christchurch;
+    private Destination westMelton;
+    private Destination helkett;
+    private TripDestinationLeaf tripChristchurch;
+    private TripDestinationLeaf tripWestMelton;
+    private TripDestinationLeaf tripHelkett;
+    private List<TripNode> tripNodes;
+    private TripComposite trip;
+    private TripComposite trip2;
+    private ObjectNode tripDestination1;
+    private ObjectNode tripDestination2;
+    private ObjectNode tripDestination3;
+    private ObjectNode tripComposite1;
+    private TripUtil tripUtil;
 
     @Before
     public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
@@ -66,15 +75,13 @@ public class TripControllerTest {
         fakeClient = new FakePlayClient(application);
 
         // Users
-        user = fakeClient.signUpUser("Tommy", "Tester", "tommy@tester.com",
-                "testing");
-        otherUser = fakeClient.signUpUser("Indy", "Inspector", "indy@inspector.com",
-                "testing");
-        adminUser = fakeClient.signUpUser("Sam", "Admin", "sam@admin.com",
-                "testing");
+        user = fakeClient.signUpUser("Tommy", "Tester", "tommy@tester.com", "testing");
+        otherUser = fakeClient.signUpUser("Indy", "Inspector", "indy@inspector.com", "testing");
+        adminUser = fakeClient.signUpUser("Sam", "Admin", "sam@admin.com", "testing");
 
         // Making an admin
-        // TODO - investigate why this code causes duplicate key exception. Must be to do with population script.
+        // TODO - investigate why this code causes duplicate key exception. Must be to do with
+        // population script.
         Role role = new Role(RoleType.ADMIN);
         role.save();
         List<Role> roles = new ArrayList<>();
@@ -91,23 +98,56 @@ public class TripControllerTest {
         District district = new District("Canterbury", country);
         district.save();
 
-        christchurch = new Destination("Christchurch", destinationType, district,
-                0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
+        christchurch =
+            new Destination(
+                "Christchurch",
+                destinationType,
+                district,
+                0.0,
+                0.0,
+                country,
+                user.getUserId(),
+                new ArrayList<>(),
+                true);
         christchurch.save();
 
-        westMelton = new Destination("West Melton", destinationType, district,
-                0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
+        westMelton =
+            new Destination(
+                "West Melton",
+                destinationType,
+                district,
+                0.0,
+                0.0,
+                country,
+                user.getUserId(),
+                new ArrayList<>(),
+                true);
         westMelton.save();
 
-        helkett = new Destination("Helkett", destinationType, district,0.0,
-                0.0, country, user.getUserId(), new ArrayList<>(), true);
+        helkett =
+            new Destination(
+                "Helkett",
+                destinationType,
+                district,
+                0.0,
+                0.0,
+                country,
+                user.getUserId(),
+                new ArrayList<>(),
+                true);
         helkett.save();
 
         // Creating a trip
 
-        tripChristchurch = new TripDestinationLeaf(christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
-        tripWestMelton = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
-        tripHelkett = new TripDestinationLeaf(westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        tripChristchurch =
+            new TripDestinationLeaf(
+                christchurch, new Date(1564272000), 43200, new Date(1564358400), 43200);
+        tripWestMelton =
+            new TripDestinationLeaf(
+                westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        tripHelkett =
+            new TripDestinationLeaf(
+                westMelton, new Date(1564358400), 50400, new Date(1564358400), 68400);
         tripChristchurch.save();
         tripWestMelton.save();
         tripHelkett.save();
@@ -120,7 +160,7 @@ public class TripControllerTest {
         trip.save();
         tripNodes.remove(tripWestMelton);
         tripNodes.add(tripHelkett);
-        trip2 = new TripComposite(tripNodes,users,"Find the family graves");
+        trip2 = new TripComposite(tripNodes, users, "Find the family graves");
         trip2.save();
 
         tripDestination1 = Json.newObject();
@@ -164,17 +204,18 @@ public class TripControllerTest {
         tripBody.put("name", "Pirate Trip");
         tripBody.putArray("tripNodes").addAll(tripDestinations);
         tripBody.set("userIds", Json.toJson(userIds));
-        Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
+        Result result = fakeClient
+            .makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
         Assert.assertEquals(201, result.status());
-        int tripId = PlayResultToJson.convertResultToJson(result).asInt();
+        int tripId = PlayResultToJson.convertResultToJson(result).get("tripNodeId").asInt();
         TripComposite receivedTrip = TripComposite.find.byId(tripId);
         Assert.assertNotNull(receivedTrip);
         Assert.assertEquals(2, receivedTrip.getUsers().size());
     }
 
     /**
-     * Check for 403 from the POST trips endpoint.
-     * Occurs when a user tries to add their own ID to the userIds field.
+     * Check for 403 from the POST trips endpoint. Occurs when a user tries to add their own ID to the
+     * userIds field.
      */
     @Test
     public void cannotCreateTripWithUser() {
@@ -188,12 +229,13 @@ public class TripControllerTest {
         tripBody.put("name", "Pirate trip");
         tripBody.putArray("tripNodes").addAll(tripDestinations);
         tripBody.set("userIds", Json.toJson(userIds));
-        Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
+        Result result = fakeClient
+            .makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
         Assert.assertEquals(403, result.status());
     }
 
     @Test
-    public void editTripWithUsers() throws IOException {
+    public void editTripWithUsers() {
         String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId();
         ObjectNode tripBody = Json.newObject();
         ArrayNode tripDestinations = Json.newArray();
@@ -244,12 +286,13 @@ public class TripControllerTest {
     }
 
     /**
-     * Check that the contiguous destination function returns true when
-     * contiguous destinations are separated by a trip composite object.
+     * Check that the contiguous destination function returns true when contiguous destinations are
+     * separated by a trip composite object.
      */
     @Test
     public void destinationsAreContiguousSeparated() {
-        // Check function still returns true for contiguous destinations separated by a TripComposite(sub-trip)
+        // Check function still returns true for contiguous destinations separated by a
+        // TripComposite(sub-trip)
         ArrayNode nodes = Json.newArray();
         nodes.add(tripDestination1);
         nodes.add(tripComposite1);
@@ -262,38 +305,41 @@ public class TripControllerTest {
         trip.setDeleted(false);
         trip.setDeletedExpiry(null);
         trip.save();
-        Optional<TripComposite> optionalTrip = TripComposite.find.query()
-                .where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId())
+                .findOneOrEmpty();
         Assert.assertTrue(optionalTrip.isPresent());
     }
 
     @Test
     public void restoreTripOk() {
         trip.delete();
-        Optional<TripComposite> optionalTrip = TripComposite.find.query()
-                .where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId())
+                .findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
-        Result result = fakeClient.makeRequestWithToken(
+        Result result =
+            fakeClient.makeRequestWithToken(
                 "PUT",
                 "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore",
-                user.getToken()
-        );
+                user.getToken());
         Assert.assertEquals(200, result.status());
     }
 
     @Test
     public void restoreTripForbidden() {
         trip.delete();
-        Optional<TripComposite> optionalTrip = TripComposite.find.query()
-                .where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId())
+                .findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
-        Result result = fakeClient.makeRequestWithToken(
+        Result result =
+            fakeClient.makeRequestWithToken(
                 "PUT",
                 "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore",
-                otherUser.getToken()
-        );
+                otherUser.getToken());
         Assert.assertEquals(403, result.status());
         restore(trip);
     }
@@ -301,14 +347,15 @@ public class TripControllerTest {
     @Test
     public void restoreTripUnauthorized() {
         trip.delete();
-        Optional<TripComposite> optionalTrip = TripComposite.find.query()
-                .where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId())
+                .findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
-        Result result = fakeClient.makeRequestWithNoToken(
+        Result result =
+            fakeClient.makeRequestWithNoToken(
                 "PUT",
-                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore"
-        );
+                "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore");
         Assert.assertEquals(401, result.status());
         restore(trip);
     }
@@ -316,30 +363,32 @@ public class TripControllerTest {
     @Test
     public void restoreTripAdmin() {
         trip.delete();
-        Optional<TripComposite> optionalTrip = TripComposite.find.query()
-                .where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId())
+                .findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
-        Result result = fakeClient.makeRequestWithToken(
+        Result result =
+            fakeClient.makeRequestWithToken(
                 "PUT",
                 "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore",
-                adminUser.getToken()
-        );
+                adminUser.getToken());
         Assert.assertEquals(200, result.status());
     }
 
     @Test
     public void restoreTripNotFound() {
         trip.delete();
-        Optional<TripComposite> optionalTrip = TripComposite.find.query()
-                .where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId())
+                .findOneOrEmpty();
         Assert.assertFalse(optionalTrip.isPresent());
 
-        Result result = fakeClient.makeRequestWithToken(
+        Result result =
+            fakeClient.makeRequestWithToken(
                 "PUT",
                 "/api/users/" + user.getUserId() + "/trips/" + -50 + "/restore",
-                user.getToken()
-        );
+                user.getToken());
         Assert.assertEquals(404, result.status());
         restore(trip);
     }
@@ -347,24 +396,22 @@ public class TripControllerTest {
     @Test
     public void restoreTripBadRequest() {
 
-        Optional<TripComposite> optionalTrip = TripComposite.find.query()
-                .where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+        Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId())
+                .findOneOrEmpty();
         Assert.assertTrue(optionalTrip.isPresent());
 
-        Result result = fakeClient.makeRequestWithToken(
+        Result result =
+            fakeClient.makeRequestWithToken(
                 "PUT",
                 "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId() + "/restore",
-                user.getToken()
-        );
+                user.getToken());
         Assert.assertEquals(400, result.status());
     }
-
 
     @After
     public void tearDown() {
         Helpers.stop(application);
         TestState.clear();
     }
-
-
 }

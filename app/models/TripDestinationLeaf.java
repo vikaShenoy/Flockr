@@ -67,8 +67,9 @@ public class TripDestinationLeaf extends TripNode {
     return new ArrayList<>();
   }
 
-  public Integer getDestinationId() {
-    return destination.getDestinationId();
+  @Override
+  public Destination getDestination() {
+    return destination;
   }
 
   public void setDestination(Destination destination) {

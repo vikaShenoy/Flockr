@@ -118,7 +118,7 @@ public abstract class TripNode extends Model {
 
     public abstract String getNodeType();
 
-    public abstract Integer getDestinationId();
+    public abstract Destination getDestination();
 
     public abstract List<User> getUsers();
 
