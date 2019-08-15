@@ -73,7 +73,7 @@ public class ConnectedUsersTest {
     @Test
     public void clientCanDisconnect() {
         connectedUsers.addConnectedUser(user1, actorRef1);
-        connectedUsers.removeConnectedUser(actorRef1);
+        connectedUsers.removeConnectedUser(user1);
         Assert.assertEquals(0, connectedUsers.getConnectedUsers().size());
     }
 

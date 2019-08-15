@@ -313,7 +313,10 @@ public class TripController extends Controller {
 
                                 return tripRepository.update(trip);
                             })
-                            .thenApplyAsync(trip -> ok(Json.toJson(trip)));
+                            .thenApplyAsync(trip -> {
+                                tripNotifier.notifyTripUpdate(userFromMiddleware, trip);
+                                return ok(Json.toJson(trip));
+                            });
 
                 }, httpExecutionContext.current())
                 .exceptionally(e -> {
