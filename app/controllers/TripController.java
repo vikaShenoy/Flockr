@@ -8,6 +8,8 @@ import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import exceptions.UnauthorizedException;
+import io.ebean.Ebean;
+import io.ebean.text.PathProperties;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +25,6 @@ import util.TripUtil;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -93,7 +94,7 @@ public class TripController extends Controller {
 
                    try {
                        List<User> allUsers = User.find.all();
-                       Set<TripComposite> trips = tripRepository.getTrips();
+                       Set<TripComposite> trips = tripRepository.getAllTrips();
                        tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
                        users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
                    } catch (BadRequestException e) {
@@ -278,19 +279,16 @@ public class TripController extends Controller {
               JsonNode jsonBody = request.body().asJson();
               String tripName = jsonBody.get("name").asText();
               JsonNode tripNodesJson = jsonBody.get("tripNodes");
-              JsonNode userIdsJson = null;
+              JsonNode userIdsJson = jsonBody.get("userIds");
 
-              if (jsonBody.has("userIds")) {
-                  userIdsJson = jsonBody.get("userIds");
-              }
-
-              List<TripNode> tripNodes;
-              List<User> users;
-              try {
-                  List<User> allUsers = User.find.all();
-                  Set<TripComposite> trips = tripRepository.getTrips();
-                  tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
-                  users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
+                    List<TripNode> tripNodes;
+                    List<User> users;
+                    try {
+                        long startTime = System.currentTimeMillis();
+                        List<User> allUsers = User.find.all();
+                        Set<TripComposite> trips = tripRepository.getAllTrips();
+                        tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
+                        users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
               } catch (BadRequestException e) {
                 e.printStackTrace();
@@ -398,11 +396,57 @@ public class TripController extends Controller {
     }
 
     return tripRepository
-        .getTripsByIds(userId)
+        .getTripsByUserId(userId)
         .thenApplyAsync(
             (trips) -> {
               JsonNode tripsJson = Json.toJson(trips);
               return ok(tripsJson);
+            },
+            httpExecutionContext.current());
+  }
+
+
+  /**
+   * Retrieves a list of a user's trips that have no parent (High Level)
+   * @param userId of the owner of the trips
+   * @param request
+   * @return
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> getHighLevelTrips(int userId, Http.Request request){
+    User middlewareUser = request.attrs().get(ActionState.USER);
+
+    if (userId != middlewareUser.getUserId() && !middlewareUser.isAdmin()) {
+      return supplyAsync(Controller::forbidden);
+    }
+
+    return tripRepository
+        .getHighLevelTripsByUserId(userId)
+        .thenApplyAsync(
+            (trips) -> {
+              List<TripComposite> tripComposites = new ArrayList<>();
+              for (TripComposite tripComposite : trips) {
+                if (tripComposite.getParents().size() == 0) {
+                  tripComposites.add(tripComposite);
+                } else {
+                  List<TripNode> parents = tripComposite.getParents();
+                  List<Integer> userIds = new ArrayList<>();
+                  for (TripNode parent : parents) {
+                    List<User> users = parent.getUsers();
+                    for (User user : users) {
+                      userIds.add(user.getUserId());
+                    }
+                  }
+                  if (!userIds.contains(userId)) {
+                    tripComposites.add(tripComposite);
+                  }
+
+                }
+              }
+
+              PathProperties pathProperties = PathProperties.parse("tripNodeId, name");
+              String tripsJson = Ebean.json().toJson(tripComposites,pathProperties);
+              return ok(Json.parse(tripsJson));
             },
             httpExecutionContext.current());
   }

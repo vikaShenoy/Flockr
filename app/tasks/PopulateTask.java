@@ -100,34 +100,40 @@ public class PopulateTask {
 
         // Creating a trip
 
-        TripDestinationLeaf tripDestination1 = new TripDestinationLeaf(destination1, new Date(1564272000), 43200, new Date(1564358400), 43200);
-        TripDestinationLeaf tripDestination2 = new TripDestinationLeaf(destination2, new Date(1564272000), 43200, new Date(1564358400), 43200);
-        TripDestinationLeaf tripDestination3 = new TripDestinationLeaf(destination3, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        TripDestinationLeaf tripChristchurch = new TripDestinationLeaf(destination1, new Date(1564272000), 43200, new Date(1564358400), 43200);
+        TripDestinationLeaf tripWestMelton = new TripDestinationLeaf(destination2, new Date(1564358400), 50400, new Date(1564358400), 68400);
+        TripDestinationLeaf tripHelkett = new TripDestinationLeaf(destination3, new Date(1564358400), 50400, new Date(1564358400), 68400);
 
-        TripDestinationLeaf tripDestination4 = new TripDestinationLeaf(destination4, new Date(1564358400), 50400, new Date(1564358400), 68400);
-
-        List<TripNode> tripNodes = new ArrayList<>();
-        tripNodes.add(tripDestination1);
-        tripNodes.add(tripDestination2);
-        tripNodes.add(tripDestination3);
-
+        tripChristchurch.save();
+        tripWestMelton.save();
+        tripHelkett.save();
+        ArrayList<TripNode> tripNodes = new ArrayList<>();
+        tripNodes.add(tripChristchurch);
+        tripNodes.add(tripWestMelton);
         List<User> users = new ArrayList<>();
         users.add(adminUser);
+        TripComposite trip = new TripComposite(tripNodes, users, "Testing Trip 1");
+        trip.save();
+        tripNodes.remove(tripWestMelton);
+        tripNodes.add(tripHelkett);
 
-        TripComposite tripComposite5 = new TripComposite(tripNodes, users,"Trip5");
-        List<TripNode> tripNodes2 = new ArrayList<>();
+        Destination morocco = new Destination("Morocco", destinationType, district, 12.0, 45.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        morocco.save();
 
-        tripNodes2.add(tripComposite5);
-        tripNodes2.add(tripDestination4);
+        TripDestinationLeaf tripMorocco = new TripDestinationLeaf(morocco, new Date(1564273000), 43200, new Date(1564359000), 43200);
+        tripMorocco.save();
 
-        TripComposite tripComposite6 = new TripComposite(tripNodes2, users, "Trip6");
+        trip.save();
 
-        tripDestination1.save();
-        tripDestination2.save();
-        tripDestination3.save();
-        tripDestination4.save();
-        tripComposite5.save();
-        tripComposite6.save();
+
+
+
+
+        TripComposite trip2 = new TripComposite(tripNodes, users, "Find the family graves");
+        //trip2.setParents(tripNodes);
+        trip2.save();
+
+        System.out.println("Ended populating data");
     }, this.executionContext);
    }
 }
