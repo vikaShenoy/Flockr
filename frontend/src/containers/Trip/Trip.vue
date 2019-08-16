@@ -37,9 +37,9 @@
     contiguousReorderedDestinations,
     editTrip,
     getTrip,
-    transformTripResponse,
     mapTripNodesToDestinations,
 		getTripNodeById,
+    transformTripNode,
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command";
@@ -120,8 +120,10 @@
         if (!this.trip) {
           return [];
         }
+
+        console.log("The trip in question is: ");
+        console.log(this.trip);
         const destinations = mapTripNodesToDestinations(this.trip);
-        console.log(destinations);
         return mapTripNodesToDestinations(this.trip);
       },
       /**
@@ -131,7 +133,7 @@
         try {
           const tripId = this.$route.params.tripId;
           const rawTrip = await getTrip(tripId);
-          const trip = transformTripResponse(rawTrip);
+          const trip = transformTripNode(rawTrip);
           this.trip = trip;
         } catch (e) {
           this.showError("Could not get trip");
@@ -164,10 +166,12 @@
        * in the same parent node
        */
       getReorderedCopiedNodes(indices) {
-        console.log(indices)
         const { oldParentTripNodeId, newParentTripNodeId, oldIndex, newIndex } = indices;
+        console.log("I made it one");
         const oldParentTripNode = {...getTripNodeById(oldParentTripNodeId, this.trip)};
+        console.log("I made it two");
         const oldParentTripNodes = [...oldParentTripNode.tripNodes];
+        console.log("I madeit three");
         let newParentTripNode = null;
         const stayedInSourceTripNode = oldParentTripNodeId === newParentTripNodeId;
 
@@ -253,6 +257,7 @@
             this.showSuccessMessage("Successfully changed order");
           }
         } catch (e) {
+          console.log(e);
           this.showError("Could not change order");
         }
       },
