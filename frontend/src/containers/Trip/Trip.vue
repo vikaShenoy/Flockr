@@ -43,6 +43,7 @@
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command";
+import { restoreTrip, deleteTripFromList } from '../Trips/OldTripsService';
   
 
 
@@ -159,10 +160,15 @@
 
         const undoCommand = async (subTrip, oldParentTrip) => {
           await deleteTripFromList(subTrip.tripNodeId);
+          await editTrip(oldParentTrip);
+          this.getTrip();
 				};
 
-				const redoCommand = (subTrip, newParentTrip) => {
-
+				const redoCommand = async (subTrip, newParentTrip) => {
+          await restoreTrip(subTrip.tripNodeId);
+          console.log(newParentTrip);
+          await editTrip(newParentTrip);
+          this.getTrip();
 				};
 
 				const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldParentTrip), redoCommand.bind(null, subTrip, newParentTrip));
