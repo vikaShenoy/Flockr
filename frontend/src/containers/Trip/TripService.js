@@ -1,6 +1,6 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
-import moment, { max } from "moment";
+import moment from "moment";
 
 /**
  * Sends a request to get a trip
@@ -67,21 +67,49 @@ export function contiguousDestinations(tripDestinations) {
 
 /**
  * Checks if destinations are contiguous after they have been swapped
- * @param {Array} tripDestinations list of destinations to swap and check
- * @param {number} newIndex index to be swapped to
- * @param {number} oldIndex index to be swapped by
- * @returns {boolean} True if the trip destinations are contiguous, false otherwise
+ * @param {Array<Object} tripNodes all tripNodes in the trip
+ * @param {Object} indices the indice of the moved trip nodes, plus
+ * the id of the source and target trip nodes
+ * @returns {Boolean} True if the trip destinations are contiguous, false otherwise
  */
-export function contiguousReorderedDestinations(tripNodes, indexes) {
+export function contiguousReorderedDestinations(tripNodes, indices) {
+  const { newParentTripNodeId, oldParentTripNodeId } = indices;
 
-  // TODO - needs to be implemented. See task 5867.
-  // const copiedTripDestinations = [...tripDestinations];
-  // //[copiedTripDestinations[newIndex], copiedTripDestinations[oldIndex]] = [tripDestinations[oldIndex], tripDestinations[newIndex]];
-  // let temp = copiedTripDestinations[oldIndex];
-  // copiedTripDestinations.splice(oldIndex, 1);
-  // copiedTripDestinations.splice(newIndex, 0, temp);
-  // return contiguousDestinations(copiedTripDestinations);
+  // these are null if no parent was found
+  const sourceParentTripNode = getTripNodeByIdFromListOfNodes(oldParentTripNodeId, tripNodes);
+  const targetParentTripNode = getTripNodeByIdFromListOfNodes(newParentTripNodeId, tripNodes);
+
+  let sourceNodeHasContiguousDestinations = false;
+  let targetNodeHasContiguousDestinations = false;
+  
+  // TODO:
+  // must check that destinations in source parent trip node are now not contiguous
+  // e.g. A -> B -> A does not become A -> A
+  
+
+  // TODO:
+  // must check that destinations in target parent trip node are now not contigous
+  // e.g. A -> B -> C does not become A -> B -> C -> C
+
+
   return false;
+  return sourceNodeHasContiguousDestinations || targetNodeHasContiguousDestinations;
+}
+
+
+/**
+ * Get a trip node by its id from a list of trip nodes
+ * @param {Number} tripNodeId the id of the trip node we are after
+ * @param {Array<Object>} tripNodes the array of trip nodes
+ * @returns {Object} the trip node with the given id
+ */
+function getTripNodeByIdFromListOfNodes(tripNodeId, tripNodes) {
+
+  // "make up" a trip node to reuse functionality by getTripNodeById
+  return getTripNodeById(tripNodeId, {
+    tripNodeId: null,
+    tripNodes: tripNodes
+  });
 }
 
 
@@ -154,6 +182,7 @@ export function mapTripNodesToDestinations(tripNode) {
  */
 export function getTripNodeById(tripNodeId, tripNode) {
 
+  // base case
   if (tripNode.tripNodeId === tripNodeId) {
     return tripNode;
   }
@@ -161,6 +190,7 @@ export function getTripNodeById(tripNodeId, tripNode) {
   let tripNodeToFind = null;
 
   for (const currentTripNode of tripNode.tripNodes) {
+    // recursive case
     tripNodeToFind = getTripNodeById(tripNodeId, currentTripNode);
     if (tripNodeToFind) return tripNodeToFind
   }

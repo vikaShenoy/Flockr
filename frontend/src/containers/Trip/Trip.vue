@@ -133,6 +133,21 @@
                 destinationLat: 59,
                 destinationLon: 36
               }
+            },
+            {
+              tripNodeId: 7,
+              nodeType: "TripDestinationLeaf",
+              name: "Destination3",
+              arrivalDate: "03-04-2018",
+              arrivalTime: "13:00",
+              departureDate: "04-04-2018",
+              tripNodes: [],
+              departureTime: "13:00",
+              destination: {
+                destinationId: 3,
+                destinationLat: 34,
+                destinationLon: 31
+              }
             }
           ]
         },
@@ -272,10 +287,10 @@
             setTimeout(() => {
               this.trip.tripNodes = tripNodes;
             }, 0);
+          } else {
+            this.reorderTrips(indexes);
+            this.showSuccessMessage("Successfully changed order");
           }
-
-          this.reorderTrips(indexes);
-          this.showSuccessMessage("Successfully changed order");
         } catch (e) {
           console.log(e);
           this.showError("Could not change order");
