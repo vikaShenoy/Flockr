@@ -8,23 +8,38 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.NotFoundException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
+
 import models.TripComposite;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import play.Application;
 import play.libs.Json;
+import play.test.Helpers;
+import utils.FakeClient;
+import utils.TestState;
 
 public class TripUtilTest {
     TripUtil util;
     JsonNode testData1;
     JsonNode testData2;
     JsonNode testData3;
+    Application application;
     Set<TripComposite> tripComposites;
 
     @Before
     public void setUp() {
+        Map<String, String> testSettings = new HashMap<>();
+        testSettings.put("db.default.driver", "org.h2.Driver");
+        testSettings.put("db.default.url", "jdbc:h2:mem:testdb;MODE=MySQL;");
+        testSettings.put("play.evolutions.db.default.enabled", "true");
+        testSettings.put("play.evolutions.db.default.autoApply", "true");
+        testSettings.put("play.evolutions.db.default.autoApplyDowns", "true");
+        application = Helpers.fakeApplication(testSettings);
+        Helpers.start(application);
+
         util = new TripUtil();
         Date arrivalDate = new Date();
         Date departureDate = new Date();
@@ -113,6 +128,12 @@ public class TripUtilTest {
         } catch(BadRequestException e) {
             fail("Method should throw no errors for valid data.");
         }
+    }
+
+    @After
+    public void tearDown() {
+        Helpers.stop(application);
+        TestState.clear();
     }
 
 }

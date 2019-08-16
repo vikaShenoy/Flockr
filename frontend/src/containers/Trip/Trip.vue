@@ -152,11 +152,6 @@
    },
     methods: {
       newTripAdded(subTrip, oldParentTrip, newParentTrip) {
-        console.log(1);
-        console.log(subTrip);
-        console.log(oldParentTrip);
-        console.log(newParentTrip);
-
         const undoCommand = async (subTrip, oldParentTrip) => {
           await deleteTripFromList(subTrip.tripNodeId);
           await editTrip(oldParentTrip);
@@ -169,7 +164,8 @@
           this.getTrip();
 				};
 
-				const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldParentTrip), redoCommand.bind(null, subTrip, newParentTrip));
+				const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldParentTrip),
+						redoCommand.bind(null, subTrip, newParentTrip));
 				this.$refs.undoRedo.addUndo(addTripCommand);
 			},
 
@@ -206,7 +202,8 @@
         if (!this.trip) {
           return [];
         }
-
+        const destinations = mapTripNodesToDestinations(this.trip);
+        console.log(destinations);
         return mapTripNodesToDestinations(this.trip);
       },
       /**

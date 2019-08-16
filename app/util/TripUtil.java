@@ -72,9 +72,7 @@ public class TripUtil {
                 TripDestinationLeaf tripDestination = new TripDestinationLeaf(destination, arrivalDate, arrivalTime, departureDate, departureTime);
                 tripNodes.add(tripDestination);
             }
-
         }
-
         return tripNodes;
     }
 
