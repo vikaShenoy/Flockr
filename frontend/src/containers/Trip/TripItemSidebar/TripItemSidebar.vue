@@ -152,6 +152,9 @@ export default {
      * Finds the deepest level of a trip tree
      */
     findDeepestNodeLevel(tripNode) {
+      if (!tripNode) {
+        return 0;
+      }
       if (tripNode.tripNodes.length === 0) {
         return 0;
       }

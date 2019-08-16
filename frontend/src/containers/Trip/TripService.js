@@ -28,27 +28,24 @@ export async function getTrips() {
 /**
  * Transform/format a trip response object.
  * @param {Object} trip The trip to transform
- * @param {string} trip.tripName The name of the trip
- * @param {Object[]} trip.tripDestinations The destinations in a trip
- * @param {number} trip.tripDestinations[].arrivalDate The arrival date of the destination
- * @param {number} trip.tripDestinations[].arrivalTime The arrival time of the destination
- * @param {number} trip.tripDestinations[].departureDate The departure date of the destination
- * @param {number} trip.tripDestinations[].departureTime The departure time of the destination
  * @return {Object} The transformed trip
  */ 
 export function transformTripResponse(trip) {
   return {
-    tripId: trip.tripId,
-    tripName: trip.tripName,
+    tripNodeId: trip.tripId,
+    name: trip.tripName,
     users: trip.users,
-    tripDestinations: trip.tripDestinations.map(tripDestination => {
+    tripNodes: trip.tripNodes.map(tripNode => {
       return {
-        tripDestinationId: tripDestination.tripDestinationId,
-        destination: tripDestination.destination,
-        arrivalDate: !tripDestination.arrivalDate ? null : moment(tripDestination.arrivalDate).format("YYYY-MM-DD"),
-        arrivalTime: !tripDestination.arrivalTime ? null : formatTime(moment.duration(tripDestination.arrivalTime, "minutes")),
-        departureDate: !tripDestination.departureDate ? null : moment(tripDestination.departureDate).format("YYYY-MM-DD"),
-        departureTime: !tripDestination.departureTime ? null : formatTime(moment.duration(tripDestination.departureTime, "minutes")),
+        tripNodeId: tripNode.tripNodeId,
+        nodeType: tripNode.nodeType,
+        isShowing: false,
+        destination: tripNode.nodeType === "TripDestinationLeaf" ? tripNode.destination : undefined,
+        arrivalDate: !tripNode.arrivalDate ? null : moment(tripNode.arrivalDate).format("YYYY-MM-DD"),
+        arrivalTime: !tripNode.arrivalTime ? null : formatTime(moment.duration(tripNode.arrivalTime, "minutes")),
+        departureDate: !tripNode.departureDate ? null : moment(tripNode.departureDate).format("YYYY-MM-DD"),
+        departureTime: !tripNode.departureTime ? null : formatTime(moment.duration(tripNode.departureTime, "minutes")),
+        tripNodes: tripNode.tripNodes.map(currentTripNode => transformTripResponse(currentTripNode))
       };
     }),
   };

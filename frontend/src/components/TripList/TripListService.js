@@ -80,8 +80,8 @@ export function findEnd(tripDestinations) {
  */
 export function transformTrips(trips) {
   return trips.map(trip => {
-    const tripStart = findStart(trip.tripDestinations);
-    const tripEnd = findEnd(trip.tripDestinations);
+    const tripStart = findStart(trip.tripNodes);
+    const tripEnd = findEnd(trip.tripNodes);
 
     const currentTime = moment();
 
@@ -100,8 +100,8 @@ export function transformTrips(trips) {
     }
 
     return {
-      tripId: trip.tripId,
-      tripName: trip.tripName,
+      tripId: trip.tripNodeId,
+      tripName: trip.name,
       status: tripStatus,
     };
   });
@@ -114,8 +114,8 @@ export function transformTrips(trips) {
  */
 export function sortTrips(trips) {
   return trips.sort((tripA, tripB) => {
-    const startA = findStart(tripA.tripDestinations);
-    const startB = findStart(tripB.tripDestinations);
+    const startA = findStart(tripA.tripNodes);
+    const startB = findStart(tripB.tripNodes);
 
     // Will put trips that don't have any dates at the top
     if (!startA && startB) {
@@ -128,7 +128,7 @@ export function sortTrips(trips) {
     
     // If 2 trips compared don't have any dates or the dates are the same
     if (!startA && !startB || startA.isSame(startB)) {
-      return tripB.tripId - tripA.tripId;
+      return tripB.tripNodeId - tripA.tripNodeId;
     } else {
       return startB.valueOf() - startA.valueOf();
     }

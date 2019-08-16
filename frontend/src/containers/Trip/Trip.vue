@@ -55,104 +55,7 @@
     },
     data() {
       return {
-        trip: {
-          tripNodeId: 6,
-          name: "Trip6",
-          nodeType: "TripComposite",
-          users: [{
-            userId: 1
-          }],
-          tripNodes: [
-            {
-              tripNodeId: 5,
-              name: "Trip5",
-              nodeType: "TripComposite",
-              arrivalDate: "03-04-2018",
-              arrivalTime: "13:00",
-              departureDate: "03-05-2018",
-              departureTime: "14:00",
-              isShowing: false,
-              tripNodes: [
-                {
-                  tripNodeId: 1,
-                  nodeType: "TripDestinationLeaf",
-                  name: "Destination1",
-                  arrivalDate: "03-04-2018",
-                  arrivalTime: "13:00",
-                  departureDate: "04-04-2018",
-                  tripNodes: [],
-                  departureTime: "13:00",
-                  destination: {
-                    destinationId: 1,
-                    destinationLat: 34,
-                    destinationLon: 31
-                  }
-                },
-								{
-                  tripNodeId: 2,
-                  nodeType: "TripDestinationLeaf",
-                  name: "Destination2",
-                  arrivalDate: "03-04-2018",
-                  arrivalTime: "13:00",
-                  departureDate: "04-04-2018",
-                  tripNodes: [],
-                  departureTime: "13:00",
-                  destination: {
-                    destinationId: 2,
-                    destinationLat: 34,
-                    destinationLon: 31
-                  }
-								},
-                {
-                  tripNodeId: 3,
-                  nodeType: "TripDestinationLeaf",
-                  name: "Destination3",
-                  arrivalDate: "03-04-2018",
-                  arrivalTime: "13:00",
-                  departureDate: "04-04-2018",
-                  tripNodes: [],
-                  departureTime: "13:00",
-                  destination: {
-                    destinationId: 3,
-                    destinationLat: 34,
-                    destinationLon: 31
-                  }
-                },
-
-              ]
-            },
-            {
-              tripNodeId: 4,
-              nodeType: "TripDestinationLeaf",
-              name: "Destination4",
-              arrivalDate: "04-06-2018",
-              arrivalTime: "13:00",
-              departureDate: "3-09-2018",
-              tripNodes: [],
-              departureTime: "14:00",
-              destination: {
-                destinationId: 4,
-                destinationLat: 59,
-                destinationLon: 36
-              }
-            },
-            {
-              tripNodeId: 7,
-              nodeType: "TripDestinationLeaf",
-              name: "Destination3",
-              arrivalDate: "03-04-2018",
-              arrivalTime: "13:00",
-              departureDate: "04-04-2018",
-              tripNodes: [],
-              departureTime: "13:00",
-              destination: {
-                destinationId: 3,
-                destinationLat: 34,
-                destinationLon: 31
-              }
-            }
-          ]
-        },
+        trip: null,
         snackbarModel: {
           show: false,
           timeout: 3000,
@@ -163,7 +66,7 @@
       };
     },
     mounted() {
-      // this.getTrip();
+      this.getTrip();
    },
     methods: {
       newTripAdded(subTrip, oldParentTrip, newParentTrip) {
