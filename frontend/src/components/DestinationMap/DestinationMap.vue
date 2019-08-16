@@ -31,8 +31,7 @@
         fullscreenControl: false,
         minZoom: 2
       }"
-      @dblclick="processDoubleClick"
-      @click="getClickedLatandLong"
+      @click="processClick"
     >
 
 
@@ -191,20 +190,15 @@
       getPhotoUrl(photoId) {
         return endpoint(`/users/photos/${photoId}?Authorization=${localStorage.getItem("authToken")}`);
       },
-      processDoubleClick(event) {
+      /**
+       * @param event the event emitted by the map
+       */
+      processClick(event) {
         const { lat, lng } = event.latLng;
         this.$emit('coordinates-selected', {
           latitude: lat(),
           longitude: lng()
         });
-      },
-      /**
-       * Gets the latitude and longitude of the clicked location
-       */
-      getClickedLatandLong(event) {
-        this.latitude = event.latLng.lat();
-        this.longitude = event.latLng.lng();
-        this.$emit("addCoordinates", this.latitude, this.longitude);
       }
     },
     watch: {

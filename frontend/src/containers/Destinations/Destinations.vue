@@ -2,24 +2,24 @@
   <div id="destinations">
     <div id="map">
       <DestinationMap
-              :destinations="getDestinationsCurrentlyViewing()"
-              :latitude="latitude"
-              :longitude="longitude"
-              @addCoordinates="addCoordinates"
+        :destinations="getDestinationsCurrentlyViewing()"
+        :latitude="latitude"
+        :longitude="longitude"
+        @coordinates-selected="addCoordinates"
       />
     </div>
 
     <DestinationSidebar
-            :viewOption="viewOption"
-            :yourDestinations="yourDestinations"
-            :publicDestinations="publicDestinations"
-            v-on:viewOptionChanged="viewOptionChanged"
-            v-on:addDestinationClicked="addDestinationClicked"
-            @addNewDestination="addNewDestination"
-            @refreshDestinations="refreshDestinations"
-            ref="sidebar"
-            :latitude="latitude"
-            :longitude="longitude"
+      :viewOption="viewOption"
+      :yourDestinations="yourDestinations"
+      :publicDestinations="publicDestinations"
+      v-on:viewOptionChanged="viewOptionChanged"
+      v-on:addDestinationClicked="addDestinationClicked"
+      @addNewDestination="addNewDestination"
+      @refreshDestinations="refreshDestinations"
+      ref="sidebar"
+      :latitude="latitude"
+      :longitude="longitude"
     />
     <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
@@ -68,7 +68,8 @@
       /**
        * Sets the latitude and longitude coordinates to the given coordinates
        */
-      addCoordinates(latitude, longitude) {
+      addCoordinates(coordinates) {
+        const { latitude, longitude } = coordinates;
         this.latitude = latitude;
         this.longitude = longitude;
       },
