@@ -32,6 +32,7 @@
         minZoom: 2
       }"
       @click="processClick"
+      @dblclick="dblClickFunc"
     >
 
 
@@ -118,6 +119,7 @@
   export default {
     data() {
       return {
+        clickTimeout: null,
         publicIcon,
         privateIcon,
         latitude: null,
@@ -194,11 +196,19 @@
        * @param event the event emitted by the map
        */
       processClick(event) {
-        const { lat, lng } = event.latLng;
-        this.$emit('coordinates-selected', {
-          latitude: lat(),
-          longitude: lng()
-        });
+        let vue = this;
+        this.clickTimeout = setTimeout(function () {
+          const { lat, lng } = event.latLng;
+          vue.$emit('coordinates-selected', {
+            latitude: lat(),
+            longitude: lng()
+          });
+        }, 200);
+      },
+
+      dblClickFunc() {
+        clearTimeout(this.clickTimeout);
+        // INSERT DOUBLE CLICK CODE HERE
       }
     },
     watch: {
