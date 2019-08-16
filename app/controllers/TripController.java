@@ -426,6 +426,19 @@ public class TripController extends Controller {
               for (TripComposite tripComposite : trips) {
                 if (tripComposite.getParents().size() == 0) {
                   tripComposites.add(tripComposite);
+                } else {
+                  List<TripNode> parents = tripComposite.getParents();
+                  List<Integer> userIds = new ArrayList<>();
+                  for (TripNode parent : parents) {
+                    List<User> users = parent.getUsers();
+                    for (User user : users) {
+                      userIds.add(user.getUserId());
+                    }
+                  }
+                  if (!userIds.contains(userId)) {
+                    tripComposites.add(tripComposite);
+                  }
+
                 }
               }
 
