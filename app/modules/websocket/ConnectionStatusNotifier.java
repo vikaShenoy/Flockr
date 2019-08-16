@@ -2,17 +2,15 @@ package modules.websocket;
 
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
-import models.Trip;
-import models.User;
-import modules.websocket.frames.ConnectedFrame;
-import modules.websocket.frames.DisconnectedFrame;
-import modules.websocket.frames.Frame;
-import play.libs.Json;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import models.Trip;
+import models.User;
+import modules.websocket.frames.ConnectedFrame;
+import modules.websocket.frames.DisconnectedFrame;
+import play.libs.Json;
 
 /**
  * Notifies users when user's disconnect and connect
@@ -59,8 +57,8 @@ public class ConnectionStatusNotifier {
     ActorRef userWebsocket = userMap.get(user);
     JsonNode userJson = Json.toJson(user);
 
-    for (User userToNofiy : usersToNotify) {
-      ActorRef receiverWebsocket = userMap.get(userToNofiy);
+    for (User userToNotify : usersToNotify) {
+      ActorRef receiverWebsocket = userMap.get(userToNotify);
 
       if (connectionStatus == ConnectionStatus.CONNECTED) {
           JsonNode frameJson = Json.toJson(new ConnectedFrame(user));

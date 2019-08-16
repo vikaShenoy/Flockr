@@ -2,21 +2,11 @@ package modules.websocket;
 
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Map;
 import models.Trip;
 import models.User;
-import modules.websocket.frames.ConnectedFrame;
-import modules.websocket.frames.DisconnectedFrame;
-import modules.websocket.frames.Frame;
 import modules.websocket.frames.TripUpdatedFrame;
 import play.libs.Json;
-
-import java.util.*;
-
-enum ConnectionStatus {
-  CONNECTED,
-  DISCONNECTED
-};
 
 /** Notifies users of any changes to a trip (trip name, trip destinations or messages) */
 public class TripNotifier {
