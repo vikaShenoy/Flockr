@@ -4,7 +4,7 @@
           :elevation="20"
   >
     <div id="title">
-      <h2>Destinations</h2>
+      <h2>{{ shouldShowEditor ? "Add Destination" : "Destinations"}}</h2>
       <v-btn
               flat
               color="secondary"

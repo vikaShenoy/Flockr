@@ -1,16 +1,7 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
-  <v-card>
-    <v-card-title class="primary title">
-      <v-layout row>
-        <v-spacer align="center">
-          <h2 class="light-text">
-            <v-icon large>location_on</v-icon>
-            Add Destination
-          </h2>
-        </v-spacer>
-      </v-layout>
-    </v-card-title>
-    <v-card-text>
+  <!-- <v-card> -->
+    <!-- <v-card-text> -->
+  <div class="form-padding">
       <v-form
           ref="form"
           v-model="isValidForm"
@@ -116,8 +107,8 @@
 
         </v-flex>
       </v-form>
-    </v-card-text>
-    <v-card-actions>
+    <!-- </v-card-text> -->
+    <!-- <v-card-actions> -->
       <v-spacer align="right">
         <v-btn
             flat
@@ -126,8 +117,9 @@
             :loading="formIsLoading"
         >Submit</v-btn>
       </v-spacer>
-    </v-card-actions>
-  </v-card>
+  </div>
+    <!-- </v-card-actions>
+  </v-card>-->
 </template>
 
 <script>
@@ -358,5 +350,10 @@
 
   .light-text {
     -webkit-text-fill-color: $darker-white;
+  }
+
+  .form-padding {
+    padding-left: 5px;
+    padding-right: 5px;
   }
 </style>
