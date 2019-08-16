@@ -43,9 +43,8 @@
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command";
-import { restoreTrip, deleteTripFromList } from '../Trips/OldTripsService';
-  
 
+	import { restoreTrip, deleteTripFromList } from '../Trips/OldTripsService';
 
   export default {
     components: {
@@ -166,7 +165,6 @@ import { restoreTrip, deleteTripFromList } from '../Trips/OldTripsService';
 
 				const redoCommand = async (subTrip, newParentTrip) => {
           await restoreTrip(subTrip.tripNodeId);
-          console.log(newParentTrip);
           await editTrip(newParentTrip);
           this.getTrip();
 				};

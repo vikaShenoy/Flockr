@@ -87,13 +87,12 @@
 			async addExistingTrip() {
         const validFields = this.validate();
         if (!validFields) return false;
-
-        // TODO - fix this so can be expanded
-        //this.selectedExistingTrip.isShowing = false;
-        let trip = {...this.selectedExistingTrip, isShowing: false};
+        const oldParentTrip = {...this.parentTrip, tripNodes: [...this.parentTrip.tripNodes]};
         this.parentTrip.tripNodes.push(this.selectedExistingTrip);
 
         await editTrip(this.parentTrip);
+        this.$emit("newTripAdded", this.selectedExistingTrip, oldParentTrip, this.parentTrip);
+
         const timelines = document.querySelectorAll(".v-timeline");
         const timeline = timelines[timelines.length - 1];
         sortTimeline(timeline, indexes => {

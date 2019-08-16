@@ -154,6 +154,7 @@
         const userIds = this.selectedUsers.map(selectedUser => selectedUser.userId);
         const subTrip = await createTrip(this.tripName, this.tripDestinations, userIds);
         subTrip.isShowing = false;
+        // Using spread to deep copy all trip nodes for the emit function
         let oldParentTrip = {...this.parentTrip, tripNodes: [...this.parentTrip.tripNodes]};
         this.parentTrip.tripNodes.push(subTrip);
         // If this is happening on the sidebar, the new trip is a subtrip. This adds it to parent trip.
