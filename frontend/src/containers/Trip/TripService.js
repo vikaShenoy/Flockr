@@ -18,6 +18,13 @@ function formatTime(time) {
   return moment.utc(time.as("milliseconds")).format("HH:mm");
 }
 
+export async function getTrips() {
+  const userId = localStorage.getItem("userId");
+  const res = await superagent.get(endpoint(`/users/${userId}/trips`))
+    .set("Authorization", localStorage.getItem("authToken"));
+  return res.body;
+}
+
 /**
  * Transform/format a trip response object.
  * @param {Object} trip The trip to transform

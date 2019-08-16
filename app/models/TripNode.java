@@ -116,9 +116,9 @@ public abstract class TripNode extends Model {
         this.parents.remove(parent);
     }
 
-    public abstract Class getNodeType();
+    public abstract String getNodeType();
 
-    public abstract Integer getDestinationId();
+    public abstract Destination getDestination();
 
     public abstract List<User> getUsers();
 

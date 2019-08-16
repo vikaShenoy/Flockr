@@ -101,7 +101,7 @@
         return formattedDate;
       },
       toggleShowTripNodes(tripNode) {
-        tripNode.isShowing = !tripNode.isShowing;
+        this.$emit("toggleExpanded", tripNode.tripNodeId);
       }
     }
   };

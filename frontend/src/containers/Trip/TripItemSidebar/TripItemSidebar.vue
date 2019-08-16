@@ -37,19 +37,41 @@
       <div v-else>
         <Timeline
           :trip="trip"
+					@toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
           @tripNodeOrderChanged="tripNodeOrderChanged"
           @showEditTripDestination="showEditTripDestination"
           @deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
         />
+				<v-spacer align="center">
+					<v-btn
+									depressed
+									color="secondary"
+									id="add-trip-destination-btn"
+									@click="isShowingAddDestinationDialog = true"
+					>
+						Add Destination
+					</v-btn>
 
-        <v-btn
-          depressed
-          color="secondary"
-          id="add-trip-destination-btn"
-          @click="isShowingAddDestinationDialog = true"
-        >
-          Add Destination
-        </v-btn>
+					<v-btn
+									depressed
+									color="secondary"
+									id="add-subtrip-btn"
+									@click="isShowingAddSubtripDialog = true"
+					>
+						Add Subtrip
+					</v-btn>
+
+
+				</v-spacer>
+
+				<ModifySubtripDialog
+					:editMode="false"
+					:isShowing.sync="isShowingAddSubtripDialog"
+					@newTripAdded="(subTrip, oldParentTrip, newParentTrip) =>
+					$emit('newTripAdded', subTrip, oldParentTrip, newParentTrip)"
+					@tripNodeOrderChanged="indexes => $emit('tripNodeOrderChanged', indexes)"
+					:parentTrip="trip"
+				/>
 
         <ModifyTripDestinationDialog
           :isShowing.sync="isShowingAddDestinationDialog"
@@ -82,9 +104,11 @@
 import Timeline from "./Timeline/Timeline.vue";
 import ModifyTripDestinationDialog from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
 import ManageTripDialog from "./ManageTripDialog/ManageTripDialog";
+import ModifySubtripDialog from "./ModifySubtripDialog/ModifySubtripDialog";
 
 export default {
   components: {
+    ModifySubtripDialog,
     Timeline,
     ModifyTripDestinationDialog,
     ManageTripDialog
@@ -93,6 +117,7 @@ export default {
     return {
       isShowingAddDestinationDialog: false,
       isShowingUpdateDestinationDialog: false,
+			isShowingAddSubtripDialog: false,
       editedTripDestination: null,
       isShowingManageTripDialog: false
     };
@@ -204,11 +229,6 @@ export default {
     position: absolute;
     margin-top: 13px;
     left: 0;
-  }
-
-  #add-trip-destination-btn {
-    margin: 0 auto;
-    display: block;
   }
 
   #manage-trip-btn {

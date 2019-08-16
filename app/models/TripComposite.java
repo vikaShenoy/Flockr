@@ -18,7 +18,6 @@ public class TripComposite extends TripNode {
   private String name;
 
     public TripComposite(List<User> users, String name) {
-//        super(tripNodes);
         this.users = users;
         this.name = name;
     }
@@ -129,12 +128,12 @@ public class TripComposite extends TripNode {
   }
 
   @Override
-  public Class getNodeType() {
-    return this.getClass();
+  public String getNodeType() {
+    return "TripComposite";
   }
 
   @Override
-  public Integer getDestinationId() {
+  public Destination getDestination() {
     return null;
   }
 

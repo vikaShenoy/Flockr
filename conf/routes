@@ -64,6 +64,7 @@ DELETE        /api/destinations/:destinationId/photos/:photoId              cont
 PUT           /api/destinations/:destinationId/photos/:photoId/undodelete   controllers.DestinationController.undoPhotoDelete(destinationId: Int, photoId: Int, request: Request)
 
 # Trip Routes
+GET           /api/users/:userId/trips/high-level-trips                 controllers.TripController.getHighLevelTrips(userId: Int, request: Request)
 GET           /api/users/:userId/trips                                  controllers.TripController.getTrips(request: Request, userId: Int)
 POST          /api/users/:userId/trips                                  controllers.TripController.addTrip(userId: Int, request: Request)
 DELETE        /api/users/:userId/trips/:tripId                          controllers.TripController.deleteTrip(userId: Int, tripId : Int, request : Request)

@@ -14,9 +14,11 @@
     <TripItemSidebar
       :trip="trip"
       @tripNodeOrderChanged="tripNodeOrderChanged"
+			@toggleExpanded="toggleExpandedTrips"
       @updatedTripDestinations="updatedTripDestinations"
       @deleteTripDestination="deleteTripDestination"
       @newUsers="newUsers"
+			@newTripAdded="newTripAdded"
     />
 
     <Snackbar
@@ -40,8 +42,9 @@
 		getTripNodeById,
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
-  import Command from "../../components/UndoRedo/Command"
+  import Command from "../../components/UndoRedo/Command";
 
+	import { restoreTrip, deleteTripFromList } from '../Trips/OldTripsService';
 
   export default {
     components: {
@@ -55,7 +58,6 @@
         trip: {
           tripNodeId: 6,
           name: "Trip6",
-          users: [],
           nodeType: "TripComposite",
           users: [{
             userId: 1
@@ -149,6 +151,36 @@
       // this.getTrip();
    },
     methods: {
+      newTripAdded(subTrip, oldParentTrip, newParentTrip) {
+        console.log(1);
+        console.log(subTrip);
+        console.log(oldParentTrip);
+        console.log(newParentTrip);
+
+        const undoCommand = async (subTrip, oldParentTrip) => {
+          await deleteTripFromList(subTrip.tripNodeId);
+          await editTrip(oldParentTrip);
+          this.getTrip();
+				};
+
+				const redoCommand = async (subTrip, newParentTrip) => {
+          await restoreTrip(subTrip.tripNodeId);
+          await editTrip(newParentTrip);
+          this.getTrip();
+				};
+
+				const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldParentTrip), redoCommand.bind(null, subTrip, newParentTrip));
+				this.$refs.undoRedo.addUndo(addTripCommand);
+			},
+
+      /**
+			 * Open and close a trip composite to show its tripNodes.
+			 * @tripNodeId tripNode to be toggled.
+			 * */
+      toggleExpandedTrips(tripNodeId) {
+        const tripNode = getTripNodeById(tripNodeId, this.trip);
+        tripNode.isShowing = this.$set(tripNode, "isShowing", !tripNode.isShowing);
+			},
       /**
        * Shows an snackbar error
        * @param {string} errorMessage errorMessage to show to user
@@ -197,12 +229,12 @@
         const undoCommand = async (oldUsers) => {
           await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, oldUsers);
           this.getTrip();
-        } 
+        };
 
         const redoCommand = async (users) => {
           await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, users);
           this.getTrip();
-        }
+        };
 
         const command = new Command(undoCommand.bind(null, [...this.trip.users]), redoCommand.bind(null, users));
         this.$refs.undoRedo.addUndo(command);
@@ -227,7 +259,7 @@
             // Drag and drop for one level of editing
             this.addEditTripCommand({
               ...this.trip,
-              tripNodes: oldParentTripNodes               
+              tripNodes: oldParentTripNodes
             }, this.trip);
           } else {
             // If parent trip nodes are different, we need to edit two trips
@@ -246,14 +278,14 @@
             // Drag and drop for trip node being dragged
             this.addEditTripCommand({
               ...this.trip,
-              tripNodes: oldParentTripNodes               
+              tripNodes: oldParentTripNodes
             }, this.trip);
 
             // Drag and drop for trip node being dragged into
             // Drag and drop for trip node being dragged
             this.addEditTripCommand({
               ...this.trip,
-              tripNodes: newParentTripNodes               
+              tripNodes: newParentTripNodes
             }, this.trip);
 
             await Promise.all(editTripPromises);
@@ -277,7 +309,6 @@
           this.reorderTrips(indexes);
           this.showSuccessMessage("Successfully changed order");
         } catch (e) {
-          console.log(e);
           this.showError("Could not change order");
         }
       },
