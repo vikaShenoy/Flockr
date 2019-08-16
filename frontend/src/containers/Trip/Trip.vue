@@ -280,7 +280,11 @@
       async tripNodeOrderChanged(indexes) {
         try {
 
-          if (contiguousReorderedDestinations(this.trip.tripNodes, indexes)) {
+          // TODO: split above function into: 1. return reorderedNodes. 2. send to server
+
+          const reorderedNodes;
+
+          if (contiguousReorderedDestinations(reorderedNodes)) {
             this.showError("Cannot have contiguous destinations");
             const tripNodes = [...this.trip.tripNodes];
             this.trip.tripNodes = [];

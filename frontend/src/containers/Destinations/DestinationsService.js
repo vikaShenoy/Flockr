@@ -1,6 +1,5 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
-import {async} from "q";
 
 /**
  * Get a list of all public and private destinations that a user has

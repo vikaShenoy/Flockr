@@ -66,52 +66,66 @@ export function contiguousDestinations(tripDestinations) {
 }
 
 /**
+ * Determine whether a trip node is a composite or not
+ * @param {Object} tripNode the trip node
+ * @returns {Boolean} whether a trip node is a composite or not
+ */
+const isNodeComposite = (tripNode) => tripNode.nodeType === "TripComposite";
+
+/**
+ * Determine whether a trip node is a destination leaf
+ * @param {Object} tripNode the trip node
+ * @returns {Boolean} whether a trip node is a destination leaf
+ */
+const isNodeDestinationLeaf = (tripNode) => tripNode.nodeType === "TripDestinationLeaf";
+
+/**
+ * Determine whether the nodes have the same destinations
+ * @param {Object} nodeA the first node
+ * @param {Object} nodeB the second node
+ * @returns {Boolean} whether the nodes have the same destinations
+ */
+const nodesHaveSameDestinations = (nodeA, nodeB) => nodeA.destination.destinationId === nodeB.destination.destinationId;
+
+/**
  * Checks if destinations are contiguous after they have been swapped
- * @param {Array<Object} tripNodes all tripNodes in the trip
- * @param {Object} indices the indice of the moved trip nodes, plus
+ * @param {Array<Object} tripNodes all tripNodes in the top level trip node
+ * @param {Object} indices the indices of the moved trip nodes, plus
  * the id of the source and target trip nodes
  * @returns {Boolean} True if the trip destinations are contiguous, false otherwise
  */
-export function contiguousReorderedDestinations(tripNodes, indices) {
-  const { newParentTripNodeId, oldParentTripNodeId } = indices;
+export function contiguousReorderedDestinations(tripNodes) {
+  let contiguousDestinationFound = false;
 
-  // these are null if no parent was found
-  const sourceParentTripNode = getTripNodeByIdFromListOfNodes(oldParentTripNodeId, tripNodes);
-  const targetParentTripNode = getTripNodeByIdFromListOfNodes(newParentTripNodeId, tripNodes);
+  console.log(tripNodes.map(node => node.name));
 
-  let sourceNodeHasContiguousDestinations = false;
-  let targetNodeHasContiguousDestinations = false;
-  
-  // TODO:
-  // must check that destinations in source parent trip node are now not contiguous
-  // e.g. A -> B -> A does not become A -> A
-  
-
-  // TODO:
-  // must check that destinations in target parent trip node are now not contigous
-  // e.g. A -> B -> C does not become A -> B -> C -> C
-
-
-  return false;
-  return sourceNodeHasContiguousDestinations || targetNodeHasContiguousDestinations;
-}
-
-
-/**
- * Get a trip node by its id from a list of trip nodes
- * @param {Number} tripNodeId the id of the trip node we are after
- * @param {Array<Object>} tripNodes the array of trip nodes
- * @returns {Object} the trip node with the given id
- */
-function getTripNodeByIdFromListOfNodes(tripNodeId, tripNodes) {
-
-  // "make up" a trip node to reuse functionality by getTripNodeById
-  return getTripNodeById(tripNodeId, {
-    tripNodeId: null,
-    tripNodes: tripNodes
+  tripNodes.forEach((tripNode, index) => {
+    if (isNodeDestinationLeaf(tripNode) && index > 0) {
+      // only compare destinations if two leaf nodes are next to each other
+      const previousNode = tripNodes[index - 1];
+      console.log(tripNode);
+      console.log(previousNode);
+      if (isNodeDestinationLeaf(previousNode)) {
+        if (nodesHaveSameDestinations(tripNode, previousNode)) {
+          contiguousDestinationFound = contiguousDestinationFound || true;
+        }
+      }
+    } else if (isNodeComposite(tripNode)) {
+      // recurse down the tree
+      console.log("Recursing!");
+      contiguousDestinationFound = contiguousDestinationFound || contiguousReorderedDestinations(tripNode.tripNodes);
+    } else {
+      console.info(`Else executed! Node type: ${tripNode.nodeType} Index: ${index} isNodeDestinationLeaf: ${isNodeDestinationLeaf(tripNode)} isNodeComposite: ${isNodeComposite(tripNode)}`);
+    }
   });
-}
 
+  console.log(`Contigous destination found: ${contiguousDestinationFound}`);
+
+  throw new Error('Delete return true; line')
+  return true;
+
+  return contiguousDestinationFound;
+}
 
 
 /**
