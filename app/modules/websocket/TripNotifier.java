@@ -8,6 +8,7 @@ import models.User;
 import modules.websocket.frames.ConnectedFrame;
 import modules.websocket.frames.DisconnectedFrame;
 import modules.websocket.frames.Frame;
+import modules.websocket.frames.TripUpdatedFrame;
 import play.libs.Json;
 
 import java.util.*;
@@ -40,11 +41,8 @@ public class TripNotifier {
     for (User user : trip.getUsers()) {
       if (!user.equals(userThatEdited) && userMap.containsKey(user)) {
         ActorRef actorRef = userMap.get(user);
-        ObjectNode message = Json.newObject();
-        message.set("value", Json.toJson(trip));
-        message.put("message", "update");
-
-        actorRef.tell(message, actorRef);
+        JsonNode frameJson = Json.toJson(new TripUpdatedFrame(trip));
+        actorRef.tell(frameJson.toString(), actorRef);
       }
     }
   }
