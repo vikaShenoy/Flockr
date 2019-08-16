@@ -14,9 +14,11 @@
     <TripItemSidebar
       :trip="trip"
       @tripNodeOrderChanged="tripNodeOrderChanged"
+			@toggleExpanded="toggleExpandedTrips"
       @updatedTripDestinations="updatedTripDestinations"
       @deleteTripDestination="deleteTripDestination"
       @newUsers="newUsers"
+			@newTripAdded="newTripAdded"
     />
 
     <Snackbar
@@ -40,7 +42,8 @@
 		getTripNodeById,
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
-  import Command from "../../components/UndoRedo/Command"
+  import Command from "../../components/UndoRedo/Command";
+  
 
 
   export default {
@@ -55,7 +58,6 @@
         trip: {
           tripNodeId: 6,
           name: "Trip6",
-          users: [],
           nodeType: "TripComposite",
           users: [{
             userId: 1
@@ -149,6 +151,32 @@
       // this.getTrip();
    },
     methods: {
+      newTripAdded(subTrip, oldParentTrip, newParentTrip) {
+        console.log(1);
+        console.log(subTrip);
+        console.log(oldParentTrip);
+        console.log(newParentTrip);
+
+        const undoCommand = async (subTrip, oldParentTrip) => {
+          await deleteTripFromList(subTrip.tripNodeId);
+				};
+
+				const redoCommand = (subTrip, newParentTrip) => {
+
+				};
+
+				const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldParentTrip), redoCommand.bind(null, subTrip, newParentTrip));
+				this.$refs.undoRedo.addUndo(addTripCommand);
+			},
+
+      /**
+			 * Open and close a trip composite to show its tripNodes.
+			 * @tripNodeId tripNode to be toggled.
+			 * */
+      toggleExpandedTrips(tripNodeId) {
+        const tripNode = getTripNodeById(tripNodeId, this.trip);
+        tripNode.isShowing = this.$set(tripNode, "isShowing", !tripNode.isShowing);
+			},
       /**
        * Shows an snackbar error
        * @param {string} errorMessage errorMessage to show to user

@@ -154,11 +154,11 @@
         const userIds = this.selectedUsers.map(selectedUser => selectedUser.userId);
         const subTrip = await createTrip(this.tripName, this.tripDestinations, userIds);
         subTrip.isShowing = false;
+        let oldParentTrip = {...this.parentTrip, tripNodes: [...this.parentTrip.tripNodes]};
         this.parentTrip.tripNodes.push(subTrip);
-        // If this is happening on the sidebar, the new trip is a subtrip. This uses PUT to add it to parent trip.
-        if (this.isSidebarComponent) {
-					await editTrip(this.parentTrip);
-				}
+        // If this is happening on the sidebar, the new trip is a subtrip. This adds it to parent trip.
+        if (this.isSidebarComponent) await editTrip(this.parentTrip);
+        this.$emit("newTripAdded", subTrip, oldParentTrip, this.parentTrip);
         this.$emit("close-dialog");
       },
       formatName(user) {

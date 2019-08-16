@@ -37,6 +37,7 @@
       <div v-else>
         <Timeline
           :trip="trip"
+					@toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
           @tripNodeOrderChanged="tripNodeOrderChanged"
           @showEditTripDestination="showEditTripDestination"
           @deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
@@ -66,8 +67,10 @@
 				<ModifySubtripDialog
 					:editMode="false"
 					:isShowing.sync="isShowingAddSubtripDialog"
+					@newTripAdded="(subTrip, oldParentTrip, newParentTrip) =>
+					$emit('newTripAdded', subTrip, oldParentTrip, newParentTrip)"
+					@tripNodeOrderChanged="indexes => $emit('tripNodeOrderChanged', indexes)"
 					:parentTrip="trip"
-					@new-trip-was-added="newTripWasAdded"
 				/>
 
         <ModifyTripDestinationDialog
@@ -125,10 +128,6 @@ export default {
     }
   },
   methods: {
-    newTripWasAdded(tripId) {
-      console.log("Trip item sidebar. Trip added with id = " + tripId);
-      // TODO - add this trip to the list
-		},
     /**
      * Emitted when the order of destinations have changed
      */

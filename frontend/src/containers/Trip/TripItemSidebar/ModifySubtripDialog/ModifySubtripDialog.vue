@@ -39,7 +39,8 @@
 							:isSidebarComponent="true"
 							:users="parentTrip.users"
 							:parentTrip="parentTrip"
-							@new-trip-was-added="newTripWasAdded"
+							@newTripAdded="(subTrip, oldParentTrip, newParentTrip) =>
+							$emit('newTripAdded', subTrip, oldParentTrip, newParentTrip)"
 							@cancel-trip-creation="isShowingDialog = false"
 							@close-dialog="isShowingDialog = false"
 							>
@@ -57,6 +58,7 @@
 <script>
 	import AddTrip from "../../../AddTrip/AddTrip";
 	import { getTrips, editTrip } from "../../TripService";
+	import { sortTimeline } from "../Timeline/TimelineService";
   export default {
     components: {AddTrip},
     props: {
@@ -82,23 +84,21 @@
 			}
 		},
 		methods: {
-      /**
-			 * Pass the created trip Id to the trip item sidebar component
-			 * when the user creates a trip in the dialog..
-       * @param tripId id of the newly created trip.
-       */
-      newTripWasAdded(tripId) {
-        this.$emit("new-trip-was-added", tripId);
-			},
 			async addExistingTrip() {
         const validFields = this.validate();
         if (!validFields) return false;
 
         // TODO - fix this so can be expanded
-        this.selectedExistingTrip.isShowing = false;
-
+        //this.selectedExistingTrip.isShowing = false;
+        let trip = {...this.selectedExistingTrip, isShowing: false};
         this.parentTrip.tripNodes.push(this.selectedExistingTrip);
+
         await editTrip(this.parentTrip);
+        const timelines = document.querySelectorAll(".v-timeline");
+        const timeline = timelines[timelines.length - 1];
+        sortTimeline(timeline, indexes => {
+          this.$emit("tripNodeOrderChanged", indexes);
+				});
         this.isShowingDialog = false;
 			},
 			validate() {
@@ -108,8 +108,10 @@
 		},
 		async mounted() {
       this.existingTrips = await getTrips();
-      // TODO - filter out child tripcomposites
-      this.existingTrips = this.existingTrips.filter(trip => trip.tripNodeId !== this.parentTrip.tripNodeId);
+			// Filter the list of available subtrips to disallow the parent becoming its own subtrips or having duplicates.
+			let parentTripNodes = this.parentTrip.tripNodes.map(tripNode => tripNode.tripNodeId);
+      this.existingTrips = this.existingTrips.filter(tripNode =>
+					tripNode.tripNodeId !== this.parentTrip.tripNodeId && !parentTripNodes.includes(tripNode.tripNodeId));
 		},
 		watch: {
       // Synchronize both isShowing state and props
