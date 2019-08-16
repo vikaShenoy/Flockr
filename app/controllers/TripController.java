@@ -114,7 +114,7 @@ public class TripController extends Controller {
                         TripComposite trip = new TripComposite(tripNodes, users, tripName);
                         return tripRepository.saveTrip(trip);
                       })
-                  .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip.getTripNodeId())));
+                  .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)));
             },
             httpExecutionContext.current());
   }
@@ -291,6 +291,7 @@ public class TripController extends Controller {
                         users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
               } catch (BadRequestException e) {
+                e.printStackTrace();
                 throw new CompletionException(new BadRequestException());
               } catch (ForbiddenRequestException e) {
                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
@@ -307,7 +308,7 @@ public class TripController extends Controller {
                       destinations -> {
                         TripComposite trip = optionalTrip.get();
 
-                        trip.setTripNodes(tripNodes);
+                        trip.setTripNodes(new ArrayList<>());
                         trip.setName(tripName);
 
                         if (tripNodesJson != null) {
@@ -317,7 +318,7 @@ public class TripController extends Controller {
 
 
 
-                        return tripRepository.update(trip);
+                        return tripRepository.update(trip, tripNodes);
                       })
                   .thenApplyAsync(trip -> ok(Json.toJson(trip)));
             },
@@ -330,6 +331,7 @@ public class TripController extends Controller {
                   notFoundError.printStackTrace();
                 return notFound();
               } catch (BadRequestException badRequestError) {
+                badRequestError.printStackTrace();
                 return badRequest();
               } catch (Throwable serverError) {
                 serverError.printStackTrace();

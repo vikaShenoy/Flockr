@@ -8,20 +8,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 
 @Entity
 @Inheritance
 public abstract class TripNode extends Model {
     @Id
     protected int tripNodeId;
+
 
     @ManyToMany(mappedBy = "parents", cascade=CascadeType.PERSIST)
     protected List<TripNode> tripNodes = new ArrayList<>();
@@ -116,9 +110,9 @@ public abstract class TripNode extends Model {
         this.parents.remove(parent);
     }
 
-    public abstract Class getNodeType();
+    public abstract String getNodeType();
 
-    public abstract Integer getDestinationId();
+    public abstract Destination getDestination();
 
     public abstract List<User> getUsers();
 

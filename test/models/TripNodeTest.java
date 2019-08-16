@@ -159,11 +159,10 @@ public class TripNodeTest {
 
     Assert.assertEquals(
         destination1.getDestinationId(),
-        resultJson.get("tripNodes").get(0).get("destinationId").asInt());
+        resultJson.get("tripNodes").get(0).get("destination").get("destinationId").asInt());
 
-    Assert.assertEquals(
-        0,
-        resultJson.get("tripNodes").get(1).get("destinationId").asInt());
+    Assert.assertTrue(
+        resultJson.get("tripNodes").get(1).get("destination").isNull());
 
     Assert.assertEquals(
         user.getUserId(),
@@ -204,7 +203,7 @@ public class TripNodeTest {
     newTripJson.put("name", "New Trip");
 
     ObjectNode firstNode = Json.newObject();
-    firstNode.put("destinationId", leaf2.getDestinationId());
+    firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
     firstNode.put("nodeType", "TripDestinationLeaf");
     firstNode.put("arrivalDate", date);
     firstNode.put("arrivalTime", date);
@@ -216,7 +215,7 @@ public class TripNodeTest {
     secondNode.put("nodeType", "TripComposite");
 
     ObjectNode thirdNode = Json.newObject();
-    thirdNode.put("destinationId", leaf1.getDestinationId());
+    thirdNode.put("destinationId", leaf1.getDestination().getDestinationId());
     thirdNode.put("nodeType", "TripDestinationLeaf");
     secondNode.put("arrivalDate", date);
     secondNode.put("arrivalTime", date);
@@ -235,7 +234,7 @@ public class TripNodeTest {
     Assert.assertEquals(201, result.status());
 
     JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
-    int tripId = jsonNode.asInt();
+    int tripId = jsonNode.get("tripNodeId").asInt();
 
     TripComposite receivedTrip = TripComposite.find.byId(tripId);
     Assert.assertEquals(3, receivedTrip.getTripNodes().size());
@@ -249,7 +248,7 @@ public class TripNodeTest {
     updatedTripJson.put("name", "Updated Trip");
 
     ObjectNode firstNode = Json.newObject();
-    firstNode.put("destinationId", leaf2.getDestinationId());
+    firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
     firstNode.put("nodeType", "TripDestinationLeaf");
     firstNode.put("arrivalDate", date);
     firstNode.put("arrivalTime", date);
@@ -285,7 +284,7 @@ public class TripNodeTest {
     updatedTripJson.put("name", "Updated Trip");
 
     ObjectNode firstNode = Json.newObject();
-    firstNode.put("destinationId", leaf2.getDestinationId());
+    firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
     firstNode.put("nodeType", "TripDestinationLeaf");
     firstNode.put("arrivalDate", date);
     firstNode.put("arrivalTime", date);
@@ -323,7 +322,7 @@ public class TripNodeTest {
     updatedTripJson.put("name", "Updated Trip");
 
     ObjectNode firstNode = Json.newObject();
-    firstNode.put("destinationId", leaf2.getDestinationId());
+    firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
     firstNode.put("nodeType", "TripDestinationLeaf");
     firstNode.put("arrivalDate", date);
     firstNode.put("arrivalTime", date);

@@ -2,11 +2,10 @@
   <v-card
           id="add-trip"
           class="col-lg-10 offset-lg-1"
+					:flat="!!isSidebarComponent"
   >
-
-    <h2>Add Trip</h2>
-
-
+    <h2 v-if="!isSidebarComponent">Add Trip</h2>
+		<h3 v-else>Create New Subtrip</h3>
     <v-form ref="addTripForm">
       <v-text-field
               v-model="tripName"
@@ -17,7 +16,9 @@
       >
       </v-text-field>
 
-    <v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
+    <v-combobox v-if="!isSidebarComponent"
+								:items="users" :item-text="formatName"
+								v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
 
 
       <TripTable :tripDestinations="tripDestinations"/>
@@ -45,7 +46,7 @@
               depressed
               color="secondary"
               id="add-trip-btn"
-              @click="addTrip()"
+              @click="addTrip"
       >
         Create
       </v-btn>
@@ -55,8 +56,10 @@
 
 <script>
   import TripTable from "../../components/TripTable/TripTable";
-  import {addTrip, getAllUsers} from "./AddTripService.js";
+  import {createTrip, getAllUsers} from "./AddTripService.js";
+
   import UserStore from "../../stores/UserStore";
+  import {editTrip} from "../Trip/TripService";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -74,23 +77,32 @@
     components: {
       TripTable
     },
+		props: {
+      isSidebarComponent: {
+        type: Boolean,
+				required: false
+			},
+			parentTrip: {
+        type: Object,
+				required: false
+			}
+
+		},
     data() {
       return {
         tripName: "",
         tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
         tripNameRules: [rules.required],
         selectedUsers: [],
-        users: []
       };
     },
     mounted() {
-      console.log("I made it here");
       this.getUsers();
     },
     methods: {
       async getUsers() {
         const users = (await getAllUsers())
-          .filter(user => user.userId !== UserStore.data.userId)
+          .filter(user => user.userId !== UserStore.data.userId);
         this.users = users;
       },
       /**
@@ -140,8 +152,15 @@
         if (!validFields) return;
         // Specifies the extra users that should be added to the trip
         const userIds = this.selectedUsers.map(selectedUser => selectedUser.userId);
-        const tripId = await addTrip(this.tripName, this.tripDestinations, userIds);
-        this.$emit("new-trip-was-added", tripId);
+        const subTrip = await createTrip(this.tripName, this.tripDestinations, userIds);
+        subTrip.isShowing = false;
+        // Using spread to deep copy all trip nodes for the emit function
+        let oldParentTrip = {...this.parentTrip, tripNodes: [...this.parentTrip.tripNodes]};
+        this.parentTrip.tripNodes.push(subTrip);
+        // If this is happening on the sidebar, the new trip is a subtrip. This adds it to parent trip.
+        if (this.isSidebarComponent) await editTrip(this.parentTrip);
+        this.$emit("newTripAdded", subTrip, oldParentTrip, this.parentTrip);
+        this.$emit("close-dialog");
       },
       formatName(user) {
         return `${user.firstName} ${user.lastName}`;
