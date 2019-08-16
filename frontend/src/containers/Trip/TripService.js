@@ -66,18 +66,11 @@ export function contiguousDestinations(tripDestinations) {
 }
 
 /**
- * Determine whether a trip node is a composite or not
- * @param {Object} tripNode the trip node
- * @returns {Boolean} whether a trip node is a composite or not
- */
-const isNodeComposite = (tripNode) => tripNode.nodeType === "TripComposite";
-
-/**
  * Determine whether a trip node is a destination leaf
  * @param {Object} tripNode the trip node
  * @returns {Boolean} whether a trip node is a destination leaf
  */
-const isNodeDestinationLeaf = (tripNode) => tripNode.nodeType === "TripDestinationLeaf";
+const isNodeDestinationLeaf = (tripNode) => tripNode.nodeType == "TripDestinationLeaf";
 
 /**
  * Determine whether the nodes have the same destinations
@@ -89,41 +82,38 @@ const nodesHaveSameDestinations = (nodeA, nodeB) => nodeA.destination.destinatio
 
 /**
  * Checks if destinations are contiguous after they have been swapped
- * @param {Array<Object} tripNodes all tripNodes in the top level trip node
- * @param {Object} indices the indices of the moved trip nodes, plus
- * the id of the source and target trip nodes
- * @returns {Boolean} True if the trip destinations are contiguous, false otherwise
+ * @param {Object} reorderedCopiedNodes object containing the nodes that changed, and whether
+ * the node that moved stayed in the same parent node
+ * @returns {Boolean} true if there are contiguous trip destinations, false otherwise
  */
-export function contiguousReorderedDestinations(tripNodes) {
+export function contiguousReorderedDestinations(reorderedCopiedNodes) {
+
+  const { reorderedSourceTripNode, reorderedTargetTripNode, stayedInSourceTripNode } = reorderedCopiedNodes;
+  let contiguousDestinationFound = tripNodeHasContiguousDestinations(reorderedSourceTripNode);
+  if (!stayedInSourceTripNode) {
+    contiguousDestinationFound = contiguousDestinationFound || tripNodeHasContiguousDestinations(reorderedTargetTripNode);
+  }
+  return contiguousDestinationFound;
+}
+
+/**
+ * Determine whether the trip node has contiguous destinations
+ * @param {Object} tripNode the trip node
+ * @returns {Boolean} true if the trip node has contiguous destinations, false otherwise
+ */
+function tripNodeHasContiguousDestinations(tripNode) {
   let contiguousDestinationFound = false;
-
-  console.log(tripNodes.map(node => node.name));
-
-  tripNodes.forEach((tripNode, index) => {
-    if (isNodeDestinationLeaf(tripNode) && index > 0) {
+  tripNode.tripNodes.forEach((node, index) => {
+    if (isNodeDestinationLeaf(node) && index > 0) {
       // only compare destinations if two leaf nodes are next to each other
-      const previousNode = tripNodes[index - 1];
-      console.log(tripNode);
-      console.log(previousNode);
+      const previousNode = tripNode.tripNodes[index - 1];
       if (isNodeDestinationLeaf(previousNode)) {
-        if (nodesHaveSameDestinations(tripNode, previousNode)) {
-          contiguousDestinationFound = contiguousDestinationFound || true;
+        if (nodesHaveSameDestinations(node, previousNode)) {
+          contiguousDestinationFound = true;
         }
       }
-    } else if (isNodeComposite(tripNode)) {
-      // recurse down the tree
-      console.log("Recursing!");
-      contiguousDestinationFound = contiguousDestinationFound || contiguousReorderedDestinations(tripNode.tripNodes);
-    } else {
-      console.info(`Else executed! Node type: ${tripNode.nodeType} Index: ${index} isNodeDestinationLeaf: ${isNodeDestinationLeaf(tripNode)} isNodeComposite: ${isNodeComposite(tripNode)}`);
     }
   });
-
-  console.log(`Contigous destination found: ${contiguousDestinationFound}`);
-
-  throw new Error('Delete return true; line')
-  return true;
-
   return contiguousDestinationFound;
 }
 

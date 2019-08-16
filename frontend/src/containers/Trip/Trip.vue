@@ -226,49 +226,78 @@
         this.showSuccessMessage("Successfully updated users");
       },
       /**
-       * Reorders trips and sends to backend
-       * @param {Object} indexes Indexes of what to reorder
+       * Reorder **copies** of the changed trip nodes (only the source and destination nodes)
+       * @param {Object} indices the indices of what to order
+       * @returns {Object} contains edited tripNodes, and whether the moved node remained
+       * in the same parent node
        */
-      async reorderTrips(indexes) {
-          const oldParentTripNode = getTripNodeById(indexes.oldParentTripNodeId, this.trip);
-          const oldParentTripNodes = [...oldParentTripNode.tripNodes];
-          // If indexes of parent trip nodes are the same, we only need to do one edit
-          if (indexes.oldParentTripNodeId === indexes.newParentTripNodeId) {
-            const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
-            oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
-            oldParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
-            await editTrip(oldParentTripNode);
+      getReorderedCopiedNodes(indices) {
+        console.log(indices)
+        const { oldParentTripNodeId, newParentTripNodeId, oldIndex, newIndex } = indices;
+        const oldParentTripNode = {...getTripNodeById(oldParentTripNodeId, this.trip)};
+        const oldParentTripNodes = [...oldParentTripNode.tripNodes];
+        let newParentTripNode = null;
+        const stayedInSourceTripNode = oldParentTripNodeId === newParentTripNodeId;
+
+        // If indexes of parent trip nodes are the same, we only need to do one edit
+        if (stayedInSourceTripNode) {
+          const temp = {
+            ...oldParentTripNode.tripNodes[oldIndex]
+          };
+          oldParentTripNode.tripNodes.splice(oldIndex, 1);
+          oldParentTripNode.tripNodes.splice(newIndex, 0, temp);
+        } else {
+          // If parent trip nodes are different, we need to edit two trips
+          newParentTripNode = {...getTripNodeById(newParentTripNodeId, this.trip)};
+          const newParentTripNodes = [...newParentTripNode.tripNodes];
+
+          const temp = {...oldParentTripNode.tripNodes[oldIndex]};
+          oldParentTripNode.tripNodes.splice(oldIndex, 1);
+          newParentTripNode.tripNodes.splice(newIndex, 0, temp);
+        }
+
+        return {
+          reorderedSourceTripNode: oldParentTripNode,
+          stayedInSourceTripNode: stayedInSourceTripNode,
+          reorderedTargetTripNode: newParentTripNode
+        }
+
+      },
+      /**
+       * Sends edited trips to backend
+       * @param {Object} reorderedCopiedNodes the copies of the reordered nodes, and whether the node remained in
+       * its original parent node
+       */
+      async reorderTripsInServer(reorderedCopiedNodes) {
+          const { reorderedSourceTripNode, reorderedTargetTripNode, stayedInSourceTripNode } = reorderedCopiedNodes;
+          if (stayedInSourceTripNode) {
+            // we only need to do one edit
+
+            await editTrip(reorderedSourceTripNode);
 
             // Drag and drop for one level of editing
             this.addEditTripCommand({
               ...this.trip,
-              tripNodes: oldParentTripNodes               
+              tripNodes: reorderedSourceTripNode.tripNodes               
             }, this.trip);
           } else {
             // If parent trip nodes are different, we need to edit two trips
-            const newParentTripNode = getTripNodeById(indexes.newParentTripNodeId, this.trip);
-            const newParentTripNodes = [...newParentTripNode.tripNodes];
-
-            const temp = {...oldParentTripNode.tripNodes[indexes.oldIndex]};
-            oldParentTripNode.tripNodes.splice(indexes.oldIndex, 1);
-            newParentTripNode.tripNodes.splice(indexes.newIndex, 0, temp);
-
             const editTripPromises = [
-              editTrip(oldParentTripNode),
-              editTrip(newParentTripNode)
+              editTrip(reorderedSourceTripNode),
+              editTrip(reorderedTargetTripNode)
             ];
 
             // Drag and drop for trip node being dragged
             this.addEditTripCommand({
               ...this.trip,
-              tripNodes: oldParentTripNodes               
+              tripNodes: reorderedSourceTripNode.tripNodes
             }, this.trip);
 
             // Drag and drop for trip node being dragged into
             // Drag and drop for trip node being dragged
             this.addEditTripCommand({
               ...this.trip,
-              tripNodes: newParentTripNodes               
+              tripNodes: reorderedTargetTripNode.tripNodes
             }, this.trip);
 
             await Promise.all(editTripPromises);
@@ -279,12 +308,8 @@
        */
       async tripNodeOrderChanged(indexes) {
         try {
-
-          // TODO: split above function into: 1. return reorderedNodes. 2. send to server
-
-          const reorderedNodes;
-
-          if (contiguousReorderedDestinations(reorderedNodes)) {
+          const reorderedCopiedNodes = this.getReorderedCopiedNodes(indexes);
+          if (contiguousReorderedDestinations(reorderedCopiedNodes)) {
             this.showError("Cannot have contiguous destinations");
             const tripNodes = [...this.trip.tripNodes];
             this.trip.tripNodes = [];
@@ -292,7 +317,7 @@
               this.trip.tripNodes = tripNodes;
             }, 0);
           } else {
-            this.reorderTrips(indexes);
+            this.reorderTripsInServer(reorderedCopiedNodes);
             this.showSuccessMessage("Successfully changed order");
           }
         } catch (e) {
