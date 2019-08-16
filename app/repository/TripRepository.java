@@ -5,10 +5,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import models.TripComposite;
@@ -47,10 +44,14 @@ public class TripRepository {
    * @param trip The trip to update changes.
    * @return The trip that was updated.
    */
-  public CompletionStage<TripComposite> update(TripComposite trip) {
+  public CompletionStage<TripComposite> update(TripComposite trip, List<TripNode> tripNodes) {
     return supplyAsync(
         () -> {
-          trip.update();
+          trip.save();
+          System.out.println(trip.getTripNodes());
+            System.out.println(tripNodes);
+          trip.setTripNodes(tripNodes);
+          trip.save();
           return trip;
         },
         executionContext);

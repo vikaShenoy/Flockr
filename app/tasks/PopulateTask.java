@@ -108,28 +108,31 @@ public class PopulateTask {
         ArrayList<TripNode> tripNodes = new ArrayList<>();
         tripNodes.add(tripChristchurch);
         tripNodes.add(tripWestMelton);
+        tripNodes.add(tripHelkett);
         List<User> users = new ArrayList<>();
         users.add(adminUser);
-        TripComposite trip = new TripComposite(tripNodes, users, "Testing Trip 1");
-        trip.save();
-        tripNodes.remove(tripWestMelton);
-        tripNodes.add(tripHelkett);
 
         Destination morocco = new Destination("Morocco", destinationType, district, 12.0, 45.0, country, adminUser.getUserId(), new ArrayList<>(), true);
         morocco.save();
 
-        TripDestinationLeaf tripMorocco = new TripDestinationLeaf(morocco, new Date(1564273000), 43200, new Date(1564359000), 43200);
-        tripMorocco.save();
+        TripDestinationLeaf tripdestination4 = new TripDestinationLeaf(morocco, new Date(1564273000), 43200, new Date(1564359000), 43200);
+        tripdestination4.save();
 
-        trip.save();
-
-
-
+        TripComposite trip5 = new TripComposite(tripNodes, users, "Trip 5");
+        trip5.save();
 
 
-        TripComposite trip2 = new TripComposite(tripNodes, users, "Find the family graves");
+        ArrayList<TripNode> trip6Nodes = new ArrayList<>();
+        trip6Nodes.add(trip5);
+        trip6Nodes.add(tripdestination4);
+        TripComposite trip6 = new TripComposite(trip6Nodes, users, "Find the family graves");
         //trip2.setParents(tripNodes);
-        trip2.save();
+        trip6.save();
+
+
+
+
+
 
         System.out.println("Ended populating data");
     }, this.executionContext);

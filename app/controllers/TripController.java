@@ -307,7 +307,7 @@ public class TripController extends Controller {
                       destinations -> {
                         TripComposite trip = optionalTrip.get();
 
-                        trip.setTripNodes(tripNodes);
+                        trip.setTripNodes(new ArrayList<>());
                         trip.setName(tripName);
 
                         if (tripNodesJson != null) {
@@ -317,7 +317,7 @@ public class TripController extends Controller {
 
 
 
-                        return tripRepository.update(trip);
+                        return tripRepository.update(trip, tripNodes);
                       })
                   .thenApplyAsync(trip -> ok(Json.toJson(trip)));
             },
