@@ -70,7 +70,9 @@ public class PopulateTask {
         List<Role> adminRoleTypes = new ArrayList<>();
         adminRoleTypes.add(superAdminRole);
 
-        User adminUser = new User("Luis", "something", "Hamilton", this.security.hashPassword("so-secure"), "Male", "luis@gmail.com", adminUserNationalities, adminTravellerTypes, new Date(), adminPassports, adminRoleTypes, "abc");
+        User adminUser = new User("Luis", "something", "Hamilton",
+                this.security.hashPassword("so-secure"), "Male", "luis@gmail.com",
+                adminUserNationalities, adminTravellerTypes, new Date(), adminPassports, adminRoleTypes, "abc");
         adminUser.save();
 
         // Creating some initial destinations

@@ -114,7 +114,7 @@ public class TripController extends Controller {
                         TripComposite trip = new TripComposite(tripNodes, users, tripName);
                         return tripRepository.saveTrip(trip);
                       })
-                  .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip.getTripNodeId())));
+                  .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)));
             },
             httpExecutionContext.current());
   }
@@ -291,6 +291,7 @@ public class TripController extends Controller {
                         users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
               } catch (BadRequestException e) {
+                e.printStackTrace();
                 throw new CompletionException(new BadRequestException());
               } catch (ForbiddenRequestException e) {
                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
@@ -330,6 +331,7 @@ public class TripController extends Controller {
                   notFoundError.printStackTrace();
                 return notFound();
               } catch (BadRequestException badRequestError) {
+                badRequestError.printStackTrace();
                 return badRequest();
               } catch (Throwable serverError) {
                 serverError.printStackTrace();

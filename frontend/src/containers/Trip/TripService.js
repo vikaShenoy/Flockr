@@ -18,6 +18,13 @@ function formatTime(time) {
   return moment.utc(time.as("milliseconds")).format("HH:mm");
 }
 
+export async function getTrips() {
+  const userId = localStorage.getItem("userId");
+  const res = await superagent.get(endpoint(`/users/${userId}/trips`))
+    .set("Authorization", localStorage.getItem("authToken"));
+  return res.body;
+}
+
 /**
  * Transform/format a trip response object.
  * @param {Object} trip The trip to transform
@@ -131,18 +138,22 @@ export async function editTrip(trip) {
 
 /**
  * Maps trip nodes (tree structure) to destinations (flat structure) using recursion
+ * @param depth the recursion level. Used to indicate destinations which are
+ * part of the same sub trip for coloring on the map.
  * @param {} tripNode The current trip node at a specific recursion level
  */
-export function mapTripNodesToDestinations(tripNode) {
+export function mapTripNodesToDestinations(tripNode, depth=0) {
   if (tripNode.nodeType === "TripDestinationLeaf") {
-    return tripNode.destination;
+    const destination = tripNode.destination;
+    destination.group = depth;
+    return destination;
+    //return tripNode.destination;
   }
   
   let destinations = [];
   for (const currentTripNode of tripNode.tripNodes) {
-    destinations = [...destinations, mapTripNodesToDestinations(currentTripNode)]; 
+    destinations = [...destinations, mapTripNodesToDestinations(currentTripNode, depth + 1)];
   }
-
   return destinations.flatMap(destination => destination)
 }
 
@@ -167,8 +178,3 @@ export function getTripNodeById(tripNodeId, tripNode) {
 
   return tripNodeToFind;
 }
-
-
-
-
-

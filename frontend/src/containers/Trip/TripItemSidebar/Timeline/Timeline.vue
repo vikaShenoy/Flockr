@@ -10,6 +10,7 @@
               v-bind:key="tripNode.tripNodeId"
               :tripNode="tripNode"
               :alignRight="false"
+							@toggleExpanded = "tripNodeId => $emit('toggleExpanded', tripNodeId)"
               @showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
               @deleteTripDestination="deleteTripDestination => $emit('deleteTripDestination', tripDestination)"
       />
@@ -21,6 +22,7 @@
 <script>
   import Sortable from "sortablejs";
   import TripNode from "./TripNode/TripNode";
+  import { sortTimeline } from "./TimelineService";
 
   export default {
     props: {
@@ -50,28 +52,14 @@
         // Loop through each nested sortable element
         const sortableTimelines = document.querySelectorAll(".v-timeline");
         for (let i = 0; i < sortableTimelines.length; i++) {
-          new Sortable(sortableTimelines[i], {
-            group: 'nested',
-            animation: 500,
-            fallbackOnBody: true,
-            swapThreshold: 0.65,
-						onEnd: (event) => {
-              const oldParentTripNodeId = Number(event.from.getAttribute("data-trip-node-id"));
-							const newParentTripNodeId = Number(event.to.getAttribute("data-trip-node-id"));
-							const newIndex = event.newIndex;
-							const oldIndex = event.oldIndex;
-
-							this.$emit("tripNodeOrderChanged", {
-                oldParentTripNodeId,
-								newParentTripNodeId,
-								newIndex,
-								oldIndex
-							});
-						}
-          });
+          sortTimeline(sortableTimelines[i], indexes => {
+            this.$emit("tripNodeOrderChanged", indexes);
+					});
         }
-      }
-    }
+      },
+    },
+		watch: {
+		},
   }
 </script>
 

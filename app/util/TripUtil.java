@@ -68,13 +68,11 @@ public class TripUtil {
                 Integer arrivalTime = !tripNodeJson.has("arrivalTime") ? null : tripNodeJson.get("arrivalTime").asInt();
                 Date departureDate = !tripNodeJson.has("departureDate") ? null : new Timestamp(tripNodeJson.get("departureDate").asLong());
                 Integer departureTime = !tripNodeJson.has("departureTime") ? null : tripNodeJson.get("departureTime").asInt();
-                Destination destination = new Destination(destinationId);
+                Destination destination = Destination.find.byId(destinationId);
                 TripDestinationLeaf tripDestination = new TripDestinationLeaf(destination, arrivalDate, arrivalTime, departureDate, departureTime);
                 tripNodes.add(tripDestination);
             }
-
         }
-
         return tripNodes;
     }
 
@@ -87,7 +85,6 @@ public class TripUtil {
         int lastDestinationId = 0;
         int currentDestinationId;
         for (JsonNode tripNode : tripNodes) {
-            System.out.println(tripNode);
             String nodeType = tripNode.get("nodeType").asText();
             if (nodeType.equals("TripDestinationLeaf")) {
                 currentDestinationId = tripNode.get("destinationId").asInt();

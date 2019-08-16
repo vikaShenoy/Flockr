@@ -7,9 +7,9 @@
             :right="alignRight"
             :hide-dot="tripNode.nodeType === 'TripComposite'"
     >
-      <v-card>
+      <v-card v-bind:class="(tripNode.arrivalDate && tripNode.departureDate) ? '' : 'no-date'">
         <v-card-title class="secondary trip-destination-title">
-          <h3 class="white--text font-weight-light">{{ tripNode.name }}</h3>
+          <h3 class="font-weight-light">{{ tripNode.name }}</h3>
           <v-spacer align="right">
             <v-btn class="delete-btn" flat @click="$emit('deleteTripDestination', tripNode)">
               <v-icon>delete</v-icon>
@@ -101,7 +101,7 @@
         return formattedDate;
       },
       toggleShowTripNodes(tripNode) {
-        tripNode.isShowing = !tripNode.isShowing;
+        this.$emit("toggleExpanded", tripNode.tripNodeId);
       }
     }
   };
@@ -143,6 +143,10 @@
     cursor: pointer;
 
     
+  }
+
+  .no-date {
+    background-color: #DDDDDD;
   }
 
 
