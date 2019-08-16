@@ -39,8 +39,7 @@
           </v-flex>
 
           <v-flex>
-            <CountryPicker v-if="destinationToEdit" v-bind:country="destinationToEdit.destinationCountry" v-on:change="updateCountry"></CountryPicker>
-            <CountryPicker v-else v-on:change="updateCountry"></CountryPicker>
+            <CountryPicker v-on:change="updateCountry"></CountryPicker>
           </v-flex>
 
           <v-flex>
@@ -143,7 +142,7 @@
   import CountryPicker from "../../../../components/Country/CountryPicker"
 
   export default {
-    name: "ModifyDestinationSidebar",
+    name: "AddDestinationSidebar",
     components: {
       CountryPicker
     },
