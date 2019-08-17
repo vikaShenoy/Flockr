@@ -277,6 +277,7 @@ public class User extends Model {
         return passports;
     }
 
+
     public void setPassports(List<Passport> passports) {
         this.passports = passports;
     }

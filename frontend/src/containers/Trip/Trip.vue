@@ -1,10 +1,12 @@
 <template>
-  <div id="destinations">
+  <div id="trip">
     <div id="map">
       <DestinationMap
               :destinations="mapTripDestinationsToDestinations()"
               :isTripMap="true"
       />
+
+    <ConnectedUsers v-if="trip" :users="trip.users" :connectedUsers="trip.connectedUsers" />
     </div>
 
     <div id="undo-redo-btns">
@@ -24,6 +26,7 @@
 <script>
   import TripItemSidebar from "./TripItemSidebar/TripItemSidebar.vue";
   import DestinationMap from "../../components/DestinationMap/DestinationMap";
+  import ConnectedUsers from "./ConnectedUsers/ConnectedUsers";
   import {
     contiguousDestinations,
     contiguousReorderedDestinations,
@@ -40,7 +43,8 @@ import UserStore from '../../stores/UserStore';
     components: {
       TripItemSidebar,
       DestinationMap,
-      UndoRedo
+      UndoRedo,
+      ConnectedUsers
     },
     data() {
       return {
@@ -49,12 +53,28 @@ import UserStore from '../../stores/UserStore';
     },
     mounted() {
       this.getTrip();
-
-      UserStore.data.socket.onmessage = (message) => {
-        this.getTrip();
-      }
+      this.listenOnMessage();
+      
     },
     methods: {
+      /**
+       * Listens websockets events to either update trip, connected users, or map pings
+       */
+      listenOnMessage() {
+        UserStore.data.socket.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === "connected")  {
+            this.trip.connectedUsers.push(message.user);
+            this.showSuccessMessage(`${message.user.firstName} connected`, 1000);
+            
+          } else if (message.type === "disconnected") {
+            this.showSuccessMessage(`${message.user.firstName} disconnected`, 1000);
+            this.trip.connectedUsers = this.trip.connectedUsers.filter(user => {
+              return user.userId !== message.user.userId;
+            });
+          }
+        }
+      },
       /**
        * Shows an snackbar error
        * @param {string} errorMessage errorMessage to show to user
@@ -70,11 +90,11 @@ import UserStore from '../../stores/UserStore';
        * Shows a success snackbar
        * @param {string} successMessage Success message to show
        */
-      showSuccessMessage(successMessage) {
+      showSuccessMessage(successMessage, timeout) {
         this.$root.$emit("show-snackbar", {
           message: successMessage,
           color: "success",
-          timeout: 3000
+          timeout: timeout ? timeout : 2000 
         });
       },
       /**
@@ -249,15 +269,13 @@ import UserStore from '../../stores/UserStore';
 </script>
 
 <style lang="scss" scoped>
-  #destinations {
-    width: 100%;
+  #trip {
+    display: flex;
   }
 
   #map {
-    width: calc(100% - 555px);
-    display: inline-block;
-    height: 100%;
-    position: fixed;
+    flex: 1;
+    position: relative;
   }
 
   #undo-redo-btns {

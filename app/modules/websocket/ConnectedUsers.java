@@ -1,4 +1,4 @@
-package actors;
+package modules.websocket;
 
 import akka.actor.ActorRef;
 import models.User;
@@ -11,7 +11,8 @@ import java.util.Map;
  */
 public class ConnectedUsers {
     private static ConnectedUsers instance;
-    private Map<ActorRef, User> connectedUsers;
+    private Map<User, ActorRef> connectedUsers;
+
 
     /**
      * Creates connected users
@@ -19,7 +20,8 @@ public class ConnectedUsers {
     private ConnectedUsers() {
         connectedUsers = new HashMap<>();
     }
-/**
+
+    /**
      * Singleton getter for connected users
      * @return
      */
@@ -38,20 +40,18 @@ public class ConnectedUsers {
      * @param out The websocket object
      */
     public void addConnectedUser(User user, ActorRef out) {
-
-        connectedUsers.put(out, user);
+        connectedUsers.put(user, out);
     }
 
     /**
      * Removes a connected users by
-     * @param out The websocket object
+     * @param user The user object
      */
-    public void removeConnectedUser(ActorRef out) {
-        // Note that if user is connected via multiple devices, they will only be removed from device that is being exited
-        connectedUsers.remove(out);
+    public void removeConnectedUser(User user) {
+        connectedUsers.remove(user);
     }
 
-    public Map<ActorRef, User> getConnectedUsers() {
+    public Map<User, ActorRef> getConnectedUsers() {
         return connectedUsers;
     }
 

@@ -34,6 +34,7 @@ export function transformTripResponse(trip) {
     tripId: trip.tripId,
     tripName: trip.tripName,
     users: trip.users,
+    connectedUsers: trip.connectedUsers,
     tripDestinations: trip.tripDestinations.map(tripDestination => {
       return {
         tripDestinationId: tripDestination.tripDestinationId,

@@ -2,8 +2,9 @@ package controllers;
 
 import actions.ActionState;
 import actions.LoggedIn;
-import actors.ConnectedUsers;
-import actors.TripNotifier;
+import akka.actor.ActorRef;
+import modules.websocket.ConnectedUsers;
+import modules.websocket.TripNotifier;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
@@ -28,6 +29,7 @@ import util.TripUtil;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -148,6 +150,17 @@ public class TripController extends Controller {
                     }
                     Trip trip = optionalTrip.get();
                     JsonNode tripJson = Json.toJson(trip);
+                    List<User> connectedUsersInTrip = new ArrayList<>();
+                    List<User> usersInTrip = trip.getUsers();
+                    Map<User, ActorRef> connectedUsers = ConnectedUsers.getInstance().getConnectedUsers();
+
+
+                    for (User currentUser : usersInTrip) {
+                        if (connectedUsers.containsKey(currentUser)) {
+                            connectedUsersInTrip.add(currentUser);
+                        }
+                    }
+                    ((ObjectNode) tripJson).set("connectedUsers", Json.toJson(connectedUsersInTrip));
                     return ok(tripJson);
                 });
     }
@@ -313,7 +326,10 @@ public class TripController extends Controller {
 
                                 return tripRepository.update(trip);
                             })
-                            .thenApplyAsync(trip -> ok(Json.toJson(trip)));
+                            .thenApplyAsync(trip -> {
+                                tripNotifier.notifyTripUpdate(userFromMiddleware, trip);
+                                return ok(Json.toJson(trip));
+                            });
 
                 }, httpExecutionContext.current())
                 .exceptionally(e -> {
