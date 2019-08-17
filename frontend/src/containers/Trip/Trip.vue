@@ -69,7 +69,11 @@
       this.getTrip();
    },
     methods: {
-      newTripAdded(subTrip, oldParentTrip, newParentTrip) {
+      newTripAdded(subTrip) {
+        const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
+        this.trip.tripNodes.push(subTrip)
+        editTrip(this.trip); 
+         
         const undoCommand = async (subTrip, oldParentTrip) => {
           await deleteTripFromList(subTrip.tripNodeId);
           await editTrip(oldParentTrip);
@@ -82,8 +86,8 @@
           this.getTrip();
 				};
 
-				const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldParentTrip),
-						redoCommand.bind(null, subTrip, newParentTrip));
+				const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldTrip),
+						redoCommand.bind(null, subTrip, this.trip));
 				this.$refs.undoRedo.addUndo(addTripCommand);
 			},
 
@@ -121,8 +125,6 @@
           return [];
         }
 
-        console.log("The trip in question is: ");
-        console.log(this.trip);
         const destinations = mapTripNodesToDestinations(this.trip);
         return mapTripNodesToDestinations(this.trip);
       },
@@ -134,6 +136,10 @@
           const tripId = this.$route.params.tripId;
           const rawTrip = await getTrip(tripId);
           const trip = transformTripNode(rawTrip);
+
+          // Important override used for drag n drop
+          trip.isSubTrip = false;
+          console.log(trip);
           this.trip = trip;
         } catch (e) {
           this.showError("Could not get trip");
@@ -167,11 +173,9 @@
        */
       getReorderedCopiedNodes(indices) {
         const { oldParentTripNodeId, newParentTripNodeId, oldIndex, newIndex } = indices;
-        console.log("I made it one");
         const oldParentTripNode = {...getTripNodeById(oldParentTripNodeId, this.trip)};
-        console.log("I made it two");
-        const oldParentTripNodes = [...oldParentTripNode.tripNodes];
-        console.log("I madeit three");
+        // Copy children nodes as well
+        oldParentTripNode.tripNodes = [...oldParentTripNode.tripNodes];
         let newParentTripNode = null;
         const stayedInSourceTripNode = oldParentTripNodeId === newParentTripNodeId;
 
@@ -185,7 +189,7 @@
         } else {
           // If parent trip nodes are different, we need to edit two trips
           newParentTripNode = {...getTripNodeById(newParentTripNodeId, this.trip)};
-          const newParentTripNodes = [...newParentTripNode.tripNodes];
+          newParentTripNode.tripNodes = [...newParentTripNode.tripNodes];
 
           const temp = {...oldParentTripNode.tripNodes[oldIndex]};
           oldParentTripNode.tripNodes.splice(oldIndex, 1);
@@ -269,12 +273,12 @@
       addEditTripCommand(oldTrip, newTrip) {
         const undoCommand = async (oldTrip) => {
           await editTrip(oldTrip);
-          this.trip = oldTrip;
+          this.getTrip();
         };
 
         const redoCommand = async (newTrip) => {
           await editTrip(newTrip);
-          this.trip = newTrip;
+          this.getTrip();
         };
 
         const updateTripCommand = new Command(undoCommand.bind(null, oldTrip), redoCommand.bind(null, newTrip));

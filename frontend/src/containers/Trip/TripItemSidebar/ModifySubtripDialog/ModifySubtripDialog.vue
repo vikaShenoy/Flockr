@@ -39,8 +39,8 @@
 							:isSidebarComponent="true"
 							:users="parentTrip.users"
 							:parentTrip="parentTrip"
-							@newTripAdded="(subTrip, oldParentTrip, newParentTrip) =>
-							$emit('newTripAdded', subTrip, oldParentTrip, newParentTrip)"
+							@newTripAdded="(subTrip) =>
+								$emit('newTripAdded', subTrip)"
 							@cancel-trip-creation="isShowingDialog = false"
 							@close-dialog="isShowingDialog = false"
 							>
@@ -87,17 +87,7 @@
 			async addExistingTrip() {
         const validFields = this.validate();
         if (!validFields) return false;
-        const oldParentTrip = {...this.parentTrip, tripNodes: [...this.parentTrip.tripNodes]};
-        this.parentTrip.tripNodes.push(this.selectedExistingTrip);
-
-        await editTrip(this.parentTrip);
-        this.$emit("newTripAdded", this.selectedExistingTrip, oldParentTrip, this.parentTrip);
-
-        const timelines = document.querySelectorAll(".v-timeline");
-        const timeline = timelines[timelines.length - 1];
-        sortTimeline(timeline, indexes => {
-          this.$emit("tripNodeOrderChanged", indexes);
-				});
+        this.$emit("newTripAdded", this.selectedExistingTrip);
         this.isShowingDialog = false;
 			},
 			validate() {

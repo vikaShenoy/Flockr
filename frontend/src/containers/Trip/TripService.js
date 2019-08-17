@@ -44,6 +44,7 @@ export function transformTripNode(tripNode) {
     transformedTripNode.tripNodes = tripNode.tripNodes.map(currentTripNode => transformTripNode(currentTripNode));
     transformedTripNode.users = tripNode.users; 
     transformedTripNode.isShowing = false;
+    transformedTripNode.isSubTrip = true;
   } else {
     transformedTripNode.destination = tripNode.destination;
     // For consistency reasons, set tripNodes to empty list
@@ -51,29 +52,6 @@ export function transformTripNode(tripNode) {
   }
 
   return transformedTripNode;
-}
-
-export function transformTripResponse(trip) {
-  return {
-    tripNodeId: trip.tripNodeId,
-    name: trip.name,
-    users: trip.users,
-    nodeType: trip.nodeType,
-    tripNodes: trip.tripNodes.map(tripNode => {
-      return {
-        tripNodeId: tripNode.tripNodeId,
-        nodeType: tripNode.nodeType,
-        isShowing: false,
-        name: tripNode.name,
-        destination: tripNode.nodeType === "TripDestinationLeaf" ? tripNode.destination : undefined,
-        arrivalDate: !tripNode.arrivalDate ? null : moment(tripNode.arrivalDate).format("YYYY-MM-DD"),
-        arrivalTime: !tripNode.arrivalTime ? null : formatTime(moment.duration(tripNode.arrivalTime, "minutes")),
-        departureDate: !tripNode.departureDate ? null : moment(tripNode.departureDate).format("YYYY-MM-DD"),
-        departureTime: !tripNode.departureTime ? null : formatTime(moment.duration(tripNode.departureTime, "minutes")),
-        tripNodes: tripNode.tripNodes.map(currentTripNode => transformTripResponse(currentTripNode)),
-      };
-    }),
-  };
 }
 
 /**
@@ -156,8 +134,6 @@ export async function editTrip(trip) {
   const authToken = localStorage.getItem("authToken");
 
   const transformedTripNodes = trip.tripNodes.map(tripNode => {
-    console.log("The trip node in question is: ");
-    console.log(tripNode);
     if (tripNode.nodeType === "TripComposite") {
       return {
         nodeType: tripNode.nodeType,
@@ -196,8 +172,6 @@ export async function editTrip(trip) {
  */
 export function mapTripNodesToDestinations(tripNode, depth = 0) {
   if (tripNode.nodeType === "TripDestinationLeaf") {
-    console.log("The trip node in question is: ");
-    console.log(tripNode);
     const destination = tripNode.destination;
     destination.group = depth;
     return destination;

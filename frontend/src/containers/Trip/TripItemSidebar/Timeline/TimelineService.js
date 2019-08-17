@@ -22,4 +22,6 @@ export function sortTimeline(timeline, updateOrder) {
       updateOrder(indexes);
     }
   });
+
+  timeline.setAttribute("has-been-sorted", true);
 }
