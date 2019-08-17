@@ -71,6 +71,17 @@
     </AlertDialog>
 
 
+    <div id="line">
+      <hr>
+      <div id="pan-toggle">
+        <v-switch
+          v-model="panOn"
+          :label="`Pan On: ${panOn.toString()}`"
+        ></v-switch>
+      </div>
+    </div>
+
+
   </v-card>
 </template>
 
@@ -94,6 +105,7 @@
       return {
         viewOption: "your",
         isShowingDeleteDestDialog: false,
+        panOn: false,
         trips: [],
         cannotDeleteDestDialog: false,
         currentDeletingDestinationId: null,
@@ -104,7 +116,7 @@
       this.getUserTrips();
     },
     methods: {
-      /**
+       /**
        * Get a user's trips.
        */
       async getUserTrips() {
@@ -177,6 +189,14 @@
     watch: {
       viewOption(newViewOption) {
         this.$emit("viewOptionChanged", newViewOption);
+      },
+      /**
+       * Sets the pan on to the current value.
+       * * True if the pan is on, false if the pan is off.
+       */
+      panOn(newPanOn) {
+        this.panOn = newPanOn;
+        this.$emit("setPan", this.panOn);
       }
     }
 
@@ -247,7 +267,16 @@
       position: absolute;
       right: 25px;
       margin-top: 17px;
+    }
 
+    #pan-toggle {
+      margin-left: 20px;
+      color: $darker-white;
+    }
+
+    #line {
+      margin-top: 100px;
+      width: 100%;
     }
   }
 </style>

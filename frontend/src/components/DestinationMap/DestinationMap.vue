@@ -22,6 +22,7 @@
             :zoom="7"
             map-type-id="roadmap"
             style="width: 100%; height: 100%"
+            @rightclick="pingMap"
             :options="{
         mapTypeControl: false,
         fullscreenControl: false,
@@ -33,6 +34,15 @@
       }"
     >
 
+      <GmapMarker
+        :key="index"
+        v-for="(mark, index) in marker"
+        :position="mark.position"
+        :icon="markerOptions"
+        :opacity="mark.opacity"
+        :visible="visible"
+        :animation="mark.animation"
+      />
 
       <GmapMarker
               :key="index"
@@ -113,12 +123,20 @@
 
   const publicIcon = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
   const privateIcon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
+  const pingIcon = "http://earth.google.com/images/kml-icons/track-directional/track-8.png";
 
   export default {
     data() {
       return {
+        markerOptions: {
+          url: pingIcon,
+          size: {width: 40, height: 30},
+          scaledSize: {width: 40, height: 30},
+        },
         publicIcon,
         privateIcon,
+        visible: true,
+        marker: [],
         infoWindowPos: null,
         infoContent: null,
         currentOpenedIndex: null,
@@ -152,9 +170,50 @@
       destinationPhotos: {
         type: Array,
         required: false
+      },
+      panOn: {
+        type: Boolean,
+        required: false
       }
     },
     methods: {
+      /**
+       * Gets the latitude and longitude of the clicked location
+       */
+      pingMap(event) {
+        this.visible = true;
+        this.latitude = event.latLng.lat();
+        this.longitude = event.latLng.lng();
+        this.marker = [];
+        this.marker.push({
+          position: {
+            lat: this.latitude,
+            lng: this.longitude
+          },
+          icon: pingIcon,
+          opacity: 1,
+          animation: google.maps.Animation.BOUNCE
+        });
+
+        if (this.panOn) {
+          this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
+        }
+
+        console.log(this.panOn);
+
+      },
+      /**
+       * Allows the marker to fade at a certain time
+       */
+      // fadeMarker() {
+      //   setInterval(function() {
+      //     console.log(this.marker[0]);
+      //   }, 200);
+      //
+      //   setTimeout(function() {
+      //     this.marker = [];
+      //   }, 30000);
+      // },
       /**
        * Transforms destinations to a format that the gmap api understands
        * @returns {Object} the transformed marker object
