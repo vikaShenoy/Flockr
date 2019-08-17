@@ -311,6 +311,9 @@
       }
     },
     computed: {
+      /**
+       * Filters out the destinations that cannot be chosen
+       */
       filteredDestinations() {
         // Returning this.destinations for now until we have trips within trips sorted
         return this.destinations;
