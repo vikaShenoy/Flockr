@@ -22,6 +22,7 @@
       @deleteTripDestination="deleteTripDestination"
       @newUsers="newUsers"
       @newTripAdded="newTripAdded"
+      @getNewTrip="getTrip()"
     />
 
     <Snackbar
@@ -71,7 +72,7 @@
     mounted() {
       this.getTrip();
    },
-    methods: {
+   methods: {
       newTripAdded(subTrip) {
         const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
         this.trip.tripNodes.push(subTrip)
@@ -135,6 +136,7 @@
        * Gets trip by it's ID
        */
       async getTrip() {
+        console.log("I made it here");
         try {
           const tripId = this.$route.params.tripId;
           const rawTrip = await getTrip(tripId);
@@ -379,6 +381,16 @@
         } catch (e) {
           this.showError("Could not remove destination from trip");
         }
+      }
+    },
+    watch: {
+      /**
+       * Watch for rerouting to the same page, if so, get new trip contents
+       */
+      $route() {
+        this.trip = null;
+        this.getTrip();
+        this.$refs.undoRedo.clearStack();
       }
     }
   }

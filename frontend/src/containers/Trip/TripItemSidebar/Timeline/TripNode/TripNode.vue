@@ -9,7 +9,7 @@
     >
       <v-card v-bind:class="(tripNode.arrivalDate && tripNode.departureDate) ? '' : 'no-date'">
         <v-card-title class="secondary trip-destination-title">
-          <h3 class="white--text font-weight-light">{{ tripNode.name }}</h3>
+          <h3 @click="goToTripNode()" class="white--text font-weight-light">{{ tripNode.name }}</h3>
           <v-spacer align="right">
             <v-btn class="delete-btn" flat @click="$emit('deleteTripDestination', tripNode)">
               <v-icon>delete</v-icon>
@@ -39,11 +39,7 @@
         <v-spacer align="center" v-if="tripNode.nodeType === 'TripComposite'">
           <v-icon class="expand-trip" color="secondary" @click="toggleShowTripNodes(tripNode)">{{ tripNode.isShowing ? "keyboard_arrow_up" : "keyboard_arrow_down"}}</v-icon>
         </v-spacer>
-
-
-
         </div>
-
       </v-card>
 
     <div v-if="tripNode.nodeType === 'TripComposite'" v-bind:class="{ expanded: tripNode.nodeType === 'TripComposite'
@@ -59,12 +55,6 @@
 
 
     </v-timeline-item>
-
-
-
-
-
-
   </div>
 </template>
 
@@ -102,6 +92,16 @@
       },
       toggleShowTripNodes(tripNode) {
         this.$emit("toggleExpanded", tripNode.tripNodeId);
+      },
+      /**
+       * Either goes to subtrip if trip node is a trip, or destination
+       */
+      goToTripNode() {
+        if (this.tripNode.nodeType === "TripComposite") {
+          this.$router.push(`/trips/${this.tripNode.tripNodeId}`);
+        } else {
+          this.$router.push(`/destinations/${this.tripNode.destination.destinationId}`);
+        }
       }
     }
   };
@@ -174,6 +174,10 @@
     // You can't transition a height to auto so need to specify
     // an arbitrarily large max height
     max-height: 300rem !important;
+  }
+
+  h3 {
+    cursor: pointer;
   }
 
 </style>

@@ -107,6 +107,14 @@
         this.snackbarModel.text = text;
         this.snackbarModel.color = "error";
         this.snackbarModel.show = true;
+      },
+      /**
+       * Clear the stack. Will need to be done when routing
+       * on the same page
+       */
+      clearStack() {
+        this.undoStack = [];
+        this.redoStack = [];
       }
     }
   }
