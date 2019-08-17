@@ -35,6 +35,7 @@
     >
 
       <GmapMarker
+        ref="marker"
         :key="index"
         v-for="(mark, index) in marker"
         :position="mark.position"
@@ -192,16 +193,39 @@
           },
           icon: pingIcon,
           opacity: 1,
-          animation: google.maps.Animation.BOUNCE
+          animation: google.maps.Animation.BOUNCE,
         });
-
         if (this.panOn) {
           this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
         }
-
-        console.log(this.panOn);
+        // let opacityList = [0.5, 0];
+        // opacityList = this.animateMarker(opacityList);
+        //
+        // setTimeout(function() {
+        //   opacityList = this.animateMarker(opacityList);
+        // }, 1);
 
       },
+      /**
+       *  Allows the marker to fade at a certain time
+       */
+      // animateMarker(opacityList) {
+      //   if (opacityList.length > 0) {
+      //     // this.$refs.map.$refs.marker.opacity = opacityList[0];
+      //     let children = this.$refs.map.$children;
+      //
+      //     let i = 0;
+      //     for (i = 0; i < children.length; i++) {
+      //       if ((this.marker.position == children[i].position) === true);
+      //         this.$refs.map.$children[i].opacity = opacityList[0];
+      //         console.log(this.$refs.map.$children[i].opacity);
+      //         opacityList.shift();
+      //         break;
+      //     }
+      //     console.log(opacityList);
+      //     return opacityList;
+      //   }
+      // },
       /**
        * Allows the marker to fade at a certain time
        */
@@ -321,6 +345,23 @@
     width: 100%;
     height: 30vh;
   }
+
+  /*#marker {*/
+  /*  -webkit-animation: fadeIn 10ms; !* Chrome, Safari, Opera *!*/
+  /*  animation: fadeIn 10ms;*/
+  /*}*/
+
+  /*!* Chrome, Safari, Opera *!*/
+  /*@-webkit-keyframes fadeIn {*/
+  /*  from {opacity: 0;}*/
+  /*  to {opacity: 1;}*/
+  /*}*/
+
+  /*!* Standard syntax *!*/
+  /*@keyframes fadeIn {*/
+  /*  from {opacity: 0;}*/
+  /*  to {opacity: 1;}*/
+  /*}*/
 </style>
 
 
