@@ -8,17 +8,20 @@
     </div>
 
     <div id="undo-redo-btns">
-      <UndoRedo ref="undoRedo" color="white"/>
+      <UndoRedo
+        ref="undoRedo"
+        color="white"
+      />
     </div>
 
     <TripItemSidebar
       :trip="trip"
       @tripNodeOrderChanged="tripNodeOrderChanged"
-			@toggleExpanded="toggleExpandedTrips"
+      @toggleExpanded="toggleExpandedTrips"
       @updatedTripDestinations="updatedTripDestinations"
       @deleteTripDestination="deleteTripDestination"
       @newUsers="newUsers"
-			@newTripAdded="newTripAdded"
+      @newTripAdded="newTripAdded"
     />
 
     <Snackbar
@@ -176,6 +179,8 @@
         const oldParentTripNode = {...getTripNodeById(oldParentTripNodeId, this.trip)};
         // Copy children nodes as well
         oldParentTripNode.tripNodes = [...oldParentTripNode.tripNodes];
+        const sourceTripNodeCopy = {...oldParentTripNode, tripNodes: [...oldParentTripNode.tripNodes]};
+        let targetTripNodeCopy = null;
         let newParentTripNode = null;
         const stayedInSourceTripNode = oldParentTripNodeId === newParentTripNodeId;
 
@@ -190,6 +195,7 @@
           // If parent trip nodes are different, we need to edit two trips
           newParentTripNode = {...getTripNodeById(newParentTripNodeId, this.trip)};
           newParentTripNode.tripNodes = [...newParentTripNode.tripNodes];
+          targetTripNodeCopy = {...newParentTripNode, tripNodes: [...newParentTripNode.tripNodes]};
 
           const temp = {...oldParentTripNode.tripNodes[oldIndex]};
           oldParentTripNode.tripNodes.splice(oldIndex, 1);
@@ -199,9 +205,36 @@
         return {
           reorderedSourceTripNode: oldParentTripNode,
           stayedInSourceTripNode: stayedInSourceTripNode,
-          reorderedTargetTripNode: newParentTripNode
+          reorderedTargetTripNode: newParentTripNode,
+          sourceTripNodeCopy,
+          targetTripNodeCopy  
         }
 
+      },
+      /**
+       * Reorders the actual trip object to make the model consistent with the view
+       * @param {Object} indices Specifies the indices to swap with
+       */
+      reorderNodes(indices) {
+        const { oldParentTripNodeId, newParentTripNodeId, oldIndex, newIndex } = indices;
+        const oldParentTripNode = getTripNodeById(oldParentTripNodeId, this.trip);
+        let newParentTripNode = null;
+        const stayedInSourceTripNode = oldParentTripNodeId === newParentTripNodeId;
+
+        // If indexes of parent trip nodes are the same, we only need to do one edit
+        if (stayedInSourceTripNode) {
+          const temp = {
+            ...oldParentTripNode.tripNodes[oldIndex]
+          };
+          oldParentTripNode.tripNodes.splice(oldIndex, 1);
+          oldParentTripNode.tripNodes.splice(newIndex, 0, temp);
+        } else {
+          // If parent trip nodes are different, we need to edit two trips
+          newParentTripNode = getTripNodeById(newParentTripNodeId, this.trip);
+          const temp = {...oldParentTripNode.tripNodes[oldIndex]};
+          oldParentTripNode.tripNodes.splice(oldIndex, 1);
+          newParentTripNode.tripNodes.splice(newIndex, 0, temp);
+      }
       },
       /**
        * Sends edited trips to backend
@@ -209,17 +242,16 @@
        * its original parent node
        */
       async reorderTripsInServer(reorderedCopiedNodes) {
-          const { reorderedSourceTripNode, reorderedTargetTripNode, stayedInSourceTripNode } = reorderedCopiedNodes;
+          const { reorderedSourceTripNode, reorderedTargetTripNode, stayedInSourceTripNode, sourceTripNodeCopy, targetTripNodeCopy } = reorderedCopiedNodes;
           if (stayedInSourceTripNode) {
             // we only need to do one edit
 
             await editTrip(reorderedSourceTripNode);
-
             // Drag and drop for one level of editing
-            this.addEditTripCommand({
-              ...this.trip,
-              tripNodes: reorderedSourceTripNode.tripNodes               
-            }, this.trip);
+            this.addEditTripCommand(
+              sourceTripNodeCopy,
+              reorderedSourceTripNode
+            );
           } else {
             // If parent trip nodes are different, we need to edit two trips
             const editTripPromises = [
@@ -227,21 +259,25 @@
               editTrip(reorderedTargetTripNode)
             ];
 
-            // Drag and drop for trip node being dragged
-            this.addEditTripCommand({
-              ...this.trip,
-              tripNodes: reorderedSourceTripNode.tripNodes
-            }, this.trip);
-
-            // Drag and drop for trip node being dragged into
-            // Drag and drop for trip node being dragged
-            this.addEditTripCommand({
-              ...this.trip,
-              tripNodes: reorderedTargetTripNode.tripNodes
-            }, this.trip);
-
             await Promise.all(editTripPromises);
-					}
+
+            // Edits both source and target trips to their old value
+            const undoCommand = async (oldSourceTripNode, oldTargetTripNode) => {
+              const tripsToEdit = [editTrip(oldSourceTripNode), editTrip(oldTargetTripNode)];
+              await Promise.all(tripsToEdit);
+              this.getTrip();
+            };
+            
+            // Edits both the source and target trips to their new value
+            const redoCommand = async (newSourceTripNode, newTargetSourceNode) => {
+              const tripsToEdit = [editTrip(newSourceTripNode), editTrip(newSourceTripNode)];
+              await Promise.all(tripsToEdit);
+              this.getTrip();
+            };
+
+            const tripReorderCommand = new Command(undoCommand.bind(null, sourceTripNodeCopy, targetTripNodeCopy), redoCommand.bind(null, reorderedSourceTripNode, reorderedTargetTripNode));
+            this.$refs.undoRedo.addUndo(tripReorderCommand);
+          }
       },
       /**
        * Changes order of destination
@@ -258,6 +294,7 @@
             }, 0);
           } else {
             this.reorderTripsInServer(reorderedCopiedNodes);
+            this.reorderNodes(indexes);
             this.showSuccessMessage("Successfully changed order");
           }
         } catch (e) {
@@ -348,24 +385,22 @@
 </script>
 
 <style lang="scss" scoped>
-  #trip {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
+#trip {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
 
-    #map {
-      flex-grow: 1;
-    }
+  #map {
+    flex-grow: 1;
   }
-  
+}
 
-  #undo-redo-btns {
-    position: absolute;
-    right: 23px;
-    margin-top: 10px;
-    z-index: 1000;
-  }
-
+#undo-redo-btns {
+  position: absolute;
+  right: 23px;
+  margin-top: 10px;
+  z-index: 1000;
+}
 </style>
 
 
