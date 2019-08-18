@@ -211,29 +211,27 @@ export function getTripNodeById(tripNodeId, tripNode) {
 /**
  * Recursively finds a trip node parent by it's trip node ID
  * @param {number} tripNodeId The ID to find the parent of
- * @param {Object} tripNode The current trip node that is being searched
- * @return {Object} The parent trip node along with the index of child
+ * @param {Object} currentTripNode The current trip node that is being searched
+ * @param {object} parentTripNode The parent of the current trip node being searched. Initially null.
+ * @return {Object} The parent trip node.
  */
-export function getTripNodeParentById(tripNodeId, tripNode) {
+export function getTripNodeParentById(tripNodeId, currentTripNode, parentTripNode) {
   // base case
-  if (tripNode.tripNodeId === tripNodeId) {
-    return tripNode;
+  if (currentTripNode.tripNodeId === tripNodeId) {
+    return parentTripNode;
   }
 
   let tripNodeToFind = null;
 
-  for (const [index, currentTripNode] of Object.entries(tripNode.tripNodes)) {
-    // recursive case
-    tripNodeToFind = getTripNodeParentById(tripNodeId, currentTripNode);
+  for (const node of currentTripNode.tripNodes) {
+    // recursive
+    tripNodeToFind = getTripNodeParentById(tripNodeId, node, currentTripNode);
     if (tripNodeToFind) {
-      return {
-        index,
-        parentTripNode: tripNode 
-      };
+      break;
     }
   }
-
-  // If no case is found, return null
-  return null;
+  return tripNodeToFind;
 }
+
+
 

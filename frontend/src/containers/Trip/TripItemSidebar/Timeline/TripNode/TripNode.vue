@@ -45,7 +45,9 @@
     <div v-if="tripNode.nodeType === 'TripComposite'" v-bind:class="{ expanded: tripNode.nodeType === 'TripComposite'
     && tripNode.isShowing}" id="trip-nodes">
       <div>
-        <Timeline 
+        <Timeline
+					@deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
+					@toggleExpanded="tripNode => $emit('toggleExpanded', tripNode)"
           :trip="tripNode"
 					isSubTrip
         />

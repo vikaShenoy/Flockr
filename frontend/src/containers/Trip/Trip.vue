@@ -338,8 +338,8 @@
        * @returns {Promise<void>}
        */
       async deleteTripNode(tripNode) {
-        const { childIndex, parentTripNode } = getTripNodeParentById(tripNode.tripNodeId, this.trip)
-        if (parentTripNode.tripNodes.length === 2) {
+				const parentTripNode = getTripNodeParentById(tripNode.tripNodeId, this.trip);
+				if (parentTripNode.tripNodes.length === 2) {
           this.showError("You cannot have less then 2 destinations");
           return;
         }
@@ -352,7 +352,6 @@
           return;
         }
 
-        const tripId = this.$route.params.tripId;
         const oldParentTripNode = {...parentTripNode, tripNodes: [...parentTripNode.tripNodes]};
         parentTripNode.tripNodes = filteredTripNodes;
 
@@ -362,7 +361,7 @@
             parentTripNode.tripNodes = oldParentTripNode.tripNodes;
           };
           const redoCommand = async (newParentTripNode) => {
-            await editTrip(parentTripNode);
+            await editTrip(newParentTripNode);
             parentTripNode.tripNodes = newParentTripNode.tripNodes;
           };
 
