@@ -18,7 +18,6 @@
                   row
                   wrap
           >
-
             <v-flex xs12>
               <v-select
                       v-model="tripDestination.destination"
@@ -246,7 +245,7 @@ import { transformTripNode } from '../../TripService';
       return {
         isShowingDialog: false,
         tripDestination: {
-          tripDestinationId: null,
+          tripNodeId: null,
           arrivalDate: "",
           arrivalTime: "",
           departureDate: "",
@@ -271,6 +270,7 @@ import { transformTripNode } from '../../TripService';
       async modifyTripDestination() {
         if (!this.$refs.form.validate()) return;
         let newTripNodes;
+
         this.tripDestination.name = this.tripDestination.destination.destinationName;
 
         if (this.editMode) {
@@ -359,7 +359,7 @@ import { transformTripNode } from '../../TripService';
         this.isShowingDialog = value;
       },
       editedTripDestination(tripDestination) {
-        this.tripDestination = {...tripDestination};
+        this.tripDestination = tripDestination;
       }
     }
   };

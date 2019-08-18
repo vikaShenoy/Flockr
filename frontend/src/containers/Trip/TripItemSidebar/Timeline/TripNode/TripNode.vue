@@ -14,7 +14,7 @@
             <v-btn class="delete-btn" flat @click="$emit('deleteTripNode', tripNode)">
               <v-icon>delete</v-icon>
             </v-btn>
-            <v-btn class="edit-btn" flat @click="$emit('showEditTripDestination', tripNode)">
+            <v-btn class="edit-btn" flat @click="$emit('showEditTripDestination', tripNode)" v-if="tripNode.nodeType === 'TripDestinationLeaf'">
               <v-icon>edit</v-icon>
             </v-btn>
           </v-spacer>
