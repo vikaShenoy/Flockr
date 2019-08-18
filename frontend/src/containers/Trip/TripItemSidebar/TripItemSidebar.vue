@@ -77,15 +77,15 @@
           :isShowing.sync="isShowingAddDestinationDialog"
           :editMode="false"
           :trip="trip"
-          v-on:updatedTripDestinations="tripDestinationsUpdated"
+          @updatedTripNodes="tripNodesUpdated"
         />
 
         <ModifyTripDestinationDialog
           :isShowing.sync="isShowingUpdateDestinationDialog"
           :editMode="true"
           :trip="trip"
-          v-on:updatedTripDestinations="tripDestinationsUpdated"
           :editedTripDestination="editedTripDestination"
+          @updatedTripNodes="tripNodesUpdated"
         />
 
         <ManageTripDialog
@@ -142,8 +142,8 @@ export default {
       this.isShowingUpdateDestinationDialog = true;
       this.editedTripDestination = tripDestination;
     },
-    tripDestinationsUpdated(tripDestinations) {
-      this.$emit("updatedTripDestinations", tripDestinations);
+    tripNodesUpdated(tripNodes) {
+      this.$emit("tripNodesUpdated", tripNodes);
     },
     newUsers(newUsers) {
       this.$emit("newUsers", newUsers);

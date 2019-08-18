@@ -18,7 +18,7 @@
       :trip="trip"
       @tripNodeOrderChanged="tripNodeOrderChanged"
       @toggleExpanded="toggleExpandedTrips"
-      @updatedTripDestinations="updatedTripDestinations"
+      @tripNodesUpdated="tripNodesUpdated"
       @deleteTripNode="deleteTripNode"
       @newUsers="newUsers"
       @newTripAdded="newTripAdded"
@@ -325,23 +325,11 @@
         const updateTripCommand = new Command(undoCommand.bind(null, oldTrip), redoCommand.bind(null, newTrip));
         this.$refs.undoRedo.addUndo(updateTripCommand);
       },
-      updatedTripDestinations(tripDestinations) {
-        const oldTrip = {
-          tripId: this.trip.tripId,
-          tripName: this.trip.tripName,
-          tripDestinations: this.trip.tripDestinations,
-          users: this.trip.users
-        };
-
-        const newTrip = {
-          tripId: this.trip.tripId,
-          tripName: this.trip.tripName,
-          tripDestinations: tripDestinations,
-          users: this.trip.users
-        };
-
-        this.addEditTripCommand(oldTrip, newTrip);
-        this.$set(this.trip, "tripDestinations", tripDestinations);
+      tripNodesUpdated(tripNodes) {
+        const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]}
+        console.log(tripNodes);
+        this.trip.tripNodes = tripNodes;
+        this.addEditTripCommand(oldTrip, this.trip);
       },
       /**
        * Delete a trip node from a trip and update view

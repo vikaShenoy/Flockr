@@ -217,9 +217,11 @@
 </template>
 
 <script>
+  import { editTrip } from "../../TripService";
   import {rules} from "../../../../utils/rules";
-  import {editTrip, getDestinations, transformFormattedTrip} from "./ModifyTripDestinationDialogService";
+  import {getDestinations, transformFormattedTrip} from "./ModifyTripDestinationDialogService";
   import {getYourDestinations} from '../../../Destinations/DestinationsService';
+import { transformTripNode } from '../../TripService';
 
   export default {
     props: {
@@ -249,7 +251,8 @@
           arrivalTime: "",
           departureDate: "",
           departureTime: "",
-          destination: null
+          destination: null,
+          nodeType: "TripDestinationLeaf"
         },
         destinations: [],
         arrivalDateMenu: false,
@@ -267,27 +270,28 @@
     methods: {
       async modifyTripDestination() {
         if (!this.$refs.form.validate()) return;
-        let newTripDestinations;
+        let newTripNodes;
+        this.tripDestination.name = this.tripDestination.destination.destinationName;
 
         if (this.editMode) {
           // Replace trip destination with the new content
-          newTripDestinations = [...this.trip.tripDestinations].map(tripDestination => {
-            if (tripDestination.tripDestinationId === this.tripDestination.tripDestinationId) {
+          newTripNodes = [...this.trip.tripNodes].map(tripNode => {
+            if (tripNode.tripNodeId === this.tripDestination.tripNodeId) {
               return this.tripDestination;
             }
 
-            return tripDestination;
+            return tripNode;
           });
         } else {
-          newTripDestinations = [...this.trip.tripDestinations, this.tripDestination];
+          newTripNodes = [...this.trip.tripNodes, this.tripDestination];
         }
-        const unformattedTrip = transformFormattedTrip({...this.trip, tripDestinations: newTripDestinations});
+        const unformattedTrip = transformTripNode({...this.trip, tripNodes: newTripNodes});
         const tripId = this.$route.params.tripId;
         this.isLoading = true;
-        await editTrip(tripId, unformattedTrip);
+        await editTrip(unformattedTrip);
         this.isLoading = false;
         this.isShowingDialog = false;
-        this.$emit("updatedTripDestinations", newTripDestinations);
+        this.$emit("updatedTripNodes", newTripNodes);
 
         this.tripDestination = {
           tripDestinationId: null,
@@ -295,7 +299,8 @@
           arrivalTime: "",
           departureDate: "",
           departureTime: "",
-          destination: null
+          destination: null,
+          nodeType: "TripDestinationLeaf"
         };
       },
       async getDestinations() {
