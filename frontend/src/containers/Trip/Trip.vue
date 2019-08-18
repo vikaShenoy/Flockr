@@ -4,6 +4,7 @@
       <DestinationMap
               :destinations="mapTripDestinationsToDestinations()"
               :isTripMap="true"
+              :panOn="panOn"
       />
 
     <ConnectedUsers v-if="trip" :users="trip.users" :connectedUsers="trip.connectedUsers" />
@@ -18,6 +19,7 @@
             v-on:destinationOrderChanged="destinationOrderChanged"
             v-on:updatedTripDestinations="updatedTripDestinations"
             v-on:deleteTripDestination="deleteTripDestination"
+            v-on:setPan="setPan"
             @newUsers="newUsers"
     />
   </div>
@@ -49,6 +51,7 @@ import UserStore from '../../stores/UserStore';
     data() {
       return {
         trip: null,
+        panOn: false
       };
     },
     mounted() {
@@ -57,6 +60,13 @@ import UserStore from '../../stores/UserStore';
       
     },
     methods: {
+      /**
+       * Sets the pan on to the emitted value.
+       * True if the pan is on, false if the pan is off.
+       */
+      setPan(panOn) {
+        this.panOn = panOn;
+      },
       /**
        * Listens websockets events to either update trip, connected users, or map pings
        */

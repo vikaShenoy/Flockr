@@ -70,18 +70,6 @@
 
     </AlertDialog>
 
-
-    <div id="line">
-      <hr>
-      <div id="pan-toggle">
-        <v-switch
-          v-model="panOn"
-          :label="`Pan On: ${panOn.toString()}`"
-        ></v-switch>
-      </div>
-    </div>
-
-
   </v-card>
 </template>
 
@@ -105,7 +93,6 @@
       return {
         viewOption: "your",
         isShowingDeleteDestDialog: false,
-        panOn: false,
         trips: [],
         cannotDeleteDestDialog: false,
         currentDeletingDestinationId: null,
@@ -187,19 +174,14 @@
       }
     },
     watch: {
+      /**
+       * Changes the view option to the given new view option and emits it to the parent component
+       * @param newViewOption the new view option
+       */
       viewOption(newViewOption) {
         this.$emit("viewOptionChanged", newViewOption);
-      },
-      /**
-       * Sets the pan on to the current value.
-       * * True if the pan is on, false if the pan is off.
-       */
-      panOn(newPanOn) {
-        this.panOn = newPanOn;
-        this.$emit("setPan", this.panOn);
       }
     }
-
   }
 
 </script>
@@ -269,15 +251,6 @@
       margin-top: 17px;
     }
 
-    #pan-toggle {
-      margin-left: 20px;
-      color: $darker-white;
-    }
-
-    #line {
-      margin-top: 100px;
-      width: 100%;
-    }
   }
 </style>
 

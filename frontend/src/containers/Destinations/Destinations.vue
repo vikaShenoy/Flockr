@@ -3,7 +3,6 @@
     <div id="map">
       <DestinationMap
         :destinations="getDestinationsCurrentlyViewing()"
-        :panOn="panOn"
       />
     </div>
 
@@ -13,7 +12,6 @@
       :publicDestinations="publicDestinations"
       v-on:viewOptionChanged="viewOptionChanged"
       v-on:addDestinationClicked="addDestinationClicked"
-      v-on:setPan="setPan"
       @refreshDestinations="refreshDestinations"
       ref="sidebar"
     />
@@ -53,21 +51,13 @@
         yourDestinations: null,
         publicDestinations: null,
         showCreateDestDialog: false,
-        viewOption: "your",
-        panOn: false
+        viewOption: "your"
       };
     },
     mounted() {
       this.getYourDestinations();
     },
     methods: {
-      /**
-       * Sets the pan on to the emitted value.
-       * True if the pan is on, false if the pan is off.
-       */
-      setPan(panOn) {
-        this.panOn = panOn;
-      },
       /**
        * Refreshes the sidebar when the button is toggled from your destinations and public destinations and vice versa.
        */

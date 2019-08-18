@@ -121,6 +121,7 @@
 
 <script>
   import {endpoint} from "../../utils/endpoint.js";
+  import UserStore from "../../stores/UserStore";
 
   const publicIcon = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
   const privateIcon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
@@ -136,7 +137,7 @@
         },
         publicIcon,
         privateIcon,
-        visible: true,
+        visible: false,
         marker: [],
         infoWindowPos: null,
         infoContent: null,
@@ -198,46 +199,13 @@
         if (this.panOn) {
           this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
         }
-        // let opacityList = [0.5, 0];
-        // opacityList = this.animateMarker(opacityList);
-        //
-        // setTimeout(function() {
-        //   opacityList = this.animateMarker(opacityList);
-        // }, 1);
-
+        UserStore.data.socket.emit({
+          "type": "ping-map",
+          "latitude": this.latitude,
+          "longitude": this.longitude,
+          "tripNodeId": this.$route.params.tripId
+        })
       },
-      /**
-       *  Allows the marker to fade at a certain time
-       */
-      // animateMarker(opacityList) {
-      //   if (opacityList.length > 0) {
-      //     // this.$refs.map.$refs.marker.opacity = opacityList[0];
-      //     let children = this.$refs.map.$children;
-      //
-      //     let i = 0;
-      //     for (i = 0; i < children.length; i++) {
-      //       if ((this.marker.position == children[i].position) === true);
-      //         this.$refs.map.$children[i].opacity = opacityList[0];
-      //         console.log(this.$refs.map.$children[i].opacity);
-      //         opacityList.shift();
-      //         break;
-      //     }
-      //     console.log(opacityList);
-      //     return opacityList;
-      //   }
-      // },
-      /**
-       * Allows the marker to fade at a certain time
-       */
-      // fadeMarker() {
-      //   setInterval(function() {
-      //     console.log(this.marker[0]);
-      //   }, 200);
-      //
-      //   setTimeout(function() {
-      //     this.marker = [];
-      //   }, 30000);
-      // },
       /**
        * Transforms destinations to a format that the gmap api understands
        * @returns {Object} the transformed marker object
@@ -346,22 +314,6 @@
     height: 30vh;
   }
 
-  /*#marker {*/
-  /*  -webkit-animation: fadeIn 10ms; !* Chrome, Safari, Opera *!*/
-  /*  animation: fadeIn 10ms;*/
-  /*}*/
-
-  /*!* Chrome, Safari, Opera *!*/
-  /*@-webkit-keyframes fadeIn {*/
-  /*  from {opacity: 0;}*/
-  /*  to {opacity: 1;}*/
-  /*}*/
-
-  /*!* Standard syntax *!*/
-  /*@keyframes fadeIn {*/
-  /*  from {opacity: 0;}*/
-  /*  to {opacity: 1;}*/
-  /*}*/
 </style>
 
 
