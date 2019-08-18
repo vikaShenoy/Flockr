@@ -40,7 +40,7 @@
 					@toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
           @tripNodeOrderChanged="tripNodeOrderChanged"
           @showEditTripDestination="showEditTripDestination"
-          @deleteTripDestination="tripDestination => $emit('deleteTripDestination', tripDestination)"
+          @deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
         />
 				<v-spacer align="center">
 					<v-btn

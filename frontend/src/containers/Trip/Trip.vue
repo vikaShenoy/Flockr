@@ -19,7 +19,7 @@
       @tripNodeOrderChanged="tripNodeOrderChanged"
       @toggleExpanded="toggleExpandedTrips"
       @updatedTripDestinations="updatedTripDestinations"
-      @deleteTripDestination="deleteTripDestination"
+      @deleteTripNode="deleteTripNode"
       @newUsers="newUsers"
       @newTripAdded="newTripAdded"
       @getNewTrip="getTrip()"
@@ -44,6 +44,8 @@
     mapTripNodesToDestinations,
 		getTripNodeById,
     transformTripNode,
+    getTripNodeParentById,
+    tripNodeHasContiguousDestinations,
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command";
@@ -342,40 +344,44 @@
         this.$set(this.trip, "tripDestinations", tripDestinations);
       },
       /**
-       * Delete a trip destination from a trip and update view.
+       * Delete a trip node from a trip and update view
        * Add command to the undo/redo stack.
-       * @param tripDestination trip destination to delete.
+       * @param tripNode tripNode to delete.
        * @returns {Promise<void>}
        */
-      async deleteTripDestination(tripDestination) {
-        if (this.trip.tripDestinations.length === 2) {
+      async deleteTripNode(tripNode) {
+        const { childIndex, parentTripNode } = getTripNodeParentById(tripNode.tripNodeId, this.trip)
+        if (parentTripNode.tripNodes.length === 2) {
           this.showError("You cannot have less then 2 destinations");
           return;
         }
-        const newTripDestinations = [...this.trip.tripDestinations].filter(currentTripDestination => {
-          return tripDestination.tripDestinationId !== currentTripDestination.tripDestinationId;
+        const filteredTripNodes = parentTripNode.tripNodes.filter(currentTripNode => {
+          return tripNode.tripNodeId !== currentTripNode.tripNodeId;
         });
-        if (contiguousDestinations(newTripDestinations)) {
+
+        if (tripNodeHasContiguousDestinations({...parentTripNode, tripNodes: filteredTripNodes})) {
           this.showError("Deleting this destination results in contiguous destinations");
           return;
         }
+
         const tripId = this.$route.params.tripId;
-        const oldTripDestinations = this.trip.tripDestinations;
+        const oldParentTripNode = {...parentTripNode, tripNodes: [...parentTripNode.tripNodes]};
+        parentTripNode.tripNodes = filteredTripNodes;
+
         try {
-          const undoCommand = async () => {
-            await editTrip(tripId, this.trip.tripName, oldTripDestinations, this.trip.users);
-            this.$set(this.trip, "tripDestinations", oldTripDestinations);
+          const undoCommand = async (oldParentTripNode) => {
+            await editTrip(oldParentTripNode);
+            parentTripNode.tripNodes = oldParentTripNode.tripNodes;
           };
-          const redoCommand = async () => {
-            await editTrip(tripId, this.trip.tripName, newTripDestinations, this.trip.users);
-            this.$set(this.trip, "tripDestinations", newTripDestinations);
+          const redoCommand = async (newParentTripNode) => {
+            await editTrip(parentTripNode);
+            parentTripNode.tripNodes = newParentTripNode.tripNodes;
           };
 
-          const deleteDestCommand = new Command(undoCommand.bind(null), redoCommand.bind(null));
+          const deleteDestCommand = new Command(undoCommand.bind(null, oldParentTripNode), redoCommand.bind(null, parentTripNode));
           this.$refs.undoRedo.addUndo(deleteDestCommand);
 
-          await editTrip(tripId, this.trip.tripName, newTripDestinations, this.trip.users);
-          this.$set(this.trip, "tripDestinations", newTripDestinations);
+          await editTrip(parentTripNode);
           this.showSuccessMessage("Removed destination from trip");
 
         } catch (e) {

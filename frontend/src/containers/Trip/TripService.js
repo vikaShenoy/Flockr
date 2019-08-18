@@ -106,7 +106,7 @@ export function contiguousReorderedDestinations(reorderedCopiedNodes) {
  * @param {Object} tripNode the trip node
  * @returns {Boolean} true if the trip node has contiguous destinations, false otherwise
  */
-function tripNodeHasContiguousDestinations(tripNode) {
+export function tripNodeHasContiguousDestinations(tripNode) {
   let contiguousDestinationFound = false;
   tripNode.tripNodes.forEach((node, index) => {
     if (isNodeDestinationLeaf(node) && index > 0) {
@@ -207,3 +207,33 @@ export function getTripNodeById(tripNodeId, tripNode) {
 
   return tripNodeToFind;
 }
+
+/**
+ * Recursively finds a trip node parent by it's trip node ID
+ * @param {number} tripNodeId The ID to find the parent of
+ * @param {Object} tripNode The current trip node that is being searched
+ * @return {Object} The parent trip node along with the index of child
+ */
+export function getTripNodeParentById(tripNodeId, tripNode) {
+  // base case
+  if (tripNode.tripNodeId === tripNodeId) {
+    return tripNode;
+  }
+
+  let tripNodeToFind = null;
+
+  for (const [index, currentTripNode] of Object.entries(tripNode.tripNodes)) {
+    // recursive case
+    tripNodeToFind = getTripNodeParentById(tripNodeId, currentTripNode);
+    if (tripNodeToFind) {
+      return {
+        index,
+        parentTripNode: tripNode 
+      };
+    }
+  }
+
+  // If no case is found, return null
+  return null;
+}
+

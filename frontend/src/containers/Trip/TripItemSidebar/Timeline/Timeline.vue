@@ -12,7 +12,7 @@
         :alignRight="false"
         @toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
         @showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
-        @deleteTripDestination="deleteTripDestination => $emit('deleteTripDestination', tripDestination)"
+        @deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
       />
     </v-timeline>
   </div>

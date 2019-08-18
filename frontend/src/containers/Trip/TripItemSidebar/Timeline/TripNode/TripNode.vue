@@ -11,7 +11,7 @@
         <v-card-title class="secondary trip-destination-title">
           <h3 @click="goToTripNode()" class="white--text font-weight-light">{{ tripNode.name }}</h3>
           <v-spacer align="right">
-            <v-btn class="delete-btn" flat @click="$emit('deleteTripDestination', tripNode)">
+            <v-btn class="delete-btn" flat @click="$emit('deleteTripNode', tripNode)">
               <v-icon>delete</v-icon>
             </v-btn>
             <v-btn class="edit-btn" flat @click="$emit('showEditTripDestination', tripNode)">
