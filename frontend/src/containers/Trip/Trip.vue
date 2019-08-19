@@ -68,10 +68,10 @@ import UserStore from '../../stores/UserStore';
         this.panOn = panOn;
       },
       /**
-       * Listens websockets events to either update trip, connected users, or map pings
+       * Listens websockets events to either update trip, connected users
        */
       listenOnMessage() {
-        UserStore.data.socket.onmessage = (event) => {
+        UserStore.data.socket.addEventListener("message", (event) => {
           const message = JSON.parse(event.data);
           if (message.type === "connected")  {
             this.trip.connectedUsers.push(message.user);
@@ -83,7 +83,7 @@ import UserStore from '../../stores/UserStore';
               return user.userId !== message.user.userId;
             });
           }
-        }
+        });
       },
       /**
        * Shows an snackbar error

@@ -36,13 +36,11 @@
 
       <GmapMarker
         ref="marker"
-        :key="index"
-        v-for="(mark, index) in marker"
-        :position="mark.position"
+        v-if="marker.length"
+        :position="marker[0].position"
         :icon="markerOptions"
-        :opacity="mark.opacity"
-        :visible="visible"
-        :animation="mark.animation"
+        :opacity="marker[0].opacity"
+        :animation="marker[0].animation"
       />
 
       <GmapMarker
@@ -137,7 +135,6 @@
         },
         publicIcon,
         privateIcon,
-        visible: false,
         marker: [],
         infoWindowPos: null,
         infoContent: null,
@@ -178,12 +175,14 @@
         required: false
       }
     },
+    mounted() {
+      this.listenOnMessage();
+    },
     methods: {
       /**
        * Gets the latitude and longitude of the clicked location
        */
       pingMap(event) {
-        this.visible = true;
         this.latitude = event.latLng.lat();
         this.longitude = event.latLng.lng();
         this.marker = [];
@@ -194,17 +193,52 @@
           },
           icon: pingIcon,
           opacity: 1,
-          animation: google.maps.Animation.BOUNCE,
+          animation: google.maps.Animation.BOUNCE
         });
         if (this.panOn) {
           this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
+          this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
         }
-        UserStore.data.socket.emit({
+        const data = {
           "type": "ping-map",
           "latitude": this.latitude,
           "longitude": this.longitude,
           "tripNodeId": this.$route.params.tripId
+        };
+
+        UserStore.data.socket.send(JSON.stringify(data));
+      },
+      /**
+       * Listens websockets events to for map pings
+       */
+      listenOnMessage() {
+        UserStore.data.socket.addEventListener("message", (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === "ping-map") {
+            this.showPing(message);
+          }
         })
+        },
+      /**
+       * When the websocket receives a message, this function is called to display the ping
+       */
+      showPing(message) {
+        this.latitude = message.latitude;
+        this.longitude = message.longitude;
+        this.marker = [];
+        this.marker.push({
+          position: {
+            lat: this.latitude,
+            lng: this.longitude
+          },
+          icon: pingIcon,
+          opacity: 1,
+          animation: google.maps.Animation.BOUNCE,
+        });
+
+        if (this.panOn) {
+          this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
+        }
       },
       /**
        * Transforms destinations to a format that the gmap api understands

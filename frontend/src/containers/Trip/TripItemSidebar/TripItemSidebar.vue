@@ -230,7 +230,7 @@
 
   #line {
     position: absolute;
-    bottom: 1px;
+    bottom: 0%;
     width: 100%;
   }
 
