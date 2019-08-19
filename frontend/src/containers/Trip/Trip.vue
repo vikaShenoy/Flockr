@@ -37,7 +37,6 @@
   import DestinationMap from "../../components/DestinationMap/DestinationMap";
   import Snackbar from "../../components/Snackbars/Snackbar";
   import {
-    contiguousDestinations,
     contiguousReorderedDestinations,
     editTrip,
     getTrip,
@@ -131,14 +130,13 @@
           return [];
         }
 
-        const destinations = mapTripNodesToDestinations(this.trip);
+        mapTripNodesToDestinations(this.trip);
         return mapTripNodesToDestinations(this.trip);
       },
       /**
        * Gets trip by it's ID
        */
       async getTrip() {
-        console.log("I made it here");
         try {
           const tripId = this.$route.params.tripId;
           const rawTrip = await getTrip(tripId);
@@ -146,7 +144,6 @@
 
           // Important override used for drag n drop
           trip.isSubTrip = false;
-          console.log(trip);
           this.trip = trip;
         } catch (e) {
           this.showError("Could not get trip");
@@ -302,7 +299,6 @@
             this.showSuccessMessage("Successfully changed order");
           }
         } catch (e) {
-          console.log(e);
           this.showError("Could not change order");
         }
       },
@@ -327,7 +323,6 @@
       },
       tripNodesUpdated(tripNodes) {
         const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]}
-        console.log(tripNodes);
         this.trip.tripNodes = tripNodes;
         this.addEditTripCommand(oldTrip, this.trip);
       },

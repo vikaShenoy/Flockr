@@ -308,10 +308,16 @@ import { transformTripNode } from '../../TripService';
 
         // Need to filter out duplicate destinations
         const destinationsFound = new Set();
-        const allDestinations = [...publicDestinations, ...yourDestinations].filter(destination => {
+        let allDestinations = [...publicDestinations, ...yourDestinations].filter(destination => {
           return !destinationsFound.has(destination.destinationId) && destinationsFound.add(destination.destinationId);
         });
 
+        // Remove the last destination displaying in the trip item sidebar.
+				const endNode = this.trip.tripNodes[this.trip.tripNodes.length - 1];
+				if (endNode.nodeType === "TripDestinationLeaf") {
+          const endNodeDestinationId = endNode.destination.destinationId;
+					allDestinations = allDestinations.filter(destination => destination.destinationId !== endNodeDestinationId);
+				}
         this.destinations = allDestinations;
       }
     },
