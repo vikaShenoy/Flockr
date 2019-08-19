@@ -48,6 +48,7 @@
         <Timeline
 					@deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
 					@toggleExpanded="tripNode => $emit('toggleExpanded', tripNode)"
+					@showEditTripDestination="tripNode => $emit('showEditTripDestination', tripNode)"
           :trip="tripNode"
 					isSubTrip
         />

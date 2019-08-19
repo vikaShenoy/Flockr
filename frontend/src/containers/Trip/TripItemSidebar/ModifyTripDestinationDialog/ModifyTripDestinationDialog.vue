@@ -218,7 +218,7 @@
 <script>
   import { editTrip } from "../../TripService";
   import {rules} from "../../../../utils/rules";
-  import {getDestinations, transformFormattedTrip} from "./ModifyTripDestinationDialogService";
+  import {getDestinations} from "./ModifyTripDestinationDialogService";
   import {getYourDestinations} from '../../../Destinations/DestinationsService';
 import { transformTripNode } from '../../TripService';
 
