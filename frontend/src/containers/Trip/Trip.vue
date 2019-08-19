@@ -354,6 +354,7 @@
 
         const oldParentTripNode = {...parentTripNode, tripNodes: [...parentTripNode.tripNodes]};
         parentTripNode.tripNodes = filteredTripNodes;
+        const newParentTripNode = {...parentTripNode, tripNodes: [...parentTripNode.tripNodes]};
 
         try {
           const undoCommand = async (oldParentTripNode) => {
@@ -365,7 +366,8 @@
             parentTripNode.tripNodes = newParentTripNode.tripNodes;
           };
 
-          const deleteDestCommand = new Command(undoCommand.bind(null, oldParentTripNode), redoCommand.bind(null, parentTripNode));
+          const deleteDestCommand = new Command(undoCommand.bind(null, oldParentTripNode),
+							redoCommand.bind(null, newParentTripNode));
           this.$refs.undoRedo.addUndo(deleteDestCommand);
 
           await editTrip(parentTripNode);
