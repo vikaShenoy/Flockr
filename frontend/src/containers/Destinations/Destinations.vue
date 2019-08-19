@@ -3,6 +3,9 @@
     <div id="map">
       <DestinationMap
         :destinations="getDestinationsCurrentlyViewing()"
+        :latitude="latitude"
+        :longitude="longitude"
+        @coordinates-selected="addCoordinates"
       />
     </div>
 
@@ -12,26 +15,20 @@
       :publicDestinations="publicDestinations"
       v-on:viewOptionChanged="viewOptionChanged"
       v-on:addDestinationClicked="addDestinationClicked"
+      @addNewDestination="addNewDestination"
       @refreshDestinations="refreshDestinations"
       ref="sidebar"
+      :latitude="latitude"
+      :longitude="longitude"
     />
-
-    <ModifyDestinationDialog
-      :dialog="showCreateDestDialog"
-      :editMode="false"
-      v-on:addNewDestination="addNewDestination"
-      v-on:dialogChanged="addDestDialogChanged"
-    >
-
-    </ModifyDestinationDialog>
-
+    
+    <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
 
 <script>
   import DestinationSidebar from "./DestinationSidebar/DestinationSidebar";
   import DestinationMap from "../../components/DestinationMap/DestinationMap";
-  import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
   import {
     getPublicDestinations,
     getYourDestinations,
@@ -43,11 +40,13 @@
   export default {
     components: {
       DestinationSidebar,
-      DestinationMap,
-      ModifyDestinationDialog
+      DestinationMap
     },
     data() {
       return {
+        destination: null,
+        latitude: null,
+        longitude: null,
         yourDestinations: null,
         publicDestinations: null,
         showCreateDestDialog: false,
@@ -58,6 +57,14 @@
       this.getYourDestinations();
     },
     methods: {
+      /**
+       * Sets the latitude and longitude coordinates to the given coordinates
+       */
+      addCoordinates(coordinates) {
+        const { latitude, longitude } = coordinates;
+        this.latitude = latitude;
+        this.longitude = longitude;
+      },
       refreshDestinations() {
         if (this.viewOption === "your") {
           this.getYourDestinations();
@@ -153,6 +160,7 @@
 
       },
       addDestDialogChanged(dialogValue) {
+        this.resetCoordinates();
         this.showCreateDestDialog = dialogValue;
       },
       /**

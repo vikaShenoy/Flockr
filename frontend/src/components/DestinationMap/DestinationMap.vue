@@ -17,12 +17,12 @@
 
     <!--empty stylers object is used as it makes the google icon white-->
     <GmapMap
-            ref="map"
-            :center="{lat:10, lng:10}"
-            :zoom="7"
-            map-type-id="roadmap"
-            style="width: 100%; height: 100%"
-            :options="{
+      ref="map"
+      :center="{lat:10, lng:10}"
+      :zoom="7"
+      map-type-id="roadmap"
+      style="width: 100%; height: 100%"
+      :options="{
         mapTypeControl: false,
         fullscreenControl: false,
         styles: [{
@@ -31,6 +31,8 @@
         fullscreenControl: false,
         minZoom: 2
       }"
+      @click="processClick"
+      @dblclick="dblClickFunc"
     >
 
 
@@ -71,10 +73,10 @@
       </div>
 
       <GmapInfoWindow
-              :options="infoOptions"
-              :position="infoWindowPos"
-              :opened="infoWindowOpen"
-              @closeclick="infoWindowOpen=false"
+        :options="infoOptions"
+        :position="infoWindowPos"
+        :opened="infoWindowOpen"
+        @closeclick="infoWindowOpen=false"
       >
         <div v-if="infoContent">
           <h4
@@ -117,8 +119,11 @@
   export default {
     data() {
       return {
+        clickTimeout: null,
         publicIcon,
         privateIcon,
+        latitude: null,
+        longitude: null,
         infoWindowPos: null,
         infoContent: null,
         currentOpenedIndex: null,
@@ -186,6 +191,24 @@
       },
       getPhotoUrl(photoId) {
         return endpoint(`/users/photos/${photoId}?Authorization=${localStorage.getItem("authToken")}`);
+      },
+      /**
+       * @param event the event emitted by the map
+       */
+      processClick(event) {
+        let vue = this;
+        this.clickTimeout = setTimeout(function () {
+          const { lat, lng } = event.latLng;
+          vue.$emit('coordinates-selected', {
+            latitude: lat(),
+            longitude: lng()
+          });
+        }, 200);
+      },
+
+      dblClickFunc() {
+        clearTimeout(this.clickTimeout);
+        // INSERT DOUBLE CLICK CODE HERE
       }
     },
     watch: {
