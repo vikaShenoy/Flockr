@@ -232,6 +232,3 @@ export function getTripNodeParentById(tripNodeId, currentTripNode, parentTripNod
   }
   return tripNodeToFind;
 }
-
-
-

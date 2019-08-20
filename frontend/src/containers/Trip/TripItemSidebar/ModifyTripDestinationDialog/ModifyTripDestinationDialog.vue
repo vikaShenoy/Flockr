@@ -216,7 +216,7 @@
 </template>
 
 <script>
-  import { editTrip } from "../../TripService";
+  import { editTrip, getTripNodeParentById } from "../../TripService";
   import {rules} from "../../../../utils/rules";
   import {getDestinations} from "./ModifyTripDestinationDialogService";
   import {getYourDestinations} from '../../../Destinations/DestinationsService';
@@ -312,49 +312,45 @@ import { transformTripNode } from '../../TripService';
           return !destinationsFound.has(destination.destinationId) && destinationsFound.add(destination.destinationId);
         });
 
-        // Remove the last destination displaying in the trip item sidebar.
-				const endNode = this.trip.tripNodes[this.trip.tripNodes.length - 1];
-				if (endNode.nodeType === "TripDestinationLeaf") {
-          const endNodeDestinationId = endNode.destination.destinationId;
-					allDestinations = allDestinations.filter(destination => destination.destinationId !== endNodeDestinationId);
-				}
         this.destinations = allDestinations;
       }
     },
     computed: {
       /**
-       * Filters out the destinations that cannot be chosen
+       * Filter destinations for the user to select.
+			 * If in edit mode, filter out the destination on either side of the node being edited.
+			 * If adding a new destination, filter out the destination at the bottom of the sidebar.
        */
       filteredDestinations() {
-        // Returning this.destinations for now until we have trips within trips sorted
-        return this.destinations;
         if (this.editMode) {
-          const tripNodesIndex = this.trip.tripNodes.findIndex(tripDestination => tripDestination.tripDestinationId === this.tripDestination.tripDestinationId);
+          const tripDestinationParentNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip, null);
+          const tripDestinationIndex = tripDestinationParentNode.tripNodes.findIndex(
+              node => node.tripNodeId === this.tripDestination.tripNodeId);
 
-          return this.destinations.filter(destination => {
-            let filterPreviousDestination = true;
-            let filterPastDestination = true;
-            // Filter out destination before the edited destination (if exists)
-            if (tripDestinationIndex > 0) {
-              filterPreviousDestination = destination.destinationId !== this.trip.tripNodes[tripDestinationIndex - 1].destination.destinationId;
-            }
+          let filterDestinationIds = [];
+          let nodes = tripDestinationParentNode.tripNodes;
 
-            // Filter out destination after the edited destination (if exists)
-            if (tripDestinationIndex < this.trip.tripNodes.length - 1) {
-              filterPastDestination = destination.destinationId !== this.trip.tripNodes[tripDestinationIndex + 1].destination.destinationId;
-            }
-
-            return filterPreviousDestination && filterPastDestination;
-          });
-        } else {
-          if (!this.trip.tripDestinations.length) {
-            return [];
+          if (tripDestinationIndex > 0 &&
+              nodes[tripDestinationIndex - 1].nodeType === "TripDestinationLeaf") {
+            filterDestinationIds.push(nodes[tripDestinationIndex - 1].destination.destinationId);
           }
-          return this.destinations.filter(destination => {
-            return destination.destinationId !== this.trip.tripNodes[this.trip.tripDestinations.length - 1].destination.destinationId;
-          });
-        }
-      }
+
+          if (tripDestinationIndex + 1 < nodes.length &&
+              nodes[tripDestinationIndex + 1].nodeType === "TripDestinationLeaf") {
+            filterDestinationIds.push(nodes[tripDestinationIndex + 1].destination.destinationId);
+          }
+          return this.destinations.filter(destination => !filterDestinationIds.includes(destination.destinationId));
+        } else {
+          let allDestinations = this.destinations;
+          const endNode = this.trip.tripNodes[this.trip.tripNodes.length - 1];
+          if (endNode.nodeType === "TripDestinationLeaf") {
+            const endNodeDestinationId = endNode.destination.destinationId;
+            allDestinations = this.destinations.filter(
+                destination => destination.destinationId !== endNodeDestinationId);
+          }
+          return allDestinations;
+				}
+			}
     },
     watch: {
       // Synchronize both isShowing state and props
