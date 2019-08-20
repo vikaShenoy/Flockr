@@ -25,7 +25,7 @@ public class ApplyDbMigrations {
      * if needed.
      */
     // System.setProperty("ddl.migration.version", "1.0");
-    System.setProperty("ddl.migration.name", "Migration-File");
+    //System.setProperty("ddl.migration.name", "Migration-File");
 
     /**
      * You can uncomment the following lines to action any pending drops from a previous version XML
