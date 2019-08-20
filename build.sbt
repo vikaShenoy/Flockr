@@ -12,7 +12,7 @@ import java.io.File
 import org.apache.commons.io.FileUtils
 import java.nio.file.Files
 
-lazy val myProject = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
+lazy val myProject = (project in file(".")).enablePlugins(PlayJava, PlayEbean, LauncherJarPlugin)
 
 libraryDependencies += guice
 libraryDependencies += jdbc

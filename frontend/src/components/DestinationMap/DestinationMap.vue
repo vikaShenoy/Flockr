@@ -32,6 +32,8 @@
         fullscreenControl: false,
         minZoom: 2
       }"
+      @click="processClick"
+      @dblclick="dblClickFunc"
     >
 
       <GmapMarker
@@ -80,10 +82,10 @@
       </div>
 
       <GmapInfoWindow
-              :options="infoOptions"
-              :position="infoWindowPos"
-              :opened="infoWindowOpen"
-              @closeclick="infoWindowOpen=false"
+        :options="infoOptions"
+        :position="infoWindowPos"
+        :opened="infoWindowOpen"
+        @closeclick="infoWindowOpen=false"
       >
         <div v-if="infoContent">
           <h4
@@ -134,9 +136,12 @@
           size: {width: 40, height: 30},
           scaledSize: {width: 40, height: 30},
         },
+        clickTimeout: null,
         publicIcon,
         privateIcon,
         marker: [],
+        latitude: null,
+        longitude: null,
         infoWindowPos: null,
         infoContent: null,
         currentOpenedIndex: null,
@@ -272,6 +277,24 @@
       },
       getPhotoUrl(photoId) {
         return endpoint(`/users/photos/${photoId}?Authorization=${localStorage.getItem("authToken")}`);
+      },
+      /**
+       * @param event the event emitted by the map
+       */
+      processClick(event) {
+        let vue = this;
+        this.clickTimeout = setTimeout(function () {
+          const { lat, lng } = event.latLng;
+          vue.$emit('coordinates-selected', {
+            latitude: lat(),
+            longitude: lng()
+          });
+        }, 200);
+      },
+
+      dblClickFunc() {
+        clearTimeout(this.clickTimeout);
+        // INSERT DOUBLE CLICK CODE HERE
       }
     },
     watch: {

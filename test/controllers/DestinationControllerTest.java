@@ -1,5 +1,7 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import models.*;
@@ -19,6 +21,8 @@ import utils.TestState;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -31,6 +35,8 @@ public class DestinationControllerTest {
     User adminUser;
     Destination destination;
     DestinationProposal destinationProposal;
+    TravellerType travellerType;
+    TravellerType travellerType2;
 
     @Before
     public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
@@ -76,7 +82,10 @@ public class DestinationControllerTest {
         destination.save();
 
         // Add some proposal
-        TravellerType travellerType = new TravellerType("Gap Year");
+        travellerType = new TravellerType("Gap Year");
+        travellerType2 = new TravellerType("Tester Type");
+        travellerType.save();
+        travellerType2.save();
         List<TravellerType> travellerTypes = new ArrayList<>();
         travellerTypes.add(travellerType);
         destinationProposal = new DestinationProposal(destination, travellerTypes, user);
@@ -220,8 +229,8 @@ public class DestinationControllerTest {
     }
 
     @Test
-    public void getProposalUnauthorised() {
-        getProposalById(user.getToken(), destinationProposal.getDestinationProposalId(), 401);
+    public void getProposalForbidden() {
+        getProposalById(user.getToken(), destinationProposal.getDestinationProposalId(), 403);
     }
 
     @Test
@@ -277,8 +286,8 @@ public class DestinationControllerTest {
     }
 
     @Test
-    public void acceptProposalsUnauthorised() {
-        acceptProposals(user.getToken(), destinationProposal.getDestinationProposalId(), 401);
+    public void acceptProposalsForbidden() {
+        acceptProposals(user.getToken(), destinationProposal.getDestinationProposalId(), 403);
     }
 
     public void acceptProposals(String token, int destinationProposalId, int statusCode) {
@@ -287,5 +296,53 @@ public class DestinationControllerTest {
                 "/api/destinations/proposals/" + destinationProposalId,
                 token);
         Assert.assertEquals(statusCode, result.status());
+    }
+
+    /**
+     * Helper function for testing the proposal modification endpoint
+     * @param travellerTypes the set traveller types that the proposal should have
+     */
+    public void checkProposal(Set<TravellerType> travellerTypes) {
+
+        Optional<DestinationProposal> optionalDestinationProposal = DestinationProposal.find.query().fetch("travellerTypes")
+                .where().eq("destination_proposal_id", destinationProposal.getDestinationProposalId()).findOneOrEmpty();
+
+        destinationProposal = optionalDestinationProposal.get();
+        Set<TravellerType> proposalTypes = new HashSet(destinationProposal.getTravellerTypes());
+        Assert.assertEquals(proposalTypes, travellerTypes);
+    }
+
+    public void modifyProposal(int status, String token, boolean check) {
+
+        int destinationProposalId = destinationProposal.getDestinationProposalId();
+        ObjectNode travellerTypes = Json.newObject();
+        ArrayList<Integer> ids = new ArrayList<>();
+        ids.add(travellerType2.getTravellerTypeId());
+        travellerTypes.set("travellerTypeIds", Json.toJson(ids));
+
+        Result result = fakeClient.makeRequestWithToken(
+                "PUT",
+                travellerTypes,
+                "/api/destinations/proposals/" + destinationProposalId,
+                token);
+
+        Assert.assertEquals(status, result.status());
+        if (check) checkProposal(Stream.of(travellerType2).collect(Collectors.toSet()));
+
+    }
+
+    /**
+     * Test for ensuring that an admin can successfully modify a traveller type proposal, and that it
+     * is successfully updated.
+     * Calls helper function 'checkProposal' to ensure that the changes were persisted
+     */
+    @Test
+    public void adminModifiesProposal() {
+        modifyProposal(200, adminUser.getToken(), true);
+    }
+
+    @Test
+    public void userAttemptsToModifyProposal() {
+        modifyProposal(403, user.getToken(), false);
     }
 }

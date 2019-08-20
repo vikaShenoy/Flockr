@@ -36,7 +36,7 @@
               <v-btn
                       color="secondary"
                       depressed
-                      v-if="destination.isPublic"
+                      v-if="destination.isPublic && !userStore.methods.isAdmin()"
                       @click="isShowingTravellerTypesDialog = true"
               >
                 Request Traveller Types

@@ -3,6 +3,7 @@ package controllers;
 import actions.ActionState;
 import actions.Admin;
 import actions.LoggedIn;
+import akka.stream.impl.fusing.Log;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.*;
@@ -868,19 +869,65 @@ public class DestinationController extends Controller {
             });
   }
 
-  /**
-   * Allows an admin to accept a traveller type proposal change
-   *
-   * @param destinationProposalId Id of destination prosposal to accept
-   * @return A response that complies with the API spec
-   */
-  @With({LoggedIn.class, Admin.class})
-  public CompletionStage<Result> acceptProposal(int destinationProposalId) {
-    return destinationRepository
-        .getDestinationProposalById(destinationProposalId)
-        .thenApplyAsync(
-            optionalDestinationProposal -> {
-              if (!optionalDestinationProposal.isPresent()) {
+    /**
+     * Function to handle the request for modifying a destination proposal
+     * @param destinationProposalId the id of the destination proposal to modify
+     * @param request the HTTP request object containing a list of traveller type ids
+     * @return A response that complies with the API spec
+     *    http status codes:
+     *    - 200 - OK - Successfully updated proposal.
+     *    - 400 - Bad Request - Request body incorrect.
+     *    - 404 - Not Found - Destination proposal not found.
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> modifyProposal(int destinationProposalId, Http.Request request) {
+        return destinationRepository.getDestinationProposalById(destinationProposalId)
+                .thenComposeAsync(optionalDestinationProposal -> {
+                    if (!optionalDestinationProposal.isPresent()) {
+                        throw new CompletionException(new NotFoundException("Destination proposal not found"));
+                    }
+                    DestinationProposal destinationProposal = optionalDestinationProposal.get();
+                    JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
+                    List<TravellerType> allTravellerTypes = TravellerType.find.all();
+                    List<TravellerType> travellerTypes = destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
+
+                    destinationProposal.setTravellerTypes(travellerTypes);
+                    return destinationRepository.updateDestinationProposal(destinationProposal);
+                })
+                .thenApplyAsync(destinationProposal -> ok(Json.toJson(destinationProposal)))
+                .exceptionally(e -> {
+                    try {
+                        throw e.getCause();
+                    } catch (NotFoundException notFoundException) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", notFoundException.getMessage());
+                        return notFound(message);
+                    } catch (BadRequestException badRequestException) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", badRequestException.getMessage());
+                        return badRequest(message);
+                    } catch (ForbiddenRequestException forbiddenRequestException) {
+                        ObjectNode message = Json.newObject();
+                        message.put("message", forbiddenRequestException.getMessage());
+                        return forbidden(message);
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                        return internalServerError();
+                    }
+                });
+    }
+
+    /**
+     * Allows an admin to accept a traveller type proposal change
+     *
+     * @param destinationProposalId Id of destination prosposal to accept
+     * @return A response that complies with the API spec
+     */
+    @With({LoggedIn.class, Admin.class})
+    public CompletionStage<Result> acceptProposal(int destinationProposalId) {
+        return destinationRepository.getDestinationProposalById(destinationProposalId)
+        .thenApplyAsync(optionalDestinationProposal -> {
+            if (!optionalDestinationProposal.isPresent()) {
                 return notFound("Proposal could not be found");
               }
               DestinationProposal destinationProposal = optionalDestinationProposal.get();
@@ -990,31 +1037,31 @@ public class DestinationController extends Controller {
         .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));
   }
 
-  /**
-   * The method that undoes the deletion of a destination proposal The following are the status
-   * codes: - 200 - OK - successful undo. - 400 - Bad Request - The destination proposal has not
-   * been deleted. - 401 - Unauthorised - the user is not authorised. - 403 - Forbidden - The user
-   * does not have permission to undo this deletion. - 404 - Not Found - The destination proposal
-   * cannot be found.
-   *
-   * @param destinationProposalId the id of the destination proposal to undo deletion of
-   * @param request the http request
-   * @return the completion stage containing the result
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> undoDeleteDestinationProposal(
-      int destinationProposalId, Http.Request request) {
-    User user = request.attrs().get(ActionState.USER);
-    return destinationRepository
-        .getDestinationProposalByIdWithSoftDelete(destinationProposalId)
-        .thenComposeAsync(
-            optionalDestinationProposal -> {
-              if (!optionalDestinationProposal.isPresent()) {
-                throw new CompletionException(
-                    new NotFoundException(
-                        "The destination proposal you are undoing does not exist."));
-              }
-              DestinationProposal destinationProposal = optionalDestinationProposal.get();
+
+
+
+    /**
+     * The method that undoes the deletion of a destination proposal
+     * The following are the status codes:
+     * - 200 - OK - successful undo.
+     * - 400 - Bad Request - The destination proposal has not been deleted.
+     * - 401 - Unauthorised - the user is not authorised.
+     * - 403 - Forbidden - The user does not have permission to undo this deletion.
+     * - 404 - Not Found - The destination proposal cannot be found.
+     *
+     * @param destinationProposalId the id of the destination proposal to undo deletion of
+     * @param request the http request
+     * @return the completion stage containing the result
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> undoDeleteDestinationProposal(int destinationProposalId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
+        return destinationRepository.getDestinationProposalByIdWithSoftDelete(destinationProposalId)
+                .thenComposeAsync(optionalDestinationProposal -> {
+                    if (!optionalDestinationProposal.isPresent()) {
+                        throw new CompletionException(new NotFoundException("The destination proposal you are undoing does not exist."));
+                    }
+                    DestinationProposal destinationProposal = optionalDestinationProposal.get();
 
               if (!user.isAdmin()
                   && destinationProposal.getUser().getUserId() != user.getUserId()) {
@@ -1054,3 +1101,4 @@ public class DestinationController extends Controller {
             });
   }
 }
+

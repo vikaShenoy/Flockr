@@ -6,11 +6,11 @@ import App from "./containers/App/App.vue";
 import "bootstrap/dist/css/bootstrap-grid.min.css";
 import * as VueGoogleMaps from "vue2-google-maps";
 import config from "./config";
-require ('dotenv').config();
+
 Vue.use(VueRouter);
 Vue.use(VueGoogleMaps, {
   load: {
-    // key: config.GOOGLE_MAPS_KEY,
+    key: config.GOOGLE_MAPS_KEY,
     libraries: "places"
   }
 });

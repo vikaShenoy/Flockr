@@ -21,7 +21,6 @@ const UserStore = {
   },
   methods: {
     setData(user, socket) {
-      console.log("user is: ", user);
       UserStore.data.userId = user.userId;
       UserStore.data.firstName = user.firstName;
       UserStore.data.middleName = user.middleName;
@@ -41,7 +40,7 @@ const UserStore = {
       UserStore.data.viewingAsAnotherUser = ownUserId !== userId;
 
       if (socket) {
-        UserStore.data.socket = socket; 
+        UserStore.data.socket = socket;
       }
     },
     /**

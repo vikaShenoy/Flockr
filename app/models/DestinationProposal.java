@@ -66,6 +66,10 @@ public class DestinationProposal extends Model {
         return travellerTypes;
     }
 
+    public void setTravellerTypes(List<TravellerType> travellerTypes) {
+        this.travellerTypes = travellerTypes;
+    }
+
     public int getDestinationProposalId() {
         return destinationProposalId;
     }
