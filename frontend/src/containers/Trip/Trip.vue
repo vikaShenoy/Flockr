@@ -7,7 +7,7 @@
               :panOn="panOn"
       />
 
-    <ConnectedUsers v-if="trip" :users="trip.users" :connectedUsers="trip.connectedUsers" />
+    <ConnectedUsers v-if="trip" :users="trip.users" :connectedUsers="connectedUsers" />
     </div>
 
     <div id="undo-redo-btns">
@@ -51,7 +51,8 @@ import UserStore from '../../stores/UserStore';
     data() {
       return {
         trip: null,
-        panOn: false
+        panOn: false,
+        connectedUsers: []
       };
     },
     mounted() {
@@ -74,14 +75,18 @@ import UserStore from '../../stores/UserStore';
         UserStore.data.socket.addEventListener("message", (event) => {
           const message = JSON.parse(event.data);
           if (message.type === "connected")  {
-            this.trip.connectedUsers.push(message.user);
+            this.connectedUsers.push(message.user);
             this.showSuccessMessage(`${message.user.firstName} connected`, 1000);
             
           } else if (message.type === "disconnected") {
             this.showSuccessMessage(`${message.user.firstName} disconnected`, 1000);
-            this.trip.connectedUsers = this.trip.connectedUsers.filter(user => {
+            this.connectedUsers = this.connectedUsers.filter(user => {
               return user.userId !== message.user.userId;
             });
+          } else if (message.type === "tripUpdated") {
+            console.log(message.trip);
+            this.trip = transformTripResponse(message.trip);
+            console.log(this.trip);
           }
         });
       },
@@ -126,6 +131,7 @@ import UserStore from '../../stores/UserStore';
           const tripId = this.$route.params.tripId;
           const rawTrip = await getTrip(tripId);
           const trip = transformTripResponse(rawTrip);
+          this.connectedUsers = trip.connectedUsers;
           this.trip = trip;
         } catch (e) {
           this.showError("Could not get trip");

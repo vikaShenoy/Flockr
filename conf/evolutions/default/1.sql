@@ -241,32 +241,6 @@ create table trip_destination (
   constraint pk_trip_destination primary key (trip_destination_id)
 );
 
-create table trip_node (
-  dtype                         varchar(31) not null,
-  trip_node_id                  integer auto_increment not null,
-  deleted_expiry                datetime(6),
-  deleted                       BOOLEAN DEFAULT FALSE not null,
-  name                          varchar(255),
-  destination_destination_id    integer,
-  arrival_date                  datetime(6),
-  arrival_time                  integer,
-  departure_date                datetime(6),
-  departure_time                integer,
-  constraint pk_trip_node primary key (trip_node_id)
-);
-
-create table trip_node_parent (
-  trip_node_child_id            integer not null,
-  trip_node_parent_id           integer not null,
-  constraint pk_trip_node_parent primary key (trip_node_child_id,trip_node_parent_id)
-);
-
-create table trip_node_user (
-  trip_node_trip_node_id        integer not null,
-  user_user_id                  integer not null,
-  constraint pk_trip_node_user primary key (trip_node_trip_node_id,user_user_id)
-);
-
 create table user (
   user_id                       integer auto_increment not null,
   first_name                    varchar(255),
@@ -387,21 +361,6 @@ alter table trip_destination add constraint fk_trip_destination_trip_trip_id for
 create index ix_trip_destination_destination_destination_id on trip_destination (destination_destination_id);
 alter table trip_destination add constraint fk_trip_destination_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
 
-create index ix_trip_node_destination_destination_id on trip_node (destination_destination_id);
-alter table trip_node add constraint fk_trip_node_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
-
-create index ix_trip_node_parent_trip_node_1 on trip_node_parent (trip_node_child_id);
-alter table trip_node_parent add constraint fk_trip_node_parent_trip_node_1 foreign key (trip_node_child_id) references trip_node (trip_node_id) on delete restrict on update restrict;
-
-create index ix_trip_node_parent_trip_node_2 on trip_node_parent (trip_node_parent_id);
-alter table trip_node_parent add constraint fk_trip_node_parent_trip_node_2 foreign key (trip_node_parent_id) references trip_node (trip_node_id) on delete restrict on update restrict;
-
-create index ix_trip_node_user_trip_node on trip_node_user (trip_node_trip_node_id);
-alter table trip_node_user add constraint fk_trip_node_user_trip_node foreign key (trip_node_trip_node_id) references trip_node (trip_node_id) on delete restrict on update restrict;
-
-create index ix_trip_node_user_user on trip_node_user (user_user_id);
-alter table trip_node_user add constraint fk_trip_node_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
-
 alter table user add constraint fk_user_profile_photo_photo_id foreign key (profile_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
 
 
@@ -501,21 +460,6 @@ drop index ix_trip_destination_trip_trip_id on trip_destination;
 alter table trip_destination drop foreign key fk_trip_destination_destination_destination_id;
 drop index ix_trip_destination_destination_destination_id on trip_destination;
 
-alter table trip_node drop foreign key fk_trip_node_destination_destination_id;
-drop index ix_trip_node_destination_destination_id on trip_node;
-
-alter table trip_node_parent drop foreign key fk_trip_node_parent_trip_node_1;
-drop index ix_trip_node_parent_trip_node_1 on trip_node_parent;
-
-alter table trip_node_parent drop foreign key fk_trip_node_parent_trip_node_2;
-drop index ix_trip_node_parent_trip_node_2 on trip_node_parent;
-
-alter table trip_node_user drop foreign key fk_trip_node_user_trip_node;
-drop index ix_trip_node_user_trip_node on trip_node_user;
-
-alter table trip_node_user drop foreign key fk_trip_node_user_user;
-drop index ix_trip_node_user_user on trip_node_user;
-
 alter table user drop foreign key fk_user_profile_photo_photo_id;
 
 drop table if exists chat_group;
@@ -565,12 +509,6 @@ drop table if exists trip;
 drop table if exists trip_user;
 
 drop table if exists trip_destination;
-
-drop table if exists trip_node;
-
-drop table if exists trip_node_parent;
-
-drop table if exists trip_node_user;
 
 drop table if exists user;
 

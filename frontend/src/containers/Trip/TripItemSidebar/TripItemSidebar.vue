@@ -74,7 +74,7 @@
         <div id="pan-toggle">
           <v-switch
             v-model="panOn"
-            :label="`Pan On: ${panOn.toString()}`"
+            label="Pan On"
           ></v-switch>
         </div>
       </div>
