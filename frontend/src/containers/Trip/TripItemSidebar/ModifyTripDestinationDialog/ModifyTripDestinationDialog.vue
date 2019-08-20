@@ -275,9 +275,6 @@ import { transformTripNode } from '../../TripService';
 
         const parentTripNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip);
         
-        console.log("THe parent trip is: ");
-        console.log(parentTripNode);
-
         if (this.editMode) {
           // Replace trip destination with the new content
           newTripNodes = [...parentTripNode.tripNodes].map(tripNode => {
@@ -297,7 +294,7 @@ import { transformTripNode } from '../../TripService';
         await editTrip(unformattedTrip);
         this.isLoading = false;
         this.isShowingDialog = false;
-        this.$emit("updatedTripNodes", newTripNodes);
+        this.$emit("updatedTripNodes", parentTripNode, newTripNodes);
 
         this.tripDestination = {
           tripDestinationId: null,

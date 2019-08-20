@@ -235,8 +235,8 @@ export default {
       this.isShowingUpdateDestinationDialog = true;
       this.editedTripDestination = tripDestination;
     },
-    tripNodesUpdated(tripNodes) {
-      this.$emit("tripNodesUpdated", tripNodes);
+    tripNodesUpdated(parentTripNode, tripNodes) {
+      this.$emit("tripNodesUpdated", parentTripNode, tripNodes);
     },
     newUsers(newUsers) {
       this.$emit("newUsers", newUsers);
