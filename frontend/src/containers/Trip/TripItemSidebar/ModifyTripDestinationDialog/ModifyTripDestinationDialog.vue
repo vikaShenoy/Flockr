@@ -273,9 +273,11 @@ import { transformTripNode } from '../../TripService';
 
         this.tripDestination.name = this.tripDestination.destination.destinationName;
 
+        const parentTripNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip);
+
         if (this.editMode) {
           // Replace trip destination with the new content
-          newTripNodes = [...this.trip.tripNodes].map(tripNode => {
+          newTripNodes = [...parentTripNode.tripNodes].map(tripNode => {
             if (tripNode.tripNodeId === this.tripDestination.tripNodeId) {
               return this.tripDestination;
             }
@@ -283,9 +285,9 @@ import { transformTripNode } from '../../TripService';
             return tripNode;
           });
         } else {
-          newTripNodes = [...this.trip.tripNodes, this.tripDestination];
+          newTripNodes = [...parentTripNode.tripNodes, this.tripDestination];
         }
-        const unformattedTrip = transformTripNode({...this.trip, tripNodes: newTripNodes});
+        const unformattedTrip = transformTripNode({...parentTripNode, tripNodes: newTripNodes});
         const tripId = this.$route.params.tripId;
         this.isLoading = true;
         await editTrip(unformattedTrip);
