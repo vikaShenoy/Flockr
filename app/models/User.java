@@ -8,7 +8,13 @@ import io.ebean.annotation.SoftDelete;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import play.data.validation.Constraints;
 
 /**
@@ -49,17 +55,8 @@ public class User extends Model {
   @Column(unique = true)
   private String email;
 
-    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    public List <TravellerType> travellerTypes;
-
-    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    public List<Passport> passports;
-
-    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    public List<Role> roles;
-
-    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    private List<TripComposite> trips;
+  @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+  private List<TripComposite> trips;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
   private List<PersonalPhoto> personalPhotos;

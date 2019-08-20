@@ -1,6 +1,5 @@
 import superagent from "superagent";
-import { endpoint } from "../../../../utils/endpoint";
-
+import {endpoint} from "../../../../utils/endpoint";
 
 /**
  * Get a list of all the countries currently in the database, must be logged in to succeed
@@ -8,7 +7,7 @@ import { endpoint } from "../../../../utils/endpoint";
  */
 export async function requestCountries() {
   const res = await superagent.get(endpoint("/destinations/countries"))
-      .set("Authorization", localStorage.getItem("authToken"));
+  .set("Authorization", localStorage.getItem("authToken"));
 
   return res.body;
 }
@@ -19,7 +18,7 @@ export async function requestCountries() {
  */
 export async function requestDestinationTypes() {
   const res = await superagent.get(endpoint("/destinations/types"))
-      .set("Authorization", localStorage.getItem("authToken"));
+  .set("Authorization", localStorage.getItem("authToken"));
 
   return res.body;
 }
@@ -30,8 +29,9 @@ export async function requestDestinationTypes() {
  * @returns {Promise<Array>}  of all countries
  */
 export async function requestDistricts(countryId) {
-  const res = await superagent.get(endpoint(`/destinations/countries/${countryId}/districts`))
-      .set("Authorization", localStorage.getItem("authToken"));
+  const res = await superagent.get(
+      endpoint(`/destinations/countries/${countryId}/districts`))
+  .set("Authorization", localStorage.getItem("authToken"));
 
   return res.body;
 }
@@ -41,7 +41,7 @@ export async function requestDistricts(countryId) {
  */
 export async function requestTravellerTypes() {
   const res = await superagent.get(endpoint("/users/types"))
-      .set("Authorization", localStorage.getItem("authToken"));
+  .set("Authorization", localStorage.getItem("authToken"));
   return res.body;
 }
 

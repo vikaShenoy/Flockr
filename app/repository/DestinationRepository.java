@@ -1,19 +1,23 @@
 package repository;
 
-import io.ebean.Ebean;
-import io.ebean.EbeanServer;
-import models.*;
-import play.db.ebean.EbeanConfig;
-
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
-import javax.inject.Inject;
+import io.ebean.Ebean;
+import io.ebean.EbeanServer;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import javax.inject.Inject;
+import models.Country;
+import models.Destination;
+import models.DestinationPhoto;
+import models.DestinationProposal;
+import models.DestinationType;
+import models.District;
+import play.db.ebean.EbeanConfig;
 
 public class DestinationRepository {
 
@@ -23,15 +27,15 @@ public class DestinationRepository {
     /**
      * Dependency injection
      *
-     * @param ebeanConfig      ebean config to use
+     * @param ebeanConfig ebean config to use
      * @param executionContext Context to run completion stages on
      */
     @Inject
-    public DestinationRepository(EbeanConfig ebeanConfig, DatabaseExecutionContext executionContext) {
+    public DestinationRepository(EbeanConfig ebeanConfig,
+        DatabaseExecutionContext executionContext) {
         this.ebeanServer = Ebean.getServer(ebeanConfig.defaultServer());
         this.executionContext = executionContext;
     }
-
 
     /**
      * Gets a list of all destinations
@@ -39,10 +43,12 @@ public class DestinationRepository {
      * @return <b>List</b> of destinations
      */
     public CompletionStage<List<Destination>> getDestinations() {
-        return supplyAsync(() -> {
-            List<Destination> destinations = Destination.find.query().findList();
-            return destinations;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                List<Destination> destinations = Destination.find.query().findList();
+                return destinations;
+            },
+            executionContext);
     }
 
     /**
@@ -52,11 +58,14 @@ public class DestinationRepository {
      * @return the destination object
      */
     public CompletionStage<Optional<Destination>> getDestinationById(int destinationId) {
-        return supplyAsync(() -> {
-            Optional<Destination> destination = Destination.find.query().
-                    where().eq("destination_id", destinationId).findOneOrEmpty();
-            return destination;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                Optional<Destination> destination =
+                    Destination.find.query().where().eq("destination_id", destinationId)
+                        .findOneOrEmpty();
+                return destination;
+            },
+            executionContext);
     }
 
     /**
@@ -65,12 +74,20 @@ public class DestinationRepository {
      * @param destinationId The ID of the destination to get
      * @return the destination object
      */
-    public CompletionStage<Optional<Destination>> getDestinationByIdIncludingSoftDelete(int destinationId) {
-        return supplyAsync(() -> {
-            Optional<Destination> destination = Destination.find.query().setIncludeSoftDeletes()
-                    .where().eq("destination_id", destinationId).findOneOrEmpty();
-            return destination;
-        }, executionContext);
+    public CompletionStage<Optional<Destination>> getDestinationByIdIncludingSoftDelete(
+        int destinationId) {
+        return supplyAsync(
+            () -> {
+                Optional<Destination> destination =
+                    Destination.find
+                        .query()
+                        .setIncludeSoftDeletes()
+                        .where()
+                        .eq("destination_id", destinationId)
+                        .findOneOrEmpty();
+                return destination;
+            },
+            executionContext);
     }
 
     /**
@@ -80,23 +97,28 @@ public class DestinationRepository {
      * @return the destination after being restored.
      */
     public CompletionStage<Destination> undoDeletion(Destination destination) {
-        return supplyAsync(() -> {
-            destination.setDeleted(false);
-            destination.setDeletedExpiry(null);
-            destination.save();
-            return destination;
+        return supplyAsync(
+            () -> {
+                destination.setDeleted(false);
+                destination.setDeletedExpiry(null);
+                destination.save();
+                return destination;
         });
     }
 
     /**
      * Gets a list of all destinations that a user has created
+     *
      * @return List of destinations
      */
     public CompletionStage<List<Destination>> getDestinationsbyUserId(int userId) {
-        return supplyAsync(() -> {
-            List<Destination> destinations = Destination.find.query().where().eq("destination_owner", userId).findList();
-            return destinations;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                List<Destination> destinations =
+                    Destination.find.query().where().eq("destination_owner", userId).findList();
+                return destinations;
+            },
+            executionContext);
     }
 
     /**
@@ -106,13 +128,21 @@ public class DestinationRepository {
      * @param photoId the id of the photo
      * @return an optional destination photo if such link exists
      */
-    public CompletionStage<Optional<DestinationPhoto>> getDestinationPhotoById(int destinationId, int photoId) {
-        return supplyAsync(() -> {
-            Optional<DestinationPhoto> destinationPhoto = DestinationPhoto.find.query()
-                    .where().eq("destination_destination_id", destinationId)
-                    .and().eq("destination_photo_id", photoId).findOneOrEmpty();
-            return destinationPhoto;
-        }, executionContext);
+    public CompletionStage<Optional<DestinationPhoto>> getDestinationPhotoById(
+        int destinationId, int photoId) {
+        return supplyAsync(
+            () -> {
+                Optional<DestinationPhoto> destinationPhoto =
+                    DestinationPhoto.find
+                        .query()
+                        .where()
+                        .eq("destination_destination_id", destinationId)
+                        .and()
+                        .eq("destination_photo_id", photoId)
+                        .findOneOrEmpty();
+                return destinationPhoto;
+            },
+            executionContext);
     }
 
     /**
@@ -122,10 +152,12 @@ public class DestinationRepository {
      * @return the destination object
      */
     public CompletionStage<Destination> insert(Destination destination) {
-        return supplyAsync(() -> {
-            destination.save();
-            return destination;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                destination.save();
+                return destination;
+            },
+            executionContext);
     }
 
     /**
@@ -135,10 +167,12 @@ public class DestinationRepository {
      * @return The destination that was updated
      */
     public CompletionStage<Destination> update(Destination destination) {
-        return supplyAsync(() -> {
-            destination.save();
-            return destination;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                destination.save();
+                return destination;
+            },
+            executionContext);
     }
 
     /**
@@ -147,10 +181,13 @@ public class DestinationRepository {
      * @return The list of countries
      */
     public CompletionStage<List<Country>> getCountries() {
-        return supplyAsync(() -> {
-            List<Country> countries = Country.find.query().orderBy().asc("country_name").findList();
-            return countries;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                List<Country> countries = Country.find.query().orderBy().asc("country_name")
+                    .findList();
+                return countries;
+            },
+            executionContext);
     }
 
     /**
@@ -159,10 +196,12 @@ public class DestinationRepository {
      * @return The list of countries Json
      */
     public CompletionStage<List<DestinationType>> getDestinationTypes() {
-        return supplyAsync(() -> {
-            List<DestinationType> destinationTypes = DestinationType.find.query().findList();
-            return destinationTypes;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                List<DestinationType> destinationTypes = DestinationType.find.query().findList();
+                return destinationTypes;
+            },
+            executionContext);
     }
 
     /**
@@ -172,11 +211,13 @@ public class DestinationRepository {
      * @return The list of districts as Json
      */
     public CompletionStage<List<District>> getDistricts(int countryId) {
-        return supplyAsync(() -> {
-            List<District> districts = District.find.query().where()
-                    .eq("country_country_id", countryId).findList();
-            return districts;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                List<District> districts =
+                    District.find.query().where().eq("country_country_id", countryId).findList();
+                return districts;
+            },
+            executionContext);
     }
 
     /**
@@ -186,15 +227,18 @@ public class DestinationRepository {
      * @return the id of the destination that was deleted
      */
     public CompletionStage<Integer> deleteDestination(int destinationId) {
-        return supplyAsync(() -> {
-            Destination destination = Destination.find.byId(destinationId);
-            // Set the expiry time for an hour from now.
-            destination.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
-            destination.save();
+        return supplyAsync(
+            () -> {
+                Destination destination = Destination.find.byId(destinationId);
+                // Set the expiry time for an hour from now.
+                destination
+                    .setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+                destination.save();
 
-            destination.delete(); //Soft delete.
-            return destinationId;
-        }, executionContext);
+                destination.delete(); // Soft delete.
+                return destinationId;
+            },
+            executionContext);
     }
 
     /**
@@ -204,19 +248,28 @@ public class DestinationRepository {
      * @return the photo object
      */
     public CompletionStage<DestinationPhoto> savePhoto(DestinationPhoto destinationPhoto) {
-        return supplyAsync(() -> {
-            destinationPhoto.save();
-            return destinationPhoto;
+        return supplyAsync(
+            () -> {
+                destinationPhoto.save();
+                return destinationPhoto;
         });
     }
 
-    public CompletionStage<Optional<DestinationPhoto>> getPhotoByIdWithSoftDelete(int destinationId, int photoId) {
-        return supplyAsync(() -> {
-            Optional<DestinationPhoto> photo = DestinationPhoto.find.query().setIncludeSoftDeletes().
-                    where().eq("destination_destination_id", destinationId).
-                    eq("destination_photo_id", photoId).findOneOrEmpty();
-            return photo;
-        }, executionContext);
+    public CompletionStage<Optional<DestinationPhoto>> getPhotoByIdWithSoftDelete(
+        int destinationId, int photoId) {
+        return supplyAsync(
+            () -> {
+                Optional<DestinationPhoto> photo =
+                    DestinationPhoto.find
+                        .query()
+                        .setIncludeSoftDeletes()
+                        .where()
+                        .eq("destination_destination_id", destinationId)
+                        .eq("destination_photo_id", photoId)
+                        .findOneOrEmpty();
+                return photo;
+            },
+            executionContext);
     }
 
     /**
@@ -226,10 +279,12 @@ public class DestinationRepository {
      * @return the photo object
      */
     public CompletionStage<DestinationPhoto> insertDestinationPhoto(DestinationPhoto photo) {
-        return supplyAsync(() -> {
-            photo.insert();
-            return photo;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                photo.insert();
+                return photo;
+            },
+            executionContext);
     }
 
     /**
@@ -239,27 +294,33 @@ public class DestinationRepository {
      * @return the ID of the destination photo that was deleted
      */
     public CompletionStage<Integer> deleteDestinationPhoto(DestinationPhoto destinationPhoto) {
-        return supplyAsync(() -> {
-            destinationPhoto.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
-            destinationPhoto.save();
-            destinationPhoto.delete();
-            return destinationPhoto.destinationPhotoId;
-        }, executionContext);
+        return supplyAsync(
+            () -> {
+                destinationPhoto.setDeletedExpiry(
+                    Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+                destinationPhoto.save();
+                destinationPhoto.delete();
+                return destinationPhoto.destinationPhotoId;
+            },
+            executionContext);
     }
 
     /**
-     *  Un-soft-delete a destination photo from the database
+     * Un-soft-delete a destination photo from the database
      *
      * @param destinationPhoto the DestinationPhoto to un-delete
      * @return the ID of the destination photo that was un-deleted
      */
-    public CompletionStage<DestinationPhoto> undoDeleteDestinationPhoto(DestinationPhoto destinationPhoto) {
-        return supplyAsync(() -> {
-            destinationPhoto.setDeletedExpiry(null);
-            destinationPhoto.setDeleted(false);
-            destinationPhoto.save();
-            return destinationPhoto;
-        }, executionContext);
+    public CompletionStage<DestinationPhoto> undoDeleteDestinationPhoto(
+        DestinationPhoto destinationPhoto) {
+        return supplyAsync(
+            () -> {
+                destinationPhoto.setDeletedExpiry(null);
+                destinationPhoto.setDeleted(false);
+                destinationPhoto.save();
+                return destinationPhoto;
+            },
+            executionContext);
     }
 
     /**
@@ -269,10 +330,12 @@ public class DestinationRepository {
      * @return The created proposal
      */
     public CompletionStage<DestinationProposal> createProposal(DestinationProposal proposal) {
-       return supplyAsync(() -> {
-           proposal.insert();
-           return proposal;
-       }, executionContext);
+        return supplyAsync(
+            () -> {
+                proposal.insert();
+                return proposal;
+            },
+            executionContext);
     }
 
     /**
@@ -281,29 +344,38 @@ public class DestinationRepository {
      * @param destinationProposalId the ID of the destination proposal to be search
      * @return The destinationProposal that corresponds to the ID
      */
-    public CompletionStage<Optional<DestinationProposal>> getDestinationProposalById(int destinationProposalId) {
-        return supplyAsync(() -> DestinationProposal.find.query()
-                            .fetch("travellerTypes")
-                            .fetch("destination")
-                            .where().eq("destinationProposalId", destinationProposalId)
-                            .findOneOrEmpty()
-                , executionContext);
+    public CompletionStage<Optional<DestinationProposal>> getDestinationProposalById(
+        int destinationProposalId) {
+        return supplyAsync(
+            () ->
+                DestinationProposal.find
+                    .query()
+                    .fetch("travellerTypes")
+                    .fetch("destination")
+                    .where()
+                    .eq("destinationProposalId", destinationProposalId)
+                    .findOneOrEmpty(),
+            executionContext);
     }
 
     /**
-     * Deletes a destination proposal by finding the destination proposal's ID and deleting it with the
-     * ID found
+     * Deletes a destination proposal by finding the destination proposal's ID and deleting it with
+     * the ID found
      *
      * @param destinationProposal the destination proposal to be deleted
      * @return the ID of the destination proposal that was deleted
      */
-    public CompletionStage<Integer> deleteDestinationProposal(DestinationProposal destinationProposal) {
-         return supplyAsync(() -> {
-             destinationProposal.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
-             destinationProposal.save();
-             destinationProposal.delete(); // Soft delete
-             return destinationProposal.getDestinationProposalId();
-         }, executionContext);
+    public CompletionStage<Integer> deleteDestinationProposal(
+        DestinationProposal destinationProposal) {
+        return supplyAsync(
+            () -> {
+                destinationProposal.setDeletedExpiry(
+                    Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+                destinationProposal.save();
+                destinationProposal.delete(); // Soft delete
+                return destinationProposal.getDestinationProposalId();
+            },
+            executionContext);
     }
 
     /**
@@ -321,12 +393,20 @@ public class DestinationRepository {
      * @param destinationProposalId the ID of the destination proposal to be searched
      * @return the proposal
      */
-    public CompletionStage<Optional<DestinationProposal>> getDestinationProposalByIdWithSoftDelete(int destinationProposalId) {
-        return supplyAsync(() -> {
-            Optional<DestinationProposal> proposal = DestinationProposal.find.query().setIncludeSoftDeletes()
-                    .where().eq("destination_proposal_id", destinationProposalId).findOneOrEmpty();
-            return proposal;
-        }, executionContext);
+    public CompletionStage<Optional<DestinationProposal>> getDestinationProposalByIdWithSoftDelete(
+        int destinationProposalId) {
+        return supplyAsync(
+            () -> {
+                Optional<DestinationProposal> proposal =
+                    DestinationProposal.find
+                        .query()
+                        .setIncludeSoftDeletes()
+                        .where()
+                        .eq("destination_proposal_id", destinationProposalId)
+                        .findOneOrEmpty();
+                return proposal;
+            },
+            executionContext);
     }
 
     /**
@@ -335,12 +415,14 @@ public class DestinationRepository {
      * @param destinationProposal the destination proposal that the deletion is undone
      * @return the destination proposal after the deletion is undone
      */
-    public CompletionStage<DestinationProposal> undoDestinationProposalDelete(DestinationProposal destinationProposal) {
-        return supplyAsync(() -> {
-            destinationProposal.setDeleted(false);
-            destinationProposal.setDeletedExpiry(null);
-            destinationProposal.save();
-            return destinationProposal;
+    public CompletionStage<DestinationProposal> undoDestinationProposalDelete(
+        DestinationProposal destinationProposal) {
+        return supplyAsync(
+            () -> {
+                destinationProposal.setDeleted(false);
+                destinationProposal.setDeletedExpiry(null);
+                destinationProposal.save();
+                return destinationProposal;
         });
     }
 
@@ -350,11 +432,13 @@ public class DestinationRepository {
      * @param destinationProposal The destination proposal to update
      * @return The destination proposal that was updated
      */
-    public CompletionStage<DestinationProposal> updateDestinationProposal(DestinationProposal destinationProposal) {
-        return supplyAsync(() -> {
-            destinationProposal.save();
-            return destinationProposal;
-        }, executionContext);
+    public CompletionStage<DestinationProposal> updateDestinationProposal(
+        DestinationProposal destinationProposal) {
+        return supplyAsync(
+            () -> {
+                destinationProposal.save();
+                return destinationProposal;
+            },
+            executionContext);
     }
-
 }

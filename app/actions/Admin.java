@@ -1,6 +1,10 @@
 package actions;
 
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.concurrent.CompletionStage;
+import javax.inject.Inject;
 import models.RoleType;
 import models.User;
 import play.libs.Json;
@@ -8,10 +12,6 @@ import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
 import util.Security;
-
-import javax.inject.Inject;
-import java.util.concurrent.CompletionStage;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 
 public class Admin extends Action.Simple {

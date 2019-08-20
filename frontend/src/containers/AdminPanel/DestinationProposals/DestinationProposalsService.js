@@ -1,5 +1,5 @@
 import superagent from "superagent";
-import { endpoint } from "../../../utils/endpoint"
+import {endpoint} from "../../../utils/endpoint"
 
 /**
  * Get all destination proposals.
@@ -48,12 +48,13 @@ export async function declineProposal(destinationProposalId) {
  * @return {Promise<Object>} the promise containing the updated proposal.
  */
 export async function updateProposal(proposal) {
-   const authToken = localStorage.getItem("authToken");
-   const response = await superagent.put(endpoint(`/destinations/proposals/${proposal.destinationProposalId}`))
-       .set("Authorization", authToken)
-       .send(proposal);
+  const authToken = localStorage.getItem("authToken");
+  const response = await superagent.put(
+      endpoint(`/destinations/proposals/${proposal.destinationProposalId}`))
+  .set("Authorization", authToken)
+  .send(proposal);
 
-   return response.body;
+  return response.body;
 }
 
 
