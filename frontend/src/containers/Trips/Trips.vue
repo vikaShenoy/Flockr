@@ -31,7 +31,7 @@
 
     <AddTrip
             v-else
-            @new-trip-was-added="newTripWasAdded"
+            @newTripAdded="newTripWasAdded"
             @cancel-trip-creation="isAddingATrip = false"
     />
   </div>
@@ -72,8 +72,9 @@
        * Creates undo/redo commands and adds them to the stack.
        */
       newTripWasAdded(tripId) {
-        this.refreshTrips();
         this.isAddingATrip = false;
+        this.refreshTrips();
+
 
         let undoCommand = async (tripId) => {
           await deleteTripFromList(tripId);

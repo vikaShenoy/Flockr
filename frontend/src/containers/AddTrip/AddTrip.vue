@@ -57,9 +57,7 @@
 <script>
   import TripTable from "../../components/TripTable/TripTable";
   import {createTrip, getAllUsers} from "./AddTripService.js";
-
   import UserStore from "../../stores/UserStore";
-  import {editTrip} from "../Trip/TripService";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -157,9 +155,11 @@
         // If this is happening on the sidebar, the new trip is a subtrip. This adds it to parent trip.
         if (this.isSidebarComponent) {
           subTrip.isShowing = false;
-          this.$emit("newTripAdded", subTrip);
           this.$emit("close-dialog");
+
         }
+        this.$emit("newTripAdded", subTrip);
+
       },
       formatName(user) {
         return `${user.firstName} ${user.lastName}`;
