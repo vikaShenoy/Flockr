@@ -8,9 +8,15 @@ import * as VueGoogleMaps from "vue2-google-maps";
 import config from "./config";
 
 Vue.use(VueRouter);
+
+
+
 Vue.use(VueGoogleMaps, {
-  load: {
+  // Don't load with key if environment variable isn't set
+  load: config.GOOGLE_MAPS_KEY ? {
     key: config.GOOGLE_MAPS_KEY,
+    libraries: "places"
+  } : {
     libraries: "places"
   }
 });

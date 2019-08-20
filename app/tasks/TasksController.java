@@ -23,11 +23,12 @@ public class TasksController extends AbstractModule {
 
     Config conf = ConfigFactory.load();
     String environment = conf.getString("environment");
-    System.out.println(environment);
+    boolean populateData = conf.getBoolean("populateData");
+
     // System.out.println(Play.current().configuration().get());
-    // if (environment.equals("dev")) {
-    bind(PopulateTask.class).asEagerSingleton();
-    // }
+     if (environment.equals("dev") && populateData) {
+       bind(PopulateTask.class).asEagerSingleton();
+     }
 
     // you may add more tasks here
   }

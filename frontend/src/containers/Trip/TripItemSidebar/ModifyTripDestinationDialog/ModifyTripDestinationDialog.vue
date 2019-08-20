@@ -288,6 +288,7 @@ import { transformTripNode } from '../../TripService';
           newTripNodes = [...parentTripNode.tripNodes, this.tripDestination];
         }
         const unformattedTrip = transformTripNode({...parentTripNode, tripNodes: newTripNodes});
+        
         const tripId = this.$route.params.tripId;
         this.isLoading = true;
         await editTrip(unformattedTrip);
