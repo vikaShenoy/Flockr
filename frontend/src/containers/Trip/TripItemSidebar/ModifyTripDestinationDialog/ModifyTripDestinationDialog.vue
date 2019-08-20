@@ -322,6 +322,8 @@ import { transformTripNode } from '../../TripService';
 			 * If adding a new destination, filter out the destination at the bottom of the sidebar.
        */
       filteredDestinations() {
+        // Prevent errors on initial mount.
+        if (this.tripDestination.tripNodeId === null) return this.destinations;
         if (this.editMode) {
           const tripDestinationParentNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip, null);
           const tripDestinationIndex = tripDestinationParentNode.tripNodes.findIndex(
