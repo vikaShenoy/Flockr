@@ -146,7 +146,9 @@ public class TripComposite extends TripNode {
   }
 
   public void addUser(User user) {
-    users.add(user);
+    if (!users.contains(user)) {
+      users.add(user);
+    }
   }
 
   public void removeUser(User user) {

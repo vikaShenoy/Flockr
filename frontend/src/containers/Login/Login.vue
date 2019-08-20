@@ -5,7 +5,7 @@
             class="col-lg-6 offset-lg-3"
     >
 
-      <h2>Sign In</h2>
+      <h2>Login</h2>
 
       <v-alert
               :value="hasInvalidCredentials"

@@ -68,15 +68,15 @@
           ]"
 
                 :options="{
-            strokeColor: '#4d80af',
-            icons: [{
-              icon: {
-                path: forwardClosedArrow
-              },
-              offset: '100%'
-            }]
-          }"
-        />
+                    strokeColor: colors[destinations[index].group % colors.length],
+                    icons: [{
+                      icon: {
+                        path: forwardClosedArrow
+                      },
+                      offset: '100%'
+                    }]
+                  }"
+                />
       </div>
 
       <GmapInfoWindow

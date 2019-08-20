@@ -5,7 +5,7 @@
 					:flat="!!isSidebarComponent"
   >
     <h2 v-if="!isSidebarComponent">Add Trip</h2>
-		<h3 v-else>Create New Subtrip</h3>
+		<h3 id="title-subtrip" v-else>Create New Subtrip</h3>
     <v-form ref="addTripForm">
       <v-text-field
               v-model="tripName"
@@ -33,6 +33,14 @@
         <v-icon>add</v-icon>
       </v-btn>
 
+      <v-btn
+        depressed
+        color="secondary"
+        id="add-trip-btn"
+        @click="addTrip"
+      >
+        Create
+      </v-btn>
 
       <v-btn
               depressed
@@ -42,14 +50,7 @@
       >
         Cancel
       </v-btn>
-      <v-btn
-              depressed
-              color="secondary"
-              id="add-trip-btn"
-              @click="addTrip"
-      >
-        Create
-      </v-btn>
+
     </v-form>
   </v-card>
 </template>
@@ -57,9 +58,7 @@
 <script>
   import TripTable from "../../components/TripTable/TripTable";
   import {createTrip, getAllUsers} from "./AddTripService.js";
-
   import UserStore from "../../stores/UserStore";
-  import {editTrip} from "../Trip/TripService";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -94,6 +93,7 @@
         tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
         tripNameRules: [rules.required],
         selectedUsers: [],
+        users: null
       };
     },
     mounted() {
@@ -160,9 +160,11 @@
         // If this is happening on the sidebar, the new trip is a subtrip. This adds it to parent trip.
         if (this.isSidebarComponent) {
           subTrip.isShowing = false;
-          this.$emit("newTripAdded", subTrip);
           this.$emit("close-dialog");
+
         }
+        this.$emit("newTripAdded", subTrip);
+
       },
       /**
        * Formats a users full name by their first name and last name
@@ -177,9 +179,11 @@
 <style lang="scss" scoped>
   #add-trip {
     margin-top: 30px;
+    height: 465px;
 
     h2 {
       text-align: center;
+      padding-top: 10px;
     }
   }
 
@@ -187,6 +191,10 @@
     margin-top: 10px !important;
     display: block;
     margin: 0 auto;
+  }
+
+  #cancel-trip-creation-btn {
+    float: right;
   }
 
   #add-trip-btn {
