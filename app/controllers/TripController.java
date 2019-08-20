@@ -337,6 +337,7 @@ public class TripController extends Controller {
               } catch (BadRequestException badRequestError) {
                 return badRequest();
               } catch (Throwable serverError) {
+                serverError.printStackTrace();
                 return internalServerError();
               }
             });

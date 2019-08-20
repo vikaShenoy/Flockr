@@ -1,6 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
@@ -38,25 +37,25 @@ import utils.TestState;
 
 public class TripControllerTest {
 
-  Application application;
-  FakeClient fakeClient;
-  User user;
-  User otherUser;
-  User adminUser;
-  Destination christchurch;
-  Destination westMelton;
-  Destination helkett;
-  TripDestinationLeaf tripChristchurch;
-  TripDestinationLeaf tripWestMelton;
-  TripDestinationLeaf tripHelkett;
-  List<TripNode> tripNodes;
-  TripComposite trip;
-  TripComposite trip2;
-  ObjectNode tripDestination1;
-  ObjectNode tripDestination2;
-  ObjectNode tripDestination3;
-  ObjectNode tripComposite1;
-  TripUtil tripUtil;
+  private Application application;
+  private FakeClient fakeClient;
+  private User user;
+  private User otherUser;
+  private User adminUser;
+  private Destination christchurch;
+  private Destination westMelton;
+  private Destination helkett;
+  private TripDestinationLeaf tripChristchurch;
+  private TripDestinationLeaf tripWestMelton;
+  private TripDestinationLeaf tripHelkett;
+  private List<TripNode> tripNodes;
+  private TripComposite trip;
+  private TripComposite trip2;
+  private ObjectNode tripDestination1;
+  private ObjectNode tripDestination2;
+  private ObjectNode tripDestination3;
+  private ObjectNode tripComposite1;
+  private TripUtil tripUtil;
 
   @Before
   public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
@@ -159,7 +158,6 @@ public class TripControllerTest {
     users.add(user);
     trip = new TripComposite(tripNodes, users, "Testing Trip 1");
 
-
     tripNodes.remove(tripWestMelton);
     tripNodes.add(tripHelkett);
     trip2 = new TripComposite(tripNodes, users, "Find the family graves");
@@ -193,9 +191,20 @@ public class TripControllerTest {
     tripComposite1.put("nodeType", "TripComposite");
     tripComposite1.put("tripNodeId", trip.getTripNodeId());
 
-    Destination morocco = new Destination("Morocco", destinationType, district, 12.0, 45.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+    Destination morocco =
+        new Destination(
+            "Morocco",
+            destinationType,
+            district,
+            12.0,
+            45.0,
+            country,
+            adminUser.getUserId(),
+            new ArrayList<>(),
+            true);
     morocco.save();
-    TripDestinationLeaf tripMorocco = new TripDestinationLeaf(morocco, new Date(1564273000), 43200, new Date(1564359000), 43200);
+    TripDestinationLeaf tripMorocco =
+        new TripDestinationLeaf(morocco, new Date(1564273000), 43200, new Date(1564359000), 43200);
     tripMorocco.save();
 
     List<TripNode> tripNodes3 = new ArrayList<>();
@@ -210,9 +219,6 @@ public class TripControllerTest {
 
     trip.setTripNodes(tripNodes1);
     trip.save();
-
-
-
   }
 
   @Test
@@ -257,7 +263,7 @@ public class TripControllerTest {
   }
 
   @Test
-  public void editTripWithUsers() throws IOException {
+  public void editTripWithUsers() {
     String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId();
     ObjectNode tripBody = Json.newObject();
     ArrayNode tripDestinations = Json.newArray();
@@ -426,15 +432,15 @@ public class TripControllerTest {
 
   /**
    * Gets the high level trips (the trips without a parent)
+   *
    * @param token the token of the user that wants to get the trip
    * @param userId the user ID that wants to get the trip
-   * @param statusCode
+   * @param statusCode the status code to test
    */
   private void getHighLevelTrips(String token, int userId, int statusCode) {
-    Result result = fakeClient.makeRequestWithToken(
-        "GET",
-        "/api/users/" + userId + "/trips/high-level-trips",
-        token);
+    Result result =
+        fakeClient.makeRequestWithToken(
+            "GET", "/api/users/" + userId + "/trips/high-level-trips", token);
 
     Assert.assertEquals(result.status(), statusCode);
   }
@@ -451,9 +457,9 @@ public class TripControllerTest {
 
   @Test
   public void getHighLevelTripsUnauthorised() {
-    Result result = fakeClient.makeRequestWithNoToken(
-        "GET",
-        "/api/users/" + user.getUserId() + "/trips/high-level-trips");
+    Result result =
+        fakeClient.makeRequestWithNoToken(
+            "GET", "/api/users/" + user.getUserId() + "/trips/high-level-trips");
 
     Assert.assertEquals(401, result.status());
   }
@@ -463,7 +469,65 @@ public class TripControllerTest {
     getHighLevelTrips(otherUser.getToken(), user.getUserId(), 403);
   }
 
-  
+  /**
+   * The Test suite for updating a trip with the PUT endpoint.
+   *
+   * @param token the token of the user that wants to update the trip
+   * @param userId the user ID that wants to update the trip
+   * @param statusCode the status code to test
+   * @param authorised true if an authorised user
+   */
+  public void updateTrip(String token, int userId, int statusCode, boolean authorised) {
+    List<Integer> userIds = new ArrayList<>();
+    userIds.add(userId);
+    ObjectNode body = Json.newObject();
+    ArrayNode tripDestinations = Json.newArray();
+    tripDestinations.add(tripDestination1);
+    tripDestinations.add(tripDestination2);
+    body.put("name", "PutTest");
+    body.putArray("tripNodes").addAll(tripDestinations);
+    body.set("userIds", Json.toJson(userIds));
+    Result result;
+    if (authorised) {
+      result =
+          fakeClient.makeRequestWithToken(
+              "PUT", body, "/api/users/" + userId + "/trips/" + trip.getTripNodeId(), token);
+    } else {
+      result =
+          fakeClient.makeRequestWithNoToken(
+              "PUT", body, "/api/users/" + userId + "/trips/" + trip.getTripNodeId());
+    }
+    Assert.assertEquals(statusCode, result.status());
+  }
+
+  @Test
+  public void updateTripOk() {
+    updateTrip(user.getToken(), user.getUserId(), 200, true);
+    Optional<TripComposite> optionalTrip =
+        TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+    optionalTrip.ifPresent(
+        tripComposite -> Assert.assertEquals("PutTest", tripComposite.getName()));
+  }
+
+  @Test
+  public void updateTripNotFound() {
+    updateTrip(otherUser.getToken(), otherUser.getUserId(), 404, true);
+  }
+
+  @Test
+  public void updateTripForbidden() {
+    updateTrip(user.getToken(), user.getUserId(), 401, false);
+  }
+
+  @Test
+  public void updateTripAdmin() {
+    updateTrip(adminUser.getToken(), user.getUserId(), 200, true);
+    Optional<TripComposite> optionalTrip =
+        TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+    optionalTrip.ifPresent(
+        tripComposite -> Assert.assertEquals("PutTest", tripComposite.getName()));
+  }
+
   @After
   public void tearDown() {
     Helpers.stop(application);
