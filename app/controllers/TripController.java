@@ -158,7 +158,7 @@ public class TripController extends Controller {
    * @param tripId The trip to delete.
    * @param request HTTP req
    * @return A result object, with status code 200 if successful. 400 if the trip isn't found. 500
-   * for other errors.
+   *     for other errors.
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
@@ -201,9 +201,9 @@ public class TripController extends Controller {
    * @param tripId id of the trip to un-soft delete.
    * @param request HTTP request object.
    * @return - 200 with trip if successful - 400 bad request if the trip hasn't been deleted - 401
-   * unauthorized if the user is unauthorized - 403 forbidden if the user isn't allowed to undo the
-   * delete - 404 not found if the trip can't be found in the db - 500 internal server error for
-   * other errors
+   *     unauthorized if the user is unauthorized - 403 forbidden if the user isn't allowed to undo
+   *     the delete - 404 not found if the trip can't be found in the db - 500 internal server error
+   *     for other errors
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
@@ -216,7 +216,7 @@ public class TripController extends Controller {
     return tripRepository
         .getTripByIdsIncludingDeleted(tripId, userId)
         .thenComposeAsync(
-            (optionalTrip) -> {
+            optionalTrip -> {
               if (!optionalTrip.isPresent()) {
                 throw new CompletionException(new NotFoundException());
               }
@@ -297,12 +297,10 @@ public class TripController extends Controller {
                 users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
               } catch (BadRequestException e) {
-                e.printStackTrace();
                 throw new CompletionException(new BadRequestException());
               } catch (ForbiddenRequestException e) {
                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
               } catch (NotFoundException e) {
-                e.printStackTrace();
                 return CompletableFuture.completedFuture(notFound(e.getMessage()));
               }
 
@@ -334,13 +332,10 @@ public class TripController extends Controller {
               try {
                 throw e.getCause();
               } catch (NotFoundException notFoundError) {
-                notFoundError.printStackTrace();
                 return notFound();
               } catch (BadRequestException badRequestError) {
-                badRequestError.printStackTrace();
                 return badRequest();
               } catch (Throwable serverError) {
-                serverError.printStackTrace();
                 return internalServerError();
               }
             });

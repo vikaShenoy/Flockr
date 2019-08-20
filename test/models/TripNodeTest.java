@@ -65,6 +65,7 @@ public class TripNodeTest {
     roles.add(role);
     role.save();
     adminUser = User.find.byId(adminUser.getUserId());
+    Assert.assertNotNull(adminUser);
     adminUser.setRoles(roles);
     adminUser.save();
 
@@ -133,11 +134,11 @@ public class TripNodeTest {
 
   @Test
   public void checkGetTripDiffCompositeDestination() throws IOException {
-    TripNode superTrip = new TripComposite(new ArrayList<>(), new ArrayList<>(), "super trip");
+    TripComposite superTrip = new TripComposite(new ArrayList<>(), new ArrayList<>(), "super trip");
 
     superTrip.addTripNode(leaf1);
     superTrip.addTripNode(trip);
-    ((TripComposite) superTrip).addUser(user);
+    superTrip.addUser(user);
 
     superTrip.save();
 
@@ -167,12 +168,12 @@ public class TripNodeTest {
 
   @Test
   public void checkTripsArePersistent() {
-    TripNode superTrip = new TripComposite();
-    ((TripComposite) superTrip).setName("Composite Trip");
+    TripComposite superTrip = new TripComposite();
+    superTrip.setName("Composite Trip");
     TripNode subTrip1 = new TripDestinationLeaf();
     TripNode subTrip2 = new TripDestinationLeaf();
-    TripNode compTrip2 = new TripComposite();
-    ((TripComposite) compTrip2).setName("comp Trip 2");
+    TripComposite compTrip2 = new TripComposite();
+    compTrip2.setName("comp Trip 2");
 
     superTrip.addTripNode(subTrip1);
     superTrip.addTripNode(subTrip2);
@@ -333,5 +334,72 @@ public class TripNodeTest {
             "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId(),
             otherUser.getToken());
     Assert.assertEquals(403, result.status());
+  }
+
+  @Test
+  public void checkOrderPersists() throws IOException {
+
+    List<User> users = new ArrayList<>();
+    users.add(user);
+
+    List<TripNode> subTripNodes = new ArrayList<>();
+    subTripNodes.add(leaf3);
+    subTripNodes.add(leaf4);
+
+    TripComposite subTrip = new TripComposite(subTripNodes, users, "sub trip");
+    subTrip.save();
+
+    String date = null;
+    ObjectNode newTripJson = Json.newObject();
+    newTripJson.put("name", "Updated Trip");
+
+    ObjectNode firstNode = Json.newObject();
+    firstNode.put("destinationId", leaf1.getDestination().getDestinationId());
+    firstNode.put("nodeType", "TripDestinationLeaf");
+    firstNode.put("arrivalDate", date);
+    firstNode.put("arrivalTime", date);
+    firstNode.put("departureDate", date);
+    firstNode.put("departureTime", date);
+
+    ObjectNode secondNode = Json.newObject();
+    secondNode.put("tripNodeId", subTrip.getTripNodeId());
+    secondNode.put("nodeType", "TripComposite");
+
+    ObjectNode thirdNode = Json.newObject();
+    thirdNode.put("destinationId", leaf2.getDestination().getDestinationId());
+    thirdNode.put("nodeType", "TripDestinationLeaf");
+    thirdNode.put("arrivalDate", date);
+    thirdNode.put("arrivalTime", date);
+    thirdNode.put("departureDate", date);
+    thirdNode.put("departureTime", date);
+
+    newTripJson.putArray("tripNodes").add(firstNode).add(secondNode).add(thirdNode);
+    newTripJson.putArray("userIds");
+
+    List<TripNode> superTripNodes = new ArrayList<>();
+    superTripNodes.add(leaf1);
+    superTripNodes.add(subTrip);
+    superTripNodes.add(leaf2);
+
+    Result result =
+        fakeClient.makeRequestWithToken(
+            "POST", newTripJson, "/api/users/" + user.getUserId() + "/trips", user.getToken());
+
+    Assert.assertEquals(201, result.status());
+    int tripId = PlayResultToJson.convertResultToJson(result).get("tripNodeId").asInt();
+
+    Result result1 =
+        fakeClient.makeRequestWithToken(
+            "GET", "/api/users/" + user.getUserId() + "/trips/" + tripId, user.getToken());
+
+    Assert.assertEquals(200, result1.status());
+
+    JsonNode jsonNode = PlayResultToJson.convertResultToJson(result1);
+    JsonNode persistedTripNodes = jsonNode.get("tripNodes");
+
+    for (int i = 0; i < persistedTripNodes.size(); i++) {
+      Assert.assertEquals(
+          superTripNodes.get(i).getName(), persistedTripNodes.get(i).get("name").asText());
+    }
   }
 }
