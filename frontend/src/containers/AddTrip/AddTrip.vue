@@ -5,7 +5,7 @@
 					:flat="!!isSidebarComponent"
   >
     <h2 v-if="!isSidebarComponent">Add Trip</h2>
-		<h3 v-else>Create New Subtrip</h3>
+		<h3 id="title-subtrip" v-else>Create New Subtrip</h3>
     <v-form ref="addTripForm">
       <v-text-field
               v-model="tripName"
@@ -173,11 +173,11 @@
 <style lang="scss" scoped>
   #add-trip {
     margin-top: 30px;
-    height: 480px;
+    height: 465px;
 
     h2 {
       text-align: center;
-      padding-top: 20px;
+      padding-top: 10px;
     }
   }
 
