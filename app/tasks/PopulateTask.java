@@ -67,6 +67,11 @@ public class PopulateTask {
         Role adminRole = new Role(RoleType.ADMIN);
         adminRole.save();
 
+        Role userRole = new Role(RoleType.TRAVELLER);
+        userRole.save();
+        List<Role> userRoleTypes = new ArrayList<>();
+        userRoleTypes.add(userRole);
+
         List<Role> adminRoleTypes = new ArrayList<>();
         adminRoleTypes.add(superAdminRole);
 
@@ -74,6 +79,12 @@ public class PopulateTask {
                 this.security.hashPassword("so-secure"), "Male", "luis@gmail.com",
                 adminUserNationalities, adminTravellerTypes, new Date(), adminPassports, adminRoleTypes, "abc");
         adminUser.save();
+
+        User user = new User("Angelica", "something", "DC",
+            this.security.hashPassword("so-secure"), "Female", "acdc@gmail.com",
+            adminUserNationalities, adminTravellerTypes, new Date(), adminPassports, userRoleTypes,
+            "abcdef");
+        user.save();
 
         // Creating some initial destinations
         DestinationType destinationType = new DestinationType("city");
@@ -83,19 +94,19 @@ public class PopulateTask {
         District district = new District("Canterbury", country);
         district.save();
 
-        Destination destination1 = new Destination("destination3", destinationType, district, 0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        Destination destination1 = new Destination("destination3", destinationType, district, 0.0, 40.0, country, adminUser.getUserId(), new ArrayList<>(), true);
         destination1.save();
 
-        Destination destination2 = new Destination("destination5", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        Destination destination2 = new Destination("destination5", destinationType, district,11.0, 40.0, country, adminUser.getUserId(), new ArrayList<>(), true);
         destination2.save();
 
-        Destination destination3 = new Destination("destination6", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        Destination destination3 = new Destination("destination6", destinationType, district,12.0, 41.0, country, adminUser.getUserId(), new ArrayList<>(), true);
         destination3.save();
 
-        Destination destination4 = new Destination("destination7", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        Destination destination4 = new Destination("destination7", destinationType, district,13.0, 42.0, country, adminUser.getUserId(), new ArrayList<>(), true);
         destination4.save();
 
-        Destination destination8 = new Destination("destination8", destinationType, district,0.0, 0.0, country, adminUser.getUserId(), new ArrayList<>(), true);
+        Destination destination8 = new Destination("destination8", destinationType, district,14.0, 43.0, country, adminUser.getUserId(), new ArrayList<>(), true);
         destination8.save();
 
         // Creating a trip

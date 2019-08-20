@@ -57,9 +57,7 @@
 <script>
   import TripTable from "../../components/TripTable/TripTable";
   import {createTrip, getAllUsers} from "./AddTripService.js";
-
   import UserStore from "../../stores/UserStore";
-  import {editTrip} from "../Trip/TripService";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -94,6 +92,7 @@
         tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
         tripNameRules: [rules.required],
         selectedUsers: [],
+        users: null
       };
     },
     mounted() {
