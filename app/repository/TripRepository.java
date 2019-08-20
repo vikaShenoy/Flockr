@@ -16,6 +16,7 @@ import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import models.TripComposite;
 import models.TripNode;
+import models.User;
 
 /**
  * Contains all trip related db interactions
@@ -67,6 +68,7 @@ public class TripRepository {
   private CompletionStage<TripComposite> persistTripNode(TripComposite trip) {
     return supplyAsync(
         () -> {
+          recursivelyAddUsersToSubTrips(trip.getTripNodes(), trip.getUsers());
           trip.save();
 
           // Persist trip node order.
@@ -93,6 +95,24 @@ public class TripRepository {
           return trip;
         },
         executionContext);
+  }
+
+  /**
+   * Recursively adds all users in this trip to all sub trips
+   *
+   * @param trips the list of trips to add users to.
+   * @param users the list of users to add to the sub trips.
+   */
+  private void recursivelyAddUsersToSubTrips(List<TripNode> trips, List<User> users) {
+    for (TripNode tripNode: trips) {
+      if (tripNode.getNodeType().equals("TripComposite")) {
+        for (User user : users) {
+          ((TripComposite) tripNode).addUser(user);
+        }
+        tripNode.save();
+        recursivelyAddUsersToSubTrips(tripNode.getTripNodes(), tripNode.getUsers());
+      }
+    }
   }
 
   /**
