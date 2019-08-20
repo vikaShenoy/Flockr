@@ -1,35 +1,35 @@
 <template>
-  <div id="trip">
-    <div id="map">
-      <DestinationMap
-        :destinations="mapTripNodesToDestinations()"
-        :isTripMap="true"
-        :panOn="panOn"
-      />
+	<div id="trip">
+		<div id="map">
+			<DestinationMap
+							:destinations="mapTripNodesToDestinations()"
+							:isTripMap="true"
+							:panOn="panOn"
+			/>
 
-    <ConnectedUsers v-if="trip" :users="trip.users" :connectedUsers="connectedUsers" />
-    </div>
+			<ConnectedUsers v-if="trip" :users="trip.users" :connectedUsers="connectedUsers"/>
+		</div>
 
-    <div id="undo-redo-btns">
-      <UndoRedo
-        ref="undoRedo"
-        color="white"
-      />
-    </div>
+		<div id="undo-redo-btns">
+			<UndoRedo
+							ref="undoRedo"
+							color="white"
+			/>
+		</div>
 
-    <TripItemSidebar
-      :trip="trip"
-      @tripNodeOrderChanged="tripNodeOrderChanged"
-      @toggleExpanded="toggleExpandedTrips"
-      @tripNodesUpdated="tripNodesUpdated"
-      @deleteTripNode="deleteTripNode"
-      @newUsers="newUsers"
-      @newTripAdded="newTripAdded"
-      @getNewTrip="getTrip()"
-      @setPan="setPan"
-      @addEditTripCommand="tripNameChanged"
-    />
-  </div>
+		<TripItemSidebar
+						:trip="trip"
+						@tripNodeOrderChanged="tripNodeOrderChanged"
+						@toggleExpanded="toggleExpandedTrips"
+						@tripNodesUpdated="tripNodesUpdated"
+						@deleteTripNode="deleteTripNode"
+						@newUsers="newUsers"
+						@newTripAdded="newTripAdded"
+						@getNewTrip="getTrip()"
+						@setPan="setPan"
+						@addEditTripCommand="tripNameChanged"
+		/>
+	</div>
 </template>
 
 <script>
@@ -53,7 +53,7 @@
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command";
   import UserStore from '../../stores/UserStore';
-  import { restoreTrip, deleteTripFromList } from '../Trips/OldTripsService';
+  import {restoreTrip, deleteTripFromList} from '../Trips/OldTripsService';
 
   export default {
     components: {
@@ -76,23 +76,23 @@
     },
     methods: {
       /**
-           * Called when the trip name is edited.
-           * Sets an edit command for undo redo and updates the trip name.
-           */
-          tripNameChanged(oldTrip, newTrip, newName) {
-            this.addEditTripCommand(oldTrip, newTrip);
-            this.trip.name = newName;
-          },
-        newTripAdded(subTrip) {
-              const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
-              this.trip.tripNodes.push(subTrip)
-              editTrip(this.trip);
+       * Called when the trip name is edited.
+       * Sets an edit command for undo redo and updates the trip name.
+       */
+      tripNameChanged(oldTrip, newTrip, newName) {
+        this.addEditTripCommand(oldTrip, newTrip);
+        this.trip.name = newName;
+      },
+      newTripAdded(subTrip) {
+        const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
+        this.trip.tripNodes.push(subTrip)
+        editTrip(this.trip);
 
-              const undoCommand = async (subTrip, oldParentTrip) => {
-                await deleteTripFromList(subTrip.tripNodeId);
-                await editTrip(oldParentTrip);
-                this.getTrip();
-      				};
+        const undoCommand = async (subTrip, oldParentTrip) => {
+          await deleteTripFromList(subTrip.tripNodeId);
+          await editTrip(oldParentTrip);
+          this.getTrip();
+        };
 
         const redoCommand = async (subTrip, newParentTrip) => {
           await restoreTrip(subTrip.tripNodeId);
@@ -126,7 +126,7 @@
       listenOnMessage() {
         UserStore.data.socket.addEventListener("message", (event) => {
           const message = JSON.parse(event.data);
-          if (message.type === "connected")  {
+          if (message.type === "connected") {
             this.connectedUsers.push(message.user);
             this.showSuccessMessage(`${message.user.firstName} connected`, 1000);
 
@@ -268,7 +268,7 @@
           stayedInSourceTripNode: stayedInSourceTripNode,
           reorderedTargetTripNode: newParentTripNode,
           sourceTripNodeCopy,
-          targetTripNodeCopy  
+          targetTripNodeCopy
         }
 
       },
@@ -295,7 +295,7 @@
           const temp = {...oldParentTripNode.tripNodes[oldIndex]};
           oldParentTripNode.tripNodes.splice(oldIndex, 1);
           newParentTripNode.tripNodes.splice(newIndex, 0, temp);
-      }
+        }
       },
       /**
        * Sends edited trips to backend
@@ -460,23 +460,23 @@
 </script>
 
 <style lang="scss" scoped>
-#trip {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
+	#trip {
+		width: 100%;
+		display: flex;
+		flex-direction: row;
 
-  #map {
-    flex-grow: 1;
-    position: relative;
-  }
-}
+		#map {
+			flex-grow: 1;
+			position: relative;
+		}
+	}
 
-  #undo-redo-btns {
-    position: absolute;
-    right: 23px;
-    margin-top: 10px;
-    z-index: 1000;
-  }
+	#undo-redo-btns {
+		position: absolute;
+		right: 23px;
+		margin-top: 10px;
+		z-index: 1000;
+	}
 </style>
 
 

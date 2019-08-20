@@ -1,58 +1,58 @@
 <template>
-  <v-card
-          id="add-trip"
-          class="col-lg-10 offset-lg-1"
+	<v-card
+					id="add-trip"
+					class="col-lg-10 offset-lg-1"
 					:flat="!!isSidebarComponent"
-  >
-    <h2 v-if="!isSidebarComponent">Add Trip</h2>
+	>
+		<h2 v-if="!isSidebarComponent">Add Trip</h2>
 		<h3 id="title-subtrip" v-else>Create New Subtrip</h3>
-    <v-form ref="addTripForm">
-      <v-text-field
-              v-model="tripName"
-              label="Trip Name"
-              color="secondary"
-              class="col-md-6"
-              :rules="tripNameRules"
-      >
-      </v-text-field>
+		<v-form ref="addTripForm">
+			<v-text-field
+							v-model="tripName"
+							label="Trip Name"
+							color="secondary"
+							class="col-md-6"
+							:rules="tripNameRules"
+			>
+			</v-text-field>
 
-    <v-combobox v-if="!isSidebarComponent"
-								:items="users" :item-text="formatName"
-								v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
+			<v-combobox v-if="!isSidebarComponent"
+									:items="users" :item-text="formatName"
+									v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
 
 
-      <TripTable :tripDestinations="tripDestinations"/>
+			<TripTable :tripDestinations="tripDestinations"/>
 
-      <v-btn
-              depressed
-              color="secondary"
-              small
-              id="add-destination"
-              @click="addDestination"
-      >
-        <v-icon>add</v-icon>
-      </v-btn>
+			<v-btn
+							depressed
+							color="secondary"
+							small
+							id="add-destination"
+							@click="addDestination"
+			>
+				<v-icon>add</v-icon>
+			</v-btn>
 
-      <v-btn
-        depressed
-        color="secondary"
-        id="add-trip-btn"
-        @click="addTrip"
-      >
-        Create
-      </v-btn>
+			<v-btn
+							depressed
+							color="secondary"
+							id="add-trip-btn"
+							@click="addTrip"
+			>
+				Create
+			</v-btn>
 
-      <v-btn
-              depressed
-              color="error"
-              id="cancel-trip-creation-btn"
-              @click="$emit('cancel-trip-creation')"
-      >
-        Cancel
-      </v-btn>
+			<v-btn
+							depressed
+							color="error"
+							id="cancel-trip-creation-btn"
+							@click="$emit('cancel-trip-creation')"
+			>
+				Cancel
+			</v-btn>
 
-    </v-form>
-  </v-card>
+		</v-form>
+	</v-card>
 </template>
 
 <script>
@@ -76,17 +76,17 @@
     components: {
       TripTable
     },
-		props: {
+    props: {
       isSidebarComponent: {
         type: Boolean,
-				required: false
-			},
-			parentTrip: {
+        required: false
+      },
+      parentTrip: {
         type: Object,
-				required: false
-			}
+        required: false
+      }
 
-		},
+    },
     data() {
       return {
         tripName: "",
@@ -105,7 +105,7 @@
        */
       async getUsers() {
         const users = (await getAllUsers())
-          .filter(user => user.userId !== UserStore.data.userId);
+            .filter(user => user.userId !== UserStore.data.userId);
         this.users = users;
       },
       /**
@@ -176,29 +176,29 @@
 </script>
 
 <style lang="scss" scoped>
-  #add-trip {
-    margin-top: 30px;
-    height: 465px;
+	#add-trip {
+		margin-top: 30px;
+		height: 465px;
 
-    h2 {
-      text-align: center;
-      padding-top: 10px;
-    }
-  }
+		h2 {
+			text-align: center;
+			padding-top: 10px;
+		}
+	}
 
-  #add-destination {
-    margin-top: 10px !important;
-    display: block;
-    margin: 0 auto;
-  }
+	#add-destination {
+		margin-top: 10px !important;
+		display: block;
+		margin: 0 auto;
+	}
 
-  #cancel-trip-creation-btn {
-    float: right;
-  }
+	#cancel-trip-creation-btn {
+		float: right;
+	}
 
-  #add-trip-btn {
-    float: right;
-  }
+	#add-trip-btn {
+		float: right;
+	}
 </style>
 
 

@@ -98,11 +98,21 @@
       this.existingTrips = await getTrips();
 		},
 		computed: {
+      /**
+			 * Filtering for the existing sub trips dropdown.
+			 * Removes:
+			 *  - the parent trip (can't add it as a sub trip of itself)
+			 *  - any sub trip which contains the parent trip
+			 *  - any sub trip which is already a sub trip of the parent trip.
+       * @returns {*} the list of existing sub trips which can be selected.
+       */
 			filteredSubTrips() {
         if (this.existingTrips.length) {
           return this.existingTrips.filter(
               tripNode => !tripNodeContains(
-                  this.parentTrip.tripNodeId, tripNode) && tripNode.tripNodeId !== this.parentTrip.tripNodeId);
+                  this.parentTrip.tripNodeId, tripNode) &&
+									tripNode.tripNodeId !== this.parentTrip.tripNodeId &&
+									!tripNodeContains(tripNode.tripNodeId, this.parentTrip));
 				}
         return this.existingTrips;
 			}
