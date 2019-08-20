@@ -323,8 +323,8 @@ import { transformTripNode } from '../../TripService';
        */
       filteredDestinations() {
         // Prevent errors on initial mount.
-        if (this.tripDestination.tripNodeId === null) return this.destinations;
         if (this.editMode) {
+          if (this.tripDestination.destination === null) return this.destinations;
           const tripDestinationParentNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip, null);
           const tripDestinationIndex = tripDestinationParentNode.tripNodes.findIndex(
               node => node.tripNodeId === this.tripDestination.tripNodeId);
