@@ -8,6 +8,11 @@ public class PingMapFrame implements Frame {
   private int tripNodeId;
   private double latitude;
   private double longitude;
+  private final String type = "ping-map";
+
+  public PingMapFrame() {
+
+  }
 
   public PingMapFrame(int tripNodeId, int latitude, int longitude) {
     this.tripNodeId = tripNodeId;
@@ -29,6 +34,6 @@ public class PingMapFrame implements Frame {
 
   @Override
   public String getType() {
-    return "ping-map";
+    return type;
   }
 }

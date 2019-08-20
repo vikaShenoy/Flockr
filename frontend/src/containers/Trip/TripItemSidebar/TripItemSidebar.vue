@@ -45,7 +45,6 @@
           Add Destination
         </v-btn>
 
-
         <ModifyTripDestinationDialog
                 :isShowing.sync="isShowingAddDestinationDialog"
                 :editMode="false"
@@ -68,6 +67,18 @@
           @newUsers="newUsers"
         />
       </div>
+
+
+      <div id="line">
+        <hr>
+        <div id="pan-toggle">
+          <v-switch
+            v-model="panOn"
+            :label="`Pan On: ${panOn.toString()}`"
+          ></v-switch>
+        </div>
+      </div>
+
     </div>
 
   </v-card>
@@ -89,7 +100,8 @@
         isShowingAddDestinationDialog: false,
         isShowingUpdateDestinationDialog: false,
         editedTripDestination: null,
-        isShowingManageTripDialog: false
+        isShowingManageTripDialog: false,
+        panOn: false
       };
     },
     props: {
@@ -117,6 +129,16 @@
       },
       newUsers(newUsers) {
         this.$emit("newUsers", newUsers); 
+      }
+    },
+    watch: {
+      /**
+       * Sets the pan on to the current value.
+       * * True if the pan is on, false if the pan is off.
+       */
+      panOn(newPanOn) {
+        this.panOn = newPanOn;
+        this.$emit("setPan", this.panOn);
       }
     }
   }
@@ -147,7 +169,7 @@
     #trip-destinations-list {
       padding-bottom: 10px;
       overflow-y: auto;
-      height: calc(100vh - 145px);
+      height: calc(100vh - 220px);
     }
 
     .option {
@@ -197,8 +219,20 @@
       margin-left: 10px;
       margin-right: 10px;
     }
+
   }
 
+  #pan-toggle {
+    background: white;
+    margin-left: 20px;
+    color: $darker-white;
+  }
+
+  #line {
+    position: absolute;
+    bottom: 0%;
+    width: 100%;
+  }
 
 </style>
 

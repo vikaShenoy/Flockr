@@ -36,13 +36,11 @@
 
       <GmapMarker
         ref="marker"
-        :key="index"
-        v-for="(mark, index) in marker"
-        :position="mark.position"
+        v-if="marker.length"
+        :position="marker[0].position"
         :icon="markerOptions"
-        :opacity="mark.opacity"
-        :visible="visible"
-        :animation="mark.animation"
+        :opacity="marker[0].opacity"
+        :animation="marker[0].animation"
       />
 
       <GmapMarker
@@ -121,6 +119,7 @@
 
 <script>
   import {endpoint} from "../../utils/endpoint.js";
+  import UserStore from "../../stores/UserStore";
 
   const publicIcon = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
   const privateIcon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
@@ -136,7 +135,6 @@
         },
         publicIcon,
         privateIcon,
-        visible: true,
         marker: [],
         infoWindowPos: null,
         infoContent: null,
@@ -177,12 +175,14 @@
         required: false
       }
     },
+    mounted() {
+      this.listenOnMessage();
+    },
     methods: {
       /**
        * Gets the latitude and longitude of the clicked location
        */
       pingMap(event) {
-        this.visible = true;
         this.latitude = event.latLng.lat();
         this.longitude = event.latLng.lng();
         this.marker = [];
@@ -193,51 +193,53 @@
           },
           icon: pingIcon,
           opacity: 1,
-          animation: google.maps.Animation.BOUNCE,
+          animation: google.maps.Animation.BOUNCE
         });
         if (this.panOn) {
           this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
+          this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
         }
-        // let opacityList = [0.5, 0];
-        // opacityList = this.animateMarker(opacityList);
-        //
-        // setTimeout(function() {
-        //   opacityList = this.animateMarker(opacityList);
-        // }, 1);
+        const data = {
+          "type": "ping-map",
+          "latitude": this.latitude,
+          "longitude": this.longitude,
+          "tripNodeId": this.$route.params.tripId
+        };
 
+        UserStore.data.socket.send(JSON.stringify(data));
       },
       /**
-       *  Allows the marker to fade at a certain time
+       * Listens websockets events to for map pings
        */
-      // animateMarker(opacityList) {
-      //   if (opacityList.length > 0) {
-      //     // this.$refs.map.$refs.marker.opacity = opacityList[0];
-      //     let children = this.$refs.map.$children;
-      //
-      //     let i = 0;
-      //     for (i = 0; i < children.length; i++) {
-      //       if ((this.marker.position == children[i].position) === true);
-      //         this.$refs.map.$children[i].opacity = opacityList[0];
-      //         console.log(this.$refs.map.$children[i].opacity);
-      //         opacityList.shift();
-      //         break;
-      //     }
-      //     console.log(opacityList);
-      //     return opacityList;
-      //   }
-      // },
+      listenOnMessage() {
+        UserStore.data.socket.addEventListener("message", (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === "ping-map") {
+            this.showPing(message);
+          }
+        })
+        },
       /**
-       * Allows the marker to fade at a certain time
+       * When the websocket receives a message, this function is called to display the ping
        */
-      // fadeMarker() {
-      //   setInterval(function() {
-      //     console.log(this.marker[0]);
-      //   }, 200);
-      //
-      //   setTimeout(function() {
-      //     this.marker = [];
-      //   }, 30000);
-      // },
+      showPing(message) {
+        this.latitude = message.latitude;
+        this.longitude = message.longitude;
+        this.marker = [];
+        this.marker.push({
+          position: {
+            lat: this.latitude,
+            lng: this.longitude
+          },
+          icon: pingIcon,
+          opacity: 1,
+          animation: google.maps.Animation.BOUNCE,
+        });
+
+        if (this.panOn) {
+          this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
+        }
+      },
       /**
        * Transforms destinations to a format that the gmap api understands
        * @returns {Object} the transformed marker object
@@ -346,22 +348,6 @@
     height: 30vh;
   }
 
-  /*#marker {*/
-  /*  -webkit-animation: fadeIn 10ms; !* Chrome, Safari, Opera *!*/
-  /*  animation: fadeIn 10ms;*/
-  /*}*/
-
-  /*!* Chrome, Safari, Opera *!*/
-  /*@-webkit-keyframes fadeIn {*/
-  /*  from {opacity: 0;}*/
-  /*  to {opacity: 1;}*/
-  /*}*/
-
-  /*!* Standard syntax *!*/
-  /*@keyframes fadeIn {*/
-  /*  from {opacity: 0;}*/
-  /*  to {opacity: 1;}*/
-  /*}*/
 </style>
 
 

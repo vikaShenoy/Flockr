@@ -1,14 +1,20 @@
 package modules.websocket;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
+import static org.reflections.util.ConfigurationBuilder.build;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import models.User;
+import modules.websocket.frames.PingMapFrame;
+import play.libs.Json;
 import repository.TripRepository;
+
 
 public class WebSocket extends AbstractActor {
 
@@ -79,27 +85,36 @@ public class WebSocket extends AbstractActor {
             });
   }
 
+  /**
+   * Accepts the websocket messages and notifies the users that are connected
+   * to the sent ping message
+   */
   @Override
   public Receive createReceive() {
     return receiveBuilder()
-        .match(String.class, message -> out.tell("I received your message: " + message, self()))
-        // TODO: uncomment this and test when trips within trips has been merged in.
-        //        .match(
-        //            PingMapFrame.class,
-        //            pingMapFrame ->
-        //                tripRepository
-        //                    .getTripByIds(pingMapFrame.getTripNodeId(), user.getUserId())
-        //                    .thenApplyAsync(
-        //                        trip -> {
-        //                          if (trip.isPresent()) {
-        //                            PingMapNotifier pingMapNotifier =
-        //                                new PingMapNotifier(pingMapFrame, trip.get());
-        //                            pingMapNotifier.notifyUsers(user);
-        //                          } else {
-        //                            out.tell("Map ping failed, trip not found", self());
-        //                          }
-        //                          return null;
-        //                        }))
+        // TODO: change this to TripNode once the thing is pulled
+        .match(
+            String.class,
+            messageFrame -> {
+                JsonNode message = Json.parse(messageFrame);
+                if (message.get("type").asText().equals("ping-map")) {
+                  ObjectMapper objectMapper = new ObjectMapper();
+                  PingMapFrame pingMapFrame = objectMapper.treeToValue(message, PingMapFrame.class);
+                  tripRepository
+                      .getTripByIds(pingMapFrame.getTripNodeId(), user.getUserId())
+                      .thenApplyAsync(
+                          trip -> {
+                            if (trip.isPresent()) {
+                              PingMapNotifier pingMapNotifier =
+                                  new PingMapNotifier(pingMapFrame, trip.get());
+                              pingMapNotifier.notifyUsers(user);
+                            } else {
+                              out.tell("Map ping failed, trip not found", self());
+                            }
+                            return null;
+                          });
+                }
+                })
         .build();
   }
 }
