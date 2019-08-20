@@ -39,16 +39,17 @@ public class SetupTask {
         .scheduleOnce(
             Duration.create(0, TimeUnit.SECONDS),
             () -> {
-              supplyAsync(() -> {
-                String statement = "ALTER TABLE trip_node_parent ADD COLUMN child_index INTEGER";
+              supplyAsync(
+                  () -> {
+                    String statement =
+                        "ALTER TABLE trip_node_parent ADD COLUMN child_index INTEGER";
 
-                SqlUpdate sqlUpdate = Ebean.createSqlUpdate(statement);
-                sqlUpdate.execute();
+                    SqlUpdate sqlUpdate = Ebean.createSqlUpdate(statement);
+                    sqlUpdate.execute();
 
-                System.out.println("Ended Setup tasks");
-                return null;
-              });
-
+                    System.out.println("Ended Setup tasks");
+                    return null;
+                  });
             },
             this.executionContext);
   }

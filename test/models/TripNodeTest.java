@@ -141,36 +141,28 @@ public class TripNodeTest {
 
     superTrip.save();
 
-    Result result = fakeClient.makeRequestWithToken(
-        "GET",
-        "/api/users/" + user.getUserId() + "/trips/" + superTrip.getTripNodeId(),
-        user.getToken());
+    Result result =
+        fakeClient.makeRequestWithToken(
+            "GET",
+            "/api/users/" + user.getUserId() + "/trips/" + superTrip.getTripNodeId(),
+            user.getToken());
 
     Assert.assertEquals(200, result.status());
     JsonNode resultJson = PlayResultToJson.convertResultToJson(result);
 
-    Assert.assertEquals(
-        superTrip.getTripNodeId(),
-        resultJson.get("tripNodeId").asInt());
+    Assert.assertEquals(superTrip.getTripNodeId(), resultJson.get("tripNodeId").asInt());
 
-    Assert.assertEquals(
-        superTrip.getTripNodes().size(),
-        resultJson.get("tripNodes").size());
+    Assert.assertEquals(superTrip.getTripNodes().size(), resultJson.get("tripNodes").size());
 
     Assert.assertEquals(
         destination1.getDestinationId(),
         resultJson.get("tripNodes").get(0).get("destination").get("destinationId").asInt());
 
-    Assert.assertTrue(
-        resultJson.get("tripNodes").get(1).get("destination").isNull());
+    Assert.assertTrue(resultJson.get("tripNodes").get(1).get("destination").isNull());
 
-    Assert.assertEquals(
-        user.getUserId(),
-        resultJson.get("users").get(0).get("userId").asInt());
+    Assert.assertEquals(user.getUserId(), resultJson.get("users").get(0).get("userId").asInt());
 
-    Assert.assertEquals(
-        0,
-        resultJson.get("tripNodes").get(0).get("users").size());
+    Assert.assertEquals(0, resultJson.get("tripNodes").get(0).get("users").size());
   }
 
   @Test
@@ -227,10 +219,7 @@ public class TripNodeTest {
 
     Result result =
         fakeClient.makeRequestWithToken(
-            "POST",
-            newTripJson,
-            "/api/users/" + user.getUserId() + "/trips",
-            user.getToken());
+            "POST", newTripJson, "/api/users/" + user.getUserId() + "/trips", user.getToken());
     Assert.assertEquals(201, result.status());
 
     JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
