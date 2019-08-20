@@ -26,7 +26,7 @@ public class Destination extends Model {
     private DestinationType destinationType;
 
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
-    private List<TripDestination> tripDestinations;
+    private List<TripDestinationLeaf> tripDestinations;
 
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
     private List<DestinationPhoto> destinationPhotos;
@@ -128,6 +128,13 @@ public class Destination extends Model {
         this.destinationOwner = destinationOwner;
         this.travellerTypes = travellerTypes;
         this.isPublic = isPublic;
+    }
+
+    /**
+     * Constuctor for destination ID
+     */
+    public Destination(int destinationId) {
+        this.destinationId = destinationId;
     }
 
     public boolean isDeleted() {

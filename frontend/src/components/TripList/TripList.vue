@@ -6,20 +6,20 @@
         No Trips Available
       </h3>
       <TripItem
-              @handleDelete="handleDelete"
-              @refreshList="refreshList"
-              class="trip-card"
-              v-else v-for="trip in trips"
-              :key="trip.tripId"
-              :trip="trip"
-              :viewOnly="viewOnly"
+        @handleDelete="handleDelete"
+        @refreshList="refreshList"
+        class="trip-card"
+        v-else v-for="trip in trips"
+        :key="trip.tripId"
+        :trip="trip"
+        :viewOnly="viewOnly"
       />
     </div>
 
     <div v-else id="loader">
       <v-progress-circular
-              indeterminate
-              color="secondary"
+        indeterminate
+        color="secondary"
       />
     </div>
   </div>

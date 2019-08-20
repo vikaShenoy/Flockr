@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import models.Trip;
+import models.TripComposite;
 // import models.TripComposite;
+import models.TripComposite;
 import models.User;
 import modules.websocket.frames.ConnectedFrame;
 import modules.websocket.frames.PingMapFrame;
@@ -19,9 +20,9 @@ public class PingMapNotifier {
   private ConnectedUsers connectedUsers;
   private Map<User, ActorRef> connectedUserMap;
   private PingMapFrame pingMapFrame;
-  private Trip tripNode;
+  private TripComposite tripNode;
 
-  public PingMapNotifier(PingMapFrame pingMapFrame, Trip tripNode) {
+  public PingMapNotifier(PingMapFrame pingMapFrame, TripComposite tripNode) {
     this.connectedUsers = ConnectedUsers.getInstance();
     this.connectedUserMap = this.connectedUsers.getConnectedUsers();
     this.pingMapFrame = pingMapFrame;

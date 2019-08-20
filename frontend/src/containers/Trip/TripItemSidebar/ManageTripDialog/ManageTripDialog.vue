@@ -157,7 +157,8 @@ export default {
     async saveUsersInTrip() {
       const users = [...this.selectedUsers, UserStore.data]
       this.isLoading = true;
-      await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, users);
+      this.trip.users = users;
+      await editTrip(this.trip);
       this.isLoading = false;
       this.isShowingDialog = false;
       this.$emit("newUsers", users);

@@ -59,7 +59,7 @@ public class WebSocket extends AbstractActor {
     return runAsync(
         () ->
             tripRepository
-                .getTripsByIds(user.getUserId())
+                .getTripsByUserId(user.getUserId())
                 .thenApplyAsync(
                     trips -> {
                       connectionStatusNotifier.notifyConnectedUser(user, trips);
@@ -74,7 +74,7 @@ public class WebSocket extends AbstractActor {
   @Override
   public void postStop() {
     tripRepository
-        .getTripsByIds(user.getUserId())
+        .getTripsByUserId(user.getUserId())
         .thenApplyAsync(
             trips -> {
               System.out.println("I have start notified disconnected users");

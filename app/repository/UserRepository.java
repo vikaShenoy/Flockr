@@ -270,6 +270,10 @@ public class UserRepository {
         }, executionContext);
     }
 
+    public List<User> getAllUsers() {
+        return User.find.all();
+    }
+
 
 
 }

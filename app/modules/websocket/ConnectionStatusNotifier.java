@@ -6,7 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import models.Trip;
+import models.TripComposite;
+import models.TripComposite;
 import models.User;
 import modules.websocket.frames.ConnectedFrame;
 import modules.websocket.frames.DisconnectedFrame;
@@ -32,7 +33,7 @@ public class ConnectionStatusNotifier {
    * @param user The user that is connected
    * @param trips The trips that the user is apart of
    */
-  public void notifyConnectedUser(User user, List<Trip> trips) {
+  public void notifyConnectedUser(User user, List<TripComposite> trips) {
     notifyConnectionStatus(user, trips, ConnectionStatus.CONNECTED);
   }
 
@@ -42,10 +43,10 @@ public class ConnectionStatusNotifier {
    * @param user The user that connected or disconnected
    * @param trips The trip that the user is apart of
    */
-  public void notifyConnectionStatus(User user, List<Trip> trips, ConnectionStatus connectionStatus) {
+  public void notifyConnectionStatus(User user, List<TripComposite> trips, ConnectionStatus connectionStatus) {
    Set<User> usersToNotify = new HashSet<>();
 
-    for (Trip trip : trips) {
+    for (TripComposite trip : trips) {
       for (User currentUser: trip.getUsers()) {
         if (!user.equals(currentUser)) {
           usersToNotify.add(currentUser);
@@ -76,7 +77,7 @@ public class ConnectionStatusNotifier {
    * @param user The user that disconnected
    * @param trips The trips that the user is apart of
    */
-  public void notifyDisconnectedUser(User user, List<Trip> trips) {
+  public void notifyDisconnectedUser(User user, List<TripComposite> trips) {
     notifyConnectionStatus(user, trips, ConnectionStatus.DISCONNECTED);
   }
 }

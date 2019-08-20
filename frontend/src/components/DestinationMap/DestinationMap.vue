@@ -128,6 +128,7 @@
   export default {
     data() {
       return {
+        colors: ['#eb4d4b', '#7ed6df', '#f9ca24'],
         markerOptions: {
           url: pingIcon,
           size: {width: 40, height: 30},
@@ -339,15 +340,21 @@
     margin-top: -20px;
   }
 
+  .map-key {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+  }
+
   #overlay {
-    top: 0px;
+    top: 64px;
     background-color: rgba(0, 0, 0, 0.4);
     pointer-events: none;
     position: absolute;
     width: 100%;
     height: 30vh;
   }
-
 </style>
 
 

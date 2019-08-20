@@ -66,7 +66,6 @@
         try {
           await command.execute();
           this.undoStack.push(command);
-          console.log("I made it here");
           this.showSuccessSnackbar("Successfully Re-did action");
         } catch (e) {
           this.showErrorSnackbar("Could not undo action");
@@ -98,6 +97,14 @@
           color: "error",
           timeout: 5000
         });
+      },
+      /**
+       * Clear the stack. Will need to be done when routing
+       * on the same page
+       */
+      clearStack() {
+        this.undoStack = [];
+        this.redoStack = [];
       }
     }
   }

@@ -1,16 +1,17 @@
 package modules.websocket.frames;
 
 
-import models.Trip;
+import models.TripComposite;
+import models.TripComposite;
 
 /**
  * Web socket frame for when a trip is updated
  */
 public class TripUpdatedFrame implements Frame {
 
-    private Trip trip;
+    private TripComposite trip;
 
-    public TripUpdatedFrame(Trip trip) {
+    public TripUpdatedFrame(TripComposite trip) {
         this.trip = trip;
     }
 
@@ -19,7 +20,7 @@ public class TripUpdatedFrame implements Frame {
         return "tripUpdated";
     }
 
-    public Trip getTrip() {
+    public TripComposite getTrip() {
         return trip;
     }
 }
