@@ -33,6 +33,14 @@
         <v-icon>add</v-icon>
       </v-btn>
 
+      <v-btn
+        depressed
+        color="secondary"
+        id="add-trip-btn"
+        @click="addTrip"
+      >
+        Create
+      </v-btn>
 
       <v-btn
               depressed
@@ -42,14 +50,7 @@
       >
         Cancel
       </v-btn>
-      <v-btn
-              depressed
-              color="secondary"
-              id="add-trip-btn"
-              @click="addTrip"
-      >
-        Create
-      </v-btn>
+
     </v-form>
   </v-card>
 </template>
@@ -172,9 +173,11 @@
 <style lang="scss" scoped>
   #add-trip {
     margin-top: 30px;
+    height: 480px;
 
     h2 {
       text-align: center;
+      padding-top: 20px;
     }
   }
 
@@ -182,6 +185,10 @@
     margin-top: 10px !important;
     display: block;
     margin: 0 auto;
+  }
+
+  #cancel-trip-creation-btn {
+    float: right;
   }
 
   #add-trip-btn {
