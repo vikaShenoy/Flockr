@@ -101,6 +101,20 @@ export function contiguousReorderedDestinations(reorderedCopiedNodes) {
   return contiguousDestinationFound;
 }
 
+function tripNodesLessThan2Nodes(tripNode) {
+  return tripNode.tripNodes && tripNode.tripNodes.length < 2;
+}
+
+export function tripNodesLessThan2(reorderedCopiedNodes) {
+  const { reorderedSourceTripNode, reorderedTargetTripNode, stayedInSourceTripNode } = reorderedCopiedNodes;
+  if (stayedInSourceTripNode) {
+    return tripNodesLessThan2Nodes(reorderedSourceTripNode);
+  }
+
+
+  return tripNodesLessThan2Nodes(reorderedSourceTripNode) || tripNodesLessThan2Nodes(reorderedTargetTripNode);
+}
+
 /**
  * Determine whether the trip node has contiguous destinations
  * @param {Object} tripNode the trip node

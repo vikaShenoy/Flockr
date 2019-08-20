@@ -45,6 +45,7 @@
     transformTripNode,
     getTripNodeParentById,
     tripNodeHasContiguousDestinations,
+    tripNodesLessThan2,
   } from "./TripService";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command";
@@ -288,10 +289,18 @@
           const reorderedCopiedNodes = this.getReorderedCopiedNodes(indexes);
           if (contiguousReorderedDestinations(reorderedCopiedNodes)) {
             this.showError("Cannot have contiguous destinations");
-            const tripNodes = [...this.trip.tripNodes];
-            this.trip.tripNodes = [];
+            const trip = this.trip;
+            this.trip = null;
             setTimeout(() => {
-              this.trip.tripNodes = tripNodes;
+              this.trip = trip;
+            }, 0);
+
+          } else if (tripNodesLessThan2(reorderedCopiedNodes)) {
+            this.showError("Cannot have less than 2 trip nodes");
+            const trip = this.trip;
+            this.trip = null;
+            setTimeout(() => {
+              this.trip = trip;
             }, 0);
           } else {
             this.reorderTripsInServer(reorderedCopiedNodes);
@@ -299,6 +308,7 @@
             this.showSuccessMessage("Successfully changed order");
           }
         } catch (e) {
+          console.log(e);
           this.showError("Could not change order");
         }
       },
@@ -335,7 +345,7 @@
       async deleteTripNode(tripNode) {
 				const parentTripNode = getTripNodeParentById(tripNode.tripNodeId, this.trip);
 				if (parentTripNode.tripNodes.length === 2) {
-          this.showError("You cannot have less then 2 destinations");
+          this.showError("You cannot have less then 2 trip nodes");
           return;
         }
         const filteredTripNodes = parentTripNode.tripNodes.filter(currentTripNode => {
