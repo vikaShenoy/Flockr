@@ -8,7 +8,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 
 @Entity
 @Inheritance
@@ -27,12 +34,12 @@ public abstract class TripNode extends Model {
     private List<TripNode> parents;
 
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
+  @JsonIgnore
     @SoftDelete
     @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean deleted;
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
+  @JsonIgnore
     private Timestamp deletedExpiry;
 
     /**

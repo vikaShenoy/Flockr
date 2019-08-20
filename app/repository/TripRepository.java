@@ -2,10 +2,16 @@ package repository;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+import io.ebean.Ebean;
+import io.ebean.SqlUpdate;
+import io.ebean.Transaction;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import models.TripComposite;
@@ -30,9 +36,60 @@ public class TripRepository {
    * @return The saved trip
    */
   public CompletionStage<TripComposite> saveTrip(TripComposite trip) {
+    return persistTripNode(trip);
+  }
+
+  /**
+   * Deletes the leaf nodes in a list of trip nodes from the database permanently.
+   *
+   * @param tripNodes the list of trip nodes.
+   * @return Void
+   */
+  public CompletionStage<Void> deleteListOfTrips(List<TripNode> tripNodes) {
+    return supplyAsync(
+        () -> {
+          for (TripNode tripNode : tripNodes) {
+            if (tripNode.getNodeType().equals("TripDestinationLeaf")) {
+              tripNode.setDeletedExpiry(Timestamp.from(Instant.now()));
+              tripNode.delete();
+            }
+          }
+          return null;
+        });
+  }
+
+  /**
+   * Saves a trip in the database including the order of it's trip nodes.
+   *
+   * @param trip the trip to persist.
+   * @return the trip once it is persisted.
+   */
+  private CompletionStage<TripComposite> persistTripNode(TripComposite trip) {
     return supplyAsync(
         () -> {
           trip.save();
+
+          // Persist trip node order.
+          List<TripNode> tripNodes = trip.getTripNodes();
+
+          try (Transaction txn = Ebean.beginTransaction()) {
+            String sqlUpdateQuery =
+                "UPDATE trip_node_parent SET child_index = ? "
+                    + "WHERE trip_node_child_id = ? "
+                    + "AND trip_node_parent_id = ?";
+            SqlUpdate update = Ebean.createSqlUpdate(sqlUpdateQuery);
+
+            for (int i = 0; i < tripNodes.size(); i++) {
+              update.setNextParameter(i);
+              update.setNextParameter(tripNodes.get(i).getTripNodeId());
+              update.setNextParameter(trip.getTripNodeId());
+              update.addBatch();
+            }
+            update.executeBatch();
+
+            txn.commit();
+          }
+
           return trip;
         },
         executionContext);
@@ -44,17 +101,8 @@ public class TripRepository {
    * @param trip The trip to update changes.
    * @return The trip that was updated.
    */
-  public CompletionStage<TripComposite> update(TripComposite trip, List<TripNode> tripNodes) {
-    return supplyAsync(
-        () -> {
-          trip.save();
-          System.out.println(trip.getTripNodes());
-            System.out.println(tripNodes);
-          trip.setTripNodes(tripNodes);
-          trip.save();
-          return trip;
-        },
-        executionContext);
+  public CompletionStage<TripComposite> update(TripComposite trip) {
+    return persistTripNode(trip);
   }
 
   /**
@@ -105,9 +153,64 @@ public class TripRepository {
                   .eq("tripNodeId", tripId)
                   .in("users.userId", userId)
                   .findOneOrEmpty();
+          if (trip.isPresent()) {
+            List<TripNode> tripNodes = recursiveGetTripNodes(tripId);
+            trip.get().setTripNodes(tripNodes);
+          }
           return trip;
         },
         executionContext);
+  }
+
+  /**
+   * Recursive function to get all trip nodes in order, this also gets all composite sub trips trip
+   * nodes recursively.
+   *
+   * @param tripId the id of the trip to get trip nodes from.
+   * @return the list of trip nodes in order.
+   */
+  private List<TripNode> recursiveGetTripNodes(int tripId) {
+    List<TripNode> tripNodes =
+        TripNode.find
+            .query()
+            .fetch("parents")
+            .where()
+            .eq("trip_node_parent_id", tripId)
+            .ne("tripNodeId", tripId)
+            .orderBy("child_index")
+            .findList();
+    for (TripNode tripNode : tripNodes) {
+      if (tripNode.getNodeType().equals("TripComposite")) {
+        tripNode.setTripNodes(recursiveGetTripNodes(tripNode.getTripNodeId()));
+      }
+    }
+    return tripNodes;
+  }
+
+  /**
+   * Recursive function to get all trip nodes in order, this also gets all composite sub trips trip
+   * nodes recursively.
+   *
+   * @param tripId the id of the trip to get trip nodes from.
+   * @return the list of trip nodes in order.
+   */
+  private List<TripNode> recursiveGetTripNodesWithSoftDelete(int tripId) {
+    List<TripNode> tripNodes =
+        TripNode.find
+            .query()
+            .setIncludeSoftDeletes()
+            .fetch("parents")
+            .where()
+            .eq("trip_node_parent_id", tripId)
+            .ne("tripNodeId", tripId)
+            .orderBy("child_index")
+            .findList();
+    for (TripNode tripNode : tripNodes) {
+      if (tripNode.getNodeType().equals("TripComposite")) {
+        tripNode.setTripNodes(recursiveGetTripNodesWithSoftDelete(tripNode.getTripNodeId()));
+      }
+    }
+    return tripNodes;
   }
 
   /**
@@ -129,6 +232,10 @@ public class TripRepository {
                   .eq("tripNodeId", tripId)
                   .in("users.userId", userId)
                   .findOneOrEmpty();
+          if (trip.isPresent()) {
+            List<TripNode> tripNodes = recursiveGetTripNodesWithSoftDelete(tripId);
+            trip.get().setTripNodes(tripNodes);
+          }
           return trip;
         },
         executionContext);
@@ -143,15 +250,19 @@ public class TripRepository {
   public CompletionStage<List<TripComposite>> getTripsByUserId(int travellerId) {
     return supplyAsync(
         () -> {
-          List<TripComposite> trip =
+          List<TripComposite> trips =
               TripComposite.find
                   .query()
                   .fetch("users")
                   .where()
                   .in("users.userId", travellerId)
                   .findList();
-
-          return trip;
+          for (TripComposite tripNode : trips) {
+            if (tripNode.getNodeType().equals("TripComposite")) {
+              tripNode.setTripNodes(recursiveGetTripNodes(tripNode.getTripNodeId()));
+            }
+          }
+          return trips;
         },
         executionContext);
   }
@@ -165,13 +276,15 @@ public class TripRepository {
   public CompletionStage<List<TripComposite>> getHighLevelTripsByUserId(int userId) {
     return supplyAsync(
         () -> {
-          List<TripComposite> trip =
-              TripComposite.find
-                  .query()
-                  .fetch("tripNodes")
-                  .findList();
+          List<TripComposite> trips = TripComposite.find.query().fetch("tripNodes").findList();
 
-          return trip;
+          for (TripComposite tripNode : trips) {
+            if (tripNode.getNodeType().equals("TripComposite")) {
+              tripNode.setTripNodes(recursiveGetTripNodes(tripNode.getTripNodeId()));
+            }
+          }
+
+          return trips;
         },
         executionContext);
   }
