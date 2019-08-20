@@ -18,7 +18,7 @@
 
 								<v-select
 												label="Select existing trip"
-												:items="existingTrips"
+												:items="filteredSubTrips"
 												item-text="name"
 												v-model="selectedExistingTrip"
 												:rules="fieldRules"
@@ -57,7 +57,7 @@
 
 <script>
 	import AddTrip from "../../../AddTrip/AddTrip";
-	import { getTrips, editTrip } from "../../TripService";
+	import { getTrips, editTrip, tripNodeContains } from "../../TripService";
 	import { sortTimeline } from "../Timeline/TimelineService";
   export default {
     components: {AddTrip},
@@ -93,14 +93,19 @@
 			validate() {
         return this.$refs.addTripForm.validate();
       }
-
 		},
 		async mounted() {
       this.existingTrips = await getTrips();
-			// Filter the list of available subtrips to disallow the parent becoming its own subtrips or having duplicates.
-			let parentTripNodes = this.parentTrip.tripNodes.map(tripNode => tripNode.tripNodeId);
-      this.existingTrips = this.existingTrips.filter(tripNode =>
-					tripNode.tripNodeId !== this.parentTrip.tripNodeId && !parentTripNodes.includes(tripNode.tripNodeId));
+		},
+		computed: {
+			filteredSubTrips() {
+        if (this.existingTrips.length) {
+          return this.existingTrips.filter(
+              tripNode => !tripNodeContains(
+                  this.parentTrip.tripNodeId, tripNode) && tripNode.tripNodeId !== this.parentTrip.tripNodeId);
+				}
+        return this.existingTrips;
+			}
 		},
 		watch: {
       // Synchronize both isShowing state and props

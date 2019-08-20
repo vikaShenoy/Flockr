@@ -155,7 +155,6 @@
       }
     },
     mounted() {
-      console.log(this.destinations);
     },
     methods: {
       /**

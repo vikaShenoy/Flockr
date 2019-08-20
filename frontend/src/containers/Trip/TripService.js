@@ -246,3 +246,21 @@ export function getTripNodeParentById(tripNodeId, currentTripNode, parentTripNod
   }
   return tripNodeToFind;
 }
+
+/**
+ * Check whether a trip node contains another trip node. Uses recursion
+ * to go between all levels.
+ * @param tripNodeId id of the node to find.
+ * @param tripNode checking whether this node contains the id.
+ * @returns {boolean} true if it contains it, false otherwise.
+ */
+export function tripNodeContains(tripNodeId, tripNode) {
+  if (tripNode.tripNodeId === tripNodeId) {
+    return true;
+  }
+  let contains = false;
+  for (const node of tripNode.tripNodes) {
+    contains = tripNodeContains(tripNodeId, node);
+  }
+  return contains;
+}
