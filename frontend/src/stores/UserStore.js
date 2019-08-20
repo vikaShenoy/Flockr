@@ -105,6 +105,9 @@ const UserStore = {
       localStorage.removeItem("authToken");
       localStorage.removeItem("ownUserId");
       UserStore.data.viewingAsAnotherUser = false;
+
+      // Close the websocket
+      UserStore.data.socket.close();
     },
     /**
      * Determines if the user's profile has been completed

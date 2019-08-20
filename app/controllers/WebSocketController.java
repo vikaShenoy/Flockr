@@ -53,6 +53,7 @@ public class WebSocketController extends Controller {
              return authRepository.getByToken(authToken)
                      .thenApplyAsync(user -> {
                          if (!user.isPresent()) {
+                             System.out.println("I have rejected the socket");
                              return F.Either.<Result, Flow<String, String, ?>>Left(unauthorized());
                          }
 

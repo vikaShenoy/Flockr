@@ -46,7 +46,7 @@ export default {
       if (!user.profilePhoto) {
         return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
       }
-      return endpoint(`/users/photos/${user.profilePhoto}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+      return endpoint(`/users/photos/${user.profilePhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
     },
     userIsConnected(userId) {
       const userIds = this.connectedUsers.map(user => user.userId);

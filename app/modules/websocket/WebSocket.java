@@ -30,7 +30,6 @@ public class WebSocket extends AbstractActor {
     this.user = user;
     this.tripRepository = tripRepository;
     connectedUsers.addConnectedUser(user, out);
-
     // Notify everyone that you are in a trip in that you are now online
     notifyTripConnected();
   }

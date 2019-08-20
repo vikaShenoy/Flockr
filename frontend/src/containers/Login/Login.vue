@@ -78,7 +78,8 @@
           localStorage.setItem("authToken", user.token);
           localStorage.setItem("userId", user.userId);
           localStorage.setItem("ownUserId", user.userId);
-          const socket = new WebSocket(`ws://localhost:9000?Authorization=${localStorage.getItem("authToken")}`);
+          const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+          UserStore.data.socket = socket;
           this.$router.push(`/profile/${user.userId}`);
         } catch (e) {
           this.hasInvalidCredentials = true;
