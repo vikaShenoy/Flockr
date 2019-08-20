@@ -360,6 +360,9 @@ import { transformTripNode } from '../../TripService';
       },
       isShowing(value) {
         this.isShowingDialog = value;
+        if (this.isShowing) {
+          this.tripDestination = this.editedTripDestination;
+        }
       },
       editedTripDestination(tripDestination) {
         this.tripDestination = tripDestination;
