@@ -65,6 +65,13 @@ Simply right-click on test directory and click 'Run All Tests'
 sbt test
 ```
 
+### Examples of Admin in the Application
+```
+Email: luis@gmail.com
+Password: so-secure
+
+```
+
 ## Dependencies
 * H2 Database 1.4.197
 * MySql 5.1.24
