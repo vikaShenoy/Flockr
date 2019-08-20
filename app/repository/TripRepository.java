@@ -130,7 +130,14 @@ public class TripRepository {
         () -> {
           trip.setDeleted(false);
           trip.setDeletedExpiry(null);
-          trip.save();
+          String statement = "UPDATE trip_node "
+              + "SET deleted = ?, deleted_expiry = ? "
+              + "WHERE trip_node_id = ?";
+          SqlUpdate sqlUpdate = Ebean.createSqlUpdate(statement);
+          sqlUpdate.setNextParameter(false);
+          sqlUpdate.setNextParameter(null);
+          sqlUpdate.setNextParameter(trip.getTripNodeId());
+          sqlUpdate.execute();
           return trip;
         });
   }

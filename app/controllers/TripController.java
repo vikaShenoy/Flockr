@@ -253,6 +253,7 @@ public class TripController extends Controller {
                 message.put("message", e.getMessage());
                 return notFound(message);
               } catch (Throwable e) {
+                e.printStackTrace();
                 log.error("An unexpected error has occurred", e);
                 return internalServerError();
               }
