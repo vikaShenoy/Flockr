@@ -93,7 +93,7 @@
             requiresAdminRole: false
           },
           {
-            title: "Sign up",
+            title: "Sign Up",
             icon: "person_add",
             url: "/signup",
             loggedIn: false,
@@ -101,7 +101,7 @@
             requiresAdminRole: false
           },
           {
-            title: "Log in",
+            title: "Login",
             icon: "exit_to_app",
             url: "/login",
             loggedIn: false,
@@ -117,7 +117,7 @@
             requiresAdminRole: false
           },
           {
-            title: "Log out",
+            title: "Logout",
             url: "/logout",
             icon: "power_settings_new",
             loggedIn: true,

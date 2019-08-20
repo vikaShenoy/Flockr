@@ -92,6 +92,7 @@
         tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
         tripNameRules: [rules.required],
         selectedUsers: [],
+        users: null
       };
     },
     mounted() {
