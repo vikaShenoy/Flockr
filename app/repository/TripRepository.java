@@ -85,6 +85,8 @@ public class TripRepository {
      * @return the trip that matches given ids.
      */
     public CompletionStage<Optional<Trip>> getTripByIds(int tripId, int userId) {
+        System.out.println("trip id is: " + tripId);
+        System.out.println("userId is: " + userId);
         return supplyAsync(() -> {
             Optional<Trip> trip = Trip.find.query()
                     .fetch("users")

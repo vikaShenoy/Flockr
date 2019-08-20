@@ -327,10 +327,15 @@ public class TripController extends Controller {
                                 return tripRepository.update(trip);
                             })
                             .thenComposeAsync(trip -> {
-
                                 //return ok(Json.toJson(trip));
                                 return tripRepository.getTripByIds(tripId, userId);
                             }).thenApplyAsync(optionalUpdatedTrip -> {
+
+                                // If user removes themselves from trip, then a trip won't be present
+                                if (!optionalUpdatedTrip.isPresent()) {
+                                    return ok();
+                                }
+
                                 tripNotifier.notifyTripUpdate(userFromMiddleware, optionalUpdatedTrip.get());
                                 return ok(Json.toJson(optionalUpdatedTrip.get()));
                             });
