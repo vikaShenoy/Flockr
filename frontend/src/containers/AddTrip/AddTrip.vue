@@ -164,7 +164,6 @@
 
         }
         this.$emit("newTripAdded", subTrip);
-
       },
       /**
        * Formats a users full name by their first name and last name

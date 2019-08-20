@@ -171,12 +171,13 @@ export default {
               try {
                 const originalTripInfo = {
                   ...this.trip,
-                  name: this.trip.name
                 };
 
                 const editedTripInfo = {
-                  ...this.trip
+                  ...this.trip,
+                  name: this.editedTripName
                 };
+
                 await editTrip(editedTripInfo);
                 this.$emit(
                     "addEditTripCommand",
