@@ -2,32 +2,33 @@
   <div id="trip">
     <div id="map">
       <DestinationMap
-        :destinations="mapTripNodesToDestinations()"
-        :isTripMap="true"
+          :destinations="mapTripNodesToDestinations()"
+          :isTripMap="true"
       />
     </div>
 
     <div id="undo-redo-btns">
       <UndoRedo
-        ref="undoRedo"
-        color="white"
+          ref="undoRedo"
+          color="white"
       />
     </div>
 
     <TripItemSidebar
-      :trip="trip"
-      @tripNodeOrderChanged="tripNodeOrderChanged"
-      @toggleExpanded="toggleExpandedTrips"
-      @tripNodesUpdated="tripNodesUpdated"
-      @deleteTripNode="deleteTripNode"
-      @newUsers="newUsers"
-      @newTripAdded="newTripAdded"
-      @getNewTrip="getTrip()"
+        :trip="trip"
+        @tripNodeOrderChanged="tripNodeOrderChanged"
+        @toggleExpanded="toggleExpandedTrips"
+        @tripNodesUpdated="tripNodesUpdated"
+        @deleteTripNode="deleteTripNode"
+        @newUsers="newUsers"
+        @newTripAdded="newTripAdded"
+        @getNewTrip="getTrip"
+        @addEditTripCommand="tripNameChanged"
     />
 
     <Snackbar
-      :snackbarModel="snackbarModel"
-      @dismissSnackbar="snackbarModel.show = false"
+        :snackbarModel="snackbarModel"
+        @dismissSnackbar="snackbarModel.show = false"
     />
   </div>
 </template>
@@ -41,7 +42,7 @@
     editTrip,
     getTrip,
     mapTripNodesToDestinations,
-		getTripNodeById,
+    getTripNodeById,
     transformTripNode,
     getTripNodeParentById,
     tripNodeHasContiguousDestinations,
@@ -50,7 +51,7 @@
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command";
 
-	import { restoreTrip, deleteTripFromList } from '../Trips/OldTripsService';
+  import {restoreTrip, deleteTripFromList} from '../Trips/OldTripsService';
 
   export default {
     components: {
@@ -73,38 +74,46 @@
     },
     mounted() {
       this.getTrip();
-   },
-   methods: {
+    },
+    methods: {
+      /**
+       * Called when the trip name is edited.
+       * Sets an edit command for undo redo and updates the trip name.
+       */
+      tripNameChanged(oldTrip, newTrip, newName) {
+        this.addEditTripCommand(oldTrip, newTrip);
+        this.trip.name = newName;
+      },
       newTripAdded(subTrip) {
         const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
-        this.trip.tripNodes.push(subTrip)
-        editTrip(this.trip); 
-         
+        this.trip.tripNodes.push(subTrip);
+        editTrip(this.trip);
+
         const undoCommand = async (subTrip, oldParentTrip) => {
           await deleteTripFromList(subTrip.tripNodeId);
           await editTrip(oldParentTrip);
           this.getTrip();
-				};
+        };
 
-				const redoCommand = async (subTrip, newParentTrip) => {
+        const redoCommand = async (subTrip, newParentTrip) => {
           await restoreTrip(subTrip.tripNodeId);
           await editTrip(newParentTrip);
           this.getTrip();
-				};
+        };
 
-				const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldTrip),
-						redoCommand.bind(null, subTrip, this.trip));
-				this.$refs.undoRedo.addUndo(addTripCommand);
-			},
+        const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldTrip),
+            redoCommand.bind(null, subTrip, this.trip));
+        this.$refs.undoRedo.addUndo(addTripCommand);
+      },
 
       /**
-			 * Open and close a trip composite to show its tripNodes.
-			 * @tripNodeId tripNode to be toggled.
-			 * */
+       * Open and close a trip composite to show its tripNodes.
+       * @tripNodeId tripNode to be toggled.
+       * */
       toggleExpandedTrips(tripNodeId) {
         const tripNode = getTripNodeById(tripNodeId, this.trip);
         tripNode.isShowing = this.$set(tripNode, "isShowing", !tripNode.isShowing);
-			},
+      },
       /**
        * Shows an snackbar error
        * @param {string} errorMessage errorMessage to show to user
@@ -155,7 +164,8 @@
        */
       async newUsers(users) {
         const undoCommand = async (oldUsers) => {
-          await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, oldUsers);
+          await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations,
+              oldUsers);
           this.getTrip();
         };
 
@@ -164,7 +174,8 @@
           this.getTrip();
         };
 
-        const command = new Command(undoCommand.bind(null, [...this.trip.users]), redoCommand.bind(null, users));
+        const command = new Command(undoCommand.bind(null, [...this.trip.users]),
+            redoCommand.bind(null, users));
         this.$refs.undoRedo.addUndo(command);
 
         this.getTrip();
@@ -177,11 +188,14 @@
        * in the same parent node
        */
       getReorderedCopiedNodes(indices) {
-        const { oldParentTripNodeId, newParentTripNodeId, oldIndex, newIndex } = indices;
+        const {oldParentTripNodeId, newParentTripNodeId, oldIndex, newIndex} = indices;
         const oldParentTripNode = {...getTripNodeById(oldParentTripNodeId, this.trip)};
         // Copy children nodes as well
         oldParentTripNode.tripNodes = [...oldParentTripNode.tripNodes];
-        const sourceTripNodeCopy = {...oldParentTripNode, tripNodes: [...oldParentTripNode.tripNodes]};
+        const sourceTripNodeCopy = {
+          ...oldParentTripNode,
+          tripNodes: [...oldParentTripNode.tripNodes]
+        };
         let targetTripNodeCopy = null;
         let newParentTripNode = null;
         const stayedInSourceTripNode = oldParentTripNodeId === newParentTripNodeId;
@@ -209,7 +223,7 @@
           stayedInSourceTripNode: stayedInSourceTripNode,
           reorderedTargetTripNode: newParentTripNode,
           sourceTripNodeCopy,
-          targetTripNodeCopy  
+          targetTripNodeCopy
         }
 
       },
@@ -218,7 +232,7 @@
        * @param {Object} indices Specifies the indices to swap with
        */
       reorderNodes(indices) {
-        const { oldParentTripNodeId, newParentTripNodeId, oldIndex, newIndex } = indices;
+        const {oldParentTripNodeId, newParentTripNodeId, oldIndex, newIndex} = indices;
         const oldParentTripNode = getTripNodeById(oldParentTripNodeId, this.trip);
         let newParentTripNode = null;
         const stayedInSourceTripNode = oldParentTripNodeId === newParentTripNodeId;
@@ -236,7 +250,7 @@
           const temp = {...oldParentTripNode.tripNodes[oldIndex]};
           oldParentTripNode.tripNodes.splice(oldIndex, 1);
           newParentTripNode.tripNodes.splice(newIndex, 0, temp);
-      }
+        }
       },
       /**
        * Sends edited trips to backend
@@ -244,42 +258,44 @@
        * its original parent node
        */
       async reorderTripsInServer(reorderedCopiedNodes) {
-          const { reorderedSourceTripNode, reorderedTargetTripNode, stayedInSourceTripNode, sourceTripNodeCopy, targetTripNodeCopy } = reorderedCopiedNodes;
-          if (stayedInSourceTripNode) {
-            // we only need to do one edit
+        const {reorderedSourceTripNode, reorderedTargetTripNode, stayedInSourceTripNode, sourceTripNodeCopy, targetTripNodeCopy} = reorderedCopiedNodes;
+        if (stayedInSourceTripNode) {
+          // we only need to do one edit
 
-            await editTrip(reorderedSourceTripNode);
-            // Drag and drop for one level of editing
-            this.addEditTripCommand(
+          await editTrip(reorderedSourceTripNode);
+          // Drag and drop for one level of editing
+          this.addEditTripCommand(
               sourceTripNodeCopy,
               reorderedSourceTripNode
-            );
-          } else {
-            // If parent trip nodes are different, we need to edit two trips
-            const editTripPromises = [
-              editTrip(reorderedSourceTripNode),
-              editTrip(reorderedTargetTripNode)
-            ];
+          );
+        } else {
+          // If parent trip nodes are different, we need to edit two trips
+          const editTripPromises = [
+            editTrip(reorderedSourceTripNode),
+            editTrip(reorderedTargetTripNode)
+          ];
 
-            await Promise.all(editTripPromises);
+          await Promise.all(editTripPromises);
 
-            // Edits both source and target trips to their old value
-            const undoCommand = async (oldSourceTripNode, oldTargetTripNode) => {
-              const tripsToEdit = [editTrip(oldSourceTripNode), editTrip(oldTargetTripNode)];
-              await Promise.all(tripsToEdit);
-              this.getTrip();
-            };
-            
-            // Edits both the source and target trips to their new value
-            const redoCommand = async (newSourceTripNode, newTargetSourceNode) => {
-              const tripsToEdit = [editTrip(newSourceTripNode), editTrip(newSourceTripNode)];
-              await Promise.all(tripsToEdit);
-              this.getTrip();
-            };
+          // Edits both source and target trips to their old value
+          const undoCommand = async (oldSourceTripNode, oldTargetTripNode) => {
+            const tripsToEdit = [editTrip(oldSourceTripNode), editTrip(oldTargetTripNode)];
+            await Promise.all(tripsToEdit);
+            this.getTrip();
+          };
 
-            const tripReorderCommand = new Command(undoCommand.bind(null, sourceTripNodeCopy, targetTripNodeCopy), redoCommand.bind(null, reorderedSourceTripNode, reorderedTargetTripNode));
-            this.$refs.undoRedo.addUndo(tripReorderCommand);
-          }
+          // Edits both the source and target trips to their new value
+          const redoCommand = async (newSourceTripNode, newTargetSourceNode) => {
+            const tripsToEdit = [editTrip(newSourceTripNode), editTrip(newSourceTripNode)];
+            await Promise.all(tripsToEdit);
+            this.getTrip();
+          };
+
+          const tripReorderCommand = new Command(
+              undoCommand.bind(null, sourceTripNodeCopy, targetTripNodeCopy),
+              redoCommand.bind(null, reorderedSourceTripNode, reorderedTargetTripNode));
+          this.$refs.undoRedo.addUndo(tripReorderCommand);
+        }
       },
       /**
        * Changes order of destination
@@ -314,6 +330,7 @@
       },
       /**
        * Adds an edit trip command to the undo stack
+       *
        * @param {Object} oldTrip The oldTrip to go back to when pressing undo
        * @param {Object} newTrip The new trip to redo to when pressing redo
        */
@@ -328,11 +345,12 @@
           this.getTrip();
         };
 
-        const updateTripCommand = new Command(undoCommand.bind(null, oldTrip), redoCommand.bind(null, newTrip));
+        const updateTripCommand = new Command(undoCommand.bind(null, oldTrip),
+            redoCommand.bind(null, newTrip));
         this.$refs.undoRedo.addUndo(updateTripCommand);
       },
       tripNodesUpdated(tripNodes) {
-        const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]}
+        const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
         this.trip.tripNodes = tripNodes;
         this.addEditTripCommand(oldTrip, this.trip);
       },
@@ -343,8 +361,8 @@
        * @returns {Promise<void>}
        */
       async deleteTripNode(tripNode) {
-				const parentTripNode = getTripNodeParentById(tripNode.tripNodeId, this.trip);
-				if (parentTripNode.tripNodes.length === 2) {
+        const parentTripNode = getTripNodeParentById(tripNode.tripNodeId, this.trip);
+        if (parentTripNode.tripNodes.length === 2) {
           this.showError("You cannot have less then 2 trip nodes");
           return;
         }
@@ -372,7 +390,7 @@
           };
 
           const deleteDestCommand = new Command(undoCommand.bind(null, oldParentTripNode),
-							redoCommand.bind(null, newParentTripNode));
+              redoCommand.bind(null, newParentTripNode));
           this.$refs.undoRedo.addUndo(deleteDestCommand);
 
           await editTrip(parentTripNode);
@@ -388,6 +406,7 @@
        * Watch for rerouting to the same page, if so, get new trip contents
        */
       $route() {
+        console.log(this.trip);
         this.trip = null;
         this.getTrip();
         this.$refs.undoRedo.clearStack();
@@ -397,22 +416,22 @@
 </script>
 
 <style lang="scss" scoped>
-#trip {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
+  #trip {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
 
-  #map {
-    flex-grow: 1;
+    #map {
+      flex-grow: 1;
+    }
   }
-}
 
-#undo-redo-btns {
-  position: absolute;
-  right: 23px;
-  margin-top: 10px;
-  z-index: 1000;
-}
+  #undo-redo-btns {
+    position: absolute;
+    right: 23px;
+    margin-top: 10px;
+    z-index: 1000;
+  }
 </style>
 
 

@@ -1,34 +1,48 @@
 <template>
   <v-card
-    id="trip-item-sidebar"
-    :elevation="20"
-    v-bind:style="{width: computeWidth}"
+      id="trip-item-sidebar"
+      :elevation="20"
+      v-bind:style="{width: computeWidth}"
   >
 
     <div
-      id="title"
-      v-if="trip"
+        id="title"
+        v-if="trip"
     >
       <v-btn
-        flat
-        color="secondary"
-        id="manage-trip-btn"
-        @click="isShowingManageTripDialog = true"
+          flat
+          color="secondary"
+          id="manage-trip-btn"
+          @click="isShowingManageTripDialog = true"
       >Manage
       </v-btn>
 
-      <h2>{{ trip.name }}</h2>
+      <v-spacer width="100"
+                align="center"
+                v-if="editNameMode">
+        <v-text-field
+            ref="nameField"
+            autofocus
+            v-model="editedTripName"
+            @blur="nameEdited"
+            @keyup.enter="nameEdited"
+            color="white"
+            class="trip-name-field"
+            :rules="rule"
+        ></v-text-field>
+      </v-spacer>
+      <h2 v-else @click="enableEditName">{{ trip.name }}</h2>
     </div>
 
     <div id="trip-destinations-list">
       <div
-        v-if="!trip"
-        id="spinner"
+          v-if="!trip"
+          id="spinner"
       >
         <v-progress-circular
-          indeterminate
-          color="secondary"
-          style="align-self: center;"
+            indeterminate
+            color="secondary"
+            style="align-self: center;"
         >
         </v-progress-circular>
 
@@ -36,63 +50,63 @@
 
       <div v-else>
         <Timeline
-          :trip="trip"
-					@toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
-          @tripNodeOrderChanged="tripNodeOrderChanged"
-          @showEditTripDestination="showEditTripDestination"
-          @deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
+            :trip="trip"
+            @toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
+            @tripNodeOrderChanged="tripNodeOrderChanged"
+            @showEditTripDestination="showEditTripDestination"
+            @deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
         />
-				<v-spacer align="center">
-					<v-btn
-									depressed
-									color="secondary"
-									id="add-trip-destination-btn"
-									@click="isShowingAddDestinationDialog = true"
-					>
-						Add Destination
-					</v-btn>
+        <v-spacer align="center">
+          <v-btn
+              depressed
+              color="secondary"
+              id="add-trip-destination-btn"
+              @click="isShowingAddDestinationDialog = true"
+          >
+            Add Destination
+          </v-btn>
 
-					<v-btn
-									depressed
-									color="secondary"
-									id="add-subtrip-btn"
-									@click="isShowingAddSubtripDialog = true"
-					>
-						Add Subtrip
-					</v-btn>
+          <v-btn
+              depressed
+              color="secondary"
+              id="add-subtrip-btn"
+              @click="isShowingAddSubtripDialog = true"
+          >
+            Add Subtrip
+          </v-btn>
 
 
-				</v-spacer>
+        </v-spacer>
 
-				<ModifySubtripDialog
-					:editMode="false"
-					:isShowing.sync="isShowingAddSubtripDialog"
-					@newTripAdded="(subTrip, oldParentTrip, newParentTrip) =>
+        <ModifySubtripDialog
+            :editMode="false"
+            :isShowing.sync="isShowingAddSubtripDialog"
+            @newTripAdded="(subTrip, oldParentTrip, newParentTrip) =>
 					$emit('newTripAdded', subTrip, oldParentTrip, newParentTrip)"
-					@tripNodeOrderChanged="indexes => $emit('tripNodeOrderChanged', indexes)"
-					:parentTrip="trip"
-				/>
-
-        <ModifyTripDestinationDialog
-          :isShowing.sync="isShowingAddDestinationDialog"
-          :editMode="false"
-          :trip="trip"
-          @updatedTripNodes="tripNodesUpdated"
+            @tripNodeOrderChanged="indexes => $emit('tripNodeOrderChanged', indexes)"
+            :parentTrip="trip"
         />
 
         <ModifyTripDestinationDialog
-          :isShowing.sync="isShowingUpdateDestinationDialog"
-          :editMode="true"
-          :trip="trip"
-          :editedTripDestination="editedTripDestination"
-          @updatedTripNodes="tripNodesUpdated"
+            :isShowing.sync="isShowingAddDestinationDialog"
+            :editMode="false"
+            :trip="trip"
+            @updatedTripNodes="tripNodesUpdated"
+        />
+
+        <ModifyTripDestinationDialog
+            :isShowing.sync="isShowingUpdateDestinationDialog"
+            :editMode="true"
+            :trip="trip"
+            :editedTripDestination="editedTripDestination"
+            @updatedTripNodes="tripNodesUpdated"
         />
 
         <ManageTripDialog
-          :isShowing.sync="isShowingManageTripDialog"
-          :trip="trip"
-          v-if="trip"
-          @newUsers="newUsers"
+            :isShowing.sync="isShowingManageTripDialog"
+            :trip="trip"
+            v-if="trip"
+            @newUsers="newUsers"
         />
       </div>
     </div>
@@ -101,144 +115,215 @@
 </template>
 
 <script>
-import Timeline from "./Timeline/Timeline.vue";
-import ModifyTripDestinationDialog from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
-import ManageTripDialog from "./ManageTripDialog/ManageTripDialog";
-import ModifySubtripDialog from "./ModifySubtripDialog/ModifySubtripDialog";
+  import Timeline from "./Timeline/Timeline.vue";
+  import ModifyTripDestinationDialog
+    from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
+  import ManageTripDialog from "./ManageTripDialog/ManageTripDialog";
+  import ModifySubtripDialog from "./ModifySubtripDialog/ModifySubtripDialog";
+  import {rules} from "../../../utils/rules";
+  import {editTrip} from "../TripService";
 
-export default {
-  components: {
-    ModifySubtripDialog,
-    Timeline,
-    ModifyTripDestinationDialog,
-    ManageTripDialog
-  },
-  data() {
-    return {
-      isShowingAddDestinationDialog: false,
-      isShowingUpdateDestinationDialog: false,
-			isShowingAddSubtripDialog: false,
-      editedTripDestination: null,
-      isShowingManageTripDialog: false
-    };
-  },
-  props: {
-    trip: {
-      required: true
-    }
-  },
-  methods: {
-    /**
-     * Emitted when the order of destinations have changed
-     */
-    tripNodeOrderChanged(indexes) {
-      this.$emit("tripNodeOrderChanged", indexes);
+  export default {
+    components: {
+      ModifySubtripDialog,
+      Timeline,
+      ModifyTripDestinationDialog,
+      ManageTripDialog
     },
-    /**
-     * Called when the edit button has been pressed on
-     * a trip destination
-     */
-    showEditTripDestination(tripDestination) {
-      this.isShowingUpdateDestinationDialog = true;
-      this.editedTripDestination = tripDestination;
+    data() {
+      return {
+        isShowingAddDestinationDialog: false,
+        isShowingUpdateDestinationDialog: false,
+        isShowingAddSubtripDialog: false,
+        editedTripDestination: null,
+        isShowingManageTripDialog: false,
+        editNameMode: false,
+        editedTripName: null,
+        rule: [rules.required]
+      };
     },
-    tripNodesUpdated(tripNodes) {
-      this.$emit("tripNodesUpdated", tripNodes);
-    },
-    newUsers(newUsers) {
-      this.$emit("newUsers", newUsers);
-    },
-    /**
-     * Finds the deepest level of a trip tree
-     */
-    findDeepestNodeLevel(tripNode) {
-      if (!tripNode) {
-        return 0;
+    props: {
+      trip: {
+        required: true
       }
-      if (tripNode.tripNodes.length === 0) {
-        return 0;
-      }
-      const treeDepths = tripNode.tripNodes.map(currTripNode => {
-        if (currTripNode.isShowing) {
-          return this.findDeepestNodeLevel(currTripNode)
-        } else {
+    },
+    methods: {
+      /**
+       * Called when the name of a trip is updated.
+       */
+      async nameEdited() {
+        if (this.editedTripName &&
+            this.editedTripName.length > 0) {
+          if (this.editedTripName !== this.trip.name) {
+            try {
+              const originalTripInfo = {
+                ...this.trip,
+                name: this.trip.name
+              };
+
+              const editedTripInfo = {
+                ...this.trip
+              };
+              await editTrip(editedTripInfo);
+              this.$emit(
+                  "addEditTripCommand",
+                  originalTripInfo,
+                  editedTripInfo,
+                  this.editedTripName);
+              this.editedTripName = null;
+              this.editNameMode = false;
+              this.showSnackbar(
+                  "Trip name successfully changed",
+                  "success",
+                  500);
+            } catch (error) {
+              this.showSnackbar(
+                  "Please try a suitable name.",
+                  "error",
+                  500);
+            }
+          } else {
+            this.editedTripName = null;
+            this.editNameMode = false;
+          }
+        }
+      },
+      /**
+       * @param {String} message the message to show in the snackbar
+       * @param {String} color the colour for the snackbar
+       * @param {Number} timeout the amount of time (in ms) for which we show the snackbar
+       */
+      showSnackbar(message, color, timeout) {
+        this.$root.$emit("show-snackbar", {
+          message: message,
+          color: color,
+          timeout: timeout
+        });
+      },
+      /**
+       * Called when the name of the trip is clicked on.
+       * Enables a text field to edit the name of the trip.
+       */
+      enableEditName() {
+        this.editNameMode = true;
+        this.editedTripName = this.trip.name;
+      },
+      /**
+       * Emitted when the order of destinations have changed
+       */
+      tripNodeOrderChanged(indexes) {
+        this.$emit("tripNodeOrderChanged", indexes);
+      },
+      /**
+       * Called when the edit button has been pressed on
+       * a trip destination
+       */
+      showEditTripDestination(tripDestination) {
+        this.isShowingUpdateDestinationDialog = true;
+        this.editedTripDestination = tripDestination;
+      },
+      tripNodesUpdated(tripNodes) {
+        this.$emit("tripNodesUpdated", tripNodes);
+      },
+      newUsers(newUsers) {
+        this.$emit("newUsers", newUsers);
+      },
+      /**
+       * Finds the deepest level of a trip tree
+       */
+      findDeepestNodeLevel(tripNode) {
+        if (!tripNode) {
           return 0;
         }
-      });
-      return Math.max(...treeDepths) + 1;
+        if (tripNode.tripNodes.length === 0) {
+          return 0;
+        }
+        const treeDepths = tripNode.tripNodes.map(currTripNode => {
+          if (currTripNode.isShowing) {
+            return this.findDeepestNodeLevel(currTripNode)
+          } else {
+            return 0;
+          }
+        });
+        return Math.max(...treeDepths) + 1;
+      }
+    },
+    computed: {
+      computeWidth() {
+        const width = 300 + (this.findDeepestNodeLevel(this.trip) * 50);
+        return `${width}px`;
+      }
     }
-  },
-  computed: {
-    computeWidth() {
-      const width = 300 + (this.findDeepestNodeLevel(this.trip) * 50);
-      return `${width}px`;
-    }
-  }
-};
+  };
 </script>
 
 
 <style lang="scss" scoped>
-@import "../../../styles/_variables.scss";
+  @import "../../../styles/_variables.scss";
 
-#trip-item-sidebar {
-  height: calc(100vh - 64px);
-  transition: width 0.2s linear;
-  
+  #trip-item-sidebar {
+    height: calc(100vh - 64px);
+    transition: width 0.2s linear;
 
-  #title {
-    height: 50px;
-    background-color: $primary;
-    color: #fff;
-    z-index: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+
+    #title {
+      height: 50px;
+      background-color: $primary;
+      color: #fff;
+      z-index: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h2 {
+      z-index: 3;
+    }
+
+    #trip-destinations-list {
+      padding-bottom: 10px;
+      overflow-y: auto;
+      height: calc(100vh - 114px);
+    }
+
+    .option {
+      background-color: $secondary;
+      color: $darker-white;
+    }
+
+    .not-selected {
+      background: none;
+      background-color: none !important;
+    }
+
+    .theme--light.v-btn-toggle {
+      background: none !important;
+    }
+
+    #spinner {
+      justify-content: center;
+      align-content: center;
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+    }
+
+    #add-destination-btn {
+      position: absolute;
+      margin-top: 13px;
+      left: 0;
+    }
+
+    #manage-trip-btn {
+      position: absolute;
+      left: 5px;
+      margin-top: 0;
+    }
+
+    .trip-name-field {
+      -webkit-text-fill-color: white;
+      width: 100px !important;
+    }
   }
-
-  h2 {
-    z-index: 3;
-  }
-
-  #trip-destinations-list {
-    padding-bottom: 10px;
-    overflow-y: auto;
-    height: calc(100vh - 114px);
-  }
-
-  .option {
-    background-color: $secondary;
-    color: $darker-white;
-  }
-
-  .not-selected {
-    background: none;
-    background-color: none !important;
-  }
-
-  .theme--light.v-btn-toggle {
-    background: none !important;
-  }
-
-  #spinner {
-    justify-content: center;
-    align-content: center;
-    display: flex;
-    height: 100%;
-    flex-direction: column;
-  }
-
-  #add-destination-btn {
-    position: absolute;
-    margin-top: 13px;
-    left: 0;
-  }
-
-  #manage-trip-btn {
-    position: absolute;
-    left: 5px;
-    margin-top: 0px;
-  }
-}
 </style>
 
