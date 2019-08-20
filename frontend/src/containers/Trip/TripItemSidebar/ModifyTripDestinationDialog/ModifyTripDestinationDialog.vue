@@ -274,6 +274,9 @@ import { transformTripNode } from '../../TripService';
         this.tripDestination.name = this.tripDestination.destination.destinationName;
 
         const parentTripNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip);
+        
+        console.log("THe parent trip is: ");
+        console.log(parentTripNode);
 
         if (this.editMode) {
           // Replace trip destination with the new content
@@ -368,7 +371,7 @@ import { transformTripNode } from '../../TripService';
         }
       },
       editedTripDestination(tripDestination) {
-        this.tripDestination = tripDestination;
+        this.tripDestination = {...tripDestination};
       }
     }
   };

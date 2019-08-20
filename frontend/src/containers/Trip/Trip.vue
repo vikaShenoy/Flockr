@@ -136,25 +136,21 @@
               return user.userId !== message.user.userId;
             });
           } else if (message.type === "tripUpdated") {
-            console.log("sdfsfdfsd");
             this.handleTripUpdate(message.trip);
           }
         });
       },
       handleTripUpdate(rawTrip) {
-        console.log("Ok, i swear if I didn't get to here..");
         const transformedTrip = transformTripNode(rawTrip);
         if (transformedTrip.tripNodeId === this.trip.tripNodeId) {
           // Need to know what trip node is the parent
           this.trip = transformedTrip;
           this.trip.isSubTrip = false;
         } else {
-          console.log("Did I atleast get to here");
-          const parentTripNode = getTripNodeParentById(transformedTrip, this.trip);
+          const parentTripNode = getTripNodeParentById(transformedTrip.tripNodeId, this.trip);
           for (let i = 0; i < parentTripNode.tripNodes.length; i++) {
             if (parentTripNode.tripNodes[i].tripNodeId === transformedTrip.tripNodeId) {
-              console.log("I have been called");
-              this.$set(parenTripNode.tripNodes, i, transformedTrip);
+              this.$set(parentTripNode.tripNodes, i, transformedTrip);
             }
           }
         }
@@ -398,10 +394,10 @@
             redoCommand.bind(null, newTrip));
         this.$refs.undoRedo.addUndo(updateTripCommand);
       },
-      tripNodesUpdated(tripNodes) {
-        const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
-        this.trip.tripNodes = tripNodes;
-        this.addEditTripCommand(oldTrip, this.trip);
+      tripNodesUpdated(parentTripNode, tripNodes) {
+        const oldTrip = {...parentTripNode, tripNodes: [...parentTripNode.tripNodes]};
+        parentTripNode.tripNodes = tripNodes;
+        this.addEditTripCommand(oldTrip, parentTripNode);
       },
       /**
        * Delete a trip node from a trip and update view
