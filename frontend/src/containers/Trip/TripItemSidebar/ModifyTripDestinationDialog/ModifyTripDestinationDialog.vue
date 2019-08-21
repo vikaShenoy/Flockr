@@ -273,7 +273,7 @@ import { transformTripNode } from '../../TripService';
 
         this.tripDestination.name = this.tripDestination.destination.destinationName;
 
-        const parentTripNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip, null);
+        const parentTripNode = this.tripDestination.tripNodeId ? getTripNodeParentById(this.tripDestination.tripNodeId, this.trip, null) : this.trip;
         
         if (this.editMode) {
           // Replace trip destination with the new content
