@@ -160,6 +160,7 @@
           const parentTripNode = getTripNodeParentById(transformedTrip.tripNodeId, this.trip);
           for (let i = 0; i < parentTripNode.tripNodes.length; i++) {
             if (parentTripNode.tripNodes[i].tripNodeId === transformedTrip.tripNodeId) {
+              transformedTrip.isShowing = parentTripNode.tripNodes[i].isShowing;
               this.$set(parentTripNode.tripNodes, i, transformedTrip);
             }
           }
