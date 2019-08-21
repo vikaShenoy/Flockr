@@ -51,6 +51,7 @@
 
   import {login} from "./LoginService.js";
   import UserStore from "../../stores/UserStore";
+  import config from "../../config";
 
   export default {
     data() {
@@ -78,7 +79,7 @@
           localStorage.setItem("authToken", user.token);
           localStorage.setItem("userId", user.userId);
           localStorage.setItem("ownUserId", user.userId);
-          const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+          const socket = new WebSocket(config.websocketUrl);
           UserStore.data.socket = socket;
           this.$router.push(`/profile/${user.userId}`);
         } catch (e) {

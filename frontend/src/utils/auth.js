@@ -1,6 +1,7 @@
 import superagent from "superagent";
 import { endpoint } from "./endpoint";
 import UserStore from "../stores/UserStore";
+import config from "../config";
 
 /**
  * Router onEnter hook to check if a user is logged in, if user
@@ -29,7 +30,7 @@ export async function loggedIn(to, from, next) {
   try {
     res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
-    socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+    socket = new WebSocket(config.websocketUrl);
   } catch (e) {
     next("/login");
     return;
@@ -67,7 +68,7 @@ export async function loggedInOrOut(to, from, next) {
   try {
     res = await  superagent.get(endpoint(`/users/${userId}`))
     .set("Authorization", userToken)
-    socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+    socket = new WebSocket(config.websocketUrl);
   } catch (e) {
     next();
     return;
@@ -102,7 +103,7 @@ export async function isAdmin(to, from, next) {
   let socket;
   try {
     res = await superagent.get(endpoint(`/users/${userId}`)).set("Authorization", userToken);
-    socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+    socket = new WebSocket(config.websocketUrl);
   } catch (e) {
     next("/login");
     return;
