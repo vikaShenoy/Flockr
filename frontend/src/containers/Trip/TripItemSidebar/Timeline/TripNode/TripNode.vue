@@ -51,7 +51,7 @@
               xs10
               class="date-info"
             >
-              <p>{{ formatDateTime(tripNode.arrivalDate, tripNode.arrivalTime) }}</p>
+              <p>{{ formatDateTime(getArrivalDate, getArrivalTime) }}</p>
             </v-flex>
           </v-layout>
           <v-layout>
@@ -62,7 +62,7 @@
               xs10
               class="date-info"
             >
-              <p>{{ formatDateTime(tripNode.departureDate, tripNode.departureTime) }}</p>
+              <p>{{ formatDateTime(getDepartureDate, getDepartureTime) }}</p>
             </v-flex>
           </v-layout>
           <v-spacer
@@ -121,7 +121,78 @@ export default {
       tripNameRules: [rules.required]
     };
   },
+	computed: {
+    getArrivalDate() {
+      return this.getTripNodeArrivalDate(this.tripNode);
+		},
+		getArrivalTime() {
+      return this.getTripNodeArrivalTime(this.tripNode);
+		},
+		getDepartureDate() {
+      return this.getTripNodeDepartureDate(this.tripNode);
+		},
+		getDepartureTime() {
+      return this.getTripNodeDepartureTime(this.tripNode);
+		}
+	},
   methods: {
+    getTripNodeArrivalDate(tripNode) {
+      if (tripNode.nodeType === "TripDestinationLeaf") {
+        if (tripNode.arrivalDate) {
+          return tripNode.arrivalDate;
+				}
+        if (tripNode.departureDate) {
+          return tripNode.departureDate;
+				}
+			} else {
+        for (const currentTripNode of tripNode.tripNodes) {
+       		return this.getTripNodeArrivalDate(currentTripNode);
+				}
+			}
+		},
+    getTripNodeArrivalTime(tripNode) {
+      if (tripNode.nodeType === "TripDestinationLeaf") {
+        if (tripNode.arrivalDate) {
+          return tripNode.arrivalDate;
+        }
+        if (tripNode.departureDate) {
+          return tripNode.departureDate;
+        }
+      } else {
+        for (const currentTripNode of tripNode.tripNodes) {
+          return this.getTripNodeArrivalDate(currentTripNode);
+        }
+      }
+    },
+    getTripNodeDepartureDate(tripNode) {
+      if (tripNode.nodeType === "TripDestinationLeaf") {
+        if (tripNode.arrivalDate) {
+          return tripNode.arrivalDate;
+        }
+        if (tripNode.departureDate) {
+          return tripNode.departureDate;
+        }
+      } else {
+        for (const currentTripNode of tripNode.tripNodes) {
+          return this.getTripNodeArrivalDate(currentTripNode);
+        }
+      }
+    },
+    getTripNodeDepartureTime(tripNode) {
+      if (tripNode.nodeType === "TripDestinationLeaf") {
+        if (tripNode.arrivalDate) {
+          return tripNode.arrivalDate;
+        }
+        if (tripNode.departureDate) {
+          return tripNode.departureDate;
+        }
+      } else {
+        for (const currentTripNode of tripNode.tripNodes) {
+          return this.getTripNodeArrivalDate(currentTripNode);
+        }
+      }
+    },
+
     /**
      * Formats a date based on an optional date and time
      */
