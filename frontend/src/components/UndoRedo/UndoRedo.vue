@@ -2,32 +2,18 @@
   <div>
     <v-icon @click="undo" class="action" color="secondary" :disabled="!undoStack.length">undo</v-icon>
     <v-icon @click="redo" class="action" color="secondary" :disabled="!redoStack.length">redo</v-icon>
-
-    <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show = false"/>
   </div>
 </template>
 
 <script>
-  import Snackbar from "../Snackbars/Snackbar";
-
   const Z_KEY_CODE = 90;
   const Y_KEY_CODE = 89;
 
-
   export default {
-    components: {
-      Snackbar
-    },
     data() {
       return {
         undoStack: [],
         redoStack: [],
-        snackbarModel: {
-          text: "",
-          color: "",
-          show: false,
-          timeout: 2000
-        }
       }
     },
     mounted() {
@@ -67,7 +53,6 @@
           this.showSuccessSnackbar("Successfully Un-did action");
         } catch (e) {
           // eslint-disable-next-line
-          console.log(e);
           this.showErrorSnackbar("Could not undo action");
         }
       },
@@ -96,17 +81,29 @@
        * Shows a success snackbar
        */
       showSuccessSnackbar(text) {
-        this.snackbarModel.text = text;
-        this.snackbarModel.color = "success";
-        this.snackbarModel.show = true;
+        this.$root.$emit("show-snackbar", {
+          message: text,
+          color: "success",
+          timeout: 5000
+        });
       },
       /**
        * Shows an error snackbar
        */
       showErrorSnackbar(text) {
-        this.snackbarModel.text = text;
-        this.snackbarModel.color = "error";
-        this.snackbarModel.show = true;
+        this.$root.$emit("show-snackbar", {
+          message: text,
+          color: "error",
+          timeout: 5000
+        });
+      },
+      /**
+       * Clear the stack. Will need to be done when routing
+       * on the same page
+       */
+      clearStack() {
+        this.undoStack = [];
+        this.redoStack = [];
       }
     }
   }

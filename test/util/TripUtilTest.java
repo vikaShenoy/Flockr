@@ -1,24 +1,45 @@
 package util;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
+import exceptions.NotFoundException;
+
+import java.util.*;
+
+import models.TripComposite;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import play.Application;
 import play.libs.Json;
-import java.util.Date;
-
-import static org.junit.Assert.*;
+import play.test.Helpers;
+import utils.FakeClient;
+import utils.TestState;
 
 public class TripUtilTest {
     TripUtil util;
     JsonNode testData1;
     JsonNode testData2;
     JsonNode testData3;
+    Application application;
+    Set<TripComposite> tripComposites;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
+        Map<String, String> testSettings = new HashMap<>();
+        testSettings.put("db.default.driver", "org.h2.Driver");
+        testSettings.put("db.default.url", "jdbc:h2:mem:testdb;MODE=MySQL;");
+        testSettings.put("play.evolutions.db.default.enabled", "true");
+        testSettings.put("play.evolutions.db.default.autoApply", "true");
+        testSettings.put("play.evolutions.db.default.autoApplyDowns", "true");
+        application = Helpers.fakeApplication(testSettings);
+        Helpers.start(application);
+
         util = new TripUtil();
         Date arrivalDate = new Date();
         Date departureDate = new Date();
@@ -33,18 +54,21 @@ public class TripUtilTest {
         testNode1.put("departureDate", departureDate.toString());
         testNode1.put("arrivalTime", arrivalTime);
         testNode1.put("departureTime", departureTime);
+        testNode1.put("nodeType", "TripDestinationLeaf");
 
         testNode2.put("destinationId", 1);
         testNode2.put("arrivalDate", arrivalDate.toString());
         testNode2.put("departureDate", departureDate.toString());
         testNode2.put("arrivalTime", arrivalTime);
         testNode2.put("departureTime", departureTime);
+        testNode2.put("nodeType", "TripDestinationLeaf");
 
         testNode3.put("destinationId", 2);
         testNode3.put("arrivalDate", arrivalDate.toString());
         testNode3.put("departureDate", departureDate.toString());
         testNode3.put("arrivalTime", arrivalTime);
         testNode3.put("departureTime", departureTime);
+        testNode3.put("nodeType", "TripDestinationLeaf");
 
         // Make a list
         ArrayNode testArray = Json.newArray();
@@ -60,6 +84,9 @@ public class TripUtilTest {
         testArray3.add(testNode1);
         testArray3.add(testNode3);
         testData3 = testArray3;
+
+        tripComposites = new HashSet<>();
+
     }
 
     /**
@@ -67,9 +94,9 @@ public class TripUtilTest {
      * the data list.
      */
     @Test
-    public void getTripDestinationsFromJsonInsufficientDestinations() {
+    public void getTripDestinationsFromJsonInsufficientDestinations() throws NotFoundException {
         try {
-            util.getTripDestinationsFromJson(testData1);
+            util.getTripNodesFromJson(testData1, tripComposites);
             fail("Method should throw BadRequestException, as there is only 1 tripdest.");
         } catch(BadRequestException e) {
             assertTrue("Exception correctly thrown", true);
@@ -81,9 +108,9 @@ public class TripUtilTest {
      * the data list.
      */
     @Test
-    public void getTripDestinationsFromJsonContiguousDestinations() {
+    public void getTripDestinationsFromJsonContiguousDestinations() throws NotFoundException {
         try {
-            util.getTripDestinationsFromJson(testData2);
+            util.getTripNodesFromJson(testData2, tripComposites);
             fail("Method should throw BadRequestException, as there is a repeated tripDest.");
         } catch(BadRequestException e) {
             assertTrue("Exception correctly thrown", true);
@@ -94,12 +121,19 @@ public class TripUtilTest {
      * Should throw no errors as the data is valid (2 different trip destinations)
      */
     @Test
-    public void getTripDestinationsFromJsonValid() {
+    public void getTripDestinationsFromJsonValid() throws NotFoundException {
         try {
-            util.getTripDestinationsFromJson(testData3);
+            util.getTripNodesFromJson(testData3, tripComposites);
             assertTrue("Valid data throws no errors", true);
         } catch(BadRequestException e) {
             fail("Method should throw no errors for valid data.");
         }
     }
+
+    @After
+    public void tearDown() {
+        Helpers.stop(application);
+        TestState.clear();
+    }
+
 }

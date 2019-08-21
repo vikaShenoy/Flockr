@@ -1,100 +1,100 @@
 stages:
-  - test
-  - build
-  - deploy
+- test
+- build
+- deploy
 
 recent-artifacts-backend:
   artifacts:
     expire_in: "1 week"
     paths:
-      - target/universal/*.zip
+    - target/universal/*.zip
   except:
-    - tags
-    - dev
-    - master
+  - tags
+  - dev
+  - master
   script:
-    - "sbt dist"
+  - "sbt dist"
   stage: build
 
 release-artifacts-backend:
   artifacts:
     paths:
-      - target/universal/*.zip
+    - target/universal/*.zip
   only:
-    - master 
+  - master
   script:
-    - "sbt dist"
+  - "sbt dist"
   stage: build
 
 staging-artifacts-backend:
   artifacts:
     paths:
-      - target/universal/*.zip
+    - target/universal/*.zip
   only:
-    - dev
+  - dev
   script:
-    - "NODE_ENV=staging sbt dist"
+  - "NODE_ENV=staging sbt dist"
   stage: build
 
 tag_checker:
   only:
-    - tags
+  - tags
   script:
-    - "python tag_checker.py $CI_COMMIT_TAG"
+  - "python tag_checker.py $CI_COMMIT_TAG"
   stage: build
 
 run-tests:
-#  except:
-#    - dev@seng302-2019/team-500
-#    - master@seng302-2019/team-500
+  except:
+  - dev@seng302-2019/team-500
+  - master@seng302-2019/team-500
   script:
-    - "sbt test"
+  - "sbt test"
   stage: test
 
-# staging-run:
-#   dependencies:
-#     - staging-artifacts-backend
-#   script: 
-#     - "cd target/universal"
-#     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-#     - pm2 delete dev-server || true
-#     - sudo rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT
-#     - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
-#     - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
-#     - pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
-#   only:
-#     - dev
-#   stage: deploy
+staging-run:
+  dependencies:
+  - staging-artifacts-backend
+  script:
+  - "cd target/universal"
+  - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+  - pm2 delete dev-server || true
+  - sudo rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT
+  - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
+  - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
+  - pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
+  only:
+  - dev
+  stage: deploy
 
-# production-run:
-#   dependencies:
-#     - release-artifacts-backend
-#   script: 
-#     - "cd target/universal"
-#     - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-#     - pm2 delete prod-server || true
-#     - sudo rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT
-#     - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
-#     - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/conf
-#     - sudo mv application.prod.conf application.conf
-#     - cd ../bin
-#     - pm2 start "sudo bash seng302-team-500 -Dhttp.port=443" --name=prod-server
-
-#   only:
-#     - master
-#   stage: deploy
-
-#  Add sudo back to the start of this command when using VM
-
-after_script:
-  - "chown -R gitlab-runner:gitlab-runner ."
-
-# update-sonar:
-#  stage: test
+#production-run:
+#  dependencies:
+#  - release-artifacts-backend
 #  script:
-#     - sbt jacoco
-#     - export PATH=$PATH:/opt/sonarqubeScanner/bin
-#     - sonar-scanner  --debug
+#  - "cd target/universal"
+#  - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+#  - pm2 delete prod-server || true
+#  - sudo rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT
+#  - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
+#  - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/conf
+#  - sudo mv application.prod.conf application.conf
+#  - cd ../bin
+#  - pm2 start "sudo bash seng302-team-500 -Dhttp.port=443" --name=prod-server
+#
 #  only:
-#     - master@seng302-2019/team-500
-#     - dev@seng302-2019/team-500
+#  - master
+#  stage: deploy
+#
+##  Add sudo back to the start of this command when using VM
+#
+#after_script:
+#- "chown -R gitlab-runner:gitlab-runner ."
+
+update-sonar:
+  stage: test
+  script:
+  - sbt jacoco
+  - export PATH=$PATH:/opt/sonarqubeScanner/bin
+  - sonar-scanner  --debug
+  only:
+  - master@seng302-2019/team-500
+  - dev@seng302-2019/team-500

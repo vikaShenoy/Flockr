@@ -1,42 +1,48 @@
 <template>
-  <v-card
-          id="edit-trip"
-          class="col-lg-10 offset-lg-1"
-  >
+	<div>
+		<v-card
+						id="edit-trip"
+						class="col-lg-10 offset-lg-1"
+		>
 
-    <h2>Edit Trip</h2>
+			<h2>Edit Trip</h2>
 
-    <v-form ref="editTripForm">
-      <v-text-field
-              v-model="tripName"
-              label="Trip Name"
-              color="secondary"
-              class="col-md-6"
-              :rules="tripNameRules"
-      >
-      </v-text-field>
+			<v-form ref="editTripForm">
+				<v-text-field
+								v-model="tripName"
+								label="Trip Name"
+								color="secondary"
+								class="col-md-6"
+								:rules="tripNameRules"
+				>
+				</v-text-field>
 
-      <TripTable :tripDestinations="tripDestinations" :isEditing="true"/>
+				<TripTable :tripDestinations="tripDestinations" :isEditing="true" @showErrorSnackbar="showErrorSnackbar"/>
 
-      <v-btn
-              depressed
-              color="secondary"
-              small
-              id="add-destination"
-              @click="addDestination"
-      >
-        <v-icon>add</v-icon>
-      </v-btn>
+				<v-btn
+								depressed
+								color="secondary"
+								small
+								id="add-destination"
+								@click="addDestination"
+				>
+					<v-icon>add</v-icon>
+				</v-btn>
 
-      <v-btn
-              depressed
-              color="secondary"
-              id="edit-trip-btn"
-              @click="editTrip()"
-      >Save
-      </v-btn>
-    </v-form>
-  </v-card>
+				<v-btn
+								depressed
+								color="secondary"
+								id="edit-trip-btn"
+								@click="editTrip()"
+				>Save
+				</v-btn>
+			</v-form>
+		</v-card>
+
+		<Snackbar
+			:snackbarModel="snackbarModel"
+			></Snackbar>
+	</div>
 </template>
 
 <script>
@@ -74,6 +80,24 @@
       this.travellerId = this.$route.params.travellerId;
     },
     methods: {
+        /**
+         * @param {String} message the message to show in the snackbar
+         * @param {String} color the colour for the snackbar
+         * @param {Number} the amount of time (in ms) for which we show the snackbar
+         */
+        showSnackbar(message, color, timeout) {
+            this.$root.$emit("show-snackbar", {
+                message: message,
+                color: color,
+                timeout: timeout
+            });
+        },
+      /**
+			 * Displays a snackbar with an error message.
+			 */
+      showErrorSnackbar(message) {
+                this.showSnackbar(message, "error", 3000);
+			},
       /**
        * Gets a users trip for editing
        */
@@ -90,8 +114,7 @@
           this.tripName = tripName;
           this.tripDestinations = tripDestinations;
         } catch (e) {
-          console.log(e);
-          // Add error handling later
+          this.showErrorSnackbar("Could not get user trip");
         }
       },
       /**
@@ -139,8 +162,7 @@
           }
 
         } catch (e) {
-          console.log(e);
-          // Add error handling here later
+          this.showErrorSnackbar("Error editing trip");
         }
       }
     }

@@ -17,11 +17,8 @@
     <DestinationProposals
             v-on:showError="showErrorSnackbar"
             v-on:showMessage="showSuccessSnackbar"
-            @acceptProposalCommand="acceptProposalCommand"
-            @declineProposalCommand="declineProposalCommand"
+            @addUndoCommand="addUndoCommand"
     />
-
-    <Snackbar :snackbarModel="this.snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
 
@@ -38,7 +35,6 @@
   } from "./AdminPanelService.js";
   import superagent from "superagent";
   import {endpoint} from '../../utils/endpoint';
-  import Snackbar from '../../components/Snackbars/Snackbar.vue';
   import DestinationProposals from "./DestinationProposals/DestinationProposals";
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command";
@@ -47,7 +43,6 @@
   export default {
     components: {
       ManageUsers,
-      Snackbar,
       DestinationProposals,
       UndoRedo
     },
@@ -61,14 +56,7 @@
         adminSearch: '',
         showEditUserForm: false,
         userBeingEdited: null,
-        users: [], // single source of truth for children components relying on users so that info stays up to date
-        snackbarModel: {
-          show: false, // whether the snackbar is currently shown or not
-          timeout: 5000, // how long the snackbar will be shown for, it will not update the show property automatically though
-          text: '', // the text to show in the snackbar
-          color: '', // green, red, yellow, red, etc
-          snackbarId: 0 // used to know which snackbar was manually dismissed
-        }
+        users: [] // single source of truth for children components relying on users so that info stays up to date
       }
     },
     computed: {
@@ -81,17 +69,10 @@
     },
     methods: {
       /**
-       * Accepts the proposal and adds it into the undo-redo stack
+       * Adds an undo command to the undo element.
        */
-      acceptProposalCommand(acceptProposalCommand) {
+      addUndoCommand(acceptProposalCommand) {
         this.$refs.undoRedo.addUndo(acceptProposalCommand);
-      },
-
-      /**
-       * Declines the proposal and adds it into the undo-redo stack
-       */
-      declineProposalCommand(declineProposalCommand) {
-        this.$refs.undoRedo.addUndo(declineProposalCommand);
       },
       /**
        * Call admin panel service method to retrieve
@@ -103,14 +84,18 @@
         this.users = allUsers;
       },
       showSuccessSnackbar(message) {
-        this.snackbarModel.text = message;
-        this.snackbarModel.color = 'green';
-        this.snackbarModel.show = true;
+        this.$root.$emit("show-snackbar", {
+          message: message,
+          color: "success",
+          timeout: 3000
+        });
       },
       showErrorSnackbar(errorMessage) {
-        this.snackbarModel.text = errorMessage;
-        this.snackbarModel.color = 'red';
-        this.snackbarModel.show = true;
+        this.$root.$emit("show-snackbar", {
+          message: errorMessage,
+          color: "error",
+          timeout: 3000
+        });
       },
 
       /**

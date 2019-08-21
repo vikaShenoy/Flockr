@@ -1,57 +1,64 @@
 <template>
-  <v-card
-          id="add-trip"
-          class="col-lg-10 offset-lg-1"
-  >
+	<v-card
+					id="add-trip"
+					class="col-lg-10 offset-lg-1"
+					:flat="!!isSidebarComponent"
+	>
+		<h2 v-if="!isSidebarComponent">Add Trip</h2>
+		<h3 id="title-subtrip" v-else>Create New Subtrip</h3>
+		<v-form ref="addTripForm">
+			<v-text-field
+							v-model="tripName"
+							label="Trip Name"
+							color="secondary"
+							class="col-md-6"
+							:rules="tripNameRules"
+			>
+			</v-text-field>
 
-    <h2>Add Trip</h2>
-
-    <v-form ref="addTripForm">
-      <v-text-field
-              v-model="tripName"
-              label="Trip Name"
-              color="secondary"
-              class="col-md-6"
-              :rules="tripNameRules"
-      >
-      </v-text-field>
-
-      <TripTable :tripDestinations="tripDestinations"/>
-
-      <v-btn
-              depressed
-              color="secondary"
-              small
-              id="add-destination"
-              @click="addDestination"
-      >
-        <v-icon>add</v-icon>
-      </v-btn>
+			<v-combobox v-if="!isSidebarComponent"
+									:items="users" :item-text="formatName"
+									v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
 
 
-      <v-btn
-              depressed
-              color="error"
-              id="cancel-trip-creation-btn"
-              @click="$emit('cancel-trip-creation')"
-      >
-        Cancel
-      </v-btn>
-      <v-btn
-              depressed
-              color="secondary"
-              id="add-trip-btn"
-              @click="addTrip()"
-      >
-        Create
-      </v-btn>
-    </v-form>
-  </v-card>
+			<TripTable :tripDestinations="tripDestinations"/>
+
+			<v-btn
+							depressed
+							color="secondary"
+							small
+							id="add-destination"
+							@click="addDestination"
+			>
+				<v-icon>add</v-icon>
+			</v-btn>
+
+			<v-btn
+							depressed
+							color="secondary"
+							id="add-trip-btn"
+							@click="addTrip"
+			>
+				Create
+			</v-btn>
+
+			<v-btn
+							depressed
+							color="error"
+							id="cancel-trip-creation-btn"
+							@click="$emit('cancel-trip-creation')"
+			>
+				Cancel
+			</v-btn>
+
+		</v-form>
+	</v-card>
 </template>
 
 <script>
   import TripTable from "../../components/TripTable/TripTable";
-  import {addTrip} from "./AddTripService.js";
+  import {createTrip, getAllUsers} from "./AddTripService.js";
+  import UserStore from "../../stores/UserStore";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -69,14 +76,38 @@
     components: {
       TripTable
     },
+    props: {
+      isSidebarComponent: {
+        type: Boolean,
+        required: false
+      },
+      parentTrip: {
+        type: Object,
+        required: false
+      }
+
+    },
     data() {
       return {
         tripName: "",
         tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
         tripNameRules: [rules.required],
+        selectedUsers: [],
+        users: null
       };
     },
+    mounted() {
+      this.getUsers();
+    },
     methods: {
+      /**
+       * Gets all users and filters out the logged in user
+       */
+      async getUsers() {
+        const users = (await getAllUsers())
+            .filter(user => user.userId !== UserStore.data.userId);
+        this.users = users;
+      },
       /**
        * Adds an empty destination
        */
@@ -122,32 +153,52 @@
       async addTrip() {
         const validFields = this.validate();
         if (!validFields) return;
-        const userId = localStorage.getItem("userId");
-        const tripId = await addTrip(this.tripName, this.tripDestinations, userId);
-        this.$emit("new-trip-was-added", tripId);
+        // Specifies the extra users that should be added to the trip
+        const userIds = this.selectedUsers.map(selectedUser => selectedUser.userId);
+        const subTrip = await createTrip(this.tripName, this.tripDestinations, userIds);
+
+        // If this is happening on the sidebar, the new trip is a subtrip. This adds it to parent trip.
+        if (this.isSidebarComponent) {
+          subTrip.isShowing = false;
+          this.$emit("close-dialog");
+
+        }
+        this.$emit("newTripAdded", subTrip);
+      },
+      /**
+       * Formats a users full name by their first name and last name
+       */
+      formatName(user) {
+        return `${user.firstName} ${user.lastName}`;
       }
     }
   };
 </script>
 
 <style lang="scss" scoped>
-  #add-trip {
-    margin-top: 30px;
+	#add-trip {
+		margin-top: 30px;
+		height: 465px;
 
-    h2 {
-      text-align: center;
-    }
-  }
+		h2 {
+			text-align: center;
+			padding-top: 10px;
+		}
+	}
 
-  #add-destination {
-    margin-top: 10px !important;
-    display: block;
-    margin: 0 auto;
-  }
+	#add-destination {
+		margin-top: 10px !important;
+		display: block;
+		margin: 0 auto;
+	}
 
-  #add-trip-btn {
-    float: right;
-  }
+	#cancel-trip-creation-btn {
+		float: right;
+	}
+
+	#add-trip-btn {
+		float: right;
+	}
 </style>
 
 

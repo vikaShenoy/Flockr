@@ -4,10 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
-
-import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
 @Entity
 public class DestinationProposal extends Model {
@@ -65,6 +69,10 @@ public class DestinationProposal extends Model {
     public List<TravellerType> getTravellerTypes() {
         return travellerTypes;
     }
+
+  public void setTravellerTypes(List<TravellerType> travellerTypes) {
+    this.travellerTypes = travellerTypes;
+  }
 
     public int getDestinationProposalId() {
         return destinationProposalId;

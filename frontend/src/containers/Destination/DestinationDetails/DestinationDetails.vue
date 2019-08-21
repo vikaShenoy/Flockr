@@ -54,14 +54,17 @@
       </v-flex>
 
       <v-flex class="destination-value" xs9>
-        <v-chip
-                v-for="travellerType in destination.travellerTypes"
-                v-bind:key="travellerType.travellerTypeId"
-                color="primary"
-                text-color="white"
-        >
-          {{ travellerType.travellerTypeName }}
-        </v-chip>
+          <v-layout row wrap>
+              <v-chip
+                      v-for="travellerType in destination.travellerTypes"
+                      v-bind:key="travellerType.travellerTypeId"
+                      color="primary"
+                      text-color="white"
+              >
+                  {{ travellerType.travellerTypeName }}
+              </v-chip>
+          </v-layout>
+
       </v-flex>
 
 

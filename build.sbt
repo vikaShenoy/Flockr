@@ -6,13 +6,14 @@ maintainer := "s302team500@cosc.canterbury.ac.nz"
 
 scalaVersion := "2.12.8"
 
-import sbt._
-import scala.sys.process._
 import java.io.File
-import org.apache.commons.io.FileUtils
-import java.nio.file.Files
 
-lazy val myProject = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
+import org.apache.commons.io.FileUtils
+import sbt._
+
+import scala.sys.process._
+
+lazy val myProject = (project in file(".")).enablePlugins(PlayJava, PlayEbean, LauncherJarPlugin)
 
 libraryDependencies += guice
 libraryDependencies += jdbc
@@ -27,6 +28,7 @@ libraryDependencies += "org.assertj" % "assertj-core" % "3.6.2" % Test
 libraryDependencies += "io.cucumber" % "cucumber-core" % "4.2.0" % Test
 libraryDependencies += "io.cucumber" % "cucumber-jvm" % "4.2.0" % Test
 libraryDependencies += "io.cucumber" % "cucumber-junit" % "4.2.0" % Test
+libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.23" % Test
 libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test->default"
 testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
 libraryDependencies += evolutions
@@ -55,7 +57,12 @@ val isWindows = System.getProperty("os.name").toLowerCase().contains("win")
 
 // Executes a bash/cmd command
 def runOnCommandline(script: String, dir: File): Int = {
-  if(isWindows){ Process("cmd /c " + script, dir) } else { Process(script, dir) } }!
+  if (isWindows) {
+    Process("cmd /c " + script, dir)
+  } else {
+    Process(script, dir)
+  }
+} !
 
 // Installs, builds and copies frontend production files
 def executeProdBuild(prodFrontendFolder: File, frontendFolder: File) = {
@@ -83,7 +90,7 @@ dist := (dist dependsOn `build-frontend`).value
 
 javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
 
-
+testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a"))
 
 
 

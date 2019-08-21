@@ -8,20 +8,18 @@ import cucumber.api.java.en.When;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import io.cucumber.datatable.DataTable;
-import models.Role;
-import models.User;
-
-import org.junit.Assert;
-import play.libs.Json;
-import play.mvc.Result;
-import utils.FakeClient;
-import utils.TestState;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import models.Role;
+import models.User;
+import org.junit.Assert;
+import play.libs.Json;
+import play.mvc.Result;
+import utils.FakeClient;
+import utils.TestState;
 
 public class UserRoleSteps {
 
@@ -98,8 +96,10 @@ public class UserRoleSteps {
         JsonNode typesJson = Json.toJson(types);
         ObjectNode data = Json.newObject();
         data.set("roles", typesJson);
-        Result roleResult = fakeClient.makeRequestWithToken("PATCH", data, "/api/users/" +
-                this.user.getUserId() + "/roles", this.currentAuthToken);
+        Result roleResult =
+            fakeClient.makeRequestWithToken(
+                "PATCH", data, "/api/users/" + this.user.getUserId() + "/roles",
+                this.currentAuthToken);
         Assert.assertEquals(200, roleResult.status());
     }
 
@@ -112,16 +112,21 @@ public class UserRoleSteps {
         ObjectNode data = Json.newObject();
         data.set("roles", typesJson);
 
-        Result roleResult = fakeClient.makeRequestWithToken("PATCH", data, "/api/users/" +
-                this.admin.getUserId() + "/roles", this.currentAuthToken);
+        Result roleResult =
+            fakeClient.makeRequestWithToken(
+                "PATCH",
+                data,
+                "/api/users/" + this.admin.getUserId() + "/roles",
+                this.currentAuthToken);
         this.statusResult = roleResult.status();
     }
 
     @When("ROLES - I request roles from the database")
     public void rIRequestRolesFromTheDatabase() throws IOException {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        Result roleResult = fakeClient.makeRequestWithToken("GET", "/api/users/" +
-                this.user.getUserId() + "/roles", this.currentAuthToken);
+        Result roleResult =
+            fakeClient.makeRequestWithToken(
+                "GET", "/api/users/" + this.user.getUserId() + "/roles", this.currentAuthToken);
         Assert.assertEquals(200, roleResult.status());
 
         // Save the response to be tested in the last step
@@ -141,6 +146,6 @@ public class UserRoleSteps {
 
     @Then("ROLES - I receive a {int} status code")
     public void roles_I_receive_a_status_code(Integer int1) {
-        Assert.assertEquals(401, statusResult);
+        Assert.assertEquals(403, statusResult);
     }
 }

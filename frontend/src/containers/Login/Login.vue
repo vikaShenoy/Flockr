@@ -5,7 +5,7 @@
             class="col-lg-6 offset-lg-3"
     >
 
-      <h2>Sign In</h2>
+      <h2>Login</h2>
 
       <v-alert
               :value="hasInvalidCredentials"
@@ -78,6 +78,8 @@
           localStorage.setItem("authToken", user.token);
           localStorage.setItem("userId", user.userId);
           localStorage.setItem("ownUserId", user.userId);
+          const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+          UserStore.data.socket = socket;
           this.$router.push(`/profile/${user.userId}`);
         } catch (e) {
           this.hasInvalidCredentials = true;
@@ -104,6 +106,7 @@
     background-image: url("../../assets/background.jpg");
     background-size: cover;
     width: 100%;
+    height: 100%;
   }
 
 </style>

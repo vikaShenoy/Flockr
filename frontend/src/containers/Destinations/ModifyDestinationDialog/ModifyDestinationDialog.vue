@@ -15,86 +15,31 @@
           </v-spacer>
         </v-layout>
       </v-card-title>
+
+      
+
       <v-card-text>
-        <v-form
-          ref="form"
-          v-model="isValidForm"
-        >
-          <v-flex grid-list>
-            <!-- Destination Name -->
-            <v-flex
-              xs12
-              sm10
-              md8
-              lg6
-              xl4
-              offset-xs0
-              offset-sm1
-              offset-md2
-              offset-lg3
-              offset-xl4
-            >
-              <v-text-field
-                v-model="destination.destinationName"
-                :value="destination.destinationName"
-                :items="destinationTypes"
-                label="Name"
-                :rules="requiredRule"
-              />
-            </v-flex>
 
-            <v-flex
-              xl4
-              lg6
-              md8
-              sm10
-              xs12
-              offset-xl4
-              offset-lg3
-              offset-md2
-              offset-sm1
-              offset-xs0
-            >
-              <v-select
-                v-model="destination.destinationType.destinationTypeId"
-                :value="destination.destinationType.destinationTypeId"
-                :items="destinationTypes"
-                item-value="destinationTypeId"
-                item-text="destinationTypeName"
-                label="Type"
-                :rules="requiredRule"
-              />
+        <v-stepper v-model="currStepperStep">
+        <v-stepper-header>
+          <v-stepper-step :complete="currStepperStep > 1" step="1">Basic Info</v-stepper-step>
+          <v-divider />
+          <v-stepper-step :complete="currStepperStep > 2" step="2">Location</v-stepper-step>
+        </v-stepper-header>
 
-            </v-flex>
+        <v-stepper-items>
+          <v-stepper-content step="1">
+            <v-card class="mb-5" flat>
+              <v-text-field v-model="destination.destinationName" :rules="requiredRule"
+                :value="destination.destinationName" color="secondary" label="Name" />
 
-            <v-flex
-              xl4
-              lg6
-              md8
-              sm10
-              xs12
-              offset-xl4
-              offset-lg3
-              offset-md2
-              offset-sm1
-              offset-xs0
-            >
+              <v-select v-model="destination.destinationType.destinationTypeId"
+                :value="destination.destinationType.destinationTypeId" :items="destinationTypes"
+                item-value="destinationTypeId" item-text="destinationTypeName" label="Type" :rules="requiredRule" />
+
               <CountryPicker v-if="destinationToEdit" v-bind:country="destinationToEdit.destinationCountry" v-on:change="updateCountry"></CountryPicker>
               <CountryPicker v-else v-on:change="updateCountry"></CountryPicker>
-            </v-flex>
 
-            <v-flex
-              xl4
-              lg6
-              md8
-              sm10
-              xs12
-              offset-xl4
-              offset-lg3
-              offset-md2
-              offset-sm1
-              offset-xs0
-            >
               <v-select
                 v-model="destination.destinationDistrict.districtId"
                 :value="destination.destinationDistrict.districtId"
@@ -105,138 +50,72 @@
                 label="District"
                 :rules="requiredRule"
               />
-            </v-flex>
 
-            <v-flex
-              xl4
-              lg6
-              md8
-              sm10
-              xs12
-              offset-xl4
-              offset-lg3
-              offset-md2
-              offset-sm1
-              offset-xs0
-            >
-          <v-combobox
-        v-model="destination.travellerTypes"
-        :items="travellerTypes"
-        item-text="travellerTypeName"
-        item-value="travellerTypeId"
-        :rules="requiredRule"
-        label="Traveller Types"
-        chips
-        clearable
-        solo
-        multiple
-      >
+              <v-combobox v-model="destination.travellerTypes" :items="travellerTypes" item-text="travellerTypeName"
+                item-value="travellerTypeId" :rules="requiredRule" label="Traveller Types" chips clearable solo
+                multiple>
+                <template v-slot:selection="data">
+                  <v-chip color="primary" text-color="white" :selected="data.selected" close
+                    @input="removeTravellerType(data.item)">
+                    <strong>{{ data.item.travellerTypeName }}</strong>&nbsp;
+                  </v-chip>
+                </template>
+              </v-combobox>
 
-        <template v-slot:selection="data">
-          <v-chip
-            color="primary"
-            text-color="white"
-            :selected="data.selected"
-            close
-            @input="removeTravellerType(data.item)"
-          >
-            <strong>{{ data.item.travellerTypeName }}</strong>&nbsp;
-          </v-chip>
-        </template>
-      </v-combobox>
-            </v-flex>
+            </v-card>
 
+            <v-switch
+              color="secondary"
+              label="Set to public"
+              v-if="editMode"
+              v-model="destination.isPublic"
+            />
 
-            <v-flex
-              xl4
-              lg6
-              md8
-              sm10
-              xs12
-              offset-xl4
-              offset-lg3
-              offset-md2
-              offset-sm1
-              offset-xs0
-              row
-            >
-              <v-flex
-                xs12
-                sm12
-                md6
-                lg6
-                xl6
-              >
-                <v-text-field
-                  v-model="destination.destinationLat"
-                  :value="destination.destinationLat"
-                  label="Latitude"
-                  :rules="latitudeRules"
-                  id="latitude"
+            <v-btn color="error" @click="closeDialog">Cancel</v-btn>
+            <v-btn color="primary" @click="currStepperStep = 2" :disabled="false">Continue</v-btn>
+          </v-stepper-content>
+
+          <v-stepper-content step="2">
+            <v-card id="location-stepper" class="mb-5" flat>
+              <div id="map">
+                <DestinationMap
+                  :destinations="mapDestinations"
+                  @coordinates-selected="handleCoordinateSelection"
                 />
-              </v-flex>
-              <v-flex
-                xs12
-                sm12
-                md6
-                lg6
-                xl6
-              >
-                <v-text-field
-                  v-model="destination.destinationLon"
-                  :value="destination.destinationLon"
-                  label="Longitude"
-                  :rules="longitudeRules"
-                  id="longitude"
-                />
-              </v-flex>
+              </div>
 
-            </v-flex>
+              <div id="not-map">
+                <v-container grid-list-md text-xs-center>
+                  <v-layout row wrap>
+                    <v-flex xs6>
+                      <v-text-field v-model="destination.destinationLat" :value="destination.destinationLat"
+                        label="Latitude" :rules="latitudeRules" id="latitude" />
+                    </v-flex>
+                    <v-flex xs6>
+                      <v-text-field v-model="destination.destinationLon" :value="destination.destinationLon"
+                        label="Longitude" :rules="longitudeRules" id="longitude" />
+                    </v-flex>
+                      
+                    <v-flex xs12>
+                      <v-btn id="use-my-location-button" flat color="secondary" @click="getUserLocation">
+                        Use My Current Location
+                      </v-btn>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
 
-            <v-flex
-              xl4
-              lg6
-              md8
-              sm10
-              xs12
-              offset-xl4
-              offset-lg3
-              offset-md2
-              offset-sm1
-              offset-xs0
-            >
-              <v-spacer align="center">
-                <v-btn
-                  flat
-                  color="secondary"
-                  @click="getUserLocation"
-                >Use My Current Location
-                </v-btn>
-              </v-spacer>
-              <v-switch
-                color="secondary"
-                label="Set to public"
-                v-if="editMode"
-                v-model="destination.isPublic"
-              ></v-switch>
-            </v-flex>
+                <v-btn @click="currStepperStep = 1">Go back</v-btn>
+                <v-btn color="success" @click="checkSubmission" :loading="formIsLoading">Done</v-btn>
+              </div>
+            </v-card>
+          </v-stepper-content>
+        </v-stepper-items>
+      </v-stepper>
 
-          </v-flex>
-        </v-form>
       </v-card-text>
       <v-card-actions>
         <v-spacer align="right">
-          <v-btn
-            flat
-            color="error"
-            @click="closeDialog"
-          >Cancel</v-btn>
-          <v-btn
-            flat
-            color="success"
-            @click="checkSubmission"
-            :loading="formIsLoading"
-          >Submit</v-btn>
+          
         </v-spacer>
       </v-card-actions>
     </v-card>
@@ -256,12 +135,12 @@ import {
   requestTravellerTypes,
   requestDistricts
 } from "./ModifyDestinationDialogService";
-import ErrorSnackbar from "../../../components/Snackbars/ErrorSnackbar";
 import CountryPicker from "../../../components/Country/CountryPicker"
+import DestinationMap from "../../../components/DestinationMap/DestinationMap";
 export default {
   name: "add-destination-dialog",
   components: {
-    CountryPicker
+    CountryPicker, DestinationMap
   },
   props: {
     dialog: {
@@ -300,6 +179,7 @@ export default {
   },
   data() {
     return {
+      currStepperStep: 0,
       dataDialog: false,
       destination: {
         destinationName: "",
@@ -354,9 +234,39 @@ export default {
   computed: {
     destCountry() {
       return this.destination.destinationCountry.countryId;
+    },
+    /**
+     * Returns the destinations used by the map.
+     * @returns {Array<Object>} a list with either no destination or one destination
+     */
+    mapDestinations() {
+      if (!this.editMode) {
+        return []
+      } else {
+        const destination = { ...this.destinationToEdit };
+
+        // overwrite coordinates from prop with coordinates from form
+        // to update the map marker when new coordinates are selected
+        const { destinationLat, destinationLon } = this.destination;
+        if (destinationLat && destinationLon) {
+          destination.destinationLat = destinationLat;
+          destination.destinationLon = destinationLon;
+        }
+        return [destination];
+      }
+      editMode ? [destinationToEdit] : []
     }
   },
   methods: {
+    /**
+     * Called when the user selects coordinates in the map.
+     * @param {Object} coordinates contains the selected coordinates
+     */
+    handleCoordinateSelection(coordinates) {
+      const { latitude, longitude } = coordinates;
+      this.destination.destinationLat = latitude;
+      this.destination.destinationLon = longitude;
+    },
     /**
      * Gets the users current geo location if permitted.
      */
@@ -451,9 +361,7 @@ export default {
             countryName: null
           }
         };
-        this.$refs.form.reset();
       }
-      this.$refs.form.resetValidation();
     },
     /**
      * Removes a traveller type from chips
@@ -466,14 +374,11 @@ export default {
      * Checks the form is valid and sends the request to add a new destination if so.
      */
     async checkSubmission() {
-      this.$refs.form.validate();
-      if (this.isValidForm) {
         this.formIsLoading = true;
         if (!this.editMode) {
           try {
             const insertedDestination = await sendAddDestination(this.destination);
             this.$emit("addNewDestination", insertedDestination);
-
             this.closeDialog();
             this.formIsLoading = false;
           } catch (error) {
@@ -496,7 +401,6 @@ export default {
               this.$emit("updateDestination", updatedDestination);
               this.formIsLoading = false;
             } catch (error) {
-              console.log(error);
               const message =
                 error.status === 400
                   ? error.response.body.message
@@ -505,14 +409,11 @@ export default {
               this.showError(message);
             }
         }
-      }
     },
     updateCountry(newValue) {
-      console.log("I am setting the country: ", newValue);
       this.destination.destinationCountry = newValue;
     }
   },
-
   watch: {
     /**
      * Called when the dialog prop is modified.
@@ -562,11 +463,20 @@ export default {
   -webkit-text-fill-color: $darker-white;
 }
 
-#latitude {
-  padding: 0 10px 0 0;
-}
+#location-stepper {
 
-#longitude {
-  padding: 0 0 0 10px;
+  #map {
+    width: 100%;
+    height: 30vh;
+  }
+
+  #not-map {
+    margin-top: 20px;
+    margin-bottom: -30px;
+
+    .container {
+      padding: 0;
+    }
+  }
 }
 </style>

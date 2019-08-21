@@ -2,36 +2,31 @@
   <div id="destinations">
     <div id="map">
       <DestinationMap
-              :destinations="getDestinationsCurrentlyViewing()"
+        :destinations="getDestinationsCurrentlyViewing()"
+        :latitude="latitude"
+        :longitude="longitude"
+        @coordinates-selected="addCoordinates"
       />
     </div>
 
     <DestinationSidebar
-            :viewOption="viewOption"
-            :yourDestinations="yourDestinations"
-            :publicDestinations="publicDestinations"
-            v-on:viewOptionChanged="viewOptionChanged"
-            v-on:addDestinationClicked="addDestinationClicked"
-            @refreshDestinations="refreshDestinations"
-            ref="sidebar"
+      :viewOption="viewOption"
+      :yourDestinations="yourDestinations"
+      :publicDestinations="publicDestinations"
+      v-on:viewOptionChanged="viewOptionChanged"
+      v-on:addDestinationClicked="addDestinationClicked"
+      @addNewDestination="addNewDestination"
+      @refreshDestinations="refreshDestinations"
+      ref="sidebar"
+      :latitude="latitude"
+      :longitude="longitude"
     />
-
-    <ModifyDestinationDialog
-            :dialog="showCreateDestDialog"
-            :editMode="false"
-            v-on:addNewDestination="addNewDestination"
-            v-on:dialogChanged="addDestDialogChanged"
-    >
-
-    </ModifyDestinationDialog>
-    <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
 
 <script>
   import DestinationSidebar from "./DestinationSidebar/DestinationSidebar";
   import DestinationMap from "../../components/DestinationMap/DestinationMap";
-  import ModifyDestinationDialog from "./ModifyDestinationDialog/ModifyDestinationDialog";
   import {
     getPublicDestinations,
     getYourDestinations,
@@ -39,34 +34,38 @@
     sendUndoDeleteDestination
   } from "./DestinationsService";
   import Command from "../../components/UndoRedo/Command";
-  import Snackbar from "../../components/Snackbars/Snackbar";
 
   export default {
     components: {
-      Snackbar,
       DestinationSidebar,
-      DestinationMap,
-      ModifyDestinationDialog
+      DestinationMap
     },
     data() {
       return {
+        destination: null,
+        latitude: null,
+        longitude: null,
         yourDestinations: null,
         publicDestinations: null,
         showCreateDestDialog: false,
-        viewOption: "your",
-        snackbarModel: {
-          show: false,
-          text: "",
-          color: "error",
-          duration: 3000,
-          snackbarId: 1
-        }
+        viewOption: "your"
       };
     },
     mounted() {
       this.getYourDestinations();
     },
     methods: {
+      /**
+       * Sets the latitude and longitude coordinates to the given coordinates
+       */
+      addCoordinates(coordinates) {
+        const { latitude, longitude } = coordinates;
+        this.latitude = latitude;
+        this.longitude = longitude;
+      },
+      /**
+       * Refreshes the sidebar when the button is toggled from your destinations and public destinations and vice versa.
+       */
       refreshDestinations() {
         if (this.viewOption === "your") {
           this.getYourDestinations();
@@ -82,7 +81,7 @@
           const yourDestinations = await getYourDestinations();
           this.yourDestinations = yourDestinations;
         } catch (e) {
-          console.log("Could not get your destinations");
+          this.showSnackbar("Could not get your destinations", "error", 3000);
         }
       },
       /**
@@ -92,7 +91,7 @@
         try {
           this.publicDestinations = await getPublicDestinations();
         } catch (e) {
-          console.log("Could not get public destinations");
+          this.showSnackbar("Could not get public destinations", "error", 3000);
         }
       },
       /**
@@ -105,6 +104,18 @@
         if (viewOption === "public" && !this.publicDestinations) {
           this.getPublicDestinations();
         }
+      },
+      /**
+       * @param {String} message the message to show in the snackbar
+       * @param {String} color the colour for the snackbar
+       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       */
+      showSnackbar(message, color, timeout) {
+        this.$root.$emit({
+          message: message,
+          color: color,
+          timeout: timeout
+        });
       },
       /**
        * Shows create destination dialog
@@ -128,9 +139,7 @@
             this.getYourDestinations();
             this.getPublicDestinations();
           } catch (error) {
-            this.snackbarModel.text = error.message;
-            this.snackbarModel.color = "error";
-            this.snackbarModel.show = true;
+            this.showSnackbar("Could not undo the action", "error", 3000);
           }
         };
 
@@ -142,9 +151,7 @@
             this.getPublicDestinations();
             [].shift()
           } catch (error) {
-            this.snackbarModel.text = error.message;
-            this.snackbarModel.color = "error";
-            this.snackbarModel.show = true;
+            this.showSnackbar("Could not redo the action", "error", 3000);
           }
         };
 
@@ -154,6 +161,7 @@
 
       },
       addDestDialogChanged(dialogValue) {
+        this.resetCoordinates();
         this.showCreateDestDialog = dialogValue;
       },
       /**
@@ -171,14 +179,14 @@
 
 <style lang="scss" scoped>
   #destinations {
+    display: flex;
     width: 100%;
-  }
-
-  #map {
-    width: calc(100% - 555px);
-    display: inline-block;
     height: 100%;
-    position: fixed;
+
+    #map {
+      flex-grow: 1;
+      height: 100%;
+    }
   }
 
 </style>

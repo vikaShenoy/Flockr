@@ -22,6 +22,7 @@
             :zoom="7"
             map-type-id="roadmap"
             style="width: 100%; height: 100%"
+            @rightclick="pingMap"
             :options="{
         mapTypeControl: false,
         fullscreenControl: false,
@@ -31,8 +32,18 @@
         fullscreenControl: false,
         minZoom: 2
       }"
+      @click="processClick"
+      @dblclick="dblClickFunc"
     >
 
+      <GmapMarker
+        ref="marker"
+        v-if="marker.length"
+        :position="marker[0].position"
+        :icon="markerOptions"
+        :opacity="marker[0].opacity"
+        :animation="marker[0].animation"
+      />
 
       <GmapMarker
               :key="index"
@@ -59,22 +70,22 @@
           ]"
 
                 :options="{
-            strokeColor: '#4d80af',
-            icons: [{
-              icon: {
-                path: forwardClosedArrow
-              },
-              offset: '100%'
-            }]
-          }"
-        />
+                    strokeColor: colors[destinations[index].group % colors.length],
+                    icons: [{
+                      icon: {
+                        path: forwardClosedArrow
+                      },
+                      offset: '100%'
+                    }]
+                  }"
+                />
       </div>
 
       <GmapInfoWindow
-              :options="infoOptions"
-              :position="infoWindowPos"
-              :opened="infoWindowOpen"
-              @closeclick="infoWindowOpen=false"
+        :options="infoOptions"
+        :position="infoWindowPos"
+        :opened="infoWindowOpen"
+        @closeclick="infoWindowOpen=false"
       >
         <div v-if="infoContent">
           <h4
@@ -110,15 +121,27 @@
 
 <script>
   import {endpoint} from "../../utils/endpoint.js";
+  import UserStore from "../../stores/UserStore";
 
   const publicIcon = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
   const privateIcon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
+  const pingIcon = "http://earth.google.com/images/kml-icons/track-directional/track-8.png";
 
   export default {
     data() {
       return {
+        colors: ['#eb4d4b', '#7ed6df', '#f9ca24'],
+        markerOptions: {
+          url: pingIcon,
+          size: {width: 40, height: 30},
+          scaledSize: {width: 40, height: 30},
+        },
+        clickTimeout: null,
         publicIcon,
         privateIcon,
+        marker: [],
+        latitude: null,
+        longitude: null,
         infoWindowPos: null,
         infoContent: null,
         currentOpenedIndex: null,
@@ -152,9 +175,77 @@
       destinationPhotos: {
         type: Array,
         required: false
+      },
+      panOn: {
+        type: Boolean,
+        required: false
       }
     },
+    mounted() {
+      this.listenOnMessage();
+    },
     methods: {
+      /**
+       * Gets the latitude and longitude of the clicked location
+       */
+      pingMap(event) {
+        this.latitude = event.latLng.lat();
+        this.longitude = event.latLng.lng();
+        this.marker = [];
+        this.marker.push({
+          position: {
+            lat: this.latitude,
+            lng: this.longitude
+          },
+          icon: pingIcon,
+          opacity: 1,
+          animation: google.maps.Animation.BOUNCE
+        });
+        if (this.panOn) {
+          this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
+          this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
+        }
+        const data = {
+          "type": "ping-map",
+          "latitude": this.latitude,
+          "longitude": this.longitude,
+          "tripNodeId": this.$route.params.tripId
+        };
+
+        UserStore.data.socket.send(JSON.stringify(data));
+      },
+      /**
+       * Listens websockets events to for map pings
+       */
+      listenOnMessage() {
+        UserStore.data.socket.addEventListener("message", (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === "ping-map") {
+            this.showPing(message);
+          }
+        })
+        },
+      /**
+       * When the websocket receives a message, this function is called to display the ping
+       */
+      showPing(message) {
+        this.latitude = message.latitude;
+        this.longitude = message.longitude;
+        this.marker = [];
+        this.marker.push({
+          position: {
+            lat: this.latitude,
+            lng: this.longitude
+          },
+          icon: pingIcon,
+          opacity: 1,
+          animation: google.maps.Animation.BOUNCE,
+        });
+
+        if (this.panOn) {
+          this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
+        }
+      },
       /**
        * Transforms destinations to a format that the gmap api understands
        * @returns {Object} the transformed marker object
@@ -186,6 +277,24 @@
       },
       getPhotoUrl(photoId) {
         return endpoint(`/users/photos/${photoId}?Authorization=${localStorage.getItem("authToken")}`);
+      },
+      /**
+       * @param event the event emitted by the map
+       */
+      processClick(event) {
+        let vue = this;
+        this.clickTimeout = setTimeout(function () {
+          const { lat, lng } = event.latLng;
+          vue.$emit('coordinates-selected', {
+            latitude: lat(),
+            longitude: lng()
+          });
+        }, 200);
+      },
+
+      dblClickFunc() {
+        clearTimeout(this.clickTimeout);
+        // INSERT DOUBLE CLICK CODE HERE
       }
     },
     watch: {
@@ -213,6 +322,7 @@
   #map {
     width: 100%;
     height: 100%;
+    position: relative;
   }
 
   #key {
@@ -220,6 +330,13 @@
     top: 10px;
     left: 10px;
     padding: 10px;
+
+    .map-key {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 5px;
+    }
   }
 
   .destination-name {

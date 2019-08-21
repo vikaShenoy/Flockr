@@ -59,7 +59,6 @@
       </td>
     </template>
   </v-data-table>
-
 </template>
 
 <script>
@@ -69,6 +68,7 @@
   import {getYourDestinations} from '../../containers/Destinations/DestinationsService';
 
   export default {
+    name: "TripTable",
     props: {
       tripDestinations: {
         type: Array
@@ -135,7 +135,7 @@
 
           this.destinations = allDestinations;
         } catch (e) {
-          console.log(e);
+          this.$emit("showErrorSnackbar", "Error getting destinations");
         }
       },
 

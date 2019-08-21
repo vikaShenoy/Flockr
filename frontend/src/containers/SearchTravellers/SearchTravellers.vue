@@ -146,7 +146,6 @@
         nationality: "",
         travellerType: "",
         gender: "",
-
         headers: [
           {text: 'Photo', align: 'left', sortable: false, value: 'profilePhoto'},
           {text: 'First Name', align: 'left', sortable: true, value: 'firstName'},
@@ -174,7 +173,7 @@
           this.nationalities.ids.push(currentNationalities[index].nationalityId);
         }
       } catch (error) {
-        console.log(error);
+        this.showError("Could not get nationalities");
       }
 
       // Get all the traveller types
@@ -187,10 +186,25 @@
           this.travellerTypes.ids.push(currentTravellerTypes[index].travellerTypeId);
         }
       } catch (error) {
-        console.log(error);
+        this.showError("Could not get traveller types.");
       }
     },
     methods: {
+        /**
+         * @param {String} message the message to show in the snackbar
+         * @param {String} color the colour for the snackbar
+         * @param {Number} the amount of time (in ms) for which we show the snackbar
+         */
+        showSnackbar(message, color, timeout) {
+            this.$root.$emit("show-snackbar", {
+                message: message,
+                color: color,
+                timeout: timeout
+            });
+        },
+      showError(errorMessage) {
+        this.showSnackbar(errorMessage, "error", 3000);
+			},
       search: async function () {
         // get the queries from the selector variables
         // parse them into an acceptable format to be sent
@@ -226,8 +240,7 @@
                 return {...traveller, age, nationalities: nationalityNames, travellerTypes}
               });
         } catch (error) {
-
-          console.log(error);
+          this.showError("Could not search for travellers")
         }
       },
       clearFilters: async function () {

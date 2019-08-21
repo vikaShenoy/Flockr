@@ -1,7 +1,6 @@
 import roleType from "./roleType";
 import superagent from "superagent";
-import { endpoint } from "../utils/endpoint";
-
+import {endpoint} from "../utils/endpoint";
 
 const UserStore = {
   data: {
@@ -16,11 +15,11 @@ const UserStore = {
     travellerTypes: null,
     gender: null,
     timestamp: null,
-    viewingAsAnotherUser: false
+    viewingAsAnotherUser: false,
+    socket: null
   },
   methods: {
-    setData(user) {
-      console.log("user is: ", user);
+    setData(user, socket) {
       UserStore.data.userId = user.userId;
       UserStore.data.firstName = user.firstName;
       UserStore.data.middleName = user.middleName;
@@ -31,13 +30,17 @@ const UserStore = {
       UserStore.data.passports = user.passports;
       UserStore.data.travellerTypes = user.travellerTypes;
       UserStore.data.gender = user.gender;
-      UserStore.data.timestamp = user.timestamp; 
+      UserStore.data.timestamp = user.timestamp;
       UserStore.roles = user.roles;
 
       const userId = localStorage.getItem("userId");
       const ownUserId = localStorage.getItem("ownUserId");
 
       UserStore.data.viewingAsAnotherUser = ownUserId !== userId;
+
+      if (socket) {
+        UserStore.data.socket = socket;
+      }
     },
     /**
      * Check if a user is an admin
@@ -47,8 +50,9 @@ const UserStore = {
         return false;
       }
 
-      for (const role of UserStore.roles)  {
-        if (role.roleType === roleType.ADMIN || role.roleType === roleType.DEFAULT_ADMIN) {
+      for (const role of UserStore.roles) {
+        if (role.roleType === roleType.ADMIN || role.roleType
+            === roleType.DEFAULT_ADMIN) {
           return true;
         }
         return false;
@@ -61,8 +65,8 @@ const UserStore = {
       if (!this.loggedIn()) {
         return false;
       }
-      
-      for (const role of UserStore.roles)  {
+
+      for (const role of UserStore.roles) {
         if (role.roleType === roleType.DEFAULT_ADMIN) {
           return true;
         }
@@ -95,11 +99,14 @@ const UserStore = {
       UserStore.passports = null;
       UserStore.travellerTypes = null;
       UserStore.gender = null;
-      UserStore.timestamp = null; 
+      UserStore.timestamp = null;
       localStorage.removeItem("userId");
       localStorage.removeItem("authToken");
       localStorage.removeItem("ownUserId");
       UserStore.data.viewingAsAnotherUser = false;
+
+      // Close the websocket
+      UserStore.data.socket.close();
     },
     /**
      * Determines if the user's profile has been completed
@@ -107,10 +114,12 @@ const UserStore = {
      */
 
     profileCompleted() {
-      return UserStore.data.dateOfBirth !== null && UserStore.data.gender !== null && UserStore.data.nationalities.length && UserStore.data.travellerTypes.length;
+      return UserStore.data.dateOfBirth !== null && UserStore.data.gender
+          !== null && UserStore.data.nationalities.length
+          && UserStore.data.travellerTypes.length;
     },
     /**
-     * 
+     *
      */
     viewAsAnotherUser(userData) {
       UserStore.methods.setData(userData);
@@ -124,9 +133,9 @@ const UserStore = {
     async backToOwnAccount() {
       const ownUserId = localStorage.getItem("ownUserId");
       const authToken = localStorage.getItem("authToken");
-      
+
       const res = await superagent.get(endpoint(`/users/${ownUserId}`))
-        .set("Authorization", authToken)
+      .set("Authorization", authToken);
 
       UserStore.methods.setData(res.body);
       localStorage.setItem("userId", ownUserId);

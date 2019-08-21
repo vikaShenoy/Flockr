@@ -1,340 +1,394 @@
 package models;
 
-import javax.persistence.*;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.ebean.Finder;
+import io.ebean.Model;
+import io.ebean.annotation.CreatedTimestamp;
+import io.ebean.annotation.SoftDelete;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.ebean.*;
-import io.ebean.annotation.CreatedTimestamp;
-import io.ebean.annotation.SoftDelete;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import play.data.validation.Constraints;
+
 /**
  * A traveller, who may wish to create trips, go to destinations, book hotels, book flights, etc
  */
 @Entity
 public class User extends Model {
 
-    @Id
-    @Constraints.Required
-    private int userId;
+  /**
+   * This is required by EBean to make queries on the database
+   */
+  public static final Finder<Integer, User> find = new Finder<>(User.class);
 
-    @Constraints.Required
-    private String firstName;
+  @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+  public List<Nationality> nationalities;
 
-    private String middleName;
+  @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+  public List<TravellerType> travellerTypes;
 
-    @Constraints.Required
-    private String lastName;
+  @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+  public List<Passport> passports;
 
-    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    public List<Nationality> nationalities;
+  @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+  public List<Role> roles;
 
-    private Date dateOfBirth;
+  @Id
+  @Constraints.Required
+  private int userId;
+  @Constraints.Required
+  private String firstName;
+  private String middleName;
+  @Constraints.Required
+  private String lastName;
+  private Date dateOfBirth;
+  private String gender;
 
-    private String gender;
+  @Constraints.Required
+  @Column(unique = true)
+  private String email;
 
-    @Constraints.Required
-    @Column(unique = true)
-    private String email;
+  @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+  private List<TripComposite> trips;
 
-    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    public List <TravellerType> travellerTypes;
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+  private List<PersonalPhoto> personalPhotos;
 
-    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    public List<Passport> passports;
+  @OneToOne(cascade = CascadeType.ALL)
+  private PersonalPhoto profilePhoto;
 
-    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
-    public List<Role> roles;
+  @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
+  private List<TreasureHunt> treasureHunt;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Trip> trips;
+  @Constraints.Required
+  @CreatedTimestamp
+  @Column(updatable = false)
+  private java.sql.Timestamp timestamp;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<PersonalPhoto> personalPhotos;
+  @JsonIgnore
+  @Constraints.Required
+  private String passwordHash;
+  private String token;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private PersonalPhoto profilePhoto;
+  @JsonIgnore
+  @SoftDelete
+  @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+  private boolean deleted;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
-    private List<TreasureHunt> treasureHunt;
+  @JsonIgnore
+  private Timestamp deletedExpiry;
 
-    @Constraints.Required
-    @CreatedTimestamp
-    @Column(updatable=false)
-    private java.sql.Timestamp timestamp;
+  /**
+   * Create a new traveller
+   *
+   * @param firstName the traveller's first name
+   * @param middleName the traveller's middle name
+   * @param lastName the traveller's last name
+   * @param passwordHash the traveller's hashed password
+   * @param gender the traveller's gender
+   * @param email the traveller's email address
+   * @param nationalities the traveller's nationalities
+   * @param dateOfBirth the traveller's birthday
+   * @param passports the traveller's passports
+   * @param token the traveller's token
+   */
+  public User(
+      String firstName,
+      String middleName,
+      String lastName,
+      String passwordHash,
+      String gender,
+      String email,
+      List<Nationality> nationalities,
+      List<TravellerType> travellerTypes,
+      Date dateOfBirth,
+      List<Passport> passports,
+      List<Role> roles,
+      String token) {
+    this.firstName = firstName;
+    this.middleName = middleName;
+    this.lastName = lastName;
+    this.passwordHash = passwordHash;
+    this.gender = gender;
+    this.email = email;
+    this.nationalities = nationalities;
+    this.travellerTypes = travellerTypes;
+    this.dateOfBirth = dateOfBirth;
+    this.passports = passports;
+    this.roles = roles;
+    this.token = token;
+  }
 
-    @Constraints.Required
-    private String passwordHash;
+  /**
+   * Constructor used for signin up
+   *
+   * @param firstName Traveller's first name
+   * @param lastName Traveller's last name
+   * @param email Traveller's email
+   * @param passwordHash Traveller's hashed password
+   * @param token Traveller's token
+   */
+  public User(
+      String firstName,
+      String middleName,
+      String lastName,
+      String email,
+      String passwordHash,
+      String token) {
+    this.firstName = firstName;
+    this.middleName = middleName;
+    this.lastName = lastName;
+    this.email = email;
+    this.passwordHash = passwordHash;
+    this.token = token;
+  }
 
-    private String token;
+  @Override
+  public String toString() {
+    return "User{"
+        + "userId="
+        + userId
+        + ", firstName='"
+        + firstName
+        + '\''
+        + ", middleName='"
+        + middleName
+        + '\''
+        + ", lastName='"
+        + lastName
+        + '\''
+        + ", nationalities="
+        + nationalities
+        + ", dateOfBirth="
+        + dateOfBirth
+        + ", gender='"
+        + gender
+        + '\''
+        + ", email='"
+        + email
+        + '\''
+        + ", travellerTypes="
+        + travellerTypes
+        + ", passports="
+        + passports
+        + ", roles="
+        + roles
+        + ", timestamp="
+        + timestamp
+        + ", passwordHash='"
+        + passwordHash
+        + '\''
+        + ", token='"
+        + token
+        + '\''
+        + '}';
+  }
 
-    @JsonIgnore
-    @SoftDelete
-    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean deleted;
-
-    @JsonIgnore
-    private Timestamp deletedExpiry;
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "userId=" + userId +
-                ", firstName='" + firstName + '\'' +
-                ", middleName='" + middleName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", nationalities=" + nationalities +
-                ", dateOfBirth=" + dateOfBirth +
-                ", gender='" + gender + '\'' +
-                ", email='" + email + '\'' +
-                ", travellerTypes=" + travellerTypes +
-                ", passports=" + passports +
-                ", roles=" + roles +
-                ", timestamp=" + timestamp +
-                ", passwordHash='" + passwordHash + '\'' +
-                ", token='" + token + '\'' +
-                '}';
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof User)) {
+      return false;
     }
+    User otherUser = (User) o;
+    return this.getUserId() == otherUser.getUserId();
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof User)) {
-            return false;
-        }
-        User otherUser = (User) o;
-        return this.getUserId() == otherUser.getUserId();
+  @Override
+  public int hashCode() {
+    return ((Integer) this.getUserId()).hashCode();
+  }
+
+  /**
+   * Return true if the user is the default admin
+   *
+   * @return true if the user is the default admin
+   */
+  public boolean isDefaultAdmin() {
+    for (Role r : roles) {
+      if (r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    @Override
-    public int hashCode() {
-        return ((Integer) this.getUserId()).hashCode();
+  /**
+   * Return true if the user is an admin
+   *
+   * @return true if the user is an admin
+   */
+  public boolean isAdmin() {
+    for (Role r : roles) {
+      if (r.getRoleType().equals(RoleType.ADMIN.toString())
+          || r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    /**
-     * Create a new traveller
-     * @param firstName the traveller's first name
-     * @param middleName the traveller's middle name
-     * @param lastName the traveller's last name
-     * @param passwordHash the traveller's hashed password
-     * @param gender the traveller's gender
-     * @param email the traveller's email address
-     * @param nationalities the traveller's nationalities
-     * @param dateOfBirth the traveller's birthday
-     * @param passports the traveller's passports
-     * @param token the traveller's token
-     */
-    public User(String firstName, String middleName, String lastName, String passwordHash, String gender, String email, List<Nationality> nationalities, List<TravellerType> travellerTypes, Date dateOfBirth, List<Passport> passports, List<Role> roles, String token) {
-        this.firstName = firstName;
-        this.middleName = middleName;
-        this.lastName = lastName;
-        this.passwordHash = passwordHash;
-        this.gender = gender;
-        this.email = email;
-        this.nationalities = nationalities;
-        this.travellerTypes = travellerTypes;
-        this.dateOfBirth = dateOfBirth;
-        this.passports =passports;
-        this.roles = roles;
-        this.token = token;
-    }
+  public boolean isDeleted() {
+    return deleted;
+  }
 
-    /**
-     * Constructor used for signin up
-     * @param firstName Traveller's first name
-     * @param lastName Traveller's last name
-     * @param email Traveller's email
-     * @param passwordHash Traveller's hashed password
-     * @param token Traveller's token
-     */
-    public User(String firstName, String middleName, String lastName, String email, String passwordHash, String token) {
-        this.firstName = firstName;
-        this.middleName = middleName;
-        this.lastName = lastName;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.token = token;
-    }
+  public void setDeleted(boolean deleted) {
+    this.deleted = deleted;
+  }
 
-    /**
-     * Return true if the user is the default admin
-     * @return true if the user is the default admin
-     */
-    public boolean isDefaultAdmin() {
-        for (Role r : roles) {
-            if (r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
-                return true;
-            }
-        }
-        return false;
-    }
+  public Timestamp getDeletedExpiry() {
+    return deletedExpiry;
+  }
 
+  public void setDeletedExpiry(Timestamp deletedExpiry) {
+    this.deletedExpiry = deletedExpiry;
+  }
 
-    /**
-     * Return true if the user is an admin
-     * @return true if the user is an admin
-     */
-    public boolean isAdmin() {
-        for (Role r : roles) {
-            if (r.getRoleType().equals(RoleType.ADMIN.toString()) || r.getRoleType().equals(RoleType.SUPER_ADMIN.toString())) {
-                return true;
-            }
-        }
-        return false;
-    }
+  public int getUserId() {
+    return userId;
+  }
 
-    public boolean isDeleted() {
-        return deleted;
-    }
+  public void setUserId(int userId) {
+    this.userId = userId;
+  }
 
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
+  public String getFirstName() {
+    return firstName;
+  }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
 
-    public void setDeletedExpiry(Timestamp deletedExpiry) {
-        this.deletedExpiry = deletedExpiry;
-    }
+  public String getMiddleName() {
+    return middleName;
+  }
 
-    public int getUserId() {
-        return userId;
-    }
+  public void setMiddleName(String middleName) {
+    this.middleName = middleName;
+  }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+  public String getLastName() {
+    return lastName;
+  }
 
-    public String getFirstName() {
-        return firstName;
-    }
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+  public List<Nationality> getNationalities() {
+    return nationalities;
+  }
 
-    public String getMiddleName() {
-        return middleName;
-    }
+  public void setNationalities(List<Nationality> nationalities) {
+    this.nationalities = nationalities;
+  }
 
-    public void setMiddleName(String middleName) {
-        this.middleName = middleName;
-    }
+  public Date getDateOfBirth() {
+    return dateOfBirth;
+  }
 
-    public String getLastName() {
-        return lastName;
-    }
+  public void setDateOfBirth(Date dateOfBirth) {
+    this.dateOfBirth = dateOfBirth;
+  }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+  public String getGender() {
+    return gender;
+  }
 
-    public List<Nationality> getNationalities() {
-        return nationalities;
-    }
+  public void setGender(String gender) {
+    this.gender = gender;
+  }
 
-    public void setNationalities(List<Nationality> nationalities) {
-        this.nationalities = nationalities;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public Date getDateOfBirth() {
-        return dateOfBirth;
-    }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
+  public List<TravellerType> getTravellerTypes() {
+    return travellerTypes;
+  }
 
-    public String getGender() {
-        return gender;
-    }
+  public void setTravellerTypes(List<TravellerType> travellerTypes) {
+    this.travellerTypes = travellerTypes;
+  }
 
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
+  public List<Passport> getPassports() {
+    return passports;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public void setPassports(List<Passport> passports) {
+    this.passports = passports;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  public Timestamp getTimestamp() {
+    return timestamp;
+  }
 
-    public List<TravellerType> getTravellerTypes() {
-        return travellerTypes;
-    }
+  public void setTimestamp(Timestamp timestamp) {
+    this.timestamp = timestamp;
+  }
 
-    public void setTravellerTypes(List<TravellerType> travellerTypes) {
-        this.travellerTypes = travellerTypes;
-    }
+  public List<PersonalPhoto> getPersonalPhotos() {
+    return personalPhotos;
+  }
 
-    public List<Passport> getPassports() {
-        return passports;
-    }
+  public void setPersonalPhotos(List<PersonalPhoto> personalPhotos) {
+    this.personalPhotos = personalPhotos;
+  }
 
-    public void setPassports(List<Passport> passports) {
-        this.passports = passports;
-    }
+  public PersonalPhoto getProfilePhoto() {
+    return profilePhoto;
+  }
 
-    public Timestamp getTimestamp() {
-        return timestamp;
-    }
+  public void setProfilePhoto(PersonalPhoto profilePhoto) {
+    this.profilePhoto = profilePhoto;
+  }
 
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
-    }
+  public String getPasswordHash() {
+    return passwordHash;
+  }
 
-    public List<PersonalPhoto> getPersonalPhotos() {
-        return personalPhotos;
-    }
+  public void setPasswordHash(String passwordHash) {
+    this.passwordHash = passwordHash;
+  }
 
-    public void setPersonalPhotos(List<PersonalPhoto> personalPhotos) {
-        this.personalPhotos = personalPhotos;
-    }
+  public String getToken() {
+    return token;
+  }
 
-    public PersonalPhoto getProfilePhoto() {
-        return profilePhoto;
-    }
+  public void setToken(String token) {
+    this.token = token;
+  }
 
-    public void setProfilePhoto(PersonalPhoto profilePhoto) {
-        this.profilePhoto = profilePhoto;
-    }
+  public List<Role> getRoles() {
+    return roles;
+  }
 
-    public String getPasswordHash() {
-        return passwordHash;
-    }
+  public void setRoles(List<Role> roles) {
+    this.roles = roles;
+  }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public List<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
-    }
-
-    public boolean profileCompleted() {
-        return firstName != null && middleName != null && lastName != null && !nationalities.isEmpty() && dateOfBirth != null && gender != null && email != null && !travellerTypes.isEmpty() && timestamp != null && passwordHash != null && token != null;
-    }
-
-    /**
-     * This is required by EBean to make queries on the database
-     */
-    public static final Finder<Integer, User> find = new Finder<>(User.class);
+  public boolean profileCompleted() {
+    return firstName != null
+        && middleName != null
+        && lastName != null
+        && !nationalities.isEmpty()
+        && dateOfBirth != null
+        && gender != null
+        && email != null
+        && !travellerTypes.isEmpty()
+        && timestamp != null
+        && passwordHash != null
+        && token != null;
+  }
 }

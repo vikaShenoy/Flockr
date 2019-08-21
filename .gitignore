@@ -17,6 +17,9 @@ dist/
 *.log
 *.env
 
+# To avoid changed evolution scripts being tracked as changed after every build
+conf/evolutions/default/*.sql
+
 # Do not upload files to the repo pls
 storage/photos/*.jpg
 storage/photos/*.jpeg

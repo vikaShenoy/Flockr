@@ -20,10 +20,10 @@
               fab
               dark
               color="secondary"
+              @click="addButtonClicked"
       >
         <v-icon
                 dark
-                @click="isAddingATrip = true"
         >add
         </v-icon>
       </v-btn>
@@ -31,7 +31,7 @@
 
     <AddTrip
             v-else
-            @new-trip-was-added="newTripWasAdded"
+            @newTripAdded="newTripWasAdded"
             @cancel-trip-creation="isAddingATrip = false"
     />
   </div>
@@ -72,8 +72,9 @@
        * Creates undo/redo commands and adds them to the stack.
        */
       newTripWasAdded(tripId) {
-        this.refreshTrips();
         this.isAddingATrip = false;
+        this.refreshTrips();
+
 
         let undoCommand = async (tripId) => {
           await deleteTripFromList(tripId);
@@ -115,6 +116,11 @@
        */
       refreshTrips() {
         this.tripListKey += 1;
+      },
+
+      addButtonClicked() {
+        console.log("Add button clicked")
+        this.isAddingATrip = true;
       }
     }
   };
