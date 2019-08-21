@@ -139,14 +139,17 @@ export default {
     async leaveOrDelete() {
      if (this.onlyUser) {
         this.isLoading = true;
-        await deleteTripFromList(this.trip.tripId);
+        await deleteTripFromList(this.trip.tripNodeId);
         this.isLoading = false;
         this.$router.push("/trips");
       } else {
         const usersWithoutCurrent = this.trip.users
           .filter(user => user.userId !== UserStore.data.userId);
         this.isLoading = true;
-        await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, usersWithoutCurrent);
+
+        const trip = {...this.trip};
+        trip.users = usersWithoutCurrent;
+        await editTrip(trip);
         this.isLoading = false;
         this.$router.push("/trips");
       }
