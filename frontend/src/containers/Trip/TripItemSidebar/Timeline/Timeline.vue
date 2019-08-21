@@ -13,6 +13,7 @@
         @toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
         @showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
         @deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
+        @tripNameUpdated="(tripNode, newName) => $emit('tripNameUpdated', tripNode, newName)"
       />
     </v-timeline>
   </div>

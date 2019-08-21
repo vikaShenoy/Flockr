@@ -55,6 +55,7 @@
             @tripNodeOrderChanged="tripNodeOrderChanged"
             @showEditTripDestination="showEditTripDestination"
             @deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
+            @tripNameUpdated="(tripNode, newName) => $emit('nestedTripNameUpdated', tripNode, newName)"
         />
         <v-spacer align="center">
           <v-btn
@@ -368,6 +369,10 @@ export default {
     .trip-name-field {
       -webkit-text-fill-color: white;
       width: 100px !important;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      padding-top: 0px;
+      padding-bottom: 0px;
     }
   }
 </style>
