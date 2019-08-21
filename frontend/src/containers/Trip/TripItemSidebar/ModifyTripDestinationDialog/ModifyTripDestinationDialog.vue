@@ -273,7 +273,7 @@ import { transformTripNode } from '../../TripService';
 
         this.tripDestination.name = this.tripDestination.destination.destinationName;
 
-        const parentTripNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip);
+        const parentTripNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip, null);
         
         if (this.editMode) {
           // Replace trip destination with the new content
@@ -363,7 +363,7 @@ import { transformTripNode } from '../../TripService';
       },
       isShowing(value) {
         this.isShowingDialog = value;
-        if (this.isShowing) {
+        if (this.isShowing && this.editMode) {
           this.tripDestination = this.editedTripDestination;
         }
       },

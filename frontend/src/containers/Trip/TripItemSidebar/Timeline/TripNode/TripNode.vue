@@ -171,7 +171,7 @@ export default {
         this.editedTripName = this.tripNode.name;
         this.isEditingTrip = true;
       } else {
-        this.$emit("showEditTripDestination", tripNode);
+        this.$emit("showEditTripDestination", this.tripNode);
       }
     }
   }

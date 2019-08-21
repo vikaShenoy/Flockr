@@ -246,8 +246,7 @@ export function getTripNodeById(tripNodeId, tripNode) {
  * @param {object} parentTripNode The parent of the current trip node being searched. Initially null.
  * @return {Object} The parent trip node.
  */
-export function getTripNodeParentById(tripNodeId, currentTripNode,
-    parentTripNode) {
+export function getTripNodeParentById(tripNodeId, currentTripNode, parentTripNode) {
   // base case
   if (currentTripNode.tripNodeId === tripNodeId) {
     return parentTripNode;
