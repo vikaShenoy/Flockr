@@ -123,16 +123,20 @@ export default {
   },
 	computed: {
     getArrivalDate() {
-      return this.getTripNodeArrivalDate(this.tripNode);
+      const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
+      return isLeaf ? this.tripNode.arrivalDate : this.getTripNodeArrivalDate(this.tripNode);
 		},
 		getArrivalTime() {
-      return this.getTripNodeArrivalTime(this.tripNode);
+      const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
+      return isLeaf ? this.tripNode.arrivalTime : this.getTripNodeArrivalTime(this.tripNode);
 		},
 		getDepartureDate() {
-      return this.getTripNodeDepartureDate(this.tripNode);
+      const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
+      return isLeaf ? this.tripNode.departureDate : this.getTripNodeDepartureDate(this.tripNode);
 		},
 		getDepartureTime() {
-      return this.getTripNodeDepartureTime(this.tripNode);
+      const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
+      return isLeaf ? this.tripNode.departureTime : this.getTripNodeDepartureTime(this.tripNode);
 		}
 	},
   methods: {
@@ -153,42 +157,42 @@ export default {
     getTripNodeArrivalTime(tripNode) {
       if (tripNode.nodeType === "TripDestinationLeaf") {
         if (tripNode.arrivalDate) {
-          return tripNode.arrivalDate;
+          return tripNode.arrivalTime;
         }
         if (tripNode.departureDate) {
-          return tripNode.departureDate;
+          return tripNode.departureTime;
         }
       } else {
         for (const currentTripNode of tripNode.tripNodes) {
-          return this.getTripNodeArrivalDate(currentTripNode);
+          return this.getTripNodeArrivalTime(currentTripNode);
         }
       }
     },
     getTripNodeDepartureDate(tripNode) {
       if (tripNode.nodeType === "TripDestinationLeaf") {
-        if (tripNode.arrivalDate) {
-          return tripNode.arrivalDate;
-        }
         if (tripNode.departureDate) {
           return tripNode.departureDate;
         }
+        if (tripNode.arrivalDate) {
+          return tripNode.arrivalDate;
+        }
       } else {
-        for (const currentTripNode of tripNode.tripNodes) {
-          return this.getTripNodeArrivalDate(currentTripNode);
+        for (const currentTripNode of [...tripNode.tripNodes].reverse()) {
+          return this.getTripNodeDepartureDate(currentTripNode);
         }
       }
     },
     getTripNodeDepartureTime(tripNode) {
       if (tripNode.nodeType === "TripDestinationLeaf") {
-        if (tripNode.arrivalDate) {
-          return tripNode.arrivalDate;
-        }
         if (tripNode.departureDate) {
-          return tripNode.departureDate;
+          return tripNode.departureTime;
+        }
+        if (tripNode.arrivalDate) {
+          return tripNode.arrivalTime;
         }
       } else {
-        for (const currentTripNode of tripNode.tripNodes) {
-          return this.getTripNodeArrivalDate(currentTripNode);
+        for (const currentTripNode of [...tripNode.tripNodes].reverse()) {
+          return this.getTripNodeDepartureTime(currentTripNode);
         }
       }
     },
