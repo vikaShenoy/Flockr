@@ -21,8 +21,6 @@
       :latitude="latitude"
       :longitude="longitude"
     />
-
-    <Snackbar :snackbarModel="snackbarModel" v-on:dismissSnackbar="snackbarModel.show=false"/>
   </div>
 </template>
 
