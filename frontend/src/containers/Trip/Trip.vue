@@ -28,6 +28,7 @@
       @getNewTrip="getTrip()"
       @setPan="setPan"
       @addEditTripCommand="tripNameChanged"
+      @nestedTripNameUpdated="nestedTripNameChanged"
     />
   </div>
 </template>
@@ -76,29 +77,38 @@
     },
     methods: {
       /**
-           * Called when the trip name is edited.
-           * Sets an edit command for undo redo and updates the trip name.
-           */
-          tripNameChanged(oldTrip, newTrip, newName) {
-            this.addEditTripCommand(oldTrip, newTrip);
-            this.trip.name = newName;
-          },
+         * Called when the trip name is edited.
+         * Sets an edit command for undo redo and updates the trip name.
+         */
+        tripNameChanged(oldTrip, newTrip, newName) {
+          this.addEditTripCommand(oldTrip, newTrip);
+          this.trip.name = newName;
+        },
+        
+        async nestedTripNameChanged(tripNode, newName) {
+          const oldTrip = {...tripNode};
+          tripNode.name = newName;
+          
+          editTrip(tripNode); 
+
+          this.addEditTripCommand(oldTrip, tripNode);
+        },
         newTripAdded(subTrip) {
-              const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
-              this.trip.tripNodes.push(subTrip)
-              editTrip(this.trip);
+          const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
+          this.trip.tripNodes.push(subTrip)
+          editTrip(this.trip);
 
-              const undoCommand = async (subTrip, oldParentTrip) => {
-                await deleteTripFromList(subTrip.tripNodeId);
-                await editTrip(oldParentTrip);
-                this.getTrip();
-      				};
+          const undoCommand = async (subTrip, oldParentTrip) => {
+            await deleteTripFromList(subTrip.tripNodeId);
+            await editTrip(oldParentTrip);
+            this.getTrip();
+          };
 
-        const redoCommand = async (subTrip, newParentTrip) => {
-          await restoreTrip(subTrip.tripNodeId);
-          await editTrip(newParentTrip);
-          this.getTrip();
-        };
+          const redoCommand = async (subTrip, newParentTrip) => {
+            await restoreTrip(subTrip.tripNodeId);
+            await editTrip(newParentTrip);
+            this.getTrip();
+          };
 
         const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldTrip),
             redoCommand.bind(null, subTrip, this.trip));
