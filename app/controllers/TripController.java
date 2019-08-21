@@ -15,6 +15,7 @@ import exceptions.NotFoundException;
 import exceptions.UnauthorizedException;
 import io.ebean.Ebean;
 import io.ebean.text.PathProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
+
 import models.Destination;
 import models.TripComposite;
 import models.TripNode;
@@ -47,6 +49,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 
@@ -55,14 +58,14 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
  */
 public class TripController extends Controller {
 
-  private final UserRepository userRepository;
-  private final TripRepository tripRepository;
-  private final HttpExecutionContext httpExecutionContext;
-  private final TripUtil tripUtil;
-  private final Security security;
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
-  private final DestinationRepository destinationRepository;
-  private final TripNotifier tripNotifier;
+    private final UserRepository userRepository;
+    private final TripRepository tripRepository;
+    private final HttpExecutionContext httpExecutionContext;
+    private final TripUtil tripUtil;
+    private final Security security;
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final DestinationRepository destinationRepository;
+    private final TripNotifier tripNotifier;
 
     @Inject
     public TripController(TripRepository tripRepository, Security security, UserRepository userRepository,
@@ -83,66 +86,66 @@ public class TripController extends Controller {
      * @param userId  id of the user to add a trip for.
      * @param request Used to retrieve trip JSON.
      * @return A completion stage with an HTTP result which can be
-     *  - 200 - Trip was successfully created
-     *  - 403 - User does not have permission to add trip
-     *  - 400 - Problem with request body
-     *  - 404 - User or trip could not be found
-     *  - 500 - Any other internal server error
+     * - 200 - Trip was successfully created
+     * - 403 - User does not have permission to add trip
+     * - 400 - Problem with request body
+     * - 404 - User or trip could not be found
+     * - 500 - Any other internal server error
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-    if (!security.userHasPermission(userFromMiddleware, userId)) {
-      return supplyAsync(Controller::forbidden);
+        if (!security.userHasPermission(userFromMiddleware, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
+        JsonNode jsonBody = request.body().asJson();
+
+        String tripName = jsonBody.get("name").asText();
+        JsonNode tripNodesJson = jsonBody.get("tripNodes");
+        JsonNode userIdsJson = jsonBody.get("userIds");
+
+        return userRepository
+                .getUserById(userId)
+                .thenComposeAsync(
+                        optionalUser -> {
+                            if (!optionalUser.isPresent()) {
+                                throw new CompletionException(new BadRequestException("User does not exist"));
+                            }
+
+                            User user = optionalUser.get();
+
+                            List<TripNode> tripNodes;
+                            List<User> users;
+
+                            try {
+                                List<User> allUsers = User.find.all();
+                                Set<TripComposite> trips = tripRepository.getAllTrips();
+                                tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
+                                users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
+                            } catch (BadRequestException e) {
+                                return CompletableFuture.completedFuture(badRequest(e.getMessage()));
+                            } catch (ForbiddenRequestException e) {
+                                return CompletableFuture.completedFuture(forbidden(e.getMessage()));
+                            } catch (NotFoundException e) {
+                                return CompletableFuture.completedFuture(notFound(e.getMessage()));
+                            }
+
+                            List<CompletionStage<Destination>> updateDestinations =
+                                    checkAndUpdateOwners(userId, tripNodes);
+
+                            return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
+                                    .thenComposeAsync(
+                                            destinations -> {
+                                                TripComposite trip = new TripComposite(tripNodes, users, tripName);
+                                                return tripRepository.saveTrip(trip);
+                                            })
+                                    .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
+                                    .exceptionally(e -> internalServerError());
+                        },
+                        httpExecutionContext.current());
     }
-
-    JsonNode jsonBody = request.body().asJson();
-
-    String tripName = jsonBody.get("name").asText();
-    JsonNode tripNodesJson = jsonBody.get("tripNodes");
-    JsonNode userIdsJson = jsonBody.get("userIds");
-
-    return userRepository
-        .getUserById(userId)
-        .thenComposeAsync(
-            optionalUser -> {
-              if (!optionalUser.isPresent()) {
-                throw new CompletionException(new BadRequestException("User does not exist"));
-              }
-
-              User user = optionalUser.get();
-
-              List<TripNode> tripNodes;
-              List<User> users;
-
-              try {
-                List<User> allUsers = User.find.all();
-                Set<TripComposite> trips = tripRepository.getAllTrips();
-                tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
-                users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
-              } catch (BadRequestException e) {
-                return CompletableFuture.completedFuture(badRequest(e.getMessage()));
-              } catch (ForbiddenRequestException e) {
-                return CompletableFuture.completedFuture(forbidden(e.getMessage()));
-              } catch (NotFoundException e) {
-                return CompletableFuture.completedFuture(notFound(e.getMessage()));
-              }
-
-              List<CompletionStage<Destination>> updateDestinations =
-                  checkAndUpdateOwners(userId, tripNodes);
-
-              return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
-                  .thenComposeAsync(
-                      destinations -> {
-                        TripComposite trip = new TripComposite(tripNodes, users, tripName);
-                        return tripRepository.saveTrip(trip);
-                      })
-                  .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
-                  .exceptionally(e -> internalServerError());
-            },
-            httpExecutionContext.current());
-  }
 
     /**
      * Endpoint to get a trip's information.
@@ -156,142 +159,142 @@ public class TripController extends Controller {
     public CompletionStage<Result> getTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-    if (!security.userHasPermission(user, userId)) {
-      return supplyAsync(Controller::forbidden);
+        if (!security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
+        return tripRepository
+                .getTripByIds(tripId, userId)
+                .thenApplyAsync(
+                        optionalTrip -> {
+                            if (!optionalTrip.isPresent()) {
+                                return notFound();
+                            }
+                            TripComposite trip = optionalTrip.get();
+                            JsonNode tripJson = Json.toJson(trip);
+                            List<User> connectedUsersInTrip = new ArrayList<>();
+                            List<User> usersInTrip = trip.getUsers();
+                            Map<User, ActorRef> connectedUsers = ConnectedUsers.getInstance().getConnectedUsers();
+
+
+                            for (User currentUser : usersInTrip) {
+                                if (connectedUsers.containsKey(currentUser)) {
+                                    connectedUsersInTrip.add(currentUser);
+                                }
+                            }
+                            ((ObjectNode) tripJson).set("connectedUsers", Json.toJson(connectedUsersInTrip));
+                            return ok(tripJson);
+                        });
     }
 
-    return tripRepository
-        .getTripByIds(tripId, userId)
-        .thenApplyAsync(
-            optionalTrip -> {
-              if (!optionalTrip.isPresent()) {
-                return notFound();
-              }
-              TripComposite trip = optionalTrip.get();
-              JsonNode tripJson = Json.toJson(trip);
-                List<User> connectedUsersInTrip = new ArrayList<>();
-                List<User> usersInTrip = trip.getUsers();
-                Map<User, ActorRef> connectedUsers = ConnectedUsers.getInstance().getConnectedUsers();
+    /**
+     * Endpoint to delete a user's trip.
+     *
+     * @param userId  The user who's trip is deleted.
+     * @param tripId  The trip to delete.
+     * @param request HTTP req
+     * @return A result object, with status code 200 if successful. 400 if the trip isn't found. 500
+     * for other errors.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
 
+        if (!security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
 
-                for (User currentUser : usersInTrip) {
-                    if (connectedUsers.containsKey(currentUser)) {
-                        connectedUsersInTrip.add(currentUser);
-                    }
-                }
-                ((ObjectNode) tripJson).set("connectedUsers", Json.toJson(connectedUsersInTrip));
-              return ok(tripJson);
-            });
+        return tripRepository
+                .getTripByIds(tripId, userId)
+                .thenComposeAsync(
+                        optionalTrip -> {
+                            if (!optionalTrip.isPresent()) {
+                                throw new CompletionException(new NotFoundException());
+                            }
+
+                            TripComposite trip = optionalTrip.get();
+                            return tripRepository.deleteTrip(trip);
+                        },
+                        httpExecutionContext.current())
+                .thenApplyAsync(trip -> (Result) ok(), httpExecutionContext.current())
+                // Exceptions / error checking
+                .exceptionally(
+                        e -> {
+                            try {
+                                throw e.getCause();
+                            } catch (NotFoundException notFoundError) {
+                                return notFound("Trip id was not found");
+                            } catch (Throwable serverError) {
+                                return internalServerError();
+                            }
+                        });
     }
 
-  /**
-   * Endpoint to delete a user's trip.
-   *
-   * @param userId The user who's trip is deleted.
-   * @param tripId The trip to delete.
-   * @param request HTTP req
-   * @return A result object, with status code 200 if successful. 400 if the trip isn't found. 500
-   *     for other errors.
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
-    User user = request.attrs().get(ActionState.USER);
+    /**
+     * Undo the soft-delete for a trip.
+     *
+     * @param userId  user who owns the trip.
+     * @param tripId  id of the trip to un-soft delete.
+     * @param request HTTP request object.
+     * @return - 200 with trip if successful - 400 bad request if the trip hasn't been deleted - 401
+     * unauthorized if the user is unauthorized - 403 forbidden if the user isn't allowed to undo
+     * the delete - 404 not found if the trip can't be found in the db - 500 internal server error
+     * for other errors
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
+        User user = request.attrs().get(ActionState.USER);
 
-    if (!security.userHasPermission(user, userId)) {
-      return supplyAsync(Controller::forbidden);
+        if (!security.userHasPermission(user, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
+        return tripRepository
+                .getTripByIdsIncludingDeleted(tripId, userId)
+                .thenComposeAsync(
+                        optionalTrip -> {
+                            if (!optionalTrip.isPresent()) {
+                                throw new CompletionException(new NotFoundException());
+                            }
+
+                            TripNode trip = optionalTrip.get();
+                            if (!user.isAdmin() && user.getUserId() != userId) {
+                                throw new CompletionException(
+                                        new ForbiddenRequestException(
+                                                "You do not have permission to undo this deletion."));
+                            }
+                            if (!trip.isDeleted()) {
+                                throw new CompletionException(
+                                        new BadRequestException("This trip has not been deleted."));
+                            }
+
+                            return tripRepository.restoreTrip(trip);
+                        })
+                .thenApplyAsync(trip -> ok(Json.toJson(trip)))
+                .exceptionally(
+                        error -> {
+                            ObjectNode message = Json.newObject();
+                            try {
+                                throw error.getCause();
+                            } catch (BadRequestException e) {
+                                message.put("message", e.getMessage());
+                                return badRequest(message);
+                            } catch (UnauthorizedException e) {
+                                message.put("message", e.getMessage());
+                                return unauthorized(message);
+                            } catch (ForbiddenRequestException e) {
+                                message.put("message", e.getMessage());
+                                return forbidden(message);
+                            } catch (NotFoundException e) {
+                                message.put("message", e.getMessage());
+                                return notFound(message);
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                                log.error("An unexpected error has occurred", e);
+                                return internalServerError();
+                            }
+                        });
     }
-
-    return tripRepository
-        .getTripByIds(tripId, userId)
-        .thenComposeAsync(
-            optionalTrip -> {
-              if (!optionalTrip.isPresent()) {
-                throw new CompletionException(new NotFoundException());
-              }
-
-              TripComposite trip = optionalTrip.get();
-              return tripRepository.deleteTrip(trip);
-            },
-            httpExecutionContext.current())
-        .thenApplyAsync(trip -> (Result) ok(), httpExecutionContext.current())
-        // Exceptions / error checking
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundError) {
-                return notFound("Trip id was not found");
-              } catch (Throwable serverError) {
-                return internalServerError();
-              }
-            });
-  }
-
-  /**
-   * Undo the soft-delete for a trip.
-   *
-   * @param userId user who owns the trip.
-   * @param tripId id of the trip to un-soft delete.
-   * @param request HTTP request object.
-   * @return - 200 with trip if successful - 400 bad request if the trip hasn't been deleted - 401
-   *     unauthorized if the user is unauthorized - 403 forbidden if the user isn't allowed to undo
-   *     the delete - 404 not found if the trip can't be found in the db - 500 internal server error
-   *     for other errors
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
-    User user = request.attrs().get(ActionState.USER);
-
-    if (!security.userHasPermission(user, userId)) {
-      return supplyAsync(Controller::forbidden);
-    }
-
-    return tripRepository
-        .getTripByIdsIncludingDeleted(tripId, userId)
-        .thenComposeAsync(
-            optionalTrip -> {
-              if (!optionalTrip.isPresent()) {
-                throw new CompletionException(new NotFoundException());
-              }
-
-              TripNode trip = optionalTrip.get();
-              if (!user.isAdmin() && user.getUserId() != userId) {
-                throw new CompletionException(
-                    new ForbiddenRequestException(
-                        "You do not have permission to undo this deletion."));
-              }
-              if (!trip.isDeleted()) {
-                throw new CompletionException(
-                    new BadRequestException("This trip has not been deleted."));
-              }
-
-              return tripRepository.restoreTrip(trip);
-            })
-        .thenApplyAsync(trip -> ok(Json.toJson(trip)))
-        .exceptionally(
-            error -> {
-              ObjectNode message = Json.newObject();
-              try {
-                throw error.getCause();
-              } catch (BadRequestException e) {
-                message.put("message", e.getMessage());
-                return badRequest(message);
-              } catch (UnauthorizedException e) {
-                message.put("message", e.getMessage());
-                return unauthorized(message);
-              } catch (ForbiddenRequestException e) {
-                message.put("message", e.getMessage());
-                return forbidden(message);
-              } catch (NotFoundException e) {
-                message.put("message", e.getMessage());
-                return notFound(message);
-              } catch (Throwable e) {
-                e.printStackTrace();
-                log.error("An unexpected error has occurred", e);
-                return internalServerError();
-              }
-            });
-  }
 
     /**
      * Endpoint to update a trips destinations.
@@ -311,198 +314,197 @@ public class TripController extends Controller {
     public CompletionStage<Result> updateTrip(Http.Request request, int userId, int tripId) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-    if (!security.userHasPermission(userFromMiddleware, userId)) {
-      return supplyAsync(Controller::forbidden);
+        if (!security.userHasPermission(userFromMiddleware, userId)) {
+            return supplyAsync(Controller::forbidden);
+        }
+
+        return tripRepository
+                .getTripByIds(tripId, userId)
+                .thenComposeAsync(
+                        optionalTrip -> {
+                            if (!optionalTrip.isPresent()) {
+                                throw new CompletionException(new NotFoundException());
+                            }
+                            JsonNode jsonBody = request.body().asJson();
+                            String tripName = jsonBody.get("name").asText();
+                            JsonNode tripNodesJson = jsonBody.get("tripNodes");
+                            JsonNode userIdsJson = jsonBody.get("userIds");
+
+                            List<TripNode> tripNodes;
+                            List<User> users;
+                            try {
+                                List<User> allUsers = User.find.all();
+                                Set<TripComposite> trips = tripRepository.getAllTrips();
+                                tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
+                                users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
+
+                            } catch (BadRequestException e) {
+                                throw new CompletionException(new BadRequestException());
+                            } catch (ForbiddenRequestException e) {
+                                return CompletableFuture.completedFuture(forbidden(e.getMessage()));
+                            } catch (NotFoundException e) {
+                                System.out.println(e.getMessage());
+                                return CompletableFuture.completedFuture(notFound(e.getMessage()));
+                            }
+
+                            List<CompletionStage<Destination>> updateDestinations =
+                                    checkAndUpdateOwners(userId, tripNodes);
+
+                            return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
+                                    .thenComposeAsync(
+                                            destinations -> {
+                                                TripComposite trip = optionalTrip.get();
+
+                                                // Delete old destination leaf nodes.
+                                                tripRepository.deleteListOfTrips(trip.getTripNodes());
+
+                                                trip.setTripNodes(tripNodes);
+                                                trip.setName(tripName);
+
+                                                if (tripNodesJson != null) {
+                                                    trip.setUsers(users);
+                                                }
+
+                                                return tripRepository.update(trip);
+                                            })
+                                    .thenComposeAsync(trip -> {
+                                        //return ok(Json.toJson(trip));
+                                        return tripRepository.getTripByIds(tripId, userId);
+                                    }).thenApplyAsync(optionalUpdatedTrip -> {
+                                        // If user removes themselves from trip, then a trip won't be present
+                                        if (!optionalUpdatedTrip.isPresent()) {
+                                            return ok();
+                                        }
+
+                                        tripNotifier.notifyTripUpdate(userFromMiddleware, optionalUpdatedTrip.get());
+
+
+                                        return ok(Json.toJson(optionalUpdatedTrip.get()));
+                                    });
+                        },
+                        httpExecutionContext.current())
+                .exceptionally(
+                        e -> {
+                            try {
+                                throw e.getCause();
+                            } catch (NotFoundException notFoundError) {
+                                return notFound();
+                            } catch (BadRequestException badRequestError) {
+                                return badRequest();
+                            } catch (Throwable serverError) {
+                                serverError.printStackTrace();
+                                return internalServerError();
+                            }
+                        });
     }
 
-    return tripRepository
-        .getTripByIds(tripId, userId)
-        .thenComposeAsync(
-            optionalTrip -> {
-              if (!optionalTrip.isPresent()) {
-                throw new CompletionException(new NotFoundException());
-              }
-              JsonNode jsonBody = request.body().asJson();
-              String tripName = jsonBody.get("name").asText();
-              JsonNode tripNodesJson = jsonBody.get("tripNodes");
-              JsonNode userIdsJson = jsonBody.get("userIds");
+    /**
+     * Creates a list of completable futures that: Check the owners of each destination and updates
+     * them to null if they meet ALL of the following criteria: - The destination is public - The
+     * owner is not already null - The user is not the owner
+     *
+     * @param userId           the id of the user that owns the trip.
+     * @param tripDestinations the destinations of the trip.
+     * @return List&lt CompletionStage&lt Destination &gt &gt the list of completion stages.
+     */
+    private List<CompletionStage<Destination>> checkAndUpdateOwners(int userId, List<TripNode> tripDestinations) {
+        List<CompletionStage<Destination>> updateDestinations = new ArrayList<>();
+        for (TripNode tripDestination : tripDestinations) {
+            if (tripDestination.getNodeType().equals("TripDestinationLeaf")) {
+                CompletionStage<Destination> updateDestination =
+                        destinationRepository.getDestinationById(
+                                tripDestination.getDestination().getDestinationId())
+                                .thenApplyAsync(destination -> {
+                                            if (destination.isPresent() &&  // The destination exists
+                                                    // The destination is public
+                                                    destination.get().getIsPublic() &&
+                                                    // The owner is not already null
+                                                    destination.get().getDestinationOwner() != null &&
+                                                    // The user doesn't own the destination
+                                                    !destination.get().getDestinationOwner().equals(userId)) {
+                                                destination.get().setDestinationOwner(null);
+                                                destinationRepository.update(destination.get());
+                                            }
+                                            return destination.get();
+                                        }
+                                );
+                updateDestinations.add(updateDestination);
 
-              List<TripNode> tripNodes;
-              List<User> users;
-              try {
-                List<User> allUsers = User.find.all();
-                Set<TripComposite> trips = tripRepository.getAllTrips();
-                tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
-                users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
-
-              } catch (BadRequestException e) {
-                throw new CompletionException(new BadRequestException());
-              } catch (ForbiddenRequestException e) {
-                return CompletableFuture.completedFuture(forbidden(e.getMessage()));
-              } catch (NotFoundException e) {
-                System.out.println(e.getMessage());
-                return CompletableFuture.completedFuture(notFound(e.getMessage()));
-              }
-
-              List<CompletionStage<Destination>> updateDestinations =
-                  checkAndUpdateOwners(userId, tripNodes);
-
-              return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
-                  .thenComposeAsync(
-                      destinations -> {
-                        TripComposite trip = optionalTrip.get();
-
-                        // Delete old destination leaf nodes.
-                        tripRepository.deleteListOfTrips(trip.getTripNodes());
-
-                        trip.setTripNodes(tripNodes);
-                        trip.setName(tripName);
-
-                        if (tripNodesJson != null) {
-                          trip.setUsers(users);
-                        }
-
-                        return tripRepository.update(trip);
-                      })
-                      .thenComposeAsync(trip -> {
-                          //return ok(Json.toJson(trip));
-                          return tripRepository.getTripByIds(tripId, userId);
-                      }).thenApplyAsync(optionalUpdatedTrip -> {
-                          // If user removes themselves from trip, then a trip won't be present
-                          if (!optionalUpdatedTrip.isPresent()) {
-                              return ok();
-                          }
-
-                          tripNotifier.notifyTripUpdate(userFromMiddleware, optionalUpdatedTrip.get());
-
-
-                          return ok(Json.toJson(optionalUpdatedTrip.get()));
-                      });
-            },
-            httpExecutionContext.current())
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundError) {
-                return notFound();
-              } catch (BadRequestException badRequestError) {
-                return badRequest();
-              } catch (Throwable serverError) {
-                serverError.printStackTrace();
-                return internalServerError();
-              }
-            });
-  }
-
-  /**
-   * Creates a list of completable futures that: Check the owners of each destination and updates
-   * them to null if they meet ALL of the following criteria: - The destination is public - The
-   * owner is not already null - The user is not the owner
-   *
-   * @param userId the id of the user that owns the trip.
-   * @param tripDestinations the destinations of the trip.
-   * @return List&lt CompletionStage&lt Destination &gt &gt the list of completion stages.
-   */
-  private List<CompletionStage<Destination>> checkAndUpdateOwners(
-      // TODO: issue #61
-      int userId, List<TripNode> tripDestinations) {
-    List<CompletionStage<Destination>> updateDestinations = new ArrayList<>();
-    //        for (TripNode tripDestination : tripDestinations) {
-    //
-    //            CompletionStage<Destination> updateDestination =
-    // destinationRepository.getDestinationById(
-    //                    tripDestination.getDestination().getDestinationId())
-    //                    .thenApplyAsync(destination -> {
-    //                                if (destination.isPresent() &&  // The destination exists
-    //                                        // The destination is public
-    //                                        destination.get().getIsPublic() &&
-    //                                        // The owner is not already null
-    //                                        destination.get().getDestinationOwner() != null &&
-    //                                        // The user doesn't own the destination
-    //
-    // !destination.get().getDestinationOwner().equals(userId)) {
-    //                                    destination.get().setDestinationOwner(null);
-    //                                    destinationRepository.update(destination.get());
-    //                                }
-    //                                return destination.get();
-    //                            }
-    //                    );
-    //            updateDestinations.add(updateDestination);
-    //        }
-    //        return updateDestinations;
-    updateDestinations.add(
+            }
+        }
+        return updateDestinations;
+/*    updateDestinations.add(
         supplyAsync(() -> new Destination(null, null, null, null, null, null, null, null, true)));
-    return updateDestinations;
-  }
-
-  /**
-   * Endpoint to get a users' trips.
-   *
-   * @param request - Request object to get the users ID
-   * @param userId - Irrelevant ID for consistency reasons
-   * @return Returns the http response which can be - 200 - Returns the list of trips
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> getTrips(Http.Request request, int userId) {
-    User userFromMiddleware = request.attrs().get(ActionState.USER);
-
-    if (!userFromMiddleware.isAdmin() && userId != userFromMiddleware.getUserId()) {
-      return supplyAsync(() -> ok(Json.toJson(new ArrayList<>())));
+    return updateDestinations;*/
     }
 
-    return tripRepository
-        .getTripsByUserId(userId)
-        .thenApplyAsync(
-            trips -> {
-              JsonNode tripsJson = Json.toJson(trips);
-              return ok(tripsJson);
-            },
-            httpExecutionContext.current());
-  }
+    /**
+     * Endpoint to get a users' trips.
+     *
+     * @param request - Request object to get the users ID
+     * @param userId  - Irrelevant ID for consistency reasons
+     * @return Returns the http response which can be - 200 - Returns the list of trips
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getTrips(Http.Request request, int userId) {
+        User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-  /**
-   * Retrieves a list of a user's trips that have no parent (High Level)
-   *
-   * @param userId of the owner of the trips
-   * @param request the http request.
-   * @return the result to return to the client. TODO: no status codes
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> getHighLevelTrips(int userId, Http.Request request) {
-    User middlewareUser = request.attrs().get(ActionState.USER);
+        if (!userFromMiddleware.isAdmin() && userId != userFromMiddleware.getUserId()) {
+            return supplyAsync(() -> ok(Json.toJson(new ArrayList<>())));
+        }
 
-    if (userId != middlewareUser.getUserId() && !middlewareUser.isAdmin()) {
-      return supplyAsync(Controller::forbidden);
+        return tripRepository
+                .getTripsByUserId(userId)
+                .thenApplyAsync(
+                        trips -> {
+                            JsonNode tripsJson = Json.toJson(trips);
+                            return ok(tripsJson);
+                        },
+                        httpExecutionContext.current());
     }
 
-    return tripRepository
-        .getHighLevelTripsByUserId(userId)
-        .thenApplyAsync(
-            trips -> {
-              List<TripComposite> tripComposites = new ArrayList<>();
-              for (TripComposite tripComposite : trips) {
-                if (tripComposite.getParents().size() == 0) {
-                  tripComposites.add(tripComposite);
-                } else {
-                  List<TripNode> parents = tripComposite.getParents();
-                  List<Integer> userIds = new ArrayList<>();
-                  for (TripNode parent : parents) {
-                    List<User> users = parent.getUsers();
-                    for (User user : users) {
-                      userIds.add(user.getUserId());
-                    }
-                  }
-                  if (!userIds.contains(userId)) {
-                    tripComposites.add(tripComposite);
-                  }
-                }
-              }
+    /**
+     * Retrieves a list of a user's trips that have no parent (High Level)
+     *
+     * @param userId  of the owner of the trips
+     * @param request the http request.
+     * @return the result to return to the client. TODO: no status codes
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getHighLevelTrips(int userId, Http.Request request) {
+        User middlewareUser = request.attrs().get(ActionState.USER);
 
-              PathProperties pathProperties = PathProperties.parse("tripNodeId, name");
-              String tripsJson = Ebean.json().toJson(tripComposites, pathProperties);
-              return ok(Json.parse(tripsJson));
-            },
-            httpExecutionContext.current());
-  }
+        if (userId != middlewareUser.getUserId() && !middlewareUser.isAdmin()) {
+            return supplyAsync(Controller::forbidden);
+        }
+
+        return tripRepository
+                .getHighLevelTripsByUserId(userId)
+                .thenApplyAsync(
+                        trips -> {
+                            List<TripComposite> tripComposites = new ArrayList<>();
+                            for (TripComposite tripComposite : trips) {
+                                if (tripComposite.getParents().size() == 0) {
+                                    tripComposites.add(tripComposite);
+                                } else {
+                                    List<TripNode> parents = tripComposite.getParents();
+                                    List<Integer> userIds = new ArrayList<>();
+                                    for (TripNode parent : parents) {
+                                        List<User> users = parent.getUsers();
+                                        for (User user : users) {
+                                            userIds.add(user.getUserId());
+                                        }
+                                    }
+                                    if (!userIds.contains(userId)) {
+                                        tripComposites.add(tripComposite);
+                                    }
+                                }
+                            }
+
+                            PathProperties pathProperties = PathProperties.parse("tripNodeId, name");
+                            String tripsJson = Ebean.json().toJson(tripComposites, pathProperties);
+                            return ok(Json.parse(tripsJson));
+                        },
+                        httpExecutionContext.current());
+    }
 }
