@@ -1,5 +1,5 @@
 const env = process.env.NODE_ENV;
-const REMOTE_URL = "http://csse-s302g5.canterbury.ac.nz";
+const REMOTE_URL = "https://csse-s302g5.canterbury.ac.nz";
 const GOOGLE_MAPS_KEY = process.env.VUE_APP_GOOGLE_MAP_API;
 
 let backendUrl = "";
