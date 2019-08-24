@@ -3,36 +3,15 @@
     <div>
       <h2>Welcome to </h2>
       <h1>Flockr</h1>
-      <v-btn
-        color="secondary"
-        depressed
-        @click="addToRoom"
-      >Connect janus
-      </v-btn>
-
-      <div id="mixedaudio"></div>
     </div>
   </div>
 </template>
 
 <script>
-  import { initJanus, addToRoom } from "./audioBridge";
-
   export default {
     data() {
       return {
-        remoteStream: null
-      }
-    },
-    mounted() {
-      initJanus(this.remoteStreamAdded);
-    },
-    methods: {
-      addToRoom() {
-        addToRoom();
-      },
-      remoteStreamAdded(remoteStream) {
-        this.$refs.audio.srcObject = remoteStream;
+        e1: 0
       }
     }
   }
