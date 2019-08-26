@@ -4,28 +4,29 @@
       <h2>Welcome to </h2>
       <h1>Flockr</h1>
       <v-btn color="primary" depressed @click="joinRoom">Join Room</v-btn>
-      <audio v-if="stream" :srcObject="stream" autoplay></audio>
+      
+      <audio id="roomaudio" autoplay></audio>
     </div>
   </div>
 </template>
 
 <script>
   import { joinRoom, VoiceChat } from "./webrtc";
+  import Janus from "./janus";
 
   let voiceChat;
 
   export default {
     data() {
       return {
-        stream: null
+        streamFound: false 
       }
     },
     mounted() {
       const room = 1234;
       voiceChat = new VoiceChat(room);
       voiceChat.on("remoteUserConnected", stream => {
-        console.log("This.stream is: " + this.stream);
-        this.stream = stream;
+        Janus.attachMediaStream(document.querySelector('#roomaudio'), stream);
       });
 
       voiceChat.on("error", error => {

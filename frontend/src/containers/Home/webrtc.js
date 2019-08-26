@@ -84,6 +84,8 @@ export class VoiceChat extends EventEmitter {
    * @param {} jsep Incoming session establishment message
    */
   messageReceived = (message, sessionMessage) => {
+    console.log("message is: " + message);
+    console.log("sessionMessage is: " + sessionMessage);
     const event = message.audiobridge;
     Janus.debug("Event: " + event);
     if (event) {
@@ -94,7 +96,7 @@ export class VoiceChat extends EventEmitter {
         if (!this.webrtcUp) {
           this.webrtcUp = true;
           // Publish our stream
-          this.publishStream();
+          this.createOffer();
         }
 
         // If there are already participants when joining, then emit up
