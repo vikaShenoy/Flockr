@@ -3,17 +3,48 @@
     <div>
       <h2>Welcome to </h2>
       <h1>Flockr</h1>
+      <v-btn color="primary" depressed @click="joinRoom">Join Room</v-btn>
+      <audio v-if="stream" :srcObject="stream" autoplay></audio>
     </div>
   </div>
 </template>
 
 <script>
+  import { joinRoom, VoiceChat } from "./webrtc";
+
+  let voiceChat;
+
   export default {
     data() {
       return {
-        e1: 0
+        stream: null
       }
-    }
+    },
+    mounted() {
+      const room = 1234;
+      voiceChat = new VoiceChat(room);
+      voiceChat.on("remoteUserConnected", stream => {
+        console.log("This.stream is: " + this.stream);
+        this.stream = stream;
+      });
+
+      voiceChat.on("error", error => {
+        console.log(error);
+      });
+
+      voiceChat.on("participants", participants => {
+        console.log(participants);
+      })
+    },
+    methods: {
+      remoteStreamAdded(stream) {
+        this.stream = stream; 
+      },
+      joinRoom() {
+        voiceChat.joinRoom();
+      } 
+    },
+    
   }
 </script>
 
