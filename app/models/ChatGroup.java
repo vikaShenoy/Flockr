@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
 
@@ -21,8 +22,9 @@ public class ChatGroup extends Model {
     @ManyToMany
     private List<User> users;
 
-
-    @OneToMany(mappedBy = "chatGroup", cascade = CascadeType.ALL)
+    @JsonIgnore
+    // Fetch lazily so that we don't get all messages when fetching the chat group
+    @OneToMany(mappedBy = "chatGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Message> messages;
 
     // Is transient because we don't want to insert into db

@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
@@ -66,6 +67,12 @@ public class ChatControllerTest {
     adminUser.setRoles(roles);
     adminUser.save();
     otherUser.save();
+
+    List<User> usersInChat = new ArrayList<>();
+    usersInChat.add(user);
+    usersInChat.add(otherUser);
+    ChatGroup chatGroup = new ChatGroup("my chat", usersInChat, new ArrayList<>());
+    chatGroup.save();
   }
 
   @After
@@ -154,6 +161,45 @@ public class ChatControllerTest {
     Result result = fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken()) ;;
     Assert.assertEquals(400, result.status());
   }
+
+  @Test
+  public void shouldNotCreatChatWhenNotLoggedIn() {
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", "my chat name");
+    chatGroupBody.putArray("userIds")
+            .add(otherUser.getUserId());
+
+    String endpoint = "/api/chats";
+    Result result = fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, "random-invalid-token");
+    Assert.assertEquals(401, result.status());
+  }
+
+  @Test
+  public void shouldGetAllChatsForUser() throws IOException {
+    String endpoint = "/api/chats";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+    JsonNode responseBody = PlayResultToJson.convertResultToJson(result);
+    Assert.assertEquals(200, result.status());
+    Assert.assertEquals(1, responseBody.size());
+
+    JsonNode chatGroupJson = responseBody.get(0);
+
+    Assert.assertTrue(chatGroupJson.has("name"));
+    Assert.assertTrue(!chatGroupJson.has("messages"));
+    Assert.assertTrue(chatGroupJson.has("users"));
+    Assert.assertEquals(user.getUserId(), chatGroupJson.get("users").get(0).get("userId").asInt());
+    Assert.assertEquals(otherUser.getUserId(), chatGroupJson.get("users").get(1).get("userId").asInt());
+  }
+
+  @Test
+  public void shouldNotGetChatsIfUserIsNotLoggedIn() throws IOException {
+    String endpoint = "/api/chats";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, "some-invalid-token");
+    JsonNode responseBody = PlayResultToJson.convertResultToJson(result);
+    Assert.assertEquals(401, result.status());
+  }
+
+
 
 
 
