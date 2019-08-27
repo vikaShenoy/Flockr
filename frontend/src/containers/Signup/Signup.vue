@@ -76,7 +76,6 @@
 </template>
 
 <script>
-
   import {emailTaken, getUser, rules, signup, updateBasicInfo} from "./SignupService.js";
   import {getNationalities} from "../Profile/Nationalities/NationalityService.js";
   import {getPassports} from "../Profile/Passports/PassportService.js";
@@ -84,6 +83,7 @@
   import {validate} from "email-validator";
   import moment from "moment";
   import UserStore from "../../stores/UserStore";
+  import config from '../../config';
 
   export default {
     props: {
@@ -338,7 +338,8 @@
           } else {
               const user = await getUser(this.signedUpUserId);
               UserStore.methods.setData(user);
-              const socket = new WebSocket(`ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`);
+              const socket = new WebSocket(`${config.websocketUrl}?Authorization=${localStorage.getItem("authToken")}`);
+              UserStore.data.socket = socket;
               this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
           }
 

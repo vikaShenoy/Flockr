@@ -103,7 +103,7 @@
     </GmapMap>
 
 
-    <v-card id="key">
+    <v-card id="key" v-if="isTripMap">
       <h3>Key</h3>
       <div class="map-key">
         Public: <img style="margin-left: 5px;" :src="publicIcon"/>
@@ -371,8 +371,8 @@
   }
 
   #overlay {
-    top: 64px;
-    background-color: rgba(0, 0, 0, 0.4);
+    top: 0px;
+    background-color: rgba(0, 0, 0, 0.2);
     pointer-events: none;
     position: absolute;
     width: 100%;

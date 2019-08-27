@@ -363,7 +363,7 @@ export default {
     #manage-trip-btn {
       position: absolute;
       left: 5px;
-      margin-top: 0;
+      margin-top: -10px;
     }
 
     .trip-name-field {
