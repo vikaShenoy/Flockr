@@ -31,14 +31,6 @@
       }
     },
     mounted() {
-    },
-    methods: {
-      remoteStreamAdded(stream) {
-        this.stream = stream; 
-      },
-      joinRoom() {
-        this.hasJoined = true;
-
         const room = 1234;
         voiceChat = new VoiceChat(room);
         voiceChat.on("remoteUserConnected", stream => {
@@ -61,8 +53,13 @@
             return participant.id !== userId;
           });
         });
-
-
+    },
+    methods: {
+      remoteStreamAdded(stream) {
+        this.stream = stream; 
+      },
+      joinRoom() {
+        this.hasJoined = true;
         voiceChat.joinRoom();
       },
       leaveRoom() {
