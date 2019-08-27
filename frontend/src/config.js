@@ -21,7 +21,7 @@ switch (env) {
   default:
     backendUrl = "http://localhost:9000";
     websocketUrl = `ws://localhost:9000/ws?Authorization=${localStorage.getItem("authToken")}`;
-    webrtcServer = "http://localhost:8088/janus";
+    webrtcServer = "http://localhost:9000/janus";
     break;
 }
 

@@ -83,7 +83,18 @@ GET           /api/treasurehunts                                                
 PUT           /api/treasurehunts/:treasureHuntId/undodelete                           controllers.TreasureHuntController.undoDeleteTreasureHunt(treasureHuntId: Int, request: Request)
 
 
+# Janus
+
+POST        /janus                                                                    controllers.JanusController.postJanus(request: Request)
+GET         /janus                                                                    controllers.JanusController.getJanus(request: Request)
+GET         /janus/*path                                                              controllers.JanusController.get(request: Request, path)
+POST        /janus/*path                                                              controllers.JanusController.get(request: Request, path)
+
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                                           controllers.Assets.at(path="/public", file)
 GET           /ws                                                                     controllers.WebSocketController.socket()
 GET           /*file                                                                  controllers.FrontendController.assetOrDefault(file)
+
+
