@@ -37,4 +37,15 @@ public class ChatGroup extends Model {
 
     public static final Finder<Integer, ChatGroup> find = new Finder<>(ChatGroup.class);
 
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public int getChatGroupId() {
+        return chatGroupId;
+    }
 }
