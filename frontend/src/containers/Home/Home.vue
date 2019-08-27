@@ -3,9 +3,15 @@
     <div>
       <h2>Welcome to </h2>
       <h1>Flockr</h1>
-      <v-btn color="primary" depressed @click="joinRoom">Join Room</v-btn>
+      <v-btn color="primary" depressed @click="hasJoined ? leaveRoom() : joinRoom()">{{ hasJoined ? "Leave" : "Join" }} Room</v-btn>
       
       <audio id="roomaudio" autoplay></audio>
+
+      <ul>
+        <li v-for="participant in participants" v-bind:key="participant.id">{{ participant.id }}</li>
+      </ul>
+
+      
     </div>
   </div>
 </template>
@@ -19,31 +25,50 @@
   export default {
     data() {
       return {
-        streamFound: false 
+        streamFound: false,
+        participants: [],
+        hasJoined: false
       }
     },
     mounted() {
-      const room = 1234;
-      voiceChat = new VoiceChat(room);
-      voiceChat.on("remoteUserConnected", stream => {
-        Janus.attachMediaStream(document.querySelector('#roomaudio'), stream);
-      });
-
-      voiceChat.on("error", error => {
-        console.log(error);
-      });
-
-      voiceChat.on("participants", participants => {
-        console.log(participants);
-      })
     },
     methods: {
       remoteStreamAdded(stream) {
         this.stream = stream; 
       },
       joinRoom() {
+        this.hasJoined = true;
+
+        const room = 1234;
+        voiceChat = new VoiceChat(room);
+        voiceChat.on("remoteUserConnected", stream => {
+          Janus.attachMediaStream(document.querySelector('#roomaudio'), stream);
+        });
+
+        voiceChat.on("error", error => {
+          console.log(error);
+        });
+
+        voiceChat.on("participants", participants => {
+          console.log("The participants are: " + participants);
+          // Add yourself to the participants
+          participants.push({id: 1}); 
+          this.participants = participants;
+        });
+
+        voiceChat.on("participantLeft", userId => {
+          this.participants = this.participants.filter(participant => {
+            return participant.id !== userId;
+          });
+        });
+
+
         voiceChat.joinRoom();
-      } 
+      },
+      leaveRoom() {
+        this.hasJoined = false;
+        voiceChat.destroySession();
+      }
     },
     
   }

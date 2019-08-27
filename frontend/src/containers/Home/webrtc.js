@@ -8,7 +8,6 @@ const server = config.webrtcServer;
  * A class responsible with sending and receiving web rtc data
  * from the janus server
  *
- * @fires participants
  */
 export class VoiceChat extends EventEmitter {
   // The communication medium on what to send/receiver messages from
@@ -21,6 +20,8 @@ export class VoiceChat extends EventEmitter {
   webrtcUp = false;
   // Uniquely identifies a user before a session is createdd
   opaqueId = `session-${Janus.randomString(12)}`;
+  // Janus instance which can be useful for destroying the session
+  janus;
 
   /**
    * Establishes communication with janus server.
@@ -34,13 +35,13 @@ export class VoiceChat extends EventEmitter {
       debug: "all",
       callback: () => {
         // Create session
-        const janus = new Janus({
+        this.janus = new Janus({
           server: server,
           success: () => {
             // Attach to Audio Bridge test plugin
-            janus.attach({
+            this.janus.attach({
               plugin: "janus.plugin.audiobridge",
-              opaqueId: this.opaqueId,
+              opaqueId: "hello " + this.opaqueId,
               success: channel => {
                 this.channel = channel;
               },
@@ -84,8 +85,8 @@ export class VoiceChat extends EventEmitter {
    * @param {} jsep Incoming session establishment message
    */
   messageReceived = (message, sessionMessage) => {
-    console.log("message is: " + message);
-    console.log("sessionMessage is: " + sessionMessage);
+    console.log("I recieved a message");
+    console.log(message);
     const event = message.audiobridge;
     Janus.debug("Event: " + event);
     if (event) {
@@ -111,6 +112,9 @@ export class VoiceChat extends EventEmitter {
       } else if (event === "event") {
         if (message.participants) {
           this.emit("participants", message.participants);
+        } else if (message.leaving) {
+          const userId = message.leaving;
+          this.emit("participantLeft", userId);
         }
       }
     }
@@ -122,21 +126,44 @@ export class VoiceChat extends EventEmitter {
     }
   };
 
-  publishStream = session => {
+  /**
+   * Unmutes the users mic
+   */
+  unmute = session => {
     const publish = { request: "configure", muted: false };
     this.channel.send({ message: publish, jsep: session });
-    console.log("I published my stream");
   };
 
+  
+  /**
+   * Once the user has joined the room, they can create an offer to start
+   * sending their audio data
+   */ 
   createOffer = () => {
     this.channel.createOffer({
       media: { video: false }, // This is an audio only room
-      success: this.publishStream,
+      success: this.unmute,
       error: this.handleError,
     });
   };
 
+  /**
+   * Handles any error caused by janus 
+   * @param {Error} error the error to handle
+   */
   handleError = (error) => {
     this.emit("error", error);
   }
+
+  /**
+   * Destroy session
+   */
+  destroySession = () => {
+    this.janus.destroy();
+    alert("Did I destroy");
+  }
+
+   
+
+
 }
