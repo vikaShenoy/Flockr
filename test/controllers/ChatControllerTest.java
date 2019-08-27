@@ -105,7 +105,7 @@ public class ChatControllerTest {
     int ownUserId = chatGroupResBody.get("users").get(1).get("userId").asInt();
     Assert.assertEquals(adminUser.getUserId(), ownUserId);
 
-    Assert.assertTrue(chatGroupResBody.has("messages"));
+    Assert.assertTrue(!chatGroupResBody.has("messages"));
 
     // Make sure DB contains right data
     ChatGroup chatGroup = ChatGroup.find.byId(chatGroupResBody.get("chatGroupId").asInt());
