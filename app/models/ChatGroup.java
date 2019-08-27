@@ -48,4 +48,8 @@ public class ChatGroup extends Model {
     public int getChatGroupId() {
         return chatGroupId;
     }
+
+    public String getName() {
+        return name;
+    }
 }

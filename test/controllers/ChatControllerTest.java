@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ChatController {
+public class ChatControllerTest {
   private Application application;
   private User user;
   private User otherUser;
@@ -61,9 +61,11 @@ public class ChatController {
     List<Role> roles = new ArrayList<>();
     roles.add(role);
     role.save();
+    user.save();
     adminUser = User.find.byId(adminUser.getUserId());
     adminUser.setRoles(roles);
     adminUser.save();
+    otherUser.save();
   }
 
   @After
@@ -90,12 +92,11 @@ public class ChatController {
     Assert.assertTrue(chatGroupResBody.has("chatGroupId"));
     Assert.assertTrue(chatGroupResBody.has("name"));
     Assert.assertTrue(chatGroupResBody.has("users"));
+    int partnerUserId = chatGroupResBody.get("users").get(0).get("userId").asInt();
+    Assert.assertEquals(otherUser.getUserId(), partnerUserId);
 
-    int ownUserId = chatGroupBody.get("users").get(0).get("userId").asInt();
+    int ownUserId = chatGroupResBody.get("users").get(1).get("userId").asInt();
     Assert.assertEquals(adminUser.getUserId(), ownUserId);
-
-    int partnerUserId = chatGroupBody.get("users").get(1).get("userId").asInt();
-    Assert.assertEquals(adminUser.getUserId(), partnerUserId);
 
     Assert.assertTrue(chatGroupResBody.has("messages"));
 
@@ -103,8 +104,8 @@ public class ChatController {
     ChatGroup chatGroup = ChatGroup.find.byId(chatGroupResBody.get("chatGroupId").asInt());
     Assert.assertNotNull(chatGroup);
     Assert.assertEquals(chatGroup.getUsers().size(), 2);
-    Assert.assertEquals(adminUser.getUserId(), chatGroup.getUsers().get(0).getUserId());
     Assert.assertEquals(otherUser.getUserId(), chatGroup.getUsers().get(0).getUserId());
+    Assert.assertEquals(adminUser.getUserId(), chatGroup.getUsers().get(1).getUserId());
     Assert.assertEquals(0, chatGroup.getMessages().size());
     Assert.assertEquals(chatGroupResBody.get("chatGroupId").asInt(), chatGroup.getChatGroupId());
   }

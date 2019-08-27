@@ -126,6 +126,10 @@ public class User extends Model {
     this.token = token;
   }
 
+  public User() {
+
+  }
+
   /**
    * Constructor used for signin up
    *
