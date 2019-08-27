@@ -19,6 +19,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 
@@ -35,18 +36,19 @@ public class ChatController extends Controller {
 
   /**
    * Creates a group chat
+   *
    * @param request
    * @return One of the following statuses
-   *  - 201 - Group was successfully created
-   *  - 400 - Problem with request body (invalid users, no name)
-   *  - 403 - User tries to add themselves to their own chat group
-   *  - 500 - Any other interval server error (db/network error etc.)
-   *
+   * - 201 - Group was successfully created
+   * - 400 - Problem with request body (invalid users, no name)
+   * - 401 - User was not authenticated successfully
+   * - 403 - User tries to add themselves to their own chat group
+   * - 500 - Any other interval server error (db/network error etc.)
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> createChat(Http.Request request) {
     User userFromMiddleware = request.attrs().get(ActionState.USER);
-    JsonNode jsonBody = request.body().asJson() ;
+    JsonNode jsonBody = request.body().asJson();
 
     String chatName;
     List<User> users;
@@ -72,6 +74,23 @@ public class ChatController extends Controller {
                 return created(Json.toJson(populatedChatGroup));
               }
             })
+            .exceptionally(e -> internalServerError());
+  }
+
+  /**
+   * Gets all chats that are associated with a user
+   * @param request The incoming request
+   * @return One of the following statuses
+   *  - 200 - Successfully retrieved chats
+   *  - 401 - User not authenticated
+   *  - 500 - Internal server error
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> getChats(Http.Request request) {
+    User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+    return chatRepository.getChatsByUserId(userFromMiddleware.getUserId())
+            .thenApplyAsync(chats -> ok(Json.toJson(chats)))
             .exceptionally(e -> internalServerError());
   }
 }

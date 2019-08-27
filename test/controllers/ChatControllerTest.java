@@ -185,10 +185,12 @@ public class ChatControllerTest {
     JsonNode chatGroupJson = responseBody.get(0);
 
     Assert.assertTrue(chatGroupJson.has("name"));
+
+    // Make sure JSON to NOT include messages
     Assert.assertTrue(!chatGroupJson.has("messages"));
     Assert.assertTrue(chatGroupJson.has("users"));
-    Assert.assertEquals(user.getUserId(), chatGroupJson.get("users").get(0).get("userId").asInt());
-    Assert.assertEquals(otherUser.getUserId(), chatGroupJson.get("users").get(1).get("userId").asInt());
+    Assert.assertEquals(otherUser.getUserId(), chatGroupJson.get("users").get(0).get("userId").asInt());
+    Assert.assertEquals(user.getUserId(), chatGroupJson.get("users").get(1).get("userId").asInt());
   }
 
   @Test

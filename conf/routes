@@ -85,6 +85,7 @@ PUT           /api/treasurehunts/:treasureHuntId/undodelete                     
 # Chat Routes
 
 POST          /api/chats                                                              controllers.ChatController.createChat(request: Request)
+GET           /api/chats                                                              controllers.ChatController.getChats(request: Request)
 
 
 # Map static resources from the /public folder to the /assets URL path
