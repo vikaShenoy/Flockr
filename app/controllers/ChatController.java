@@ -2,7 +2,6 @@ package controllers;
 
 import actions.ActionState;
 import actions.LoggedIn;
-import akka.actor.FSM;
 import com.fasterxml.jackson.databind.JsonNode;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
@@ -10,7 +9,6 @@ import exceptions.NotFoundException;
 import models.ChatGroup;
 import models.Message;
 import models.User;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
@@ -20,11 +18,9 @@ import play.mvc.With;
 import repository.ChatRepository;
 import util.ChatUtil;
 
-import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
