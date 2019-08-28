@@ -242,7 +242,7 @@ public class ChatControllerTest {
 
   @Test
   public void shouldNotDeleteChatGroupWhenGroupDoesNotExist() {
-    String endpoint = "api/chats/1234";
+    String endpoint = "/api/chats/1234";
     Result result = fakeClient.makeRequestWithToken("DELETE", endpoint, user.getToken());
     Assert.assertEquals(404, result.status());
 
@@ -252,7 +252,7 @@ public class ChatControllerTest {
 
   @Test
   public void shouldCreateMessageInChat() {
-    String endpoint = "/chats/" + chatGroup.getChatGroupId() + "/message";
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId() + "/message";
     ObjectNode requestBody = Json.newObject();
     String message = "This is my message";
     requestBody.put("message", message);
@@ -267,7 +267,7 @@ public class ChatControllerTest {
 
   @Test
   public void shouldNotCreateMessageIfGroupDoesNotExist() {
-    String endpoint = "/chats/1234/message";
+    String endpoint = "/api/chats/1234/message";
     ObjectNode requestBody = Json.newObject();
     String message = "This is my message";
     requestBody.put("message", message);
@@ -281,7 +281,7 @@ public class ChatControllerTest {
 
   @Test
   public void shouldNotCreateMessageIfNotPartOfGroup() {
-    String endpoint = "/chats/" + chatGroup2.getChatGroupId() + "/message";
+    String endpoint = "/api/chats/" + chatGroup2.getChatGroupId() + "/message";
     ObjectNode requestBody = Json.newObject();
     String message = "This is my message";
     requestBody.put("message", message);

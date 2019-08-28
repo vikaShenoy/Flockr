@@ -2,12 +2,15 @@ package controllers;
 
 import actions.ActionState;
 import actions.LoggedIn;
+import akka.actor.FSM;
 import com.fasterxml.jackson.databind.JsonNode;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.ChatGroup;
+import models.Message;
 import models.User;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
@@ -139,6 +142,59 @@ public class ChatController extends Controller {
                 return forbidden(forbiddenException.getMessage());
               } catch (Throwable throwable) {
                 return internalServerError();
+              }
+            });
+
+  }
+
+  /**
+   * Creates a message and adds it to a chat group
+   * @param request The incoming request
+   * @param chatGroupId The chat group ID to add the message to
+   * @return One of the following statuses
+   *  - 201 - The message was successfully created
+   *  - 400 - The message was malformed
+   *  - 401 - The chat group could not be found
+   *  - 403 - The user tried to add a message to a chat that they don't belong to
+   *  - 404 - The chat group could not be found
+   *  - 500 - Any other unexpected error
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> createMessage(Http.Request request, int chatGroupId) {
+    User userFromMiddleware = request.attrs().get(ActionState.USER);
+    JsonNode jsonBody = request.body().asJson();
+
+    return chatRepository.getChatById(chatGroupId)
+            .thenComposeAsync(chatGroup -> {
+              if (chatGroup == null) {
+                throw new CompletionException(new NotFoundException("Could not find chat group"));
+              }
+
+              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+              }
+
+              if (!jsonBody.has("message")) {
+                throw new CompletionException(new BadRequestException("Message does not exist"));
+              }
+
+              String messageContents = jsonBody.get("message").asText();
+              Message message = new Message(chatGroup, messageContents, userFromMiddleware);
+
+              return chatRepository.createMessage(message);
+            })
+            .thenApplyAsync(createdMessage -> created(Json.toJson(createdMessage)))
+            .exceptionally(e -> {
+              try {
+                throw e.getCause();
+              } catch (NotFoundException notFoundException) {
+                return notFound(notFoundException.getMessage());
+              } catch (ForbiddenRequestException forbiddenRequestException) {
+                return forbidden(forbiddenRequestException.getMessage());
+              } catch (BadRequestException badRequestException) {
+                return badRequest(badRequestException.getMessage());
+              } catch (Throwable throwable) {
+                return internalServerError(throwable.getMessage());
               }
             });
 

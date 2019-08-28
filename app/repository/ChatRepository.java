@@ -1,6 +1,7 @@
 package repository;
 
 import models.ChatGroup;
+import models.Message;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -49,10 +50,27 @@ public class ChatRepository {
     return supplyAsync(() -> ChatGroup.find.query().fetch("users").where().eq("users.userId", userId).findList(), executionContext);
   }
 
+  /**
+   * Deletes a chat group by it's chat group ID
+   * @param chatGroup The chat group to delete
+   * @return An empty completion stage
+   */
   public CompletionStage<Void> deleteChatGroupById(ChatGroup chatGroup) {
     return supplyAsync(() -> {
       chatGroup.delete();
       return null;
+    }, executionContext);
+  }
+
+  /**
+   * Adds a message to a chat group
+   * @param message The message to add
+   * @return A completion stage with the updated message
+   */
+  public CompletionStage<Message> createMessage(Message message) {
+    return supplyAsync(() -> {
+      message.insert();
+      return message;
     }, executionContext);
   }
 
