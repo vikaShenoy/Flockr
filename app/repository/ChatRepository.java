@@ -5,6 +5,7 @@ import models.Message;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.runAsync;
@@ -70,6 +71,26 @@ public class ChatRepository {
   public CompletionStage<Message> createMessage(Message message) {
     return supplyAsync(() -> {
       message.insert();
+      return message;
+    }, executionContext);
+  }
+
+  public CompletionStage<Optional<Message>> getMessageById(int messageId) {
+    return supplyAsync(() -> Message
+            .find
+            .query().where()
+            .eq("messageId", messageId).findOneOrEmpty(),
+            executionContext);
+  }
+
+  /**
+   * Deletes a message
+   * @param message The message to delete
+   * @return The deleted message
+   */
+  public CompletionStage<Message> deleteMessage(Message message) {
+    return supplyAsync(() -> {
+      message.delete();
       return message;
     }, executionContext);
   }

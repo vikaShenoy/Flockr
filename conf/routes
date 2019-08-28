@@ -86,9 +86,9 @@ PUT           /api/treasurehunts/:treasureHuntId/undodelete                     
 
 POST          /api/chats                                                              controllers.ChatController.createChat(request: Request)
 GET           /api/chats                                                              controllers.ChatController.getChats(request: Request)
+DELETE        /api/chats/message/:messageId                                           controllers.ChatController.deleteMessage(request: Request, messageId: Int)
 DELETE        /api/chats/:chatGroupId                                                 controllers.ChatController.deleteChat(request: Request, chatGroupId: Int)
 POST          /api/chats/:chatGroupId/message                                         controllers.ChatController.createMessage(request: Request, chatGroupId: Int)
-
 
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                                           controllers.Assets.at(path="/public", file)

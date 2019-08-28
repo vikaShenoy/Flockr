@@ -294,64 +294,40 @@ public class ChatControllerTest {
   public void shouldDeleteMessageInChat() {
     Message message = new Message(chatGroup, "Random message", user);
     message.save();
-    String endpoint = "/api/chats/" + chatGroup.getChatGroupId() + "/message/" + message.getMessageId();
-    ObjectNode requestBody = Json.newObject();
-    String messageContents = "This is my message";
-    requestBody.put("message", messageContents);
-    Result result = fakeClient.makeRequestWithToken("DELETE", requestBody, endpoint, user.getToken());
-    Assert.assertEquals(201, result.status());
+
+     System.out.println(Message.find.byId(message.getMessageId()).getUser());
+    String endpoint = "/api/chats/message/" + message.getMessageId();
+    Result result = fakeClient.makeRequestWithToken("DELETE", endpoint, user.getToken());
+    Assert.assertEquals(200, result.status());
 
     ChatGroup returnedChatGroup = ChatGroup.find.byId(chatGroup.getChatGroupId());
-
      // Check that message has actually been deleted
     Assert.assertEquals(0, returnedChatGroup.getMessages().size());
   }
 
   @Test
-  public void shouldNotDeleteMessageIfGroupDoesNotExist() {
+  public void shouldNotDeleteMessageIfMessageDoesNotExist() {
     Message message = new Message(chatGroup, "Random message", user);
     message.save();
-    String endpoint = "/api/chats/1234/message/" + message.getMessageId();
-    ObjectNode requestBody = Json.newObject();
-    String messageContents = "This is my message";
-    requestBody.put("message", messageContents);
-    Result result = fakeClient.makeRequestWithToken("POST", requestBody, endpoint, user.getToken());
+    String endpoint = "/api/chats/message/1234";
+    Result result = fakeClient.makeRequestWithToken("DELETE", endpoint, user.getToken());
     Assert.assertEquals(404, result.status());
 
-    // Check that message is not in the DB
-    ChatGroup returnedChatGroup = ChatGroup.find.byId(chatGroup.getChatGroupId());
-    Assert.assertEquals(1, returnedChatGroup.getMessages().size());
-  }
-
-  @Test
-  public void shouldNotDeleteMessageIfNotPartOfGroup() {
-    ObjectNode requestBody = Json.newObject();
-    Message message = new Message(chatGroup, "Random message", user);
-    String endpoint = "/api/chats/" + chatGroup2.getChatGroupId() + "/message/" + message.getMessageId();
-    message.save();
-    String messageContents = "This is my message";
-    requestBody.put("message", messageContents);
-    Result result = fakeClient.makeRequestWithToken("POST", requestBody, endpoint, user.getToken());
-    Assert.assertEquals(403, result.status());
-
-    // Check that message is not in the DB
+    // Check that message is still in the db
     ChatGroup returnedChatGroup = ChatGroup.find.byId(chatGroup.getChatGroupId());
     Assert.assertEquals(1, returnedChatGroup.getMessages().size());
   }
 
   @Test
   public void shouldNotDeleteMessageIfMessageIsNotYours() {
-    ObjectNode requestBody = Json.newObject();
     // otherUser made the message so user should not be able to delete it
     Message message = new Message(chatGroup, "Random message", otherUser);
     message.save();
-    String endpoint = "/api/chats/" + chatGroup2.getChatGroupId() + "/message/" + message.getMessageId();
-    String messageContents = "This is my message";
-    requestBody.put("message", messageContents);
-    Result result = fakeClient.makeRequestWithToken("POST", requestBody, endpoint, user.getToken());
+    String endpoint = "/api/chats/message/" + message.getMessageId();
+    Result result = fakeClient.makeRequestWithToken("DELETE", endpoint, user.getToken());
     Assert.assertEquals(403, result.status());
 
-    // Check that message is not in the DB
+    // Check that message is still in the db
     ChatGroup returnedChatGroup = ChatGroup.find.byId(chatGroup.getChatGroupId());
     Assert.assertEquals(1, returnedChatGroup.getMessages().size());
   }

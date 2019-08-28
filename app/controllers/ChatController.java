@@ -150,7 +150,7 @@ public class ChatController extends Controller {
    * @return One of the following statuses
    *  - 201 - The message was successfully created
    *  - 400 - The message was malformed
-   *  - 401 - The chat group could not be found
+   *  - 401 - User is not authenticated
    *  - 403 - The user tried to add a message to a chat that they don't belong to
    *  - 404 - The chat group could not be found
    *  - 500 - Any other unexpected error
@@ -194,5 +194,50 @@ public class ChatController extends Controller {
               }
             });
 
+  }
+
+   /**
+   * Deletes a message in a chat group
+   * @param request The incoming request
+   * @param messageId The ID of the message to delete
+   * @return One of the following statuses
+   *  - 200 - The message was successfully deleted
+   *  - 401 - User is not authenticated
+   *  - 403 - The user tried to delete a message to a chat
+   *  - 404 - The chat group could not be found
+   *  - 500 - Any other unexpected error
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> deleteMessage(Http.Request request, int messageId) {
+    User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+    return chatRepository.getMessageById(messageId)
+            .thenComposeAsync(message -> {
+              if (!message.isPresent()) {
+                throw new CompletionException(new NotFoundException("Message not found"));
+              }
+
+              System.out.println(message.get());
+              System.out.println(message.get().getUser());
+
+              if (message.get().getUser().getUserId() != userFromMiddleware.getUserId()) {
+                throw new CompletionException(new ForbiddenRequestException("Cannot delete a message you don't own"));
+              }
+
+              return chatRepository.deleteMessage(message.get());
+            })
+            .thenApplyAsync(deletedMessage -> (Result) ok())
+            .exceptionally(e -> {
+              try {
+                throw e.getCause();
+              } catch (NotFoundException notFoundException) {
+                return notFound(notFoundException.getMessage());
+              } catch (ForbiddenRequestException forbiddenRequestException) {
+                return forbidden(forbiddenRequestException.getMessage());
+              } catch (Throwable throwable) {
+                throwable.printStackTrace();
+                return internalServerError();
+              }
+            });
   }
 }

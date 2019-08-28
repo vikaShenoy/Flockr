@@ -23,12 +23,6 @@ public class ChatGroup extends Model {
     @ManyToMany(cascade=CascadeType.ALL)
     private List<User> users;
 
-//    @JsonIgnore
-//    @SoftDelete
-//    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
-//    private boolean deleted;
-
-
     @JsonIgnore
     // Fetch lazily so that we don't get all messages when fetching the chat group
     @OneToMany(mappedBy = "chatGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
