@@ -23,10 +23,7 @@ import utils.PlayResultToJson;
 import utils.TestState;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ChatControllerTest {
   private Application application;
@@ -34,6 +31,9 @@ public class ChatControllerTest {
   private User otherUser;
   private User adminUser;
   private FakeClient fakeClient;
+  private ChatGroup chatGroup;
+  private ChatGroup chatGroup2;
+
 
   @Before
   public void setUp() throws IOException, ServerErrorException, FailedToSignUpException {
@@ -71,8 +71,14 @@ public class ChatControllerTest {
     List<User> usersInChat = new ArrayList<>();
     usersInChat.add(user);
     usersInChat.add(otherUser);
-    ChatGroup chatGroup = new ChatGroup("my chat", usersInChat, new ArrayList<>());
+    chatGroup = new ChatGroup("my chat", usersInChat, new ArrayList<>());
     chatGroup.save();
+
+    List<User> usersInChat2 = new ArrayList<>();
+    usersInChat2.add(adminUser);
+    usersInChat2.add(otherUser);
+    chatGroup2 = new ChatGroup("my chat2", usersInChat2, new ArrayList<>());
+    chatGroup2.save();
   }
 
   @After
@@ -99,11 +105,10 @@ public class ChatControllerTest {
     Assert.assertTrue(chatGroupResBody.has("chatGroupId"));
     Assert.assertTrue(chatGroupResBody.has("name"));
     Assert.assertTrue(chatGroupResBody.has("users"));
-    int partnerUserId = chatGroupResBody.get("users").get(0).get("userId").asInt();
-    Assert.assertEquals(otherUser.getUserId(), partnerUserId);
+    Set<Integer> usersInChat = getUsersInChat(chatGroupResBody.get("users"));
+    Assert.assertTrue(usersInChat.contains(adminUser.getUserId()));
+    Assert.assertTrue(usersInChat.contains(otherUser.getUserId()));
 
-    int ownUserId = chatGroupResBody.get("users").get(1).get("userId").asInt();
-    Assert.assertEquals(adminUser.getUserId(), ownUserId);
 
     Assert.assertTrue(!chatGroupResBody.has("messages"));
 
@@ -111,8 +116,6 @@ public class ChatControllerTest {
     ChatGroup chatGroup = ChatGroup.find.byId(chatGroupResBody.get("chatGroupId").asInt());
     Assert.assertNotNull(chatGroup);
     Assert.assertEquals(chatGroup.getUsers().size(), 2);
-    Assert.assertEquals(otherUser.getUserId(), chatGroup.getUsers().get(0).getUserId());
-    Assert.assertEquals(adminUser.getUserId(), chatGroup.getUsers().get(1).getUserId());
     Assert.assertEquals(0, chatGroup.getMessages().size());
     Assert.assertEquals(chatGroupResBody.get("chatGroupId").asInt(), chatGroup.getChatGroupId());
   }
@@ -189,8 +192,23 @@ public class ChatControllerTest {
     // Make sure JSON to NOT include messages
     Assert.assertTrue(!chatGroupJson.has("messages"));
     Assert.assertTrue(chatGroupJson.has("users"));
-    Assert.assertEquals(otherUser.getUserId(), chatGroupJson.get("users").get(0).get("userId").asInt());
-    Assert.assertEquals(user.getUserId(), chatGroupJson.get("users").get(1).get("userId").asInt());
+    Set<Integer> usersInChat = getUsersInChat(chatGroupJson.get("users"));
+
+    Assert.assertTrue(usersInChat.contains(otherUser.getUserId()));
+    Assert.assertTrue(usersInChat.contains(user.getUserId()));
+  }
+
+  /**
+   * Converts users json into a set representing the current users ID's
+   * @return A set containing the current user ID's in the chat
+   */
+  public Set<Integer> getUsersInChat(JsonNode usersInChat) {
+    Set<Integer> userIds = new HashSet<>();
+    for (JsonNode userJson : usersInChat) {
+        userIds.add(userJson.get("userId").asInt());
+    }
+
+    return userIds;
   }
 
   @Test
@@ -201,6 +219,35 @@ public class ChatControllerTest {
     Assert.assertEquals(401, result.status());
   }
 
+  @Test
+  public void shouldSuccessfullyDeleteChatGroup() throws IOException {
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("DELETE", endpoint, user.getToken());
+    Assert.assertEquals(200, result.status());
+
+    // Make sure that it's been deleted in the DB as well
+    Assert.assertNull(ChatGroup.find.byId(chatGroup.getChatGroupId()));
+  }
+
+  @Test
+  public void shouldNotDeleteChatGroupWhenNotInGroup() {
+    String endpoint = "/api/chats/" + chatGroup2.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("DELETE", endpoint, user.getToken());
+    Assert.assertEquals(403, result.status());
+
+    // Make sure that it's still in DB
+    Assert.assertNotNull(ChatGroup.find.byId(chatGroup2.getChatGroupId()));
+  }
+
+  @Test
+  public void shouldNotDeleteChatGroupWhenGroupDoesNotExist() {
+    String endpoint = "api/chats/1234";
+    Result result = fakeClient.makeRequestWithToken("DELETE", endpoint, user.getToken());
+    Assert.assertEquals(404, result.status());
+
+    // Make sure that it's still in DB
+    Assert.assertNotNull(ChatGroup.find.byId(chatGroup.getChatGroupId()));
+  }
 
 
 

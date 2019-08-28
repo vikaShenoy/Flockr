@@ -53,4 +53,20 @@ public class ChatUtil {
 
     return usersInChat;
   }
+
+  /**
+   * Checks to see if current user is in group
+   * @param usersInGroup Current users of a group
+   * @param user The user to check if they are in the group
+   * @return True if they are in the group, false otherwise
+   */
+  public boolean userInGroup(List<User> usersInGroup, User user) {
+    for (User currentUser : usersInGroup) {
+      if (currentUser.getUserId() == user.getUserId()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

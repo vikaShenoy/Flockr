@@ -67,6 +67,9 @@ public class User extends Model {
   @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
   private List<TreasureHunt> treasureHunt;
 
+  @ManyToMany(cascade = CascadeType.ALL)
+  private List<ChatGroup> chatGroups;
+
   @Constraints.Required
   @CreatedTimestamp
   @Column(updatable = false)

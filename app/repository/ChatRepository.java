@@ -4,7 +4,9 @@ import models.ChatGroup;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 
@@ -45,6 +47,13 @@ public class ChatRepository {
    */
   public CompletionStage<List<ChatGroup>> getChatsByUserId(int userId) {
     return supplyAsync(() -> ChatGroup.find.query().fetch("users").where().eq("users.userId", userId).findList(), executionContext);
+  }
+
+  public CompletionStage<Void> deleteChatGroupById(ChatGroup chatGroup) {
+    return supplyAsync(() -> {
+      chatGroup.delete();
+      return null;
+    }, executionContext);
   }
 
 }

@@ -3,6 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
+import io.ebean.annotation.SoftDelete;
 
 import javax.persistence.*;
 import java.util.List;
@@ -19,8 +20,14 @@ public class ChatGroup extends Model {
 
     private String name;
 
-    @ManyToMany
+    @ManyToMany(cascade=CascadeType.ALL)
     private List<User> users;
+
+//    @JsonIgnore
+//    @SoftDelete
+//    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+//    private boolean deleted;
+
 
     @JsonIgnore
     // Fetch lazily so that we don't get all messages when fetching the chat group
