@@ -40,5 +40,9 @@ public class Message extends Model {
         this.messageId = messageId;
     }
 
+    public String getContents() {
+        return contents;
+    }
+
     public static final Finder<Integer, ChatGroup> find = new Finder<>(ChatGroup.class);
 }

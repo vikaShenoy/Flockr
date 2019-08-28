@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
+import gherkin.deps.com.google.gson.JsonObject;
 import models.ChatGroup;
 import models.Role;
 import models.RoleType;
@@ -248,6 +249,50 @@ public class ChatControllerTest {
     // Make sure that it's still in DB
     Assert.assertNotNull(ChatGroup.find.byId(chatGroup.getChatGroupId()));
   }
+
+  @Test
+  public void shouldCreateMessageInChat() {
+    String endpoint = "/chats/" + chatGroup.getChatGroupId() + "/message";
+    ObjectNode requestBody = Json.newObject();
+    String message = "This is my message";
+    requestBody.put("message", message);
+    Result result = fakeClient.makeRequestWithToken("POST", requestBody, endpoint, user.getToken());
+    Assert.assertEquals(201, result.status());
+
+    // Check that message is actually in the DB
+    ChatGroup returnedChatGroup = ChatGroup.find.byId(chatGroup.getChatGroupId());
+    Assert.assertEquals(1, returnedChatGroup.getMessages().size());
+    Assert.assertEquals(message, returnedChatGroup.getMessages().get(0).getContents());
+  }
+
+  @Test
+  public void shouldNotCreateMessageIfGroupDoesNotExist() {
+    String endpoint = "/chats/1234/message";
+    ObjectNode requestBody = Json.newObject();
+    String message = "This is my message";
+    requestBody.put("message", message);
+    Result result = fakeClient.makeRequestWithToken("POST", requestBody, endpoint, user.getToken());
+    Assert.assertEquals(404, result.status());
+
+    // Check that message is not in the DB
+    ChatGroup returnedChatGroup = ChatGroup.find.byId(chatGroup.getChatGroupId());
+    Assert.assertEquals(0, returnedChatGroup.getMessages().size());
+  }
+
+  @Test
+  public void shouldNotCreateMessageIfNotPartOfGroup() {
+    String endpoint = "/chats/" + chatGroup2.getChatGroupId() + "/message";
+    ObjectNode requestBody = Json.newObject();
+    String message = "This is my message";
+    requestBody.put("message", message);
+    Result result = fakeClient.makeRequestWithToken("POST", requestBody, endpoint, user.getToken());
+    Assert.assertEquals(403, result.status());
+
+    // Check that message is not in the DB
+    ChatGroup returnedChatGroup = ChatGroup.find.byId(chatGroup.getChatGroupId());
+    Assert.assertEquals(0, returnedChatGroup.getMessages().size());
+  }
+
 
 
 
