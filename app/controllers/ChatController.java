@@ -288,8 +288,6 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException("Message not found"));
               }
 
-              System.out.println(message.get());
-              System.out.println(message.get().getUser());
 
               if (message.get().getUser().getUserId() != userFromMiddleware.getUserId()) {
                 throw new CompletionException(new ForbiddenRequestException("Cannot delete a message you don't own"));

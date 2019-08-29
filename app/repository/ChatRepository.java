@@ -1,15 +1,10 @@
 package repository;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import models.ChatGroup;
 import models.Message;
-import models.User;
-
 import javax.inject.Inject;
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;

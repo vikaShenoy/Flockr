@@ -27,7 +27,6 @@ public class TripNotifier {
    * @param trip The trip that was edited
    */
   public void notifyTripUpdate(User userThatEdited, TripComposite trip) {
-    System.out.println("Am I attmpting to nofity");
     for (User user : trip.getUsers()) {
       if (!user.equals(userThatEdited) && userMap.containsKey(user)) {
         ActorRef actorRef = userMap.get(user);

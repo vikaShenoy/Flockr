@@ -76,4 +76,15 @@ public class ConnectedUsers {
     public void clear() {
         connectedUsers.clear();
     }
+
+
+    /**
+     * Get the websocket for the already connected user
+     * NOTE: the user must be connected (can use a checked method to ensure this)
+     * @param user the connected user
+     * @return the websocket for the user
+     */
+    public ActorRef getSocketForUser(User user) {
+        return connectedUsers.get(user);
+    }
 }

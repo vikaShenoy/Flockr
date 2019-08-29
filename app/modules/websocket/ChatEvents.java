@@ -3,10 +3,8 @@ package modules.websocket;
 
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import models.ChatGroup;
 import models.User;
 import modules.websocket.frames.*;
@@ -35,7 +33,7 @@ public class ChatEvents {
    * @param message the message to be sent.
    */
   public void sendMessageToChatGroup(User user, ChatGroup group, String message) {
-    Frame frame = new ChatMessageFrame(group.getChatGroupId(), message, user.getUserId());
+    Frame frame = new ChatMessageFrame(group.getChatGroupId(), message, user);
 
     List<User> groupUsers = group.getUsers();
     ActorRef userWebsocket = userMap.get(user);
@@ -45,6 +43,26 @@ public class ChatEvents {
         ActorRef receiverWebsocket = userMap.get(currentUser);
         JsonNode frameJson = Json.toJson(frame);
         receiverWebsocket.tell(frameJson.toString(), userWebsocket);
+      }
+    }
+  }
+
+
+  /**
+   * Broadcast a silent message to other users in a chat with a user who is going offline
+   * @param userDisconnecting the user who is disconnecting
+   */
+  public void notifyDisconnect(User userDisconnecting, List<ChatGroup> chatGroups) {
+    ActorRef userSocket = connectedUsers.getSocketForUser(userDisconnecting);
+    Frame frame = new DisconnectedFrame(userDisconnecting);
+
+    for (ChatGroup group : chatGroups) {
+      for (User currentUser : group.getUsers()) {
+        if (connectedUsers.isUserConnected(currentUser) && !userDisconnecting.equals(currentUser)) {
+          ActorRef receiverWebsocket = userMap.get(currentUser);
+          JsonNode frameJson = Json.toJson(frame);
+          receiverWebsocket.tell(frameJson.toString(), userSocket);
+        }
       }
     }
   }

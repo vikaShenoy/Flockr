@@ -1,5 +1,7 @@
 package modules.websocket.frames;
 
+import models.User;
+
 /**
  * Websocket frame for a message to be sent to a chat group.
  */
@@ -7,12 +9,12 @@ public class ChatMessageFrame implements Frame {
 
   private int chatGroupId;
   private String message;
-  private int senderId;
+  private User sender;
 
-  public ChatMessageFrame(int chatGroupId, String message, int senderId) {
+  public ChatMessageFrame(int chatGroupId, String message, User sender) {
     this.chatGroupId = chatGroupId;
     this.message = message;
-    this.senderId = senderId;
+    this.sender = sender;
   }
 
   public int getChatGroupId() {
@@ -23,8 +25,8 @@ public class ChatMessageFrame implements Frame {
     return message;
   }
 
-  public int getSenderId() {
-    return senderId;
+  public User getSender() {
+    return sender;
   }
 
   @Override
