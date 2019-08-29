@@ -118,7 +118,7 @@ public class ChatController extends Controller {
                   try {
                       chatName = jsonBody.get("name").asText();
                       JsonNode userIdsJson = jsonBody.get("userIds");
-                      users = chatUtil.transformUsersFromJson(userFromMiddleware.getUserId(), userIdsJson);
+                      users = chatUtil.transformUsersFromJson(userIdsJson);
                   } catch (NullPointerException | BadRequestException e) {
                       throw new CompletionException(new BadRequestException("Bad request body"));
                   } catch (ForbiddenRequestException e) {

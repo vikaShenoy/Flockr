@@ -340,6 +340,7 @@ public class ChatControllerTest {
     String newChatName = "newChatName";
     List<Integer> newUserIds = new ArrayList<>();
     newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
     ObjectNode chatGroupBody = Json.newObject();
     chatGroupBody.put("name", newChatName);
     chatGroupBody.set("userIds", Json.toJson(newUserIds));
@@ -355,7 +356,6 @@ public class ChatControllerTest {
     for (User user : modifiedChat.getUsers()) {
       chatUserIds.add(user.getUserId());
     }
-    newUserIds.add(user.getUserId()); //Adding user who modified
     Set<Integer> expectedUserIds = new HashSet<>(newUserIds);
     Assert.assertEquals(expectedUserIds, chatUserIds);
 
