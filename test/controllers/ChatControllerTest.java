@@ -20,6 +20,7 @@ import utils.FakePlayClient;
 import utils.PlayResultToJson;
 import utils.TestState;
 
+import javax.swing.plaf.LabelUI;
 import java.io.IOException;
 import java.util.*;
 
@@ -333,10 +334,31 @@ public class ChatControllerTest {
   }
 
 
+  @Test
+  public void editChatGroupOk() {
 
+    String newChatName = "newChatName";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", newChatName);
+    chatGroupBody.set("userIds", Json.toJson(newUserIds));
 
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
 
+    Assert.assertEquals(200, result.status());
 
+    ChatGroup modifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
 
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : modifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    newUserIds.add(user.getUserId()); //Adding user who modified
+    Set<Integer> expectedUserIds = new HashSet<>(newUserIds);
+    Assert.assertEquals(expectedUserIds, chatUserIds);
+
+  }
 
 }
