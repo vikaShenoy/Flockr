@@ -428,20 +428,78 @@ public class ChatControllerTest {
 
   @Test
   public void editChatGroupForbiddenDuplicateUsers() {
-    Assert.assertFalse(false);
+    String newChatName = "newChatName";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", newChatName);
+    chatGroupBody.set("userIds", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
+
+    Assert.assertEquals(403, result.status());
+
+    ChatGroup unmodifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : unmodifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
+    Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
   }
 
   @Test
   public void editChatGroupAdmin() {
-    Assert.assertFalse(false);
+    String newChatName = "editingAsAnAdmin";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", newChatName);
+    chatGroupBody.set("userIds", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, adminUser.getToken());
+
+    Assert.assertEquals(200, result.status());
+
+    ChatGroup modifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : modifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<Integer> expectedUserIds = new HashSet<>(newUserIds);
+    Assert.assertEquals(expectedUserIds, chatUserIds);
   }
 
   @Test
   public void editChatGroupBadRequest() {
-    Assert.assertFalse(false);
+    String newChatName = "newChatName";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("names", newChatName);
+    chatGroupBody.set("users", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
+
+    Assert.assertEquals(400, result.status());
+
+    ChatGroup unmodifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : unmodifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
+    Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
   }
-
-
-
 
 }
