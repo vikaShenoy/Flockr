@@ -55,6 +55,38 @@ public class ChatUtil {
   }
 
   /**
+   * Tranforms users from json to list of users. Also validates that users from json is valid
+   * Overloaded: This method assumes that the user who is editing will be passed into the json body
+   * is valid
+   * @param usersFromReq
+   * @throws BadRequestException Gets thrown when users from json is invalid
+   * @throws ForbiddenRequestException When the user tries to add themselves to their own group
+   * @return
+   */
+  public List<User> transformUsersFromJson(JsonNode usersFromReq) throws BadRequestException, ForbiddenRequestException {
+    List<User> usersInChat = new ArrayList<>();
+
+    if (usersFromReq.size() == 0) {
+      throw new BadRequestException("Cannot have no users in chat");
+    }
+    // Used to check for duplicate users
+    Set<Integer> userIdsInChat = new HashSet<>();
+
+    for (JsonNode userIdJson : usersFromReq) {
+      int userId = userIdJson.asInt();
+      if (userIdsInChat.contains(userId)) {
+        throw new ForbiddenRequestException("Cannot have duplicate users in chat");
+      }
+      userIdsInChat.add(userId);
+      User currentUser = new User();
+      currentUser.setUserId(userId);
+      usersInChat.add(currentUser);
+    }
+
+    return usersInChat;
+  }
+
+  /**
    * Checks to see if current user is in group
    * @param usersInGroup Current users of a group
    * @param user The user to check if they are in the group

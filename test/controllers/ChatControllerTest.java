@@ -29,9 +29,11 @@ public class ChatControllerTest {
   private User user;
   private User otherUser;
   private User adminUser;
+  private User anotherUser;
   private FakeClient fakeClient;
   private ChatGroup chatGroup;
   private ChatGroup chatGroup2;
+  private ChatGroup chatGroup3;
 
 
   @Before
@@ -56,6 +58,7 @@ public class ChatControllerTest {
             "abc123");
     adminUser = fakeClient.signUpUser("Andy", "Admin", "andy@admin.com",
             "abc123");
+    anotherUser = fakeClient.signUpUser("Sam", "IsAwesome", "sam@theman.com", "abc123");
 
     Role role = new Role(RoleType.ADMIN);
     List<Role> roles = new ArrayList<>();
@@ -66,6 +69,7 @@ public class ChatControllerTest {
     adminUser.setRoles(roles);
     adminUser.save();
     otherUser.save();
+    anotherUser.save();
 
     List<User> usersInChat = new ArrayList<>();
     usersInChat.add(user);
@@ -78,6 +82,19 @@ public class ChatControllerTest {
     usersInChat2.add(otherUser);
     chatGroup2 = new ChatGroup("my chat2", usersInChat2, new ArrayList<>());
     chatGroup2.save();
+
+    List<User> usersInChat3 = new ArrayList<>();
+    usersInChat3.add(user);
+    usersInChat3.add(otherUser);
+    chatGroup3 = new ChatGroup("Testing Messages", usersInChat3, new ArrayList<>());
+    chatGroup3.save();
+
+    // Send 30 messages to chat group 3
+    for (int i = 0; i < 30; i++) {
+      Message message = new Message(chatGroup3, "Test Message " + (i + 1), user);
+      message.save();
+    }
+
   }
 
   @After
@@ -296,7 +313,6 @@ public class ChatControllerTest {
     Message message = new Message(chatGroup, "Random message", user);
     message.save();
 
-     System.out.println(Message.find.byId(message.getMessageId()).getUser());
     String endpoint = "/api/chats/message/" + message.getMessageId();
     Result result = fakeClient.makeRequestWithToken("DELETE", endpoint, user.getToken());
     Assert.assertEquals(200, result.status());
@@ -334,12 +350,15 @@ public class ChatControllerTest {
   }
 
 
+  // Edit chat group testing
+
   @Test
   public void editChatGroupOk() {
 
     String newChatName = "newChatName";
     List<Integer> newUserIds = new ArrayList<>();
     newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
     ObjectNode chatGroupBody = Json.newObject();
     chatGroupBody.put("name", newChatName);
     chatGroupBody.set("userIds", Json.toJson(newUserIds));
@@ -355,10 +374,182 @@ public class ChatControllerTest {
     for (User user : modifiedChat.getUsers()) {
       chatUserIds.add(user.getUserId());
     }
-    newUserIds.add(user.getUserId()); //Adding user who modified
     Set<Integer> expectedUserIds = new HashSet<>(newUserIds);
     Assert.assertEquals(expectedUserIds, chatUserIds);
 
   }
+
+  @Test
+  public void editChatGroupUnauthorized() {
+
+    String newChatName = "newChatName";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", newChatName);
+    chatGroupBody.set("userIds", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithNoToken("PUT", chatGroupBody, endpoint);
+
+    Assert.assertEquals(401, result.status());
+
+    ChatGroup unmodifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : unmodifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
+    Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
+
+  }
+
+  @Test
+  public void editChatGroupNotFound() {
+
+    String endpoint =  "/api/chats/31415926";
+    Result result = fakeClient.makeRequestWithToken("PUT", endpoint, user.getToken());
+    Assert.assertEquals(404, result.status());
+
+  }
+
+  @Test
+  public void editChatGroupForbiddenNotInGroup() {
+
+    String newChatName = "newChatName";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", newChatName);
+    chatGroupBody.set("userIds", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, anotherUser.getToken());
+
+    Assert.assertEquals(403, result.status());
+
+    ChatGroup unmodifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : unmodifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
+    Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
+
+  }
+
+  @Test
+  public void editChatGroupForbiddenDuplicateUsers() {
+    String newChatName = "newChatName";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", newChatName);
+    chatGroupBody.set("userIds", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
+
+    Assert.assertEquals(403, result.status());
+
+    ChatGroup unmodifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : unmodifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
+    Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
+  }
+
+  @Test
+  public void editChatGroupAdmin() {
+    String newChatName = "editingAsAnAdmin";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", newChatName);
+    chatGroupBody.set("userIds", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, adminUser.getToken());
+
+    Assert.assertEquals(200, result.status());
+
+    ChatGroup modifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : modifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<Integer> expectedUserIds = new HashSet<>(newUserIds);
+    Assert.assertEquals(expectedUserIds, chatUserIds);
+  }
+
+  @Test
+  public void editChatGroupBadRequest() {
+    String newChatName = "newChatName";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("names", newChatName);
+    chatGroupBody.set("users", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
+
+    Assert.assertEquals(400, result.status());
+
+    ChatGroup unmodifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : unmodifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
+    Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
+  }
+
+  // Get Messages Endpoint Testing
+
+  @Test
+  public void getChatMessagesNoParamsOk() {
+  }
+
+  @Test
+  public void getChatMessagesOffsetOk() {
+  }
+
+  @Test
+  public void getChatMessagesLimitOk() {
+  }
+
+  @Test
+  public void getChatMessagesOffsetAndLimitOk() {
+  }
+
+  @Test
+  public void getChatMessagesUnauthorized() {
+  }
+
+  @Test
+  public void getChatMessagesForbidden() {
+  }
+
+  @Test
+  public void getChatMessagesNotFound() {
+  }
+
+  @Test
+  public void getChatMessagesAdmin() {
+  }
+
 
 }

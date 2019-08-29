@@ -66,5 +66,9 @@ public class Message extends Model {
         this.user = user;
     }
 
+    public ChatGroup getChatGroup() {
+        return chatGroup;
+    }
+
     public static final Finder<Integer, Message> find = new Finder<>(Message.class);
 }

@@ -9,6 +9,7 @@ import exceptions.NotFoundException;
 import models.ChatGroup;
 import models.Message;
 import models.User;
+import modules.websocket.ChatEvents;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
@@ -108,7 +109,7 @@ public class ChatController extends Controller {
                       throw new CompletionException(new NotFoundException("Chat not found"));
                   }
 
-                  if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+                  if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware) && !userFromMiddleware.isAdmin()) {
                       throw new CompletionException(new ForbiddenRequestException("User not in group"));
                   }
 
@@ -118,11 +119,11 @@ public class ChatController extends Controller {
                   try {
                       chatName = jsonBody.get("name").asText();
                       JsonNode userIdsJson = jsonBody.get("userIds");
-                      users = chatUtil.transformUsersFromJson(userFromMiddleware.getUserId(), userIdsJson);
+                      users = chatUtil.transformUsersFromJson(userIdsJson);
                   } catch (NullPointerException | BadRequestException e) {
                       throw new CompletionException(new BadRequestException("Bad request body"));
                   } catch (ForbiddenRequestException e) {
-                      throw new CompletionException(new ForbiddenRequestException("Tried to add self to users"));
+                      throw new CompletionException(new ForbiddenRequestException("Duplicate users"));
                   }
 
                   chatGroup.setUsers(users);
@@ -162,6 +163,71 @@ public class ChatController extends Controller {
             .thenApplyAsync(chats -> ok(Json.toJson(chats)), httpExecutionContext.current())
             .exceptionally(e -> internalServerError());
   }
+
+
+  /**
+   * Get all messages for a chat using provided query parameters
+   * @param request The play request object
+   * @param chatGroupId The id of the group chat to get messages for
+   * @return One of the following http responses
+   *  - 200 - Successfully retrieved messages
+   *  - 401 - User not authenticated
+   *  - 403 - User not in group chat
+   *  - 404 - Chat group not found
+   *  - 500 - Any other internal server error
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> getMessages(Http.Request request, int chatGroupId) {
+
+      User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+      return chatRepository.getChatById(chatGroupId)
+              .thenComposeAsync((chatGroup -> {
+                  if (chatGroup == null) {
+                      throw new CompletionException(new NotFoundException("Chat not found"));
+                  }
+
+                  if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware) && !userFromMiddleware.isAdmin()) {
+                      throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                  }
+
+                  int offset = 0;
+                  int limit = 20;
+
+                  try {
+                      String offsetString = request.getQueryString("offset");
+                      offset = Integer.parseInt(offsetString);
+                  } catch (Exception e) {
+                      System.out.println("No offset or invalid offset provided, using default of 0");
+                  }
+
+                  try {
+                      String limitString = request.getQueryString("limit");
+                      limit = Integer.parseInt(limitString);
+                  } catch (Exception e) {
+                      System.out.println("No limit or invalid limit provided, using default of 20");
+                  }
+
+                  return chatRepository.getMessages(chatGroupId, offset, limit);
+
+              }), httpExecutionContext.current())
+              .thenApplyAsync( messages -> {
+                  JsonNode messagesJson = Json.toJson(messages);
+                  return ok(messagesJson);
+              })
+              .exceptionally(e -> {
+                  try {
+                      throw e.getCause();
+                  } catch (NotFoundException notFoundException) {
+                      return notFound(notFoundException.getMessage());
+                  } catch (ForbiddenRequestException forbiddenException) {
+                      return forbidden(forbiddenException.getMessage());
+                  } catch (Throwable throwable) {
+                      return internalServerError();
+                  }
+              });
+  }
+
 
   /**
    * Allows a participant to delete a chat if they are in the chat
@@ -222,8 +288,10 @@ public class ChatController extends Controller {
     User userFromMiddleware = request.attrs().get(ActionState.USER);
     JsonNode jsonBody = request.body().asJson();
 
-    return chatRepository.getChatById(chatGroupId)
-            .thenComposeAsync(chatGroup -> {
+    return chatRepository
+        .getChatById(chatGroupId)
+        .thenComposeAsync(
+            chatGroup -> {
               if (chatGroup == null) {
                 throw new CompletionException(new NotFoundException("Could not find chat group"));
               }
@@ -241,8 +309,15 @@ public class ChatController extends Controller {
 
               return chatRepository.createMessage(message);
             })
-            .thenApplyAsync(createdMessage -> created(Json.toJson(createdMessage)))
-            .exceptionally(e -> {
+        .thenApplyAsync(
+            createdMessage -> {
+              ChatEvents chatEvents = new ChatEvents();
+              chatEvents.sendMessageToChatGroup(
+                  userFromMiddleware, createdMessage.getChatGroup(), createdMessage.getContents());
+              return created(Json.toJson(createdMessage));
+            })
+        .exceptionally(
+            e -> {
               try {
                 throw e.getCause();
               } catch (NotFoundException notFoundException) {
@@ -255,7 +330,6 @@ public class ChatController extends Controller {
                 return internalServerError(throwable.getMessage());
               }
             });
-
   }
 
    /**
@@ -279,8 +353,6 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException("Message not found"));
               }
 
-              System.out.println(message.get());
-              System.out.println(message.get().getUser());
 
               if (message.get().getUser().getUserId() != userFromMiddleware.getUserId()) {
                 throw new CompletionException(new ForbiddenRequestException("Cannot delete a message you don't own"));

@@ -1,5 +1,5 @@
 package modules.websocket;
-//TODO: Change the Trip to a TripNode
+
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashSet;
@@ -18,13 +18,11 @@ import play.libs.Json;
  */
 public class PingMapNotifier {
   private ConnectedUsers connectedUsers;
-  private Map<User, ActorRef> connectedUserMap;
   private PingMapFrame pingMapFrame;
   private TripComposite tripNode;
 
   public PingMapNotifier(PingMapFrame pingMapFrame, TripComposite tripNode) {
     this.connectedUsers = ConnectedUsers.getInstance();
-    this.connectedUserMap = this.connectedUsers.getConnectedUsers();
     this.pingMapFrame = pingMapFrame;
     this.tripNode = tripNode;
   }
@@ -37,11 +35,11 @@ public class PingMapNotifier {
   public void notifyUsers(User user) {
     Set<User> usersToNotify = getUsersToNotify(user);
 
-    ActorRef userWebSocket = this.connectedUserMap.get(user);
+    ActorRef userWebSocket = connectedUsers.getSocketForUser(user);
     JsonNode userJson = Json.toJson(user);
 
     for (User userToNotify : usersToNotify) {
-      ActorRef receiverWebSocket = this.connectedUserMap.get(userToNotify);
+      ActorRef receiverWebSocket = this.connectedUsers.getSocketForUser(userToNotify);
 
       JsonNode frameJson = Json.toJson(pingMapFrame);
       receiverWebSocket.tell(frameJson.toString(), userWebSocket);
@@ -58,7 +56,7 @@ public class PingMapNotifier {
 
     for (User currentUser : this.tripNode.getUsers()) {
 
-      if (this.connectedUserMap.containsKey(currentUser) && !user.equals(currentUser)) {
+      if (this.connectedUsers.isUserConnected(currentUser) && !user.equals(currentUser)) {
         usersToNotify.add(currentUser);
       }
     }

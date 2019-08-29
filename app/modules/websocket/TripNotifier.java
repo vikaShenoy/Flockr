@@ -12,11 +12,9 @@ import play.libs.Json;
 public class TripNotifier {
 
   private ConnectedUsers connectedUsers;
-  private Map<User, ActorRef> userMap;
 
   public TripNotifier() {
     this.connectedUsers = ConnectedUsers.getInstance();
-    this.userMap = this.connectedUsers.getConnectedUsers();
 
   }
 
@@ -27,10 +25,9 @@ public class TripNotifier {
    * @param trip The trip that was edited
    */
   public void notifyTripUpdate(User userThatEdited, TripComposite trip) {
-    System.out.println("Am I attmpting to nofity");
     for (User user : trip.getUsers()) {
-      if (!user.equals(userThatEdited) && userMap.containsKey(user)) {
-        ActorRef actorRef = userMap.get(user);
+      if (!user.equals(userThatEdited) && connectedUsers.isUserConnected(user)) {
+        ActorRef actorRef = connectedUsers.getSocketForUser(user);
         JsonNode frameJson = Json.toJson(new TripUpdatedFrame(trip));
 
         actorRef.tell(frameJson.toString(), actorRef);
