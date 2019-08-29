@@ -360,7 +360,11 @@ public class ChatController extends Controller {
 
               return chatRepository.deleteMessage(message.get());
             })
-            .thenApplyAsync(deletedMessage -> (Result) ok())
+            .thenApplyAsync(deletedMessage -> {
+              ChatEvents chatEvents = new ChatEvents();
+              chatEvents.notifyChatMessageHasBeenDeleted(userFromMiddleware, deletedMessage);
+              return (Result) ok();
+            })
             .exceptionally(e -> {
               try {
                 throw e.getCause();

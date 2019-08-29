@@ -199,7 +199,7 @@ public class ChatControllerTest {
     Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
     JsonNode responseBody = PlayResultToJson.convertResultToJson(result);
     Assert.assertEquals(200, result.status());
-    Assert.assertEquals(1, responseBody.size());
+    Assert.assertEquals(2, responseBody.size());
 
     JsonNode chatGroupJson = responseBody.get(0);
 

@@ -23,7 +23,7 @@ public class Message extends Model {
 
     private String contents;
 
-    @OneToOne
+    @ManyToOne
     private User user;
 
     private Date timestamp;
