@@ -387,4 +387,13 @@ public class ChatControllerTest {
 
   }
 
+  @Test
+  public void editChatGroupNotFound() {
+
+    String endpoint =  "/api/chats/31415926";
+    Result result = fakeClient.makeRequestWithToken("PUT", endpoint, user.getToken());
+    Assert.assertEquals(404, result.status());
+
+  }
+
 }
