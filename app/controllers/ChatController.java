@@ -213,7 +213,6 @@ public class ChatController extends Controller {
               }), httpExecutionContext.current())
               .thenApplyAsync( messages -> {
                   JsonNode messagesJson = Json.toJson(messages);
-                  System.out.println("Length of returned list is: " + messagesJson.size());
                   return ok(messagesJson);
               })
               .exceptionally(e -> {
