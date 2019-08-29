@@ -87,6 +87,7 @@ PUT           /api/treasurehunts/:treasureHuntId/undodelete                     
 POST          /api/chats                                                              controllers.ChatController.createChat(request: Request)
 GET           /api/chats                                                              controllers.ChatController.getChats(request: Request)
 DELETE        /api/chats/message/:messageId                                           controllers.ChatController.deleteMessage(request: Request, messageId: Int)
+PUT           /api/chats/:chatGroupId                                                 controllers.ChatController.editChat(request: Request, chatGroupId: Int)
 DELETE        /api/chats/:chatGroupId                                                 controllers.ChatController.deleteChat(request: Request, chatGroupId: Int)
 POST          /api/chats/:chatGroupId/message                                         controllers.ChatController.createMessage(request: Request, chatGroupId: Int)
 
