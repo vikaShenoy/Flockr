@@ -7,6 +7,7 @@
         <v-layout>
           <v-flex>
             <GlobalSnackbar />
+            <Chat />
             <router-view/>
           </v-flex>
         </v-layout>
@@ -19,12 +20,14 @@
 import Sidebar from "./Sidebar/Sidebar";
 import Navbar from "./Navbar/Navbar";
 import GlobalSnackbar from "../../components/Snackbars/GlobalSnackbar";
+import Chat from "./Chat/Chat";
 
 export default {
   components: {
     Sidebar,
     Navbar,
-    GlobalSnackbar
+    GlobalSnackbar,
+    Chat
   },
   name: "App",
   data() {
