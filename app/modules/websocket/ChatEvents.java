@@ -17,11 +17,9 @@ public class ChatEvents {
 
 
   private ConnectedUsers connectedUsers;
-  private Map<User, ActorRef> userMap;
 
   public ChatEvents() {
     this.connectedUsers = ConnectedUsers.getInstance();
-    this.userMap = this.connectedUsers.getConnectedUsers();
   }
 
 
@@ -36,11 +34,11 @@ public class ChatEvents {
     Frame frame = new ChatMessageFrame(group.getChatGroupId(), message, user);
 
     List<User> groupUsers = group.getUsers();
-    ActorRef userWebsocket = userMap.get(user);
+    ActorRef userWebsocket = connectedUsers.getSocketForUser(user);
 
     for (User currentUser: groupUsers) {
       if (connectedUsers.isUserConnected(currentUser) && !user.equals(currentUser)) {
-        ActorRef receiverWebsocket = userMap.get(currentUser);
+        ActorRef receiverWebsocket = connectedUsers.getSocketForUser(currentUser);
         JsonNode frameJson = Json.toJson(frame);
         receiverWebsocket.tell(frameJson.toString(), userWebsocket);
       }
@@ -59,7 +57,7 @@ public class ChatEvents {
     for (ChatGroup group : chatGroups) {
       for (User currentUser : group.getUsers()) {
         if (connectedUsers.isUserConnected(currentUser) && !userDisconnecting.equals(currentUser)) {
-          ActorRef receiverWebsocket = userMap.get(currentUser);
+          ActorRef receiverWebsocket = connectedUsers.getSocketForUser(currentUser);
           JsonNode frameJson = Json.toJson(frame);
           receiverWebsocket.tell(frameJson.toString(), userSocket);
         }
