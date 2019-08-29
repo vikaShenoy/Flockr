@@ -361,4 +361,30 @@ public class ChatControllerTest {
 
   }
 
+  @Test
+  public void editChatGroupUnauthorized() {
+
+    String newChatName = "newChatName";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", newChatName);
+    chatGroupBody.set("userIds", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithNoToken("PUT", chatGroupBody, endpoint);
+
+    Assert.assertEquals(401, result.status());
+
+    ChatGroup unmodifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : unmodifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
+    Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
+
+  }
+
 }
