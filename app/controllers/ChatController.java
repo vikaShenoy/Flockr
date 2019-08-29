@@ -178,9 +178,54 @@ public class ChatController extends Controller {
   @With(LoggedIn.class)
   public CompletionStage<Result> getMessages(Http.Request request, int chatGroupId) {
 
-      System.out.println("Getting messages for chat: " + chatGroupId);
+      User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-      return supplyAsync(() -> {return ok();});
+      return chatRepository.getChatById(chatGroupId)
+              .thenComposeAsync((chatGroup -> {
+                  if (chatGroup == null) {
+                      throw new CompletionException(new NotFoundException("Chat not found"));
+                  }
+
+                  if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware) && !userFromMiddleware.isAdmin()) {
+                      throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                  }
+
+                  int offset = 0;
+                  int limit = 20;
+
+                  try {
+                      String offsetString = request.getQueryString("offset");
+                      offset = Integer.parseInt(offsetString);
+                  } catch (Exception e) {
+                      System.out.println("No offset or invalid offset provided, using default of 0");
+                  }
+
+                  try {
+                      String limitString = request.getQueryString("limit");
+                      limit = Integer.parseInt(limitString);
+                  } catch (Exception e) {
+                      System.out.println("No limit or invalid limit provided, using default of 20");
+                  }
+
+                  return chatRepository.getMessages(chatGroupId, offset, limit);
+
+              }), httpExecutionContext.current())
+              .thenApplyAsync( messages -> {
+                  JsonNode messagesJson = Json.toJson(messages);
+                  System.out.println("Length of returned list is: " + messagesJson.size());
+                  return ok(messagesJson);
+              })
+              .exceptionally(e -> {
+                  try {
+                      throw e.getCause();
+                  } catch (NotFoundException notFoundException) {
+                      return notFound(notFoundException.getMessage());
+                  } catch (ForbiddenRequestException forbiddenException) {
+                      return forbidden(forbiddenException.getMessage());
+                  } catch (Throwable throwable) {
+                      return internalServerError();
+                  }
+              });
   }
 
 

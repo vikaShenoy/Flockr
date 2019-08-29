@@ -1,6 +1,8 @@
 package repository;
 
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import io.ebean.PagedList;
+import io.ebeaninternal.server.expression.Op;
 import models.ChatGroup;
 import models.Message;
 import models.User;
@@ -9,6 +11,7 @@ import javax.inject.Inject;
 import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.runAsync;
@@ -88,6 +91,17 @@ public class ChatRepository {
       message.insert();
       return message;
     }, executionContext);
+  }
+
+  /**
+   * Get all messages in a chat between a certain range
+   * @param chatGroupId the id of the chat to get messages for
+   * @param offset the number of rows to skip in the query
+   * @param limit the maximum number of rows to return
+   * @return the list of messages
+   */
+  public CompletionStage<List<Message>> getMessages(int chatGroupId, int offset, int limit) {
+    return supplyAsync(() -> Message.find.query().where().eq("chat_group_chat_group_id", chatGroupId).setFirstRow(offset).setMaxRows(limit).findList());
   }
 
   public CompletionStage<Optional<Message>> getMessageById(int messageId) {
