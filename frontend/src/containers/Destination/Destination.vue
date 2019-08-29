@@ -251,7 +251,7 @@
        * @param {Number} the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
-        this.$root.$emit({
+        this.$root.$emit("show-snackbar", {
           message: message,
           color: color,
           timeout: timeout
