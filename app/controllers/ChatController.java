@@ -84,6 +84,25 @@ public class ChatController extends Controller {
             .exceptionally(e -> internalServerError());
   }
 
+    /**
+     * Edit a group chat
+     * @param request the play request object with a JSON body
+     * @param chatGroupId the id of the group chat to edit
+     * @return One of the following
+     * - 200 - Chat was successfully edited
+     * - 401 - User not authenticated / logged in
+     * - 403 - User is not allowed to edit the group chat (not a member of the chat)
+     * - 400 - Body of request was invalid
+     * - 500 - Any other internal server error
+     */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> editChat(Http.Request request, int chatGroupId) {
+
+    System.out.println("Editing chat: " + chatGroupId);
+
+      return null;
+  }
+
   /**
    * Gets all chats that are associated with a user
    * @param request The incoming request
