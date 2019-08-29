@@ -152,6 +152,7 @@ public class CommonTestSteps {
         TravellerType travellerType5 = new TravellerType("Holidaymaker");
         TravellerType travellerType6 = new TravellerType("Functional/Business");
         TravellerType travellerType7 = new TravellerType("Backpacker");
+        TravellerType travellerType8 = new TravellerType("Luxury Traveller");
 
         travellerType1.save();
         travellerType2.save();
@@ -160,6 +161,7 @@ public class CommonTestSteps {
         travellerType5.save();
         travellerType6.save();
         travellerType7.save();
+        travellerType8.save();
     }
 
     @After

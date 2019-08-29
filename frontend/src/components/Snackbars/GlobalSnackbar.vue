@@ -48,10 +48,36 @@
         this.color = event.color;
         this.message = event.message;
         this.showSnackbar = true;
+      },
+      /**
+       * Show the error snackbar for the specified amount of time
+       * @param message the message to show
+       * @param timeout for how long (in ms) we want to show the snackbar
+       */
+      handleShowErrorSnackbar(message, timeout) {
+        this.handleShowSnackbar({
+          message: message,
+          timeout: timeout,
+          color: 'error'
+        });
+      },
+      /**
+       * Show the success snackbar for the specified amount of time
+       * @param message the message to show
+       * @param timeout for how long (in ms) we want to show the snackbar
+       */
+      handleShowSuccessSnackbar(message, timeout) {
+        this.handleShowSnackbar({
+          message: message,
+          timeout: timeout,
+          color: 'success'
+        });
       }
     },
     mounted() {
       this.$root.$on('show-snackbar', this.handleShowSnackbar);
+      this.$root.$on('show-error-snackbar', this.handleShowErrorSnackbar);
+      this.$root.$on('show-success-snackbar', this.handleShowSuccessSnackbar);
     }
   }
 </script>
