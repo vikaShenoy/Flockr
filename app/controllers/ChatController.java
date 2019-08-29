@@ -108,7 +108,7 @@ public class ChatController extends Controller {
                       throw new CompletionException(new NotFoundException("Chat not found"));
                   }
 
-                  if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+                  if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware) && !userFromMiddleware.isAdmin()) {
                       throw new CompletionException(new ForbiddenRequestException("User not in group"));
                   }
 
