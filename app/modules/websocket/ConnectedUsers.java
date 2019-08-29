@@ -60,7 +60,7 @@ public class ConnectedUsers {
      * @param user the user to check.
      * @return true if the user is connected.
      */
-    protected boolean isUserConnected(User user) {
+    public boolean isUserConnected(User user) {
         return connectedUsers.containsKey(user);
     }
 
