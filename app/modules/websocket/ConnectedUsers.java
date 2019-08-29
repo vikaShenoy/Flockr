@@ -21,6 +21,7 @@ public class ConnectedUsers {
         connectedUsers = new HashMap<>();
     }
 
+
     /**
      * Singleton getter for connected users
      * @return
@@ -43,6 +44,7 @@ public class ConnectedUsers {
         connectedUsers.put(user, out);
     }
 
+
     /**
      * Removes a connected users by
      * @param user The user object
@@ -51,9 +53,22 @@ public class ConnectedUsers {
         connectedUsers.remove(user);
     }
 
+
+    /**
+     * Checks if a user is currently connected.
+     *
+     * @param user the user to check.
+     * @return true if the user is connected.
+     */
+    protected boolean isUserConnected(User user) {
+        return connectedUsers.containsKey(user);
+    }
+
+
     public Map<User, ActorRef> getConnectedUsers() {
         return connectedUsers;
     }
+
 
     /**
      * Clears all connected users

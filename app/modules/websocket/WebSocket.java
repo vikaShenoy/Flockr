@@ -92,7 +92,6 @@ public class WebSocket extends AbstractActor {
   @Override
   public Receive createReceive() {
     return receiveBuilder()
-        // TODO: change this to TripNode once the thing is pulled
         .match(
             String.class,
             messageFrame -> {
