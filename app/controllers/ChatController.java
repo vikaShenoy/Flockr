@@ -103,14 +103,13 @@ public class ChatController extends Controller {
       User userFromMiddleware = request.attrs().get(ActionState.USER);
       JsonNode jsonBody = request.body().asJson();
 
-
       return chatRepository.getChatById(chatGroupId)
               .thenComposeAsync(chatGroup -> {
                   if (chatGroup == null) {
                       throw new CompletionException(new NotFoundException("Chat not found"));
                   }
 
-                  if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+                  if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware) && !userFromMiddleware.isAdmin()) {
                       throw new CompletionException(new ForbiddenRequestException("User not in group"));
                   }
 
@@ -120,11 +119,11 @@ public class ChatController extends Controller {
                   try {
                       chatName = jsonBody.get("name").asText();
                       JsonNode userIdsJson = jsonBody.get("userIds");
-                      users = chatUtil.transformUsersFromJson(userFromMiddleware.getUserId(), userIdsJson);
+                      users = chatUtil.transformUsersFromJson(userIdsJson);
                   } catch (NullPointerException | BadRequestException e) {
                       throw new CompletionException(new BadRequestException("Bad request body"));
                   } catch (ForbiddenRequestException e) {
-                      throw new CompletionException(new ForbiddenRequestException("Tried to add self to users"));
+                      throw new CompletionException(new ForbiddenRequestException("Duplicate users"));
                   }
 
                   chatGroup.setUsers(users);
@@ -140,6 +139,8 @@ public class ChatController extends Controller {
                       return notFound(notFoundException.getMessage());
                   } catch (ForbiddenRequestException forbiddenException) {
                       return forbidden(forbiddenException.getMessage());
+                  } catch (BadRequestException badRequestException) {
+                      return badRequest(badRequestException.getMessage());
                   } catch (Throwable throwable) {
                       return internalServerError();
                   }
