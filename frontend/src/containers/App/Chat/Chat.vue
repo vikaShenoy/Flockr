@@ -103,7 +103,8 @@ export default {
       return this.chats.find(chat => chat.chatGroupId === this.currentChatId);
     },
     messagesRetrieved(messages) {
-      this.getCurrentChat().messages = messages;
+      console.log("I got here");
+      this.$set(this.getCurrentChat(), "messages", messages);
     }
   },
   computed: {

@@ -21,5 +21,9 @@ export async function sendMessage(chatGroupId, message) {
  * @returns {Array<Object>} The array of chat messages
  */
 export async function getChatMessages(chatGroupId) {
-  // const res = await superagent.get(endpoint("/chats"));
+  const getMessagesUrl = `/chats/${chatGroupId}/messages`;
+  const res = await superagent.get(endpoint(getMessagesUrl))
+    .set("Authorization", localStorage.getItem("authToken"));
+
+  return res.body;
 }

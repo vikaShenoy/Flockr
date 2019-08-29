@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <div id="contents">
       <Messages v-if="chatGroup.messages" :messages="chatGroup.messages" />
 
@@ -119,6 +118,7 @@ export default {
 
 #contents {
   height: 340px;
+  overflow: auto;
 }
 
 
