@@ -92,15 +92,57 @@ public class ChatController extends Controller {
      * - 200 - Chat was successfully edited
      * - 401 - User not authenticated / logged in
      * - 403 - User is not allowed to edit the group chat (not a member of the chat)
+     * - 404 - Chat group doesn't exist
      * - 400 - Body of request was invalid
      * - 500 - Any other internal server error
      */
   @With(LoggedIn.class)
   public CompletionStage<Result> editChat(Http.Request request, int chatGroupId) {
 
-    System.out.println("Editing chat: " + chatGroupId);
+      User userFromMiddleware = request.attrs().get(ActionState.USER);
+      JsonNode jsonBody = request.body().asJson();
 
-      return null;
+
+      return chatRepository.getChatById(chatGroupId)
+              .thenComposeAsync(chatGroup -> {
+                  if (chatGroup == null) {
+                      throw new CompletionException(new NotFoundException("Chat not found"));
+                  }
+
+                  if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+                      throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                  }
+
+                  String chatName;
+                  List<User> users;
+
+                  try {
+                      chatName = jsonBody.get("name").asText();
+                      JsonNode userIdsJson = jsonBody.get("userIds");
+                      users = chatUtil.transformUsersFromJson(userFromMiddleware.getUserId(), userIdsJson);
+                  } catch (NullPointerException | BadRequestException e) {
+                      throw new CompletionException(new BadRequestException("Bad request body"));
+                  } catch (ForbiddenRequestException e) {
+                      throw new CompletionException(new ForbiddenRequestException("Tried to add self to users"));
+                  }
+
+                  chatGroup.setUsers(users);
+                  chatGroup.setName(chatName);
+
+                  return chatRepository.modify(chatGroup);
+              }, httpExecutionContext.current())
+              .thenApplyAsync(modifiedChatGroup -> (Result) ok(), httpExecutionContext.current())
+              .exceptionally(e -> {
+                  try {
+                      throw e.getCause();
+                  } catch (NotFoundException notFoundException) {
+                      return notFound(notFoundException.getMessage());
+                  } catch (ForbiddenRequestException forbiddenException) {
+                      return forbidden(forbiddenException.getMessage());
+                  } catch (Throwable throwable) {
+                      return internalServerError();
+                  }
+              });
   }
 
   /**

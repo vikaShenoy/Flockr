@@ -1,9 +1,12 @@
 package repository;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import models.ChatGroup;
 import models.Message;
+import models.User;
 
 import javax.inject.Inject;
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +32,18 @@ public class ChatRepository {
   public CompletionStage<ChatGroup> create(ChatGroup chatGroup) {
     return supplyAsync(() -> {
       chatGroup.insert();
+      return chatGroup;
+    }, executionContext);
+  }
+
+  /**
+   * Modify a chat group
+   * @param chatGroup The modified chat group
+   * @return A completion stage wrapped with the modified chat group
+   */
+  public CompletionStage<ChatGroup> modify(ChatGroup chatGroup) {
+    return supplyAsync(() -> {
+      chatGroup.save();
       return chatGroup;
     }, executionContext);
   }
