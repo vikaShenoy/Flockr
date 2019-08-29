@@ -13,12 +13,14 @@ import javax.inject.Inject;
 import models.User;
 import modules.websocket.frames.PingMapFrame;
 import play.libs.Json;
+import repository.ChatRepository;
 import repository.TripRepository;
 
 
 public class WebSocket extends AbstractActor {
 
   private final TripRepository tripRepository;
+  private final ChatRepository chatRepository;
   private final ActorRef out;
   private ConnectionStatusNotifier connectionStatusNotifier = new ConnectionStatusNotifier();
   private User user;
@@ -26,15 +28,18 @@ public class WebSocket extends AbstractActor {
   /**
    * Creates a new websocket and adds user to connected users
    *
-   * @param out The websocket object
-   * @param user The user that owns the websocket
+   * @param out the websocket object
+   * @param user the user that owns the websocket
+   * @param tripRepository the trip repository
+   * @param chatRepository the chat repository
    */
   @Inject
-  public WebSocket(ActorRef out, User user, TripRepository tripRepository) {
+  public WebSocket(ActorRef out, User user, TripRepository tripRepository, ChatRepository chatRepository) {
     ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
     this.out = out;
     this.user = user;
     this.tripRepository = tripRepository;
+    this.chatRepository = chatRepository;
     connectedUsers.addConnectedUser(user, out);
     // Notify everyone that you are in a trip in that you are now online
     notifyTripConnected();
@@ -45,9 +50,12 @@ public class WebSocket extends AbstractActor {
    * what websocket
    *
    * @param out The client that sent the websocket
+   * @param tripRepository the trip repository
+   * @param user the user that owns the websocket
+   * @param chatRepository the chat repository
    */
-  public static Props props(ActorRef out, User user, TripRepository tripRepository) {
-    return Props.create(WebSocket.class, out, user, tripRepository);
+  public static Props props(ActorRef out, User user, TripRepository tripRepository, ChatRepository chatRepository) {
+    return Props.create(WebSocket.class, out, user, tripRepository, chatRepository);
   }
 
   /**
@@ -77,11 +85,17 @@ public class WebSocket extends AbstractActor {
         .getTripsByUserId(user.getUserId())
         .thenApplyAsync(
             trips -> {
-              System.out.println("I have start notified disconnected users");
               ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
               connectedUsers.removeConnectedUser(user);
               connectionStatusNotifier.notifyDisconnectedUser(user, trips);
               return null;
+            });
+    chatRepository
+        .getChatsByUserId(user.getUserId())
+        .thenAcceptAsync(
+            chatGroups -> {
+              ChatEvents chatEvents = new ChatEvents();
+              chatEvents.notifyDisconnect(user, chatGroups);
             });
   }
 
@@ -92,7 +106,6 @@ public class WebSocket extends AbstractActor {
   @Override
   public Receive createReceive() {
     return receiveBuilder()
-        // TODO: change this to TripNode once the thing is pulled
         .match(
             String.class,
             messageFrame -> {

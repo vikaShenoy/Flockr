@@ -299,7 +299,6 @@ public class ChatControllerTest {
     Message message = new Message(chatGroup, "Random message", user);
     message.save();
 
-     System.out.println(Message.find.byId(message.getMessageId()).getUser());
     String endpoint = "/api/chats/message/" + message.getMessageId();
     Result result = fakeClient.makeRequestWithToken("DELETE", endpoint, user.getToken());
     Assert.assertEquals(200, result.status());

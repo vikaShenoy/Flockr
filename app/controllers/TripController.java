@@ -343,7 +343,6 @@ public class TripController extends Controller {
                             } catch (ForbiddenRequestException e) {
                                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
                             } catch (NotFoundException e) {
-                                System.out.println(e.getMessage());
                                 return CompletableFuture.completedFuture(notFound(e.getMessage()));
                             }
 

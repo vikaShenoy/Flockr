@@ -9,6 +9,7 @@ import exceptions.NotFoundException;
 import models.ChatGroup;
 import models.Message;
 import models.User;
+import modules.websocket.ChatEvents;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
@@ -288,8 +289,10 @@ public class ChatController extends Controller {
     User userFromMiddleware = request.attrs().get(ActionState.USER);
     JsonNode jsonBody = request.body().asJson();
 
-    return chatRepository.getChatById(chatGroupId)
-            .thenComposeAsync(chatGroup -> {
+    return chatRepository
+        .getChatById(chatGroupId)
+        .thenComposeAsync(
+            chatGroup -> {
               if (chatGroup == null) {
                 throw new CompletionException(new NotFoundException("Could not find chat group"));
               }
@@ -307,8 +310,15 @@ public class ChatController extends Controller {
 
               return chatRepository.createMessage(message);
             })
-            .thenApplyAsync(createdMessage -> created(Json.toJson(createdMessage)))
-            .exceptionally(e -> {
+        .thenApplyAsync(
+            createdMessage -> {
+              ChatEvents chatEvents = new ChatEvents();
+              chatEvents.sendMessageToChatGroup(
+                  userFromMiddleware, createdMessage.getChatGroup(), createdMessage.getContents());
+              return created(Json.toJson(createdMessage));
+            })
+        .exceptionally(
+            e -> {
               try {
                 throw e.getCause();
               } catch (NotFoundException notFoundException) {
@@ -321,7 +331,6 @@ public class ChatController extends Controller {
                 return internalServerError(throwable.getMessage());
               }
             });
-
   }
 
    /**
@@ -345,8 +354,6 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException("Message not found"));
               }
 
-              System.out.println(message.get());
-              System.out.println(message.get().getUser());
 
               if (message.get().getUser().getUserId() != userFromMiddleware.getUserId()) {
                 throw new CompletionException(new ForbiddenRequestException("Cannot delete a message you don't own"));
