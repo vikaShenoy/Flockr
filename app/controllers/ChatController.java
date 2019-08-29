@@ -102,7 +102,6 @@ public class ChatController extends Controller {
       User userFromMiddleware = request.attrs().get(ActionState.USER);
       JsonNode jsonBody = request.body().asJson();
 
-
       return chatRepository.getChatById(chatGroupId)
               .thenComposeAsync(chatGroup -> {
                   if (chatGroup == null) {
@@ -139,6 +138,8 @@ public class ChatController extends Controller {
                       return notFound(notFoundException.getMessage());
                   } catch (ForbiddenRequestException forbiddenException) {
                       return forbidden(forbiddenException.getMessage());
+                  } catch (BadRequestException badRequestException) {
+                      return badRequest(badRequestException.getMessage());
                   } catch (Throwable throwable) {
                       return internalServerError();
                   }
