@@ -33,6 +33,7 @@ public class ChatControllerTest {
   private FakeClient fakeClient;
   private ChatGroup chatGroup;
   private ChatGroup chatGroup2;
+  private ChatGroup chatGroup3;
 
 
   @Before
@@ -81,6 +82,19 @@ public class ChatControllerTest {
     usersInChat2.add(otherUser);
     chatGroup2 = new ChatGroup("my chat2", usersInChat2, new ArrayList<>());
     chatGroup2.save();
+
+    List<User> usersInChat3 = new ArrayList<>();
+    usersInChat3.add(user);
+    usersInChat3.add(otherUser);
+    chatGroup3 = new ChatGroup("Testing Messages", usersInChat3, new ArrayList<>());
+    chatGroup3.save();
+
+    // Send 30 messages to chat group 3
+    for (int i = 0; i < 30; i++) {
+      Message message = new Message(chatGroup3, "Test Message " + (i + 1), user);
+      message.save();
+    }
+
   }
 
   @After
@@ -336,6 +350,8 @@ public class ChatControllerTest {
   }
 
 
+  // Edit chat group testing
+
   @Test
   public void editChatGroupOk() {
 
@@ -500,5 +516,40 @@ public class ChatControllerTest {
     Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
     Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
   }
+
+  // Get Messages Endpoint Testing
+
+  @Test
+  public void getChatMessagesNoParamsOk() {
+  }
+
+  @Test
+  public void getChatMessagesOffsetOk() {
+  }
+
+  @Test
+  public void getChatMessagesLimitOk() {
+  }
+
+  @Test
+  public void getChatMessagesOffsetAndLimitOk() {
+  }
+
+  @Test
+  public void getChatMessagesUnauthorized() {
+  }
+
+  @Test
+  public void getChatMessagesForbidden() {
+  }
+
+  @Test
+  public void getChatMessagesNotFound() {
+  }
+
+  @Test
+  public void getChatMessagesAdmin() {
+  }
+
 
 }
