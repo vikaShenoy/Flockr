@@ -2,11 +2,12 @@ package modules.websocket;
 
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import models.ChatGroup;
+import models.Message;
 import models.User;
 import modules.websocket.frames.*;
 import play.libs.Json;
@@ -43,7 +44,7 @@ public class ChatEvents {
   }
 
   /**
-   * Broadcast a silent message to other users in a chat with a user who is going online
+   * Broadcast a message to other users in a chat with a user who is going online
    *
    * @param userConnecting the user connecting.
    * @param chatGroups the chat groups for the user.
@@ -52,7 +53,7 @@ public class ChatEvents {
     ActorRef userSocket = connectedUsers.getSocketForUser(userConnecting);
     Frame frame = new ConnectedFrame(userConnecting);
 
-    notifyUsersFromChatGroups(userConnecting, chatGroups, userSocket, frame);
+    notifyUsersFromChatGroups(userConnecting, chatGroups, frame);
   }
 
   /**
@@ -60,12 +61,12 @@ public class ChatEvents {
    *
    * @param userNotifying the user sending the notification.
    * @param chatGroups the list of chat groups to extract users from.
-   * @param userSocket the socket of the connected user.
    * @param frame the frame to send over the socket.
    */
   private void notifyUsersFromChatGroups(
-      User userNotifying, List<ChatGroup> chatGroups, ActorRef userSocket, Frame frame) {
+      User userNotifying, List<ChatGroup> chatGroups, Frame frame) {
     Set<User> usersToNotify = new HashSet<>();
+    ActorRef userSocket = connectedUsers.getSocketForUser(userNotifying);
 
     for (ChatGroup group : chatGroups) {
       for (User currentUser : group.getUsers()) {
@@ -83,7 +84,7 @@ public class ChatEvents {
   }
 
   /**
-   * Broadcast a silent message to other users in a chat with a user who is going offline
+   * Broadcast a message to other users in a chat with a user who is going offline
    *
    * @param userDisconnecting the user who is disconnecting
    */
@@ -91,6 +92,33 @@ public class ChatEvents {
     ActorRef userSocket = connectedUsers.getSocketForUser(userDisconnecting);
     Frame frame = new DisconnectedFrame(userDisconnecting);
 
-    notifyUsersFromChatGroups(userDisconnecting, chatGroups, userSocket, frame);
+    notifyUsersFromChatGroups(userDisconnecting, chatGroups, frame);
+  }
+
+
+  /**
+   * Notifies the users contained in a list of chat groups with a given frame.
+   *
+   * @param userNotifying the user sending the notification.
+   * @param chatGroup the chat group to extract users from.
+   * @param frame the frame to send over the socket.
+   */
+  private void notifyUsersFromChatGroup(User userNotifying, ChatGroup chatGroup, Frame frame) {
+    List<ChatGroup> chatGroups = new ArrayList<>();
+    chatGroups.add(chatGroup);
+    ActorRef socket = connectedUsers.getSocketForUser(userNotifying);
+    notifyUsersFromChatGroups(userNotifying, chatGroups, frame);
+  }
+
+
+  /**
+   * Broadcast a message to other users in a chat when a message has been deleted.
+   *
+   * @param user the user who deleted the message
+   * @param message the message that was deleted
+   */
+  public void notifyChatMessageHasBeenDeleted(User user, Message message) {
+    Frame frame = new DeletedChatMessageFrame(message);
+    notifyUsersFromChatGroup(user, message.getChatGroup(), frame);
   }
 }
