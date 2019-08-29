@@ -122,7 +122,7 @@ public class ChatController extends Controller {
                   } catch (NullPointerException | BadRequestException e) {
                       throw new CompletionException(new BadRequestException("Bad request body"));
                   } catch (ForbiddenRequestException e) {
-                      throw new CompletionException(new ForbiddenRequestException("Tried to add self to users"));
+                      throw new CompletionException(new ForbiddenRequestException("Duplicate users"));
                   }
 
                   chatGroup.setUsers(users);

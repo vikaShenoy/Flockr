@@ -29,6 +29,7 @@ public class ChatControllerTest {
   private User user;
   private User otherUser;
   private User adminUser;
+  private User anotherUser;
   private FakeClient fakeClient;
   private ChatGroup chatGroup;
   private ChatGroup chatGroup2;
@@ -56,6 +57,7 @@ public class ChatControllerTest {
             "abc123");
     adminUser = fakeClient.signUpUser("Andy", "Admin", "andy@admin.com",
             "abc123");
+    anotherUser = fakeClient.signUpUser("Sam", "IsAwesome", "sam@theman.com", "abc123");
 
     Role role = new Role(RoleType.ADMIN);
     List<Role> roles = new ArrayList<>();
@@ -66,6 +68,7 @@ public class ChatControllerTest {
     adminUser.setRoles(roles);
     adminUser.save();
     otherUser.save();
+    anotherUser.save();
 
     List<User> usersInChat = new ArrayList<>();
     usersInChat.add(user);
@@ -395,5 +398,50 @@ public class ChatControllerTest {
     Assert.assertEquals(404, result.status());
 
   }
+
+  @Test
+  public void editChatGroupForbiddenNotInGroup() {
+
+    String newChatName = "newChatName";
+    List<Integer> newUserIds = new ArrayList<>();
+    newUserIds.add(adminUser.getUserId());
+    newUserIds.add(user.getUserId());
+    ObjectNode chatGroupBody = Json.newObject();
+    chatGroupBody.put("name", newChatName);
+    chatGroupBody.set("userIds", Json.toJson(newUserIds));
+
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
+    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, anotherUser.getToken());
+
+    Assert.assertEquals(403, result.status());
+
+    ChatGroup unmodifiedChat = ChatGroup.find.byId(chatGroup.getChatGroupId());
+
+    Set<Integer> chatUserIds = new HashSet<>();
+    for (User user : unmodifiedChat.getUsers()) {
+      chatUserIds.add(user.getUserId());
+    }
+    Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
+    Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
+
+  }
+
+  @Test
+  public void editChatGroupForbiddenDuplicateUsers() {
+    Assert.assertFalse(false);
+  }
+
+  @Test
+  public void editChatGroupAdmin() {
+    Assert.assertFalse(false);
+  }
+
+  @Test
+  public void editChatGroupBadRequest() {
+    Assert.assertFalse(false);
+  }
+
+
+
 
 }
