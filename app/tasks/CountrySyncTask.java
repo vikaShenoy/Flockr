@@ -160,7 +160,7 @@ public class CountrySyncTask {
                     log.info("Country Schedule started");
                     long startTime = System.currentTimeMillis();
                     fetchCountryApi()
-                            .thenApplyAsync(newCountries -> {
+                            .thenAcceptAsync(newCountries -> {
                                 Map<String, Country> oldCountries = getCurrentCountries();
                                 Map<String, Passport> oldPassports = getCurrentPassports();
                                 Map<String, Nationality> oldNationalities = getCurrentNationalities();
@@ -173,7 +173,6 @@ public class CountrySyncTask {
                                 long endTime = System.currentTimeMillis();
                                 long duration = (endTime - startTime) / 1000;
                                 log.info("Country schedule finished, took: " + duration + " seconds");
-                                return null;
                            });
                 },
                 this.executionContext

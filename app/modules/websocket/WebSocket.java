@@ -16,7 +16,6 @@ import play.libs.Json;
 import repository.ChatRepository;
 import repository.TripRepository;
 
-
 public class WebSocket extends AbstractActor {
 
   private final TripRepository tripRepository;
@@ -34,7 +33,8 @@ public class WebSocket extends AbstractActor {
    * @param chatRepository the chat repository
    */
   @Inject
-  public WebSocket(ActorRef out, User user, TripRepository tripRepository, ChatRepository chatRepository) {
+  public WebSocket(
+      ActorRef out, User user, TripRepository tripRepository, ChatRepository chatRepository) {
     ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
     this.out = out;
     this.user = user;
@@ -43,6 +43,7 @@ public class WebSocket extends AbstractActor {
     connectedUsers.addConnectedUser(user, out);
     // Notify everyone that you are in a trip in that you are now online
     notifyTripConnected();
+    notifyChatsConnected();
   }
 
   /**
@@ -54,7 +55,8 @@ public class WebSocket extends AbstractActor {
    * @param user the user that owns the websocket
    * @param chatRepository the chat repository
    */
-  public static Props props(ActorRef out, User user, TripRepository tripRepository, ChatRepository chatRepository) {
+  public static Props props(
+      ActorRef out, User user, TripRepository tripRepository, ChatRepository chatRepository) {
     return Props.create(WebSocket.class, out, user, tripRepository, chatRepository);
   }
 
@@ -68,10 +70,27 @@ public class WebSocket extends AbstractActor {
         () ->
             tripRepository
                 .getTripsByUserId(user.getUserId())
-                .thenApplyAsync(
+                .thenAcceptAsync(
                     trips -> {
                       connectionStatusNotifier.notifyConnectedUser(user, trips);
-                      return null;
+                    }));
+  }
+
+
+  /**
+   * Notifies to all users that have group chats with the connected user that they are connected.
+   *
+   * @return CompletionStage to run the task in the background.
+   */
+  private CompletionStage<Void> notifyChatsConnected() {
+    return runAsync(
+        () ->
+            chatRepository
+                .getChatsByUserId(user.getUserId())
+                .thenAcceptAsync(
+                    chatGroups -> {
+                      ChatEvents chatEvents = new ChatEvents();
+                      chatEvents.notifyConnect(user, chatGroups);
                     }));
   }
 
@@ -83,12 +102,11 @@ public class WebSocket extends AbstractActor {
   public void postStop() {
     tripRepository
         .getTripsByUserId(user.getUserId())
-        .thenApplyAsync(
+        .thenAcceptAsync(
             trips -> {
               ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
               connectedUsers.removeConnectedUser(user);
               connectionStatusNotifier.notifyDisconnectedUser(user, trips);
-              return null;
             });
     chatRepository
         .getChatsByUserId(user.getUserId())
@@ -100,8 +118,8 @@ public class WebSocket extends AbstractActor {
   }
 
   /**
-   * Accepts the websocket messages and notifies the users that are connected
-   * to the sent ping message
+   * Accepts the websocket messages and notifies the users that are connected to the sent ping
+   * message
    */
   @Override
   public Receive createReceive() {
@@ -109,25 +127,24 @@ public class WebSocket extends AbstractActor {
         .match(
             String.class,
             messageFrame -> {
-                JsonNode message = Json.parse(messageFrame);
-                if (message.get("type").asText().equals("ping-map")) {
-                  ObjectMapper objectMapper = new ObjectMapper();
-                  PingMapFrame pingMapFrame = objectMapper.treeToValue(message, PingMapFrame.class);
-                  tripRepository
-                      .getTripByIds(pingMapFrame.getTripNodeId(), user.getUserId())
-                      .thenApplyAsync(
-                          trip -> {
-                            if (trip.isPresent()) {
-                              PingMapNotifier pingMapNotifier =
-                                  new PingMapNotifier(pingMapFrame, trip.get());
-                              pingMapNotifier.notifyUsers(user);
-                            } else {
-                              out.tell("Map ping failed, trip not found", self());
-                            }
-                            return null;
-                          });
-                }
-                })
+              JsonNode message = Json.parse(messageFrame);
+              if (message.get("type").asText().equals("ping-map")) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                PingMapFrame pingMapFrame = objectMapper.treeToValue(message, PingMapFrame.class);
+                tripRepository
+                    .getTripByIds(pingMapFrame.getTripNodeId(), user.getUserId())
+                    .thenAcceptAsync(
+                        trip -> {
+                          if (trip.isPresent()) {
+                            PingMapNotifier pingMapNotifier =
+                                new PingMapNotifier(pingMapFrame, trip.get());
+                            pingMapNotifier.notifyUsers(user);
+                          } else {
+                            out.tell("Map ping failed, trip not found", self());
+                          }
+                        });
+              }
+            })
         .build();
   }
 }
