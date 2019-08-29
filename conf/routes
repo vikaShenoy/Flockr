@@ -89,6 +89,7 @@ GET           /api/chats                                                        
 DELETE        /api/chats/message/:messageId                                           controllers.ChatController.deleteMessage(request: Request, messageId: Int)
 PUT           /api/chats/:chatGroupId                                                 controllers.ChatController.editChat(request: Request, chatGroupId: Int)
 DELETE        /api/chats/:chatGroupId                                                 controllers.ChatController.deleteChat(request: Request, chatGroupId: Int)
+GET           /api/chats/:chatGroupId/messages                                        controllers.ChatController.getMessages(request: Request, chatGroupId: Int)
 POST          /api/chats/:chatGroupId/message                                         controllers.ChatController.createMessage(request: Request, chatGroupId: Int)
 
 # Map static resources from the /public folder to the /assets URL path

@@ -163,6 +163,27 @@ public class ChatController extends Controller {
             .exceptionally(e -> internalServerError());
   }
 
+
+  /**
+   * Get all messages for a chat using provided query parameters
+   * @param request The play request object
+   * @param chatGroupId The id of the group chat to get messages for
+   * @return One of the following http responses
+   *  - 200 - Successfully retrieved messages
+   *  - 401 - User not authenticated
+   *  - 403 - User not in group chat
+   *  - 404 - Chat group not found
+   *  - 500 - Any other internal server error
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> getMessages(Http.Request request, int chatGroupId) {
+
+      System.out.println("Getting messages for chat: " + chatGroupId);
+
+      return supplyAsync(() -> {return ok();});
+  }
+
+
   /**
    * Allows a participant to delete a chat if they are in the chat
    * @param request The incoming request
