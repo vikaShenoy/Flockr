@@ -12,7 +12,7 @@
       color="secondary"
       text-color="white"
       :class="{'your-message' : message.user.userId === userStore.data.userId, 'other-message': message.user.userId !== userStore.data.userId}"
-    ><span>{{ message.contents }}</span>
+    >{{ message.contents }}
     </div>
     </div>
   </div>
@@ -80,12 +80,11 @@ export default {
 }
 
 .your-message, .other-message {
-  border-radius: 28px;
+  border-radius: 20px;
   color: #FFF;
   padding: 8px;
   max-width: 270px;
   word-wrap: break-word;
-  white-space: pre-line;
 }
 
 .other-message {

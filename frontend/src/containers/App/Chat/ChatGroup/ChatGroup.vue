@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="contents">
+    <div id="contents" ref="contents">
       <Messages v-if="chatGroup.messages" :messages="chatGroup.messages" />
 
       <div v-else id="loading">
@@ -49,6 +49,8 @@ export default {
   mounted() {
     if (!this.chatGroup.messages) {
       this.getChatMessages();
+    } else {
+      contents.scrollTop = contents.scrollHeight;
     }
   },
   methods: {
@@ -78,7 +80,22 @@ export default {
         });
       }
     }
-  }  
+  },
+  watch: {
+    chatGroup: {
+      handler(newValue) {
+        const contents = this.$refs.contents;
+        const isAtBottom = contents.scrollTop + contents.clientHeight > contents.scrollHeight - 50;
+        if (isAtBottom) {
+          console.log("is it true: " + isAtBottom);
+          setTimeout(() => {
+            contents.scrollTop = contents.scrollHeight;
+          }, 0);
+        }
+      },
+      deep: true
+    }
+  }
 }
 </script>
 
