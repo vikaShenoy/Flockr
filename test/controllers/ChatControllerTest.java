@@ -1,11 +1,9 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
-import gherkin.deps.com.google.gson.JsonObject;
 import models.*;
 import org.junit.After;
 import org.junit.Assert;
@@ -19,8 +17,6 @@ import utils.FakeClient;
 import utils.FakePlayClient;
 import utils.PlayResultToJson;
 import utils.TestState;
-
-import javax.swing.plaf.LabelUI;
 import java.io.IOException;
 import java.util.*;
 
