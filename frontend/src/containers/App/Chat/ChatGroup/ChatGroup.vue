@@ -57,6 +57,9 @@ export default {
     async sendMessage() {
       console.log(this.chatGroup);
       try {
+          if (!this.message.length) {
+              return;
+          }
         const message = await sendMessage(this.chatGroup.chatGroupId, this.message);
         this.$emit("newMessage", message);
         this.message = "";
@@ -99,18 +102,16 @@ export default {
 }
 </script>
 
+<style lang="scss">
 
+    #new-message .v-text-field__details {
+        display: none;
+    }
 
-<style lang="scss" scoped>
-// Override vue text field so height is same as parent
-.v-input__slot {
-  height: 57px;
-  margin-bottom: 0px;
-}
+    #new-message .v-input__slot {
+        margin-bottom: 0px;
+    }
 
-.v-input__control {
-  height: 57px;
-}
 </style>
 
 <style lang="scss" scoped>
@@ -118,7 +119,7 @@ export default {
   width: 100%;
   display: flex;
   position: absolute;
-  bottom: 0;
+  bottom: 5px;
   justify-content: center;
   align-items: center;
   height: 57px;
@@ -127,6 +128,8 @@ export default {
 #new-message-input {
   width: 90%;
   height: 57px;
+    padding-left: 7px;
+    padding-bottom: 0px;
 }
 
 #send-btn {
