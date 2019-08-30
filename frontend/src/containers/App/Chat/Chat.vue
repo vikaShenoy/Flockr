@@ -120,8 +120,7 @@ export default {
 
 #chat {
   bottom: 0;
-  background-color: green;
-  position: absolute;
+  position: fixed;
   z-index: 2;
   width: 400px;
 }

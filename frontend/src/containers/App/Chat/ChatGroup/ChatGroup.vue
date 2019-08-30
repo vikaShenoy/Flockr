@@ -84,7 +84,7 @@ export default {
 
 
 
-<style lang="scss">
+<style lang="scss" scoped>
 // Override vue text field so height is same as parent
 .v-input__slot {
   height: 57px;
