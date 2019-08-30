@@ -8,13 +8,13 @@
     <v-avatar size="30" :class="{'your-avatar': message.user.userId === userStore.data.userId}">
       <img :src="getPhotoUrl(message.user)" />
     </v-avatar>
-    <v-chip
+    <div
       
       color="secondary"
       text-color="white"
       :class="{'your-message' : message.user.userId === userStore.data.userId, 'other-message': message.user.userId !== userStore.data.userId}"
-    >{{ message.contents }}
-    </v-chip>
+    ><span>{{ message.contents }}</span>
+    </div>
     </div>
   </div>
 </template>
@@ -46,17 +46,24 @@ export default {
 };
 </script>
 
+<style lang="scss">
+
+
+
+
+</style>
+
 <style lang="scss" scoped>
 @import "../../../../../styles/_variables.scss";
 
 #messages {
-  padding: 10px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
 }
 
 .message {
-  margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 .your-message {
@@ -66,8 +73,15 @@ export default {
 
 .your-avatar {
   float: right;
-  margin-top: 5px;
-  
+}
+
+.your-message, .other-message {
+  border-radius: 28px;
+  color: #FFF;
+  padding: 8px;
+  max-width: 270px;
+  word-wrap: break-word;
+  white-space: pre-line;
 }
 
 .other-message {
