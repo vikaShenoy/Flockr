@@ -5,12 +5,15 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.AbstractModule;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.ChatGroup;
 import models.Message;
 import models.User;
+import modules.voice.JanusServerApi;
+import modules.voice.VoiceServerApi;
 import modules.websocket.ChatEvents;
 import modules.websocket.ConnectedUsers;
 import play.libs.Json;
@@ -35,13 +38,15 @@ public class ChatController extends Controller {
   private final ChatUtil chatUtil;
   private final ChatRepository chatRepository;
   private HttpExecutionContext httpExecutionContext;
+  private VoiceServerApi voiceServerApi;
 
   @Inject
   public ChatController(
-      ChatUtil chatUtil, ChatRepository chatRepository, HttpExecutionContext httpExecutionContext) {
+      ChatUtil chatUtil, ChatRepository chatRepository, HttpExecutionContext httpExecutionContext, VoiceServerApi voiceServerApi) {
     this.chatUtil = chatUtil;
     this.chatRepository = chatRepository;
     this.httpExecutionContext = httpExecutionContext;
+    this.voiceServerApi = voiceServerApi;
   }
 
   /**
@@ -403,6 +408,29 @@ public class ChatController extends Controller {
                 throwable.printStackTrace();
                 return internalServerError();
               }
+            });
+  }
+
+  /**
+   * Sends a request to the janus server to join a room
+   * @return
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> joinRoom(Http.Request request, int chatGroupId) {
+    User userFromMiddleware = request.attrs().get(ActionState.USER);
+
+    return chatRepository.getChatById(chatGroupId)
+            .thenApplyAsync(chatGroup -> {
+              if (chatGroup == null) {
+                throw new CompletionException(new NotFoundException("Could not find chat group"));
+              }
+
+              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+              }
+
+              voiceServerApi.checkRoomExists(1, 2, 3);
+              return ok();
             });
   }
 }
