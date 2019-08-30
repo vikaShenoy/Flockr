@@ -33,7 +33,7 @@ public class ChatControllerTest {
 
 
   @Before
-  public void setUp() throws IOException, ServerErrorException, FailedToSignUpException {
+  public void setUp() throws IOException, ServerErrorException, FailedToSignUpException, InterruptedException{
     Map<String, String> testSettings = new HashMap<>();
     testSettings.put("db.default.driver", "org.h2.Driver");
     testSettings.put("db.default.url", "jdbc:h2:mem:testdb;MODE=MySQL;");
@@ -89,6 +89,7 @@ public class ChatControllerTest {
     for (int i = 0; i < 30; i++) {
       Message message = new Message(chatGroup3, "Test Message " + (i + 1), user);
       message.save();
+      Thread.sleep(1); // If this isn't done then the order of the messages can be muddled causing tests that check the order to fail
     }
 
   }
@@ -530,37 +531,102 @@ public class ChatControllerTest {
     Assert.assertEquals(20, messagesBody.size()); // Should return 20 messages
 
     // Should get the latest 20 messages
-    Assert.assertEquals(firstMessage, "Test Message 11");
-    Assert.assertEquals(lastMessage, "Test Message 30");
+    Assert.assertEquals("Test Message 11", firstMessage);
+    Assert.assertEquals("Test Message 30", lastMessage);
 
   }
 
   @Test
-  public void getChatMessagesOffsetOk() {
+  public void getChatMessagesOffsetOk() throws IOException{
+
+    String endpoint = "/api/chats/" + chatGroup3.getChatGroupId() + "/messages?offset=10";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+    JsonNode messagesBody = PlayResultToJson.convertResultToJson(result);
+
+    String firstMessage = messagesBody.get(0).get("contents").asText();
+    String lastMessage = messagesBody.get(19).get("contents").asText();
+
+    Assert.assertEquals(200, result.status()); // Status code check
+    Assert.assertEquals(20, messagesBody.size()); // Should return 20 messages
+
+    // Should get the first 20 messages due to the offset of 10
+    Assert.assertEquals("Test Message 1", firstMessage);
+    Assert.assertEquals("Test Message 20", lastMessage);
+
   }
 
   @Test
-  public void getChatMessagesLimitOk() {
+  public void getChatMessagesLimitOk() throws IOException {
+
+    String endpoint = "/api/chats/" + chatGroup3.getChatGroupId() + "/messages?limit=10";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+    JsonNode messagesBody = PlayResultToJson.convertResultToJson(result);
+
+    String firstMessage = messagesBody.get(0).get("contents").asText();
+    String lastMessage = messagesBody.get(9).get("contents").asText();
+
+    Assert.assertEquals(200, result.status()); // Status code check
+    Assert.assertEquals(10, messagesBody.size()); // Should return 10 messages
+
+    // Should get the latest 10 messages due to the limit of 10
+    Assert.assertEquals("Test Message 21", firstMessage);
+    Assert.assertEquals("Test Message 30", lastMessage);
+
   }
 
   @Test
-  public void getChatMessagesOffsetAndLimitOk() {
+  public void getChatMessagesOffsetAndLimitOk() throws IOException{
+
+    String endpoint = "/api/chats/" + chatGroup3.getChatGroupId() + "/messages?limit=10&offset=10";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+    JsonNode messagesBody = PlayResultToJson.convertResultToJson(result);
+
+    String firstMessage = messagesBody.get(0).get("contents").asText();
+    String lastMessage = messagesBody.get(9).get("contents").asText();
+
+    Assert.assertEquals(200, result.status()); // Status code check
+    Assert.assertEquals(10, messagesBody.size()); // Should return 10 messages
+
+    // Should get the middle 10 messages due to the limit of 10 and the offset of 10
+    Assert.assertEquals("Test Message 11", firstMessage);
+    Assert.assertEquals("Test Message 20", lastMessage);
+
   }
 
   @Test
   public void getChatMessagesUnauthorized() {
+
+    String endpoint = "/api/chats/" + chatGroup3.getChatGroupId() + "/messages";
+    Result result = fakeClient.makeRequestWithNoToken("GET", endpoint);
+    Assert.assertEquals(401, result.status());
+
   }
 
   @Test
   public void getChatMessagesForbidden() {
+
+    String endpoint = "/api/chats/" + chatGroup3.getChatGroupId() + "/messages";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, anotherUser.getToken());
+    Assert.assertEquals(403, result.status());
+
   }
 
   @Test
   public void getChatMessagesNotFound() {
+
+    String endpoint = "/api/chats/" + 31415926 + "/messages";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+    Assert.assertEquals(404, result.status());
+
   }
 
   @Test
-  public void getChatMessagesAdmin() {
+  public void getChatMessagesAdmin() throws IOException{
+
+    String endpoint = "/api/chats/" + chatGroup3.getChatGroupId() + "/messages";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, adminUser.getToken());
+    Assert.assertEquals(200, result.status());
+
   }
 
 
