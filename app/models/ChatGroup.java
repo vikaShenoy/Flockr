@@ -3,8 +3,10 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.SoftDelete;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +33,12 @@ public class ChatGroup extends Model {
     // Is transient because we don't want to insert into db
     @Transient
     private Set<User> connectedUsers;
+
+    @DbDefault("null")
+    Integer voiceRoomId;
+
+    @DbDefault("null")
+    String roomToken;
 
     public ChatGroup(String name, List<User> users, List<Message> messages) {
         this.name = name;
@@ -62,5 +70,21 @@ public class ChatGroup extends Model {
 
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    public String getRoomToken() {
+        return roomToken;
+    }
+
+    public int getVoiceRoomId() {
+        return voiceRoomId;
+    }
+
+    public void setRoomToken(String roomToken) {
+        this.roomToken = roomToken;
+    }
+
+    public void setVoiceRoomId(int voiceRoomId) {
+        this.voiceRoomId = voiceRoomId;
     }
 }
