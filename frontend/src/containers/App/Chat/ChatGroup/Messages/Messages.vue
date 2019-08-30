@@ -5,11 +5,10 @@
       v-bind:key="message.messageId"
       class="message"
     >        
-    <v-avatar size="30" :class="{'your-avatar': message.user.userId === userStore.data.userId}">
+    <v-avatar size="30" :class="{'your-avatar': message.user.userId === userStore.data.userId, 'other-avatar': message.user.userId !== userStore.data.userId}">
       <img :src="getPhotoUrl(message.user)" />
     </v-avatar>
     <div
-      
       color="secondary"
       text-color="white"
       :class="{'your-message' : message.user.userId === userStore.data.userId, 'other-message': message.user.userId !== userStore.data.userId}"
@@ -73,6 +72,11 @@ export default {
 
 .your-avatar {
   float: right;
+  margin-top: 5px;
+}
+
+.other-avatar {
+  float: left;
 }
 
 .your-message, .other-message {
@@ -87,6 +91,7 @@ export default {
 .other-message {
   background-color: $text-light-grey !important;
   color: black !important;
+  float: left;
 }
 
 </style>
