@@ -44,6 +44,8 @@ public class ChatGroup extends Model {
         this.name = name;
         this.users = users;
         this.messages = messages;
+        this.voiceRoomId = null;
+        this.roomToken = null;
     }
 
     public static final Finder<Integer, ChatGroup> find = new Finder<>(ChatGroup.class);
@@ -76,7 +78,7 @@ public class ChatGroup extends Model {
         return roomToken;
     }
 
-    public int getVoiceRoomId() {
+    public Integer getVoiceRoomId() {
         return voiceRoomId;
     }
 
@@ -84,7 +86,7 @@ public class ChatGroup extends Model {
         this.roomToken = roomToken;
     }
 
-    public void setVoiceRoomId(int voiceRoomId) {
+    public void setVoiceRoomId(Integer voiceRoomId) {
         this.voiceRoomId = voiceRoomId;
     }
 }
