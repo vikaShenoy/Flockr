@@ -1,8 +1,10 @@
 package repository;
 
+import io.ebean.PagedList;
 import models.ChatGroup;
 import models.Message;
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -92,7 +94,17 @@ public class ChatRepository {
    * @return the list of messages
    */
   public CompletionStage<List<Message>> getMessages(int chatGroupId, int offset, int limit) {
-    return supplyAsync(() -> Message.find.query().where().eq("chat_group_chat_group_id", chatGroupId).setFirstRow(offset).setMaxRows(limit).findList());
+
+    List<Message> messages = Message.find.query()
+            .where()
+            .eq("chat_group_chat_group_id", chatGroupId)
+            .orderBy().desc("timestamp")
+            .setFirstRow(offset)
+            .setMaxRows(limit)
+            .findList();
+    Collections.reverse(messages);
+
+    return supplyAsync(() -> messages);
   }
 
   public CompletionStage<Optional<Message>> getMessageById(int messageId) {
