@@ -100,12 +100,21 @@ export default {
       const newMessages = [...currentChat.messages, message];
       currentChat.messages = newMessages;
     },
+    /**
+     * Gets the current chat that the user is viewing
+     */
     getCurrentChat() {
       return this.chats.find(chat => chat.chatGroupId === this.currentChatId);
     },
+    /**
+     * Gets emitted when a messages is retrieved
+     */
     messagesRetrieved(messages) {
       this.$set(this.getCurrentChat(), "messages", messages);
     },
+    /**
+     * Listens on any incoming messages and adds it to the corresponding chat
+     */
     listenOnMessage() {
         UserStore.data.socket.addEventListener("message", (event) => {
           const message = JSON.parse(event.data);
@@ -124,6 +133,9 @@ export default {
     },
   },
   computed: {
+    /**
+     * Gets the name of the currently viewed chat
+     */
     getChatGroupName() {
       if (this.currentChatId == null || this.chats.length === 0) return "";
       const chatGroup = this.chats.find(chat => chat.chatGroupId === this.currentChatId);
