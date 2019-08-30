@@ -517,7 +517,22 @@ public class ChatControllerTest {
   // Get Messages Endpoint Testing
 
   @Test
-  public void getChatMessagesNoParamsOk() {
+  public void getChatMessagesNoParamsOk() throws IOException{
+
+    String endpoint = "/api/chats/" + chatGroup3.getChatGroupId() + "/messages";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+    JsonNode messagesBody = PlayResultToJson.convertResultToJson(result);
+
+    String firstMessage = messagesBody.get(0).get("contents").asText();
+    String lastMessage = messagesBody.get(19).get("contents").asText();
+
+    Assert.assertEquals(200, result.status()); // Status code check
+    Assert.assertEquals(20, messagesBody.size()); // Should return 20 messages
+
+    // Should get the latest 20 messages
+    Assert.assertEquals(firstMessage, "Test Message 11");
+    Assert.assertEquals(lastMessage, "Test Message 30");
+
   }
 
   @Test
