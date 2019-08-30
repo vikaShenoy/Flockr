@@ -36,6 +36,7 @@
 import { getChats } from "./ChatService";
 import ChatList from "./ChatList/ChatList";
 import ChatGroup from "./ChatGroup/ChatGroup";
+import UserStore from "../../../stores/UserStore";
 
 export default {
   components: {
@@ -51,6 +52,7 @@ export default {
   },
   mounted() {
     this.getChats();
+    this.listenOnMessage();
   },
   methods: {
     /**
@@ -103,7 +105,23 @@ export default {
     },
     messagesRetrieved(messages) {
       this.$set(this.getCurrentChat(), "messages", messages);
-    }
+    },
+    listenOnMessage() {
+        UserStore.data.socket.addEventListener("message", (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === "send-chat-message") {
+              for (const chat of this.chats) {
+                  if (chat.chatGroupId === message.chatGroupId && chat.messages) {
+                      chat.messages.push({
+                          contents : message.message,
+                          user: message.sender,
+                          messageId: message.messageId
+                      })
+                  }
+              }
+          }
+        });
+    },
   },
   computed: {
     getChatGroupName() {

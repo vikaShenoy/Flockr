@@ -338,7 +338,7 @@ public class ChatController extends Controller {
             createdMessage -> {
               ChatEvents chatEvents = new ChatEvents();
               chatEvents.sendMessageToChatGroup(
-                  userFromMiddleware, createdMessage.getChatGroup(), createdMessage.getContents());
+                  userFromMiddleware, createdMessage.getChatGroup(), createdMessage.getContents(), createdMessage.getMessageId());
               return created(Json.toJson(createdMessage));
             })
         .exceptionally(

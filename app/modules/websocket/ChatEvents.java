@@ -28,8 +28,8 @@ public class ChatEvents {
    * @param group the group to send the message to.
    * @param message the message to be sent.
    */
-  public void sendMessageToChatGroup(User user, ChatGroup group, String message) {
-    Frame frame = new ChatMessageFrame(group.getChatGroupId(), message, user);
+  public void sendMessageToChatGroup(User user, ChatGroup group, String message, int messageId) {
+    Frame frame = new ChatMessageFrame(group.getChatGroupId(), message, user, messageId);
 
     List<User> groupUsers = group.getUsers();
     ActorRef userWebsocket = connectedUsers.getSocketForUser(user);
