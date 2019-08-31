@@ -39,7 +39,7 @@ public class JanusServerApi implements VoiceServerApi {
   @Override
   public boolean checkRoomExists(long roomId, long sessionId, long pluginHandle) {
     ExistsRequest existsRequest = new ExistsRequest(roomId);
-    sendRequest(existsRequest, sessionId, pluginHandle)
+    sendRequest(existsRequest, sessionId, pluginHandle);
 //    boolean roomExists = jsonResponse.get("plugindata").get("data").get("exists").asBoolean();
     return true;
   }
