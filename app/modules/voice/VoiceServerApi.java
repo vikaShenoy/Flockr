@@ -21,5 +21,5 @@ public interface VoiceServerApi {
    * @param token The token to authenticate the room with
    * @return The room ID that was generated
    */
-  int generateRoom(String token);
+  int generateRoom(String token, long sessionId, long pluginHandle);
 }

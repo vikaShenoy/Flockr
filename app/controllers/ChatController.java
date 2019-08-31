@@ -429,7 +429,8 @@ public class ChatController extends Controller {
                 throw new CompletionException(new ForbiddenRequestException("User not in group"));
               }
 
-              voiceServerApi.checkRoomExists(1, 2, 3);
+              //voiceServerApi.checkRoomExists(1, 2, 3);
+                voiceServerApi.generateRoom("bskjfsdk", 1, 3);
               return ok();
             });
   }
