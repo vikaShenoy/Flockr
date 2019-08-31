@@ -73,30 +73,31 @@ export class VoiceChat extends EventEmitter {
    * Joins a voice room. Will be called when user wants to
    * participate in voice chat
    */
-  joinRoom = (chatGroupId) => {
-    this.getRoomToken(chatGroupId);
-    // const message = {
-    //   request: "join",
-    //   room: room,
-    //   display: UserStore.data.name,
-    // };
-    // this.channel.send({ message });
+  joinRoom = async (chatGroupId) => {
+    const {room, token} = await this.getRoomDetails(chatGroupId);
+    const message = {
+      request: "join",
+      room: room,
+        token: token,
+      display: UserStore.data.name,
+    };
+    this.channel.send({ message });
   };
 
   /**
    * Gets the token for a room
    */
-  getRoomToken = async (chatGroupId) => {
+  getRoomDetails = async (chatGroupId) => {
     try {
       const res = await superagent.post(endpoint(`/chats/${chatGroupId}/join`))
         .send({
           sessionId: this.sessionId,
-          pluginHandleId: this.pluginHandleId  
+          pluginHandleId: this.pluginHandleId
         })
         .set("Authorization", localStorage.getItem("authToken"));
 
+      return res.body;
 
-      
     } catch (e) {
       console.log(e);
       this.handleError(e);

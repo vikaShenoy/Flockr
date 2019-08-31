@@ -446,6 +446,7 @@ public class ChatController extends Controller {
                         .thenComposeAsync(exists -> {
                           if (exists) {
                             jsonResponse.put("token", chatGroup.getRoomToken());
+                            jsonResponse.put("room", roomId);
                             return supplyAsync(() -> ok(jsonResponse));
                           } else {
                             return voiceServerApi.generateRoom(roomToken, sessionId, pluginHandleId)
@@ -456,6 +457,7 @@ public class ChatController extends Controller {
                                     }, httpExecutionContext.current())
                                     .thenApplyAsync(modifiedRoom -> {
                                       jsonResponse.put("token", roomToken);
+                                      jsonResponse.put("room", modifiedRoom.getVoiceRoomId());
                                       return ok(jsonResponse);
                                     });
                           }
@@ -469,6 +471,7 @@ public class ChatController extends Controller {
                         }, httpExecutionContext.current())
                         .thenApplyAsync(modifiedChatGroup -> {
                           jsonResponse.put("token", roomToken);
+                          jsonResponse.put("room", modifiedChatGroup.getVoiceRoomId());
                           return ok(jsonResponse);
                         });
               }

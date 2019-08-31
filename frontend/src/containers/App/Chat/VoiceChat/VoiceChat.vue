@@ -4,11 +4,14 @@
       {{ isInChat ? "call_end" : "speaker_phone" }}
     </v-icon>
 
+      <audio ref="roomAudio" autoplay></audio>
+
   </div>
 </template>
 
 <script>
 import { VoiceChat } from "./voice";
+import Janus from "./janus";
 
 export default {
   props: {
@@ -21,7 +24,14 @@ export default {
     };
   },
   mounted() {
-    this.voiceChat = new VoiceChat(); 
+    this.voiceChat = new VoiceChat();
+    this.voiceChat.on("remoteUserConnected", stream => {
+        Janus.attachMediaStream(this.$refs.roomAudio , stream)
+    });
+
+    this.voiceChat.on("error", error => {
+        console.log(error);
+    });
   },
   methods: {
     toggleVoiceChat() {
