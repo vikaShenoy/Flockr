@@ -35,7 +35,7 @@ public class ChatGroup extends Model {
     private Set<User> connectedUsers;
 
     @DbDefault("null")
-    Integer voiceRoomId;
+    Long voiceRoomId;
 
     @DbDefault("null")
     String roomToken;
@@ -78,7 +78,7 @@ public class ChatGroup extends Model {
         return roomToken;
     }
 
-    public Integer getVoiceRoomId() {
+    public Long getVoiceRoomId() {
         return voiceRoomId;
     }
 
@@ -86,7 +86,7 @@ public class ChatGroup extends Model {
         this.roomToken = roomToken;
     }
 
-    public void setVoiceRoomId(Integer voiceRoomId) {
+    public void setVoiceRoomId(Long voiceRoomId) {
         this.voiceRoomId = voiceRoomId;
     }
 }
