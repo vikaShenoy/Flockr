@@ -11,6 +11,7 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.Result;
 
+import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
@@ -37,13 +38,20 @@ public class JanusServerApi implements VoiceServerApi {
    * @return True if the room exists, false otherwise
    */
   @Override
-  public boolean checkRoomExists(long roomId, long sessionId, long pluginHandle) {
+  public CompletionStage<Boolean> checkRoomExists(long roomId, long sessionId, long pluginHandle) {
     ExistsRequest existsRequest = new ExistsRequest(roomId);
-    sendRequest(existsRequest, sessionId, pluginHandle);
-//    boolean roomExists = jsonResponse.get("plugindata").get("data").get("exists").asBoolean();
-    return true;
+    return sendRequest(existsRequest, sessionId, pluginHandle)
+            .thenApplyAsync(jsonResponse -> jsonResponse.get("plugindata").get("data").get("exists").asBoolean());
+
   }
 
+  /**
+   * Sends a request to the janus server
+   * @param request The request to send (e.g. does a room exist and create room)
+   * @param sessionId
+   * @param pluginHandle
+   * @return
+   */
   private CompletionStage<JsonNode> sendRequest(JanusVoiceRequest request, long sessionId, long pluginHandle) {
     // Is the message that will be sent in the request body
     JanusMessage janusMessage = new JanusMessage(request);

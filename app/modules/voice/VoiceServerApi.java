@@ -2,6 +2,8 @@ package modules.voice;
 
 import com.google.inject.ImplementedBy;
 
+import java.util.concurrent.CompletionStage;
+
 /**
  * Defines generic api to talk to a voice server. Specifies the default implementation to use
  */
@@ -14,7 +16,7 @@ public interface VoiceServerApi {
    * @param pluginHandle The Id of the audio room plugin
    * @return Tru if the room exists, false otherwise
    */
-  boolean checkRoomExists(long roomId, long sessionId, long pluginHandle);
+  CompletionStage<Boolean> checkRoomExists(long roomId, long sessionId, long pluginHandle);
 
   /**
    * Generates a new room. Will be called when a room doesn't exist

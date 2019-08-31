@@ -434,7 +434,11 @@ public class ChatController extends Controller {
               }
 
 
-              voiceServerApi.checkRoomExists(1235, sessionId, pluginHandleId);
+              voiceServerApi.checkRoomExists(1234, sessionId, pluginHandleId)
+                      .thenApplyAsync(doesExist -> {
+                        System.out.println("Does it exist? " + doesExist);
+                        return null;
+                      });
               return ok();
             });
   }
