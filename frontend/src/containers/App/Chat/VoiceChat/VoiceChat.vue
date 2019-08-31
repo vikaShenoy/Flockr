@@ -25,6 +25,8 @@ export default {
   },
   mounted() {
     this.voiceChat = new VoiceChat();
+    
+    // Event gets emitted when a new user connects
     this.voiceChat.on("remoteUserConnected", stream => {
         Janus.attachMediaStream(this.$refs.roomAudio , stream)
     });
@@ -34,14 +36,25 @@ export default {
     });
   },
   methods: {
+    /**
+     * Handles the user joining and leaving the chat
+     */
     toggleVoiceChat() {
-      console.log(this.chatGroup);
       if (!this.isInChat) {
         this.voiceChat.joinRoom(this.chatGroup.chatGroupId);
+      } else {
+        this.voiceChat.leaveRoom();
       }
       this.isInChat = !this.isInChat;
     }
+  },
+  /**
+   * Make sure that if you leave the chat group page, that the user leaves the room
+   */
+  beforeDestroy() {
+    this.voiceChat.leaveRoom();
   }
+  
 }
 </script>
 

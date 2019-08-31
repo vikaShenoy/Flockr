@@ -178,10 +178,13 @@ export class VoiceChat extends EventEmitter {
   };
 
   /**
-   * Destroy session
+   * Leaves a room
    */
-  destroySession = () => {
-    this.janus.destroy();
-    alert("Did I destroy");
-  };
+  leaveRoom = () => {
+    const message = {
+      request: "leave"
+    }
+
+    this.channel.send({ message });
+  }
 }
