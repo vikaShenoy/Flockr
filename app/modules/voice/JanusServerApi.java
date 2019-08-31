@@ -1,9 +1,7 @@
 package modules.voice;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import modules.voice.Requests.ExistsRequest;
-import modules.voice.Requests.JanusMessage;
-import modules.voice.Requests.JanusVoiceRequest;
+import modules.voice.Requests.*;
 import modules.voice.Requests.JanusMessage;
 import modules.voice.Requests.JanusVoiceRequest;
 import play.libs.Json;
@@ -28,8 +26,10 @@ public class JanusServerApi implements VoiceServerApi {
 
 
   @Override
-  public int generateRoom(String token) {
-    return 0;
+  public CompletionStage<Long> generateRoom(String token, long sessionId, long pluginHandle) {
+    CreateRequest createRequest = new CreateRequest(token);
+    return sendRequest(createRequest, sessionId, pluginHandle).thenApplyAsync(
+            jsonResponse -> jsonResponse.get("plugindata").get("data").get("room").asLong());
   }
 
   /**
@@ -58,6 +58,10 @@ public class JanusServerApi implements VoiceServerApi {
     JsonNode requestBody = Json.toJson(janusMessage);
     String endpointUrl = String.format("%s/janus/%d/%d", janusServerUrl, sessionId, pluginHandle);
     return wsClient.url(endpointUrl).post(requestBody)
-            .thenApplyAsync(WSResponse::asJson);
+            .thenApplyAsync(WSResponse::asJson)
+            .exceptionally(e -> {
+              System.out.println(e);
+              return null;
+            });
   }
 }
