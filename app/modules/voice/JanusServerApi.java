@@ -39,7 +39,7 @@ public class JanusServerApi implements VoiceServerApi {
    * @return True if the room exists, false otherwise
    */
   @Override
-  public boolean checkRoomExists(int roomId, int sessionId, int pluginHandle) {
+  public boolean checkRoomExists(long roomId, long sessionId, long pluginHandle) {
     ExistsRequest existsRequest = new ExistsRequest(roomId);
     sendRequest(existsRequest, sessionId, pluginHandle);
     return true;
@@ -52,8 +52,9 @@ public class JanusServerApi implements VoiceServerApi {
     String endpointUrl = String.format("%s/janus/%d/%d", janusServerUrl, sessionId, pluginHandle);
     wsClient.url(endpointUrl).post(requestBody)
             .thenApplyAsync(response -> {
-              System.out.println(response.getStatus());
-              return null;
+              JsonNode jsonResponse = response.asJson();
+              boolean roomExists = jsonResponse.get("plugindata").get("data").get("exists").asBoolean();
+              return roomExists;
             });
   }
 

@@ -55,7 +55,6 @@ export default {
   },
   methods: {
     async sendMessage() {
-      console.log(this.chatGroup);
       try {
           if (!this.message.length) {
               return;
