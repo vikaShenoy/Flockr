@@ -4,12 +4,12 @@
       <v-expansion-panel-content id="header">
         <template v-slot:header>
           <h4 id="title" v-if="currentChatId == null">Chat</h4>
-          
           <div v-else id="chat-group-title">
             <v-icon color="secondary" id="back-to-chats-icon" @click="goBackToChats()">chevron_left</v-icon>
 
             <v-spacer align="center"><h4 id="title">{{ getChatGroupName }}</h4></v-spacer>
           </div>
+
         </template>
 
         <v-icon
@@ -18,14 +18,29 @@
         >$vuetify.icons.expand</v-icon>
 
         <v-card id="chats">
-          <ChatList
-            v-if="currentChatId === null"
-            :chats="chats"
-            @goToChatGroup="goToChatGroup"
-          />
-          <ChatGroup @newMessage = "newMessage" v-else :chatGroup="getCurrentChat()" @messagesRetrieved="messagesRetrieved" />
-        </v-card>
+          <v-btn
+                  flat
+                  color="secondary"
+                  @click="isShowingCreateChat = !isShowingCreateChat"
+          ><v-icon>add</v-icon>
+          </v-btn>
 
+          <div v-if="isShowingCreateChat">
+            <CreateChat
+            isShowing.sync = isShowingCreateChat
+            />
+          </div>
+
+          <div v-else>
+            <ChatList
+                    v-if="currentChatId === null"
+                    :chats="chats"
+                    @goToChatGroup="goToChatGroup"
+            />
+            <ChatGroup @newMessage = "newMessage" v-else :chatGroup="getCurrentChat()" @messagesRetrieved="messagesRetrieved" />
+          </div>
+
+        </v-card>
       </v-expansion-panel-content>
     </v-expansion-panel>
 
@@ -33,6 +48,7 @@
 </template>
 
 <script>
+import CreateChat from "../Chat/CreateChat/CreateChat";
 import { getChats } from "./ChatService";
 import ChatList from "./ChatList/ChatList";
 import ChatGroup from "./ChatGroup/ChatGroup";
@@ -41,11 +57,13 @@ import UserStore from "../../../stores/UserStore";
 export default {
   components: {
     ChatList,
-    ChatGroup
+    ChatGroup,
+    CreateChat
   },
   data() {
     return {
       chats: [],
+      isShowingCreateChat: false,
       // Specifies the current chat the user is viewing. If null then list is being viewed
       currentChatId: null
     };
@@ -86,14 +104,14 @@ export default {
       this.currentChatId = chatGroupId;
     },
     /**
-     * Goes back to the chats list
+     * Goes back to the chats list.
      */
     goBackToChats() {
       this.currentChatId = null;
       event.stopPropagation();
     },
     /**
-     * Gets called when new message is created. Adds message to data
+     * Gets called when new message is created. Adds message to data.
      */
     newMessage(message) {
       const currentChat = this.getCurrentChat();
