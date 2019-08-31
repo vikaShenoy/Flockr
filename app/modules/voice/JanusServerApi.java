@@ -25,13 +25,10 @@ public class JanusServerApi implements VoiceServerApi {
 
 
   @Override
-  public int generateRoom(String token, long sessionId, long pluginHandle) {
-
+  public CompletionStage<Long> generateRoom(String token, long sessionId, long pluginHandle) {
     CreateRequest createRequest = new CreateRequest(token);
-    sendRequest(createRequest, sessionId, pluginHandle);
-
-    return 1;
-
+    return sendRequest(createRequest, sessionId, pluginHandle).thenApplyAsync(
+            jsonResponse -> jsonResponse.get("plugindata").get("data").get("room").asLong());
   }
 
   /**
@@ -53,6 +50,10 @@ public class JanusServerApi implements VoiceServerApi {
     JsonNode requestBody = Json.toJson(janusMessage);
     String endpointUrl = String.format("%s/janus/%d/%d", janusServerUrl, sessionId, pluginHandle);
     return wsClient.url(endpointUrl).post(requestBody)
-            .thenApplyAsync(WSResponse::asJson);
+            .thenApplyAsync(WSResponse::asJson)
+            .exceptionally(e -> {
+              System.out.println(e);
+              return null;
+            });
   }
 }

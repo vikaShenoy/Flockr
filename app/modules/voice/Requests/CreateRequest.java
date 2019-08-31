@@ -20,7 +20,7 @@ public class CreateRequest implements JanusVoiceRequest {
         return request;
     }
 
-    public boolean is_private() {
+    public boolean isIs_private() {
         return is_private;
     }
 
