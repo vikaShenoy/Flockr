@@ -14,7 +14,7 @@ public interface VoiceServerApi {
    * @param pluginHandle The Id of the audio room plugin
    * @return Tru if the room exists, false otherwise
    */
-  boolean checkRoomExists(int roomId, int sessionId, int pluginHandle);
+  boolean checkRoomExists(long roomId, long sessionId, long pluginHandle);
 
   /**
    * Generates a new room. Will be called when a room doesn't exist

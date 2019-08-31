@@ -418,6 +418,10 @@ public class ChatController extends Controller {
   @With(LoggedIn.class)
   public CompletionStage<Result> joinRoom(Http.Request request, int chatGroupId) {
     User userFromMiddleware = request.attrs().get(ActionState.USER);
+    JsonNode jsonBody = request.body().asJson();
+    long sessionId = jsonBody.get("sessionId").asLong();
+    long pluginHandleId = jsonBody.get("pluginHandleId").asLong();
+
 
     return chatRepository.getChatById(chatGroupId)
             .thenApplyAsync(chatGroup -> {
@@ -429,7 +433,8 @@ public class ChatController extends Controller {
                 throw new CompletionException(new ForbiddenRequestException("User not in group"));
               }
 
-              voiceServerApi.checkRoomExists(1, 2, 3);
+
+              voiceServerApi.checkRoomExists(1235, sessionId, pluginHandleId);
               return ok();
             });
   }

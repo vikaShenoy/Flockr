@@ -1,8 +1,12 @@
 import Janus from "./janus";
-import config from "../../config";
+import config from "../../../../config";
 import { EventEmitter } from "events";
-import UserStore from "../../stores/UserStore";
-const server = config.webrtcServer;
+import UserStore from "../../../../stores/UserStore";
+import superagent from "superagent";
+import { endpoint } from "../../../../utils/endpoint";
+
+const server = config.webrtcUrl;
+
 
 /**
  * A class responsible with sending and receiving web rtc data
@@ -13,7 +17,7 @@ export class VoiceChat extends EventEmitter {
   // The communication medium on what to send/receiver messages from
   channel;
   // Session ID of the current user
-  sessionid;
+  sessionId;
   // The voice chat room that the user is connected to
   room;
   // Defines if webrtc is up or not
@@ -22,15 +26,14 @@ export class VoiceChat extends EventEmitter {
   opaqueId = `session-${Janus.randomString(12)}`;
   // Janus instance which can be useful for destroying the session
   janus;
+  // ID of the instance of the created audioroom plugin
+  pluginHandleId;
 
   /**
    * Establishes communication with janus server.
-   * @param {room} room The room that the user is currently in
    */
-  constructor(room) {
+  constructor() {
     super();
-    this.room = room;
-
     Janus.init({
       debug: "all",
       callback: () => {
@@ -43,6 +46,8 @@ export class VoiceChat extends EventEmitter {
               plugin: "janus.plugin.audiobridge",
               opaqueId: "hello " + this.opaqueId,
               success: channel => {
+                this.sessionId = channel.session.getSessionId();
+                this.pluginHandleId = channel.id;
                 this.channel = channel;
               },
               error: this.handleError,
@@ -68,15 +73,35 @@ export class VoiceChat extends EventEmitter {
    * Joins a voice room. Will be called when user wants to
    * participate in voice chat
    */
-  joinRoom = () => {
-    console.log("I requested to join a room");
-    const message = {
-      request: "join",
-      room: this.room,
-      display: UserStore.data.name,
-    };
-    this.channel.send({ message });
+  joinRoom = (chatGroupId) => {
+    this.getRoomToken(chatGroupId);
+    // const message = {
+    //   request: "join",
+    //   room: room,
+    //   display: UserStore.data.name,
+    // };
+    // this.channel.send({ message });
   };
+
+  /**
+   * Gets the token for a room
+   */
+  getRoomToken = async (chatGroupId) => {
+    try {
+      const res = await superagent.post(endpoint(`/chats/${chatGroupId}/join`))
+        .send({
+          sessionId: this.sessionId,
+          pluginHandleId: this.pluginHandleId  
+        })
+        .set("Authorization", localStorage.getItem("authToken"));
+
+
+      
+    } catch (e) {
+      console.log(e);
+      this.handleError(e);
+    }
+  }
 
   /**
    * Handles when a message has been received. This can either be if you have joined
@@ -85,8 +110,6 @@ export class VoiceChat extends EventEmitter {
    * @param {} jsep Incoming session establishment message
    */
   messageReceived = (message, sessionMessage) => {
-    console.log("I recieved a message");
-    console.log(message);
     const event = message.audiobridge;
     Janus.debug("Event: " + event);
     if (event) {
@@ -119,9 +142,7 @@ export class VoiceChat extends EventEmitter {
       }
     }
 
-    console.log("session message is: " + sessionMessage);
     if (sessionMessage) {
-      console.log("I am handling a remote jsep");
       this.channel.handleRemoteJsep({ jsep: sessionMessage });
     }
   };

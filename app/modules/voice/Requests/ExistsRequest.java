@@ -5,9 +5,9 @@ package modules.voice.Requests;
  */
 public class ExistsRequest implements JanusVoiceRequest {
   private final String request = "exists";
-  private int roomId;
+  private long roomId;
 
-  public ExistsRequest(int roomId) {
+  public ExistsRequest(long roomId) {
     this.roomId = roomId;
   }
 
@@ -16,7 +16,7 @@ public class ExistsRequest implements JanusVoiceRequest {
     return request;
   }
 
-  public int getRoomId() {
+  public long getRoom() {
     return roomId;
   }
 }

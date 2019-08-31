@@ -1,20 +1,25 @@
 <template>
   <div id="chat">
-    <v-expansion-panel id="connected-users">
+    <v-expansion-panel id="connected-users" :value="chatIsOpen ? 1 : 0" readonly>
       <v-expansion-panel-content id="header">
         <template v-slot:header>
           <h4 id="title" v-if="currentChatId == null">Chat</h4>
           
           <div v-else id="chat-group-title">
-            <v-icon color="secondary" id="back-to-chats-icon" @click="goBackToChats()">chevron_left</v-icon>
+            <v-icon color="secondary" id="back-to-chats-icon" @click="goBackToChats()" class="hover-white">chevron_left</v-icon>
 
             <v-spacer align="center"><h4 id="title">{{ getChatGroupName }}</h4></v-spacer>
+
+            <VoiceChat :chatGroup="getCurrentChat()"/>
           </div>
         </template>
 
         <v-icon
           slot="actions"
           color="secondary"
+          id="toggle-chat"
+          class="hover-white"
+          @click="chatIsOpen = !chatIsOpen"
         >$vuetify.icons.expand</v-icon>
 
         <v-card id="chats">
@@ -37,17 +42,20 @@ import { getChats } from "./ChatService";
 import ChatList from "./ChatList/ChatList";
 import ChatGroup from "./ChatGroup/ChatGroup";
 import UserStore from "../../../stores/UserStore";
+import VoiceChat from "./VoiceChat/VoiceChat";
 
 export default {
   components: {
     ChatList,
-    ChatGroup
+    ChatGroup,
+    VoiceChat
   },
   data() {
     return {
       chats: [],
       // Specifies the current chat the user is viewing. If null then list is being viewed
-      currentChatId: null
+      currentChatId: null,
+      chatIsOpen: true 
     };
   },
   mounted() {
@@ -145,6 +153,15 @@ export default {
 };
 </script>
 
+<style lang="scss">
+#chat {
+  .v-expansion-panel__header {
+    cursor: default;
+  }
+}
+
+</style>
+
 <style lang="scss" scoped>
 @import "../../../styles/_variables.scss";
 
@@ -170,6 +187,17 @@ export default {
 
 #chat-group-title {
   display: flex;
+}
+
+#toggle-chat {
+  cursor: pointer;
+}
+
+.hover-white {
+  transition: 0.1s ease-in all;
+  &:hover {
+    color: white !important; 
+  }
 }
 
 </style>
