@@ -1,17 +1,21 @@
 <template>
   <v-card flat>
-    <v-card-title>Create New Chat</v-card-title>
-
     <v-text-field
+      class="padding"
       label="Chat name"
     ></v-text-field>
 
     <v-select
+      class="padding"
       label="Members"
     ></v-select>
 
     <v-spacer align="center">
-      <v-btn>
+      <v-btn
+        color="secondary"
+        dark
+
+        >
         <v-icon>add</v-icon>
       </v-btn>
     </v-spacer>
@@ -43,5 +47,10 @@
 </script>
 
 <style scoped>
+
+.padding {
+  margin: 20px;
+  padding: 20px;
+}
 
 </style>

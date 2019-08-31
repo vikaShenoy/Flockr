@@ -3,7 +3,29 @@
     <v-expansion-panel id="connected-users" :value="chatIsOpen ? 1 : 0" readonly>
       <v-expansion-panel-content id="header">
         <template v-slot:header>
+          <div v-if="!chatIsOpen">
+            <v-btn
+                    v-if="!isShowingCreateChat"
+                    flat
+                    class="header-button"
+                    color="secondary"
+                    @click="isShowingCreateChat = true"
+            >
+              <v-icon>add</v-icon>
+            </v-btn>
+            <v-btn
+                    v-if="isShowingCreateChat"
+                    flat
+                    class="header-button"
+                    color="secondary"
+                    @click="isShowingCreateChat = false"
+            >
+              <v-icon>arrow_back</v-icon>
+            </v-btn>
+          </div>
+
           <h4 id="title" v-if="currentChatId == null">Chat</h4>
+
           <div v-else id="chat-group-title">
             <v-icon color="secondary" id="back-to-chats-icon" @click="goBackToChats()" class="hover-white">chevron_left</v-icon>
 
@@ -11,6 +33,7 @@
 
             <VoiceChat :chatGroup="getCurrentChat()"/>
           </div>
+
 
         </template>
 
@@ -23,12 +46,6 @@
         >$vuetify.icons.expand</v-icon>
 
         <v-card id="chats">
-          <v-btn
-                  flat
-                  color="secondary"
-                  @click="isShowingCreateChat = !isShowingCreateChat"
-          ><v-icon>add</v-icon>
-          </v-btn>
 
           <div v-if="isShowingCreateChat">
             <CreateChat
@@ -216,6 +233,12 @@ export default {
   &:hover {
     color: white !important; 
   }
+}
+
+.header-button {
+  width: 5px;
+  min-width: 5px;
+  margin: 5px;
 }
 
 </style>
