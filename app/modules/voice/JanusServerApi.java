@@ -8,6 +8,7 @@ import modules.voice.Requests.JanusMessage;
 import modules.voice.Requests.JanusVoiceRequest;
 import play.libs.Json;
 import play.libs.ws.WSClient;
+import play.libs.ws.WSResponse;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -38,22 +39,17 @@ public class JanusServerApi implements VoiceServerApi {
   @Override
   public boolean checkRoomExists(long roomId, long sessionId, long pluginHandle) {
     ExistsRequest existsRequest = new ExistsRequest(roomId);
-    sendRequest(existsRequest, sessionId, pluginHandle);
+    sendRequest(existsRequest, sessionId, pluginHandle)
+//    boolean roomExists = jsonResponse.get("plugindata").get("data").get("exists").asBoolean();
     return true;
   }
 
-  private void sendRequest(JanusVoiceRequest request, long sessionId, long pluginHandle) {
+  private CompletionStage<JsonNode> sendRequest(JanusVoiceRequest request, long sessionId, long pluginHandle) {
     // Is the message that will be sent in the request body
     JanusMessage janusMessage = new JanusMessage(request);
     JsonNode requestBody = Json.toJson(janusMessage);
     String endpointUrl = String.format("%s/janus/%d/%d", janusServerUrl, sessionId, pluginHandle);
-    wsClient.url(endpointUrl).post(requestBody)
-            .thenApplyAsync(response -> {
-              JsonNode jsonResponse = response.asJson();
-              boolean roomExists = jsonResponse.get("plugindata").get("data").get("exists").asBoolean();
-              return roomExists;
-            });
+    return wsClient.url(endpointUrl).post(requestBody)
+            .thenApplyAsync(WSResponse::asJson);
   }
-
-
 }
