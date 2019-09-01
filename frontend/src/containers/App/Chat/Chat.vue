@@ -27,7 +27,8 @@
           <h4 id="title" v-if="currentChatId == null">Chat</h4>
 
           <div v-else id="chat-group-title">
-            <v-icon color="secondary" id="back-to-chats-icon" @click="goBackToChats()" class="hover-white">chevron_left</v-icon>
+            <v-icon color="secondary" id="back-to-chats-icon" @click="goBackToChats()"
+                    class="hover-white">chevron_left</v-icon>
 
             <v-spacer align="center"><h4 id="title">{{ getChatGroupName }}</h4></v-spacer>
 
@@ -50,6 +51,7 @@
           <div v-if="isShowingCreateChat">
             <CreateChat
             isShowing.sync = isShowingCreateChat
+            @chatCreated="chatCreated"
             />
           </div>
 
@@ -99,6 +101,14 @@ export default {
   },
   methods: {
     /**
+     * Called when the createChat component emits a chatCreated event.
+     * Closes the chat creation component and refreshes the list of chats to display the new chat.
+     */
+    chatCreated() {
+      this.isShowingCreateChat = false;
+      this.getChats();
+    },
+    /**
      * Shows an error snackbar
      * @param {string} message The message to show
      */
@@ -109,6 +119,7 @@ export default {
         timeout: 2000
       });
     },
+
     /**
      * Gets a list of all the chats that a user is apart of
      */
