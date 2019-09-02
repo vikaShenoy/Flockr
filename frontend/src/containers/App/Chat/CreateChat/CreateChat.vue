@@ -67,7 +67,8 @@
       },
       /**
        * Called when the user clicks the create chat button.
-       * Checks that the fields have been filled in then sends a request to create the new chat.
+       * Checks that the fields have been filled in then emits to the parent component
+       * which sends the request to create the chat.
        */
       async createNewChat() {
         if (!this.$refs.form.validate()) {
@@ -75,9 +76,7 @@
         }
         try {
           const userIds = this.selectedUsers.map(user => user.userId);
-          const res = await createGroupChat(this.selectedChatName, userIds);
-          this.showSnackbar("Chat created", "success", 2000);
-          this.$emit("chatCreated");
+          this.$emit("createChat", userIds, this.selectedChatName);
         } catch (e) {
           this.showSnackbar(e, "error", 2000);
         }
