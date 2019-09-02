@@ -28,6 +28,7 @@ export default {
     
     // Event gets emitted when a new user connects
     this.voiceChat.on("remoteUserConnected", stream => {
+        console.log("I found a remote stream");
         Janus.attachMediaStream(this.$refs.roomAudio , stream)
     });
 

@@ -20,7 +20,7 @@ switch (env) {
   default:
     backendUrl = "http://localhost:9000";
     websocketUrl = "ws://localhost:9000/ws";
-    webrtcUrl = "http://localhost:8088/janus";
+    webrtcUrl = "http://rafaelgoesmann.com:8088/janus";
     break;
 }
 
@@ -28,5 +28,5 @@ export default {
   backendUrl,
   GOOGLE_MAPS_KEY,
   websocketUrl,
-  webrtcUrl
+  webrtcUrl,
 };
