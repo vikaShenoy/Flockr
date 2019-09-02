@@ -5,6 +5,7 @@
     </v-icon>
 
       <audio ref="roomAudio" autoplay></audio>
+      <audio ref="join" src="user_join.mp3" autoplay></audio>
 
   </div>
 </template>
@@ -27,10 +28,8 @@ export default {
   mounted() {
 
       this.soundEffects = {
-          //join: new Audio("../../../../assets/user_join.mp3"),
-          //leave: new Audio("../../../../assets/user_leave.mp3"),
-          join: new Audio("user_join.mp3"),
-          leave: new Audio("user_leave.mp3")
+          join: new Audio(require("../../../../assets/user_join.mp3")),
+          leave: new Audio(require("../../../../assets/user_leave.mp3"))
       };
 
 
@@ -40,7 +39,7 @@ export default {
     this.voiceChat.on("remoteUserConnected", stream => {
         Janus.attachMediaStream(this.$refs.roomAudio , stream)
     });
-
+      
     this.voiceChat.on("error", error => {
         console.log(error);
     });
@@ -52,20 +51,8 @@ export default {
     toggleVoiceChat() {
       if (!this.isInChat) {
         this.voiceChat.joinRoom(this.chatGroup.chatGroupId);
-          try {
-              let promise = this.soundEffects.join.play();
-              if (promise !== undefined) {
-                  promise.then( _ => {
-                      console.log("started playing")
-                      }
-                  ).catch( error => {
-                      this.soundEffects.join.play();
-                      console.log(error)
-                  })
-              }
-          } catch (e) {
-              console.log(e)
-          }
+        this.soundEffects.join.play();
+
       } else {
         this.voiceChat.leaveRoom();
         this.soundEffects.leave.play();
