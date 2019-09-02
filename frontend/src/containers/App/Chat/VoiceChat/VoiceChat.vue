@@ -20,10 +20,20 @@ export default {
   data() {
     return {
       isInChat: false,
-      voiceChat: null 
+      voiceChat: null,
+        soundEffects: null
     };
   },
   mounted() {
+
+      this.soundEffects = {
+          //join: new Audio("../../../../assets/user_join.mp3"),
+          //leave: new Audio("../../../../assets/user_leave.mp3"),
+          join: new Audio("user_join.mp3"),
+          leave: new Audio("user_leave.mp3")
+      };
+
+
     this.voiceChat = new VoiceChat();
     
     // Event gets emitted when a new user connects
@@ -42,8 +52,23 @@ export default {
     toggleVoiceChat() {
       if (!this.isInChat) {
         this.voiceChat.joinRoom(this.chatGroup.chatGroupId);
+          try {
+              let promise = this.soundEffects.join.play();
+              if (promise !== undefined) {
+                  promise.then( _ => {
+                      console.log("started playing")
+                      }
+                  ).catch( error => {
+                      this.soundEffects.join.play();
+                      console.log(error)
+                  })
+              }
+          } catch (e) {
+              console.log(e)
+          }
       } else {
         this.voiceChat.leaveRoom();
+        this.soundEffects.leave.play();
       }
       this.isInChat = !this.isInChat;
     }
