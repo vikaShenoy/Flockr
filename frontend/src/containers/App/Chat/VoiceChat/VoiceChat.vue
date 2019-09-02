@@ -5,6 +5,7 @@
     </v-icon>
 
       <audio ref="roomAudio" autoplay></audio>
+      <audio ref="join" src="user_join.mp3" autoplay></audio>
 
   </div>
 </template>
@@ -20,10 +21,18 @@ export default {
   data() {
     return {
       isInChat: false,
-      voiceChat: null 
+      voiceChat: null,
+        soundEffects: null
     };
   },
   mounted() {
+
+      this.soundEffects = {
+          join: new Audio(require("../../../../assets/user_join.mp3")),
+          leave: new Audio(require("../../../../assets/user_leave.mp3"))
+      };
+
+
     this.voiceChat = new VoiceChat();
     
     // Event gets emitted when a new user connects
@@ -31,6 +40,10 @@ export default {
         console.log("I found a remote stream");
         Janus.attachMediaStream(this.$refs.roomAudio , stream)
     });
+
+    this.voiceChat.on("joined", this.handleJoin);
+
+    this.voiceChat.on("left", this.handleLeave);
 
     this.voiceChat.on("error", error => {
         console.log(error);
@@ -43,11 +56,19 @@ export default {
     toggleVoiceChat() {
       if (!this.isInChat) {
         this.voiceChat.joinRoom(this.chatGroup.chatGroupId);
+
       } else {
         this.voiceChat.leaveRoom();
       }
-      this.isInChat = !this.isInChat;
-    }
+    },
+      handleJoin() {
+          this.isInChat = true;
+          this.soundEffects.join.play();
+      },
+      handleLeave() {
+          this.isInChat = false;
+          this.soundEffects.leave.play();
+      }
   },
   /**
    * Make sure that if you leave the chat group page, that the user leaves the room

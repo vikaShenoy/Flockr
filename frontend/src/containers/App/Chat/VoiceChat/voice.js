@@ -115,6 +115,7 @@ export class VoiceChat extends EventEmitter {
     Janus.debug("Event: " + event);
     if (event) {
       if (event === "joined") {
+          this.emit("joined");
         // Successfully joined, negotiate WebRTC now
         this.myid = message.id;
 
@@ -133,6 +134,8 @@ export class VoiceChat extends EventEmitter {
       } else if (event === "destroyed") {
         // The room has been destroyed
         Janus.warn("The room has been destroyed!");
+      } else if (event === "left") {
+          this.emit("left");
       } else if (event === "event") {
         if (message.participants) {
           this.emit("participants", message.participants);
