@@ -39,7 +39,11 @@ export default {
     this.voiceChat.on("remoteUserConnected", stream => {
         Janus.attachMediaStream(this.$refs.roomAudio , stream)
     });
-      
+
+    this.voiceChat.on("joined", this.handleJoin);
+
+    this.voiceChat.on("left", this.handleLeave);
+
     this.voiceChat.on("error", error => {
         console.log(error);
     });
@@ -51,14 +55,19 @@ export default {
     toggleVoiceChat() {
       if (!this.isInChat) {
         this.voiceChat.joinRoom(this.chatGroup.chatGroupId);
-        this.soundEffects.join.play();
 
       } else {
         this.voiceChat.leaveRoom();
-        this.soundEffects.leave.play();
       }
-      this.isInChat = !this.isInChat;
-    }
+    },
+      handleJoin() {
+          this.isInChat = true;
+          this.soundEffects.join.play();
+      },
+      handleLeave() {
+          this.isInChat = false;
+          this.soundEffects.leave.play();
+      }
   },
   /**
    * Make sure that if you leave the chat group page, that the user leaves the room
