@@ -204,7 +204,7 @@ export default {
     messagesRetrieved(messages) {
       this.$set(this.getCurrentChat(), "messages", messages);
     },
-      newMessages(messages) {
+      async newMessages(messages) {
           const currentChat = this.getCurrentChat();
           const newMessages = messages.concat(currentChat.messages);
           console.log(newMessages)

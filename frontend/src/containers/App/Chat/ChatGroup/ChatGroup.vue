@@ -1,6 +1,14 @@
 <template>
   <div>
     <div id="contents" ref="contents" v-on:scroll="handleScroll()">
+        <div v-if="sending && shouldSend" id="loadingMessages">
+            <v-progress-circular
+            indeterminate
+            color="secondary"
+            style="margin: 5px !important;"
+            >
+            </v-progress-circular>
+        </div>
       <Messages v-if="chatGroup.messages" :messages="chatGroup.messages" />
 
       <div v-else id="loading">
@@ -44,7 +52,8 @@ export default {
   data() {
     return {
       message: "",
-        shouldSend: false
+        shouldSend: true,
+        sending: false
     };
   },
   mounted() {
@@ -86,13 +95,21 @@ export default {
       async handleScroll() {
         const contents = this.$refs.contents;
         const nearTop = contents.scrollTop <= 50;
-        if (nearTop && !this.shouldSend) {
-            this.shouldSend = true;
+
+        if (nearTop && !this.sending) {
+            this.sending = true;
+            const oldScroll = contents.scrollHeight;
+            console.log(oldScroll);
             console.log("Passing an offset of length: " + this.chatGroup.messages.length)
             const messages = await getChatMessages(this.chatGroup.chatGroupId, this.chatGroup.messages.length, 20);
-            console.log(messages);
-            this.$emit("newMessages", messages);
-            this.shouldSend = false;
+            if (messages.length > 0) {
+                await this.$emit("newMessages", messages);
+                const newScroll = contents.scrollHeight;
+                contents.scrollTop = newScroll - oldScroll;
+                this.sending = false;
+            } else {
+                this.shouldSend = false;
+            }
         }
         //console.log("scrolling");
         //console.log(nearTop);
@@ -164,4 +181,9 @@ export default {
   display: flex;
   height: 100%;
 }
+    #loadingMessages {
+        justify-content: center;
+        align-items: center;
+        display: flex;
+    }
 </style>
