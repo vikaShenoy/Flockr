@@ -18,7 +18,6 @@
                     color="secondary"
                     @click="isShowingCreateChat = false"
             >arrow_back</v-icon>
-            <UndoRedo ref="undoRedo"></UndoRedo>
           </div>
 
           <h4 id="title" v-if="currentChatId == null">Chat</h4>
@@ -106,7 +105,6 @@ export default {
     VoiceChat,
     CreateChat,
     ManageChat,
-    UndoRedo,
   },
   data() {
     return {
