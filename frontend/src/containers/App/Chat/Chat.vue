@@ -92,7 +92,6 @@ import ChatGroup from "./ChatGroup/ChatGroup";
 import UserStore from "../../../stores/UserStore";
 import VoiceChat from "./VoiceChat/VoiceChat";
 import ManageChat from "./ManageChat/ManageChat";
-import {createGroupChat} from "./CreateChat/CreateChatService";
 
 export default {
   components: {
