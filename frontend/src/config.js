@@ -20,7 +20,7 @@ switch (env) {
   default:
     backendUrl = "http://localhost:9000";
     websocketUrl = "ws://localhost:9000/ws";
-    webrtcUrl = "http://rafaelgoesmann.com:8088/janus";
+    webrtcUrl = "http://csse-s302g5.canterbury.ac.nz:80/janus";
     break;
 }
 

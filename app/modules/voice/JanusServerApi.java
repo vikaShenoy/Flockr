@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
 public class JanusServerApi implements VoiceServerApi {
-  private final String janusServerUrl = "http://rafaelgoesmann.com:8088";
+  private final String janusServerUrl = "http://csse-s302g5.canterbury.ac.nz:80"; //8088
 
   private final WSClient wsClient;
 
