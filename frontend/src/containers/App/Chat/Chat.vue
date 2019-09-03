@@ -74,7 +74,8 @@
                     @goToChatGroup="goToChatGroup"
             />
             <ChatGroup @newMessage = "newMessage" v-else :chatGroup="getCurrentChat()"
-                       @messagesRetrieved="messagesRetrieved" />
+                       @messagesRetrieved="messagesRetrieved"
+                       @newMessages="newMessages"/>
           </div>
 
         </v-card>
@@ -203,6 +204,12 @@ export default {
     messagesRetrieved(messages) {
       this.$set(this.getCurrentChat(), "messages", messages);
     },
+      newMessages(messages) {
+          const currentChat = this.getCurrentChat();
+          const newMessages = messages.concat(currentChat.messages);
+          console.log(newMessages)
+          currentChat.messages = newMessages;
+      },
     /**
      * Listens on any incoming messages and adds it to the corresponding chat
      */

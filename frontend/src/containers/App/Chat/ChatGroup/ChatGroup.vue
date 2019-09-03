@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="contents" ref="contents">
+    <div id="contents" ref="contents" v-on:scroll="handleScroll()">
       <Messages v-if="chatGroup.messages" :messages="chatGroup.messages" />
 
       <div v-else id="loading">
@@ -43,7 +43,8 @@ export default {
   },
   data() {
     return {
-      message: ""
+      message: "",
+        shouldSend: false
     };
   },
   mounted() {
@@ -71,7 +72,7 @@ export default {
      */
     async getChatMessages() {
       try {
-        const messages = await getChatMessages(this.chatGroup.chatGroupId);
+        const messages = await getChatMessages(this.chatGroup.chatGroupId, null, null);
         this.$emit("messagesRetrieved", messages);
       } catch (e) {
         console.log(e);
@@ -81,13 +82,29 @@ export default {
           timeout: 2000
         });
       }
-    }
+    },
+      async handleScroll() {
+        const contents = this.$refs.contents;
+        const nearTop = contents.scrollTop <= 50;
+        if (nearTop && !this.shouldSend) {
+            this.shouldSend = true;
+            console.log("Passing an offset of length: " + this.chatGroup.messages.length)
+            const messages = await getChatMessages(this.chatGroup.chatGroupId, this.chatGroup.messages.length, 20);
+            console.log(messages);
+            this.$emit("newMessages", messages);
+            this.shouldSend = false;
+        }
+        //console.log("scrolling");
+        //console.log(nearTop);
+
+      }
   },
   watch: {
     chatGroup: {
       handler(newValue) {
         const contents = this.$refs.contents;
         const isAtBottom = contents.scrollTop + contents.clientHeight > contents.scrollHeight - 50;
+
         if (isAtBottom) {
           console.log("is it true: " + isAtBottom);
           setTimeout(() => {
