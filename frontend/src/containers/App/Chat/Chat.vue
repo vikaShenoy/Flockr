@@ -18,6 +18,7 @@
                     color="secondary"
                     @click="isShowingCreateChat = false"
             >arrow_back</v-icon>
+            <UndoRedo ref="undoRedo"></UndoRedo>
           </div>
 
           <h4 id="title" v-if="currentChatId == null">Chat</h4>
@@ -62,6 +63,8 @@
             <ManageChat
               isShowing.sync = "isShowingManageChat"
               :chatGroup="getCurrentChat()"
+              @editGroupChat="editGroupChat"
+              @deleteGroupChat="deleteGroupChat"
             >
 
             </ManageChat>
@@ -87,12 +90,14 @@
 
 <script>
 import CreateChat from "../Chat/CreateChat/CreateChat";
-import { getChats } from "./ChatService";
+import {createChat, deleteChat, editChat, getChats} from "./ChatService";
 import ChatList from "./ChatList/ChatList";
 import ChatGroup from "./ChatGroup/ChatGroup";
 import UserStore from "../../../stores/UserStore";
 import VoiceChat from "./VoiceChat/VoiceChat";
 import ManageChat from "./ManageChat/ManageChat";
+import UndoRedo from "../../../components/UndoRedo/UndoRedo";
+import Command from "../../../components/UndoRedo/Command";
 
 export default {
   components: {
@@ -101,6 +106,7 @@ export default {
     VoiceChat,
     CreateChat,
     ManageChat,
+    UndoRedo,
   },
   data() {
     return {
@@ -109,7 +115,7 @@ export default {
       isShowingManageChat: false,
       // Specifies the current chat the user is viewing. If null then list is being viewed
       currentChatId: null,
-      chatIsOpen: true 
+      chatIsOpen: true
     };
   },
   mounted() {
@@ -117,6 +123,41 @@ export default {
     this.listenOnMessage();
   },
   methods: {
+    /**
+     * Edit a chat group. Send request to backend. Show snackbar on success and return to
+     * main chat screen. Show error snackbar if there's an error.
+     * @param chatGroupId id of the chat to edit.
+     * @param chatName name of the group chat.
+     * @param users array of user objects to be in the chat.
+     */
+    async editGroupChat(chatGroupId, chatName, users) {
+      try {
+        const ownId = Number(localStorage.getItem("ownUserId"));
+        let userIds = users.map(user => user.userId);
+        userIds.push(ownId);
+        const res = await editChat(chatGroupId, chatName, userIds);
+        this.getChats();
+        this.goBackToChats();
+        this.showSnackbar("Changes saved", "success", 2000);
+      } catch (e) {
+        this.showSnackbar(e, "error", 2000);
+      }
+    },
+    /**
+     * Send a request to the backend to delete a group chat.
+     * Go back to main chat screen, show an error snackbar on success/error.
+     * @aparam chatGroupId id of the chat to delete.
+     */
+    async deleteGroupChat(chatGroupId) {
+      try {
+        const res = await deleteChat(chatGroupId);
+        this.chats = this.chats.filter(chat => chat.chatGroupId !== chatGroupId);
+        this.goBackToChats();
+        this.showSnackbar("Chat deleted", "success", 2000);
+      } catch (e) {
+        this.showSnackbar(e, "error", 2000);
+      }
+    },
     /**
      * Emits to the global snackbar component to show a snackbar.
      * @param message message to be shown in the snackbar.
@@ -133,17 +174,19 @@ export default {
     /**
      * Called when the createChat component emits a chatCreated event.
      * Closes the chat creation component and refreshes the list of chats to display the new chat.
+     * @param userIds users in the new group chat.
+     * @param chatName name of the new group chat.
      */
-    async createChat(chatName, userIds) {
+    async createChat(userIds, chatName) {
       try {
-        const res = await createGroupChat(chatName, userIds);
+        const res = await createChat(userIds, chatName);
+        console.log(res);
         this.showSnackbar("Chat created", "success", 2000);
         this.isShowingCreateChat = false;
         this.getChats();
       } catch (e) {
         this.showSnackbar(e, "error", 2000);
       }
-
     },
     /**
      * Shows an error snackbar

@@ -35,6 +35,7 @@
 </template>
 
 <script>
+  import { createChat, getUsers } from "../ChatService";
   import { rules } from "../../../../utils/rules";
 
   export default {

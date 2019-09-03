@@ -1,14 +1,16 @@
 <template>
   <div>
-    <v-avatar>
+    <v-avatar id="user-avatar">
       <img
             :src="getUserPhoto(user)"
             alt="avatar"
             class="avatar"
       />
     </v-avatar>
-    <span>{{ user.firstName }}</span>
-    <v-icon>delete</v-icon>
+    <span id="user-name">{{ user.firstName }}</span>
+    <v-icon
+      v-on:click="$emit('deleteUser', user.userId)"
+    >delete</v-icon>
   </div>
   
 </template>
@@ -19,7 +21,7 @@
     name: "UserSummary",
     data() {
       return {
-        imageSrc: "https://www.tibs.org.tw/images/default.jpg"
+        imageSrc: "",
       }
     },
     props: {
@@ -31,20 +33,34 @@
     mounted() {
     },
     methods: {
+      /**
+       * Get the avatar photo for each user in the display list.
+       * @param user user to get the photo for.
+       * @returns {string} src for the photo.
+       */
       getUserPhoto(user) {
         if (!user.profilePhoto) {
           return  "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
         }
         try {
-          return endpoint(`/users/photos/${user.profilePhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+          return endpoint(
+              `/users/photos/${user.profilePhoto.photoId}/thumbnail?Authorization=${
+                localStorage.getItem("authToken")}`);
         } catch (e) {
           return  "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
         }
-      }
+      },
     }
   }
 </script>
 
 <style scoped>
 
+  #user-avatar {
+    margin-right: 20px;
+  }
+
+  #user-name {
+    margin-right: 20px;
+  }
 </style>

@@ -1,6 +1,15 @@
 import superagent from "superagent";
 import { endpoint } from "../../../utils/endpoint";
 
+/**
+ * Get a list of all users.
+ * @returns {Promise<*>} the JSON body containing all user objects.
+ */
+export async function getUsers() {
+  const res = await superagent.get(endpoint("/users"))
+      .set("Authorization", localStorage.getItem("authToken"));
+  return res.body;
+}
 
 /**
  * Gets all chats that are associated with a user
@@ -41,6 +50,36 @@ export async function createChat(userIds, chatName) {
         name: chatName,
         userIds: userIds
       })
+      .set("Authorization", token);
+  return res.body;
+}
+
+/**
+ * Send a request to backend to edit a group chat.
+ * @param chatId id of the chat to edit.
+ * @param chatName group chat name.
+ * @param userIds ids of the users who are in the group chat.
+ * @returns {Promise<*>} response from put request.
+ */
+export async function editChat(chatId, chatName, userIds) {
+  const token = localStorage.getItem("authToken");
+  const res = await superagent.put(endpoint(`/chats/${chatId}`))
+      .set("Authorization", token)
+      .send({
+        name: chatName,
+        userIds: userIds
+      });
+  return res.body;
+}
+
+/**
+ * Send a request to the backend to delete a chat group.
+ * @param chatGroupId id of the chat to delete.
+ * @returns {Promise<*>} response from server.
+ */
+export async function deleteChat(chatGroupId) {
+  const token = localStorage.getItem("authToken");
+  const res = await superagent.delete(endpoint(`/chats/${chatGroupId}`))
       .set("Authorization", token);
   return res.body;
 }
