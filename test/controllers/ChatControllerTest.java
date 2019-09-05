@@ -7,6 +7,7 @@ import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import gherkin.deps.com.google.gson.JsonObject;
 import models.*;
+import modules.websocket.ConnectedUsers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,7 +36,6 @@ public class ChatControllerTest {
   private ChatGroup chatGroup2;
   private ChatGroup chatGroup3;
 
-
   @Before
   public void setUp() throws IOException, ServerErrorException, FailedToSignUpException {
     Map<String, String> testSettings = new HashMap<>();
@@ -52,12 +52,9 @@ public class ChatControllerTest {
     TestState.getInstance().setFakeClient(new FakePlayClient(application));
 
     fakeClient = TestState.getInstance().getFakeClient();
-    user = fakeClient.signUpUser("Timmy", "Tester", "timmy@tester.com",
-            "abc123");
-    otherUser = fakeClient.signUpUser("Tammy", "Tester", "tammy@tester.com",
-            "abc123");
-    adminUser = fakeClient.signUpUser("Andy", "Admin", "andy@admin.com",
-            "abc123");
+    user = fakeClient.signUpUser("Timmy", "Tester", "timmy@tester.com", "abc123");
+    otherUser = fakeClient.signUpUser("Tammy", "Tester", "tammy@tester.com", "abc123");
+    adminUser = fakeClient.signUpUser("Andy", "Admin", "andy@admin.com", "abc123");
     anotherUser = fakeClient.signUpUser("Sam", "IsAwesome", "sam@theman.com", "abc123");
 
     Role role = new Role(RoleType.ADMIN);
@@ -94,7 +91,6 @@ public class ChatControllerTest {
       Message message = new Message(chatGroup3, "Test Message " + (i + 1), user);
       message.save();
     }
-
   }
 
   @After
@@ -108,11 +104,12 @@ public class ChatControllerTest {
   public void shouldCreateChatWithValidData() throws IOException {
     ObjectNode chatGroupBody = Json.newObject();
     chatGroupBody.put("name", "my chat name");
-    chatGroupBody.putArray("userIds")
-           .add(otherUser.getUserId());
+    chatGroupBody.putArray("userIds").add(otherUser.getUserId());
 
     String endpoint = "/api/chats";
-    Result result = fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken()) ;;
+    Result result =
+        fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken());
+    ;
 
     Assert.assertEquals(201, result.status());
     JsonNode chatGroupResBody = PlayResultToJson.convertResultToJson(result);
@@ -124,7 +121,6 @@ public class ChatControllerTest {
     Set<Integer> usersInChat = getUsersInChat(chatGroupResBody.get("users"));
     Assert.assertTrue(usersInChat.contains(adminUser.getUserId()));
     Assert.assertTrue(usersInChat.contains(otherUser.getUserId()));
-
 
     Assert.assertTrue(!chatGroupResBody.has("messages"));
 
@@ -139,11 +135,12 @@ public class ChatControllerTest {
   @Test
   public void shouldNotCreateChatWithNoName() throws IOException {
     ObjectNode chatGroupBody = Json.newObject();
-    chatGroupBody.putArray("userIds")
-           .add(otherUser.getUserId());
+    chatGroupBody.putArray("userIds").add(otherUser.getUserId());
 
     String endpoint = "/api/chats";
-    Result result = fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken()) ;;
+    Result result =
+        fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken());
+    ;
     Assert.assertEquals(400, result.status());
   }
 
@@ -152,7 +149,9 @@ public class ChatControllerTest {
     ObjectNode chatGroupBody = Json.newObject();
     chatGroupBody.put("name", "my chat name");
     String endpoint = "/api/chats";
-    Result result = fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken()) ;;
+    Result result =
+        fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken());
+    ;
     Assert.assertEquals(400, result.status());
   }
 
@@ -161,11 +160,12 @@ public class ChatControllerTest {
     // Should not create chat when own user id specified as the people that should be in the chat
     ObjectNode chatGroupBody = Json.newObject();
     chatGroupBody.put("name", "my chat name");
-    chatGroupBody.putArray("userIds")
-         .add(adminUser.getUserId());
+    chatGroupBody.putArray("userIds").add(adminUser.getUserId());
 
     String endpoint = "/api/chats";
-    Result result = fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken()) ;;
+    Result result =
+        fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken());
+    ;
     Assert.assertEquals(403, result.status());
   }
 
@@ -177,7 +177,9 @@ public class ChatControllerTest {
     // Empty array means you aren't in a group with anyone which is invalid
     chatGroupBody.putArray("userIds");
     String endpoint = "/api/chats";
-    Result result = fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken()) ;;
+    Result result =
+        fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, adminUser.getToken());
+    ;
     Assert.assertEquals(400, result.status());
   }
 
@@ -185,11 +187,11 @@ public class ChatControllerTest {
   public void shouldNotCreatChatWhenNotLoggedIn() {
     ObjectNode chatGroupBody = Json.newObject();
     chatGroupBody.put("name", "my chat name");
-    chatGroupBody.putArray("userIds")
-            .add(otherUser.getUserId());
+    chatGroupBody.putArray("userIds").add(otherUser.getUserId());
 
     String endpoint = "/api/chats";
-    Result result = fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, "random-invalid-token");
+    Result result =
+        fakeClient.makeRequestWithToken("POST", chatGroupBody, endpoint, "random-invalid-token");
     Assert.assertEquals(401, result.status());
   }
 
@@ -217,12 +219,13 @@ public class ChatControllerTest {
 
   /**
    * Converts users json into a set representing the current users ID's
+   *
    * @return A set containing the current user ID's in the chat
    */
   public Set<Integer> getUsersInChat(JsonNode usersInChat) {
     Set<Integer> userIds = new HashSet<>();
     for (JsonNode userJson : usersInChat) {
-        userIds.add(userJson.get("userId").asInt());
+      userIds.add(userJson.get("userId").asInt());
     }
 
     return userIds;
@@ -309,7 +312,7 @@ public class ChatControllerTest {
     Assert.assertEquals(0, returnedChatGroup.getMessages().size());
   }
 
-   @Test
+  @Test
   public void shouldDeleteMessageInChat() {
     Message message = new Message(chatGroup, "Random message", user);
     message.save();
@@ -319,7 +322,7 @@ public class ChatControllerTest {
     Assert.assertEquals(200, result.status());
 
     ChatGroup returnedChatGroup = ChatGroup.find.byId(chatGroup.getChatGroupId());
-     // Check that message has actually been deleted
+    // Check that message has actually been deleted
     Assert.assertEquals(0, returnedChatGroup.getMessages().size());
   }
 
@@ -350,7 +353,6 @@ public class ChatControllerTest {
     Assert.assertEquals(1, returnedChatGroup.getMessages().size());
   }
 
-
   // Edit chat group testing
 
   @Test
@@ -365,7 +367,8 @@ public class ChatControllerTest {
     chatGroupBody.set("userIds", Json.toJson(newUserIds));
 
     String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
-    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
+    Result result =
+        fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
 
     Assert.assertEquals(200, result.status());
 
@@ -377,7 +380,6 @@ public class ChatControllerTest {
     }
     Set<Integer> expectedUserIds = new HashSet<>(newUserIds);
     Assert.assertEquals(expectedUserIds, chatUserIds);
-
   }
 
   @Test
@@ -403,16 +405,14 @@ public class ChatControllerTest {
     }
     Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
     Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
-
   }
 
   @Test
   public void editChatGroupNotFound() {
 
-    String endpoint =  "/api/chats/31415926";
+    String endpoint = "/api/chats/31415926";
     Result result = fakeClient.makeRequestWithToken("PUT", endpoint, user.getToken());
     Assert.assertEquals(404, result.status());
-
   }
 
   @Test
@@ -427,7 +427,8 @@ public class ChatControllerTest {
     chatGroupBody.set("userIds", Json.toJson(newUserIds));
 
     String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
-    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, anotherUser.getToken());
+    Result result =
+        fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, anotherUser.getToken());
 
     Assert.assertEquals(403, result.status());
 
@@ -439,7 +440,6 @@ public class ChatControllerTest {
     }
     Set<User> expectedUsers = new HashSet<>(chatGroup.getUsers());
     Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
-
   }
 
   @Test
@@ -454,7 +454,8 @@ public class ChatControllerTest {
     chatGroupBody.set("userIds", Json.toJson(newUserIds));
 
     String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
-    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
+    Result result =
+        fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
 
     Assert.assertEquals(403, result.status());
 
@@ -479,7 +480,8 @@ public class ChatControllerTest {
     chatGroupBody.set("userIds", Json.toJson(newUserIds));
 
     String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
-    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, adminUser.getToken());
+    Result result =
+        fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, adminUser.getToken());
 
     Assert.assertEquals(200, result.status());
 
@@ -504,7 +506,8 @@ public class ChatControllerTest {
     chatGroupBody.set("users", Json.toJson(newUserIds));
 
     String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
-    Result result = fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
+    Result result =
+        fakeClient.makeRequestWithToken("PUT", chatGroupBody, endpoint, user.getToken());
 
     Assert.assertEquals(400, result.status());
 
@@ -518,39 +521,82 @@ public class ChatControllerTest {
     Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
   }
 
+  // GET /api/chats/:chatId/onlineUsers endpoint.
+
+  @Test
+  public void getOnlineUsersUnauthorized() {
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId() + "/onlineUsers";
+    Result result = fakeClient.makeRequestWithNoToken("GET", endpoint);
+
+    Assert.assertEquals(401, result.status());
+  }
+
+  @Test
+  public void getOnlineUsersForbidden() {
+    String endpoint = "/api/chats/" + chatGroup2.getChatGroupId() + "/onlineUsers";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+
+    Assert.assertEquals(403, result.status());
+  }
+
+  @Test
+  public void getOnlineUsersNotFound() {
+    String endpoint = "/api/chats/" + 9000000 + "/onlineUsers";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+
+    Assert.assertEquals(404, result.status());
+  }
+
+  @Test
+  public void getOnlineUsersEmpty() throws IOException {
+    getOnlineUsersFromChat(user, chatGroup);
+  }
+
+  @Test
+  public void getOnlineUsersEmptyAdmin() throws IOException {
+    getOnlineUsersFromChat(adminUser, chatGroup);
+  }
+
+  /**
+   * Helper function to get all online users from the endpoint and check they are empty.
+   *
+   * @param user the user to send the request.
+   * @throws IOException when the JSon object cannot be converted from the result.
+   */
+  private void getOnlineUsersFromChat(User user, ChatGroup chatGroup) throws IOException {
+    String endpoint = "/api/chats/" + chatGroup.getChatGroupId() + "/onlineUsers";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+
+    Assert.assertEquals(200, result.status());
+
+    JsonNode resultAsJson = PlayResultToJson.convertResultToJson(result);
+    System.out.println(resultAsJson.toString());
+    Assert.assertEquals(0, resultAsJson.size());
+  }
+
   // Get Messages Endpoint Testing
 
   @Test
-  public void getChatMessagesNoParamsOk() {
-  }
+  public void getChatMessagesNoParamsOk() {}
 
   @Test
-  public void getChatMessagesOffsetOk() {
-  }
+  public void getChatMessagesOffsetOk() {}
 
   @Test
-  public void getChatMessagesLimitOk() {
-  }
+  public void getChatMessagesLimitOk() {}
 
   @Test
-  public void getChatMessagesOffsetAndLimitOk() {
-  }
+  public void getChatMessagesOffsetAndLimitOk() {}
 
   @Test
-  public void getChatMessagesUnauthorized() {
-  }
+  public void getChatMessagesUnauthorized() {}
 
   @Test
-  public void getChatMessagesForbidden() {
-  }
+  public void getChatMessagesForbidden() {}
 
   @Test
-  public void getChatMessagesNotFound() {
-  }
+  public void getChatMessagesNotFound() {}
 
   @Test
-  public void getChatMessagesAdmin() {
-  }
-
-
+  public void getChatMessagesAdmin() {}
 }
