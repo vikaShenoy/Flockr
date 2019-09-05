@@ -199,7 +199,6 @@ public class ChatControllerTest {
     JsonNode responseBody = PlayResultToJson.convertResultToJson(result);
     Assert.assertEquals(200, result.status());
     Assert.assertEquals(2, responseBody.size());
-    Assert.assertTrue(responseBody.get(0).has("connectedUsers"));
 
     JsonNode chatGroupJson = responseBody.get(0);
 
