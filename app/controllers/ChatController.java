@@ -74,7 +74,7 @@ public class ChatController extends Controller {
     ChatGroup chatGroup = new ChatGroup(chatName, users, new ArrayList<>());
 
     return chatRepository
-        .create(chatGroup)
+        .createChat(chatGroup)
         .thenComposeAsync(
             insertedChatGroup -> chatRepository.getChatById(insertedChatGroup.getChatGroupId()),
             httpExecutionContext.current())
@@ -135,7 +135,7 @@ public class ChatController extends Controller {
               chatGroup.setUsers(users);
               chatGroup.setName(chatName);
 
-              return chatRepository.modify(chatGroup);
+              return chatRepository.modifyChat(chatGroup);
             },
             httpExecutionContext.current())
         .thenApplyAsync(modifiedChatGroup -> (Result) ok(), httpExecutionContext.current())
@@ -168,25 +168,67 @@ public class ChatController extends Controller {
 
     return chatRepository
         .getChatsByUserId(userFromMiddleware.getUserId())
-        .thenApplyAsync(
-            chats -> {
-              ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
-              ArrayNode node = Json.newArray();
-              for (ChatGroup chatGroup : chats) {
-                List<User> currentConnectedUsers = new ArrayList<>();
-                for (User user : chatGroup.getUsers()) {
-                  if (connectedUsers.isUserConnected(user)) {
-                    currentConnectedUsers.add(user);
-                  }
-                }
-                ObjectNode chatGroupObject = (ObjectNode) Json.toJson(chatGroup);
-                chatGroupObject.put("connectedUsers", Json.toJson(currentConnectedUsers));
-                node.add(chatGroupObject);
-              }
-              return ok(node);
-            },
-            httpExecutionContext.current())
+        .thenApplyAsync(chats -> ok(Json.toJson(chats)), httpExecutionContext.current())
         .exceptionally(e -> internalServerError());
+  }
+
+  /**
+   * Gets the online users from the users of a group chat. called from the GET
+   * /api/chats/:chatGroupId/onlineUsers endpoint.
+   *
+   * @param request the http request.
+   * @param chatGroupId the id of the chat to get users from.
+   * @return the completion stage with the response.
+   * Status codes for the http response:
+   *      - 200 - ok - successfully got online users.
+   *      - 401 - unauthorized - user not logged in.
+   *      - 403 - forbidden - user does not have permission.
+   *      - 404 - not found - chat not found.
+   *      - 500 - internal server error - unexpected error.
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> getOnlineUsers(Http.Request request, int chatGroupId) {
+    User userFromMiddleware = request.attrs().get(ActionState.USER);
+    return chatRepository
+        .getChatById(chatGroupId)
+        .thenApplyAsync(
+            chat -> {
+              if (chat == null) {
+                throw new CompletionException(new NotFoundException("Chat not found"));
+              }
+              List<User> chatUsers = chat.getUsers();
+              if (!userFromMiddleware.isAdmin() && !chatUsers.contains(userFromMiddleware)) {
+                throw new CompletionException(
+                    new ForbiddenRequestException(
+                        "You do not have permission to perform this request."));
+              }
+              ConnectedUsers connectedUsers = ConnectedUsers.getInstance();
+              ArrayNode currentConnectedUsers = Json.newArray();
+              for (User user : chatUsers) {
+                if (connectedUsers.isUserConnected(user)) {
+                  currentConnectedUsers.add(Json.toJson(user));
+                }
+              }
+              return ok(currentConnectedUsers);
+            })
+        .exceptionally(
+            error -> {
+              try {
+                throw error.getCause();
+              } catch (ForbiddenRequestException e) {
+                ObjectNode message = Json.newObject();
+                message.put("message", e.getMessage());
+                return forbidden(Json.toJson(message));
+              } catch (NotFoundException e) {
+                ObjectNode message = Json.newObject();
+                message.put("message", e.getMessage());
+                return notFound(Json.toJson(message));
+              } catch (Throwable e) {
+                ObjectNode message = Json.newObject();
+                message.put("message", e.getMessage());
+                return internalServerError(message);
+              }
+            });
   }
 
   /**
