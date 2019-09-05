@@ -91,6 +91,7 @@ PUT           /api/chats/:chatGroupId                                           
 DELETE        /api/chats/:chatGroupId                                                 controllers.ChatController.deleteChat(request: Request, chatGroupId: Int)
 GET           /api/chats/:chatGroupId/messages                                        controllers.ChatController.getMessages(request: Request, chatGroupId: Int)
 POST          /api/chats/:chatGroupId/message                                         controllers.ChatController.createMessage(request: Request, chatGroupId: Int)
+POST          /api/chats/:chatGroupId/join                                            controllers.ChatController.joinRoom(request: Request, chatGroupId: Int)
 GET           /api/chats/:chatGroupId/onlineUsers                                     controllers.ChatController.getOnlineUsers(request: Request, chatGroupId: Int)
 
 # Map static resources from the /public folder to the /assets URL path

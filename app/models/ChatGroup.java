@@ -3,8 +3,10 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.SoftDelete;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
@@ -32,10 +34,18 @@ public class ChatGroup extends Model {
     @Transient
     private Set<User> connectedUsers;
 
+    @DbDefault("null")
+    Long voiceRoomId;
+
+    @DbDefault("null")
+    String roomToken;
+
     public ChatGroup(String name, List<User> users, List<Message> messages) {
         this.name = name;
         this.users = users;
         this.messages = messages;
+        this.voiceRoomId = null;
+        this.roomToken = null;
     }
 
     public static final Finder<Integer, ChatGroup> find = new Finder<>(ChatGroup.class);
@@ -62,5 +72,21 @@ public class ChatGroup extends Model {
 
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    public String getRoomToken() {
+        return roomToken;
+    }
+
+    public Long getVoiceRoomId() {
+        return voiceRoomId;
+    }
+
+    public void setRoomToken(String roomToken) {
+        this.roomToken = roomToken;
+    }
+
+    public void setVoiceRoomId(Long voiceRoomId) {
+        this.voiceRoomId = voiceRoomId;
     }
 }
