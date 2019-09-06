@@ -30,3 +30,15 @@ export async function getChatMessages(chatGroupId, offset, limit) {
 
   return res.body;
 }
+
+/**
+ * Get all the connected users for a specific chat group.
+ * @param {Number} chatGroupId the id of the chat group
+ */
+export async function getConnectedUsers(chatGroupId) {
+  const authToken = localStorage.getItem('authToken');
+  const res = await superagent.get(endpoint(`/chats/${chatGroupId}/onlineUsers`))
+    .set("Authorization", authToken);
+
+  return res.body;
+}

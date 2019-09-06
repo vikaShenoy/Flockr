@@ -9,7 +9,7 @@
             >
             </v-progress-circular>
         </div>
-      <Messages v-if="chatGroup.messages" :messages="chatGroup.messages" />
+      <Messages v-if="chatGroup.messages" :messages="chatGroup.messages" :connectedUsers="connectedUsers"/>
 
       <div v-else id="loading">
         <v-progress-circular
@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { sendMessage, getChatMessages } from "./ChatGroupService";
+import { sendMessage, getChatMessages, getConnectedUsers } from "./ChatGroupService";
 import Messages from "./Messages/Messages";
 
 export default {
@@ -52,8 +52,9 @@ export default {
   data() {
     return {
       message: "",
-        shouldSend: true,
-        sending: false
+      shouldSend: true,
+      sending: false,
+      connectedUsers: []
     };
   },
   mounted() {
@@ -62,8 +63,19 @@ export default {
     } else {
       contents.scrollTop = contents.scrollHeight;
     }
+    this.getConnectedUsersForChat();
   },
   methods: {
+    /**
+     * Get the connected users for the chat group.
+     */
+    async getConnectedUsersForChat() {
+      try {
+        this.connectedUsers = await getConnectedUsers(this.chatGroup.chatGroupId);
+      } catch (err) {
+        this.$root.$emit('show-error-snackbar', "Could not get connected users for the chat", 4000);
+      }
+    }, 
     async sendMessage() {
       try {
           if (!this.message.length) {
@@ -92,29 +104,29 @@ export default {
         });
       }
     },
-      async handleScroll() {
-        const contents = this.$refs.contents;
-        const nearTop = contents.scrollTop <= 50;
+    async handleScroll() {
+      const contents = this.$refs.contents;
+      const nearTop = contents.scrollTop <= 50;
 
-        if (nearTop && !this.sending) {
-            this.sending = true;
-            const oldScroll = contents.scrollHeight;
-            console.log(oldScroll);
-            console.log("Passing an offset of length: " + this.chatGroup.messages.length)
-            const messages = await getChatMessages(this.chatGroup.chatGroupId, this.chatGroup.messages.length, 20);
-            if (messages.length > 0) {
-                await this.$emit("newMessages", messages);
-                const newScroll = contents.scrollHeight;
-                contents.scrollTop = newScroll - oldScroll;
-                this.sending = false;
-            } else {
-                this.shouldSend = false;
-            }
-        }
-        //console.log("scrolling");
-        //console.log(nearTop);
-
+      if (nearTop && !this.sending) {
+          this.sending = true;
+          const oldScroll = contents.scrollHeight;
+          console.log(oldScroll);
+          console.log("Passing an offset of length: " + this.chatGroup.messages.length)
+          const messages = await getChatMessages(this.chatGroup.chatGroupId, this.chatGroup.messages.length, 20);
+          if (messages.length > 0) {
+              await this.$emit("newMessages", messages);
+              const newScroll = contents.scrollHeight;
+              contents.scrollTop = newScroll - oldScroll;
+              this.sending = false;
+          } else {
+              this.shouldSend = false;
+          }
       }
+      //console.log("scrolling");
+      //console.log(nearTop);
+
+    }
   },
   watch: {
     chatGroup: {

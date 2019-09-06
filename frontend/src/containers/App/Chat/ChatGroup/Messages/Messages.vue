@@ -1,96 +1,45 @@
 <template>
   <div id="messages">
-    <div
+    <Message
       v-for="message in messages" 
-      v-bind:key="message.messageId"
-      class="message"
-    >        
-    <v-avatar size="30" :class="{'your-avatar': message.user.userId === userStore.data.userId, 'other-avatar': message.user.userId !== userStore.data.userId}">
-      <img :src="getPhotoUrl(message.user)" />
-    </v-avatar>
-    <div
-      color="secondary"
-      text-color="white"
-      :class="{'your-message' : message.user.userId === userStore.data.userId, 'other-message': message.user.userId !== userStore.data.userId}"
-    >{{ message.contents }}
-    </div>
-    </div>
+      :key="message.messageId"
+      :message="message"
+      :isUserConnected="isUserConnected(message.user)"
+    />
   </div>
 </template>
 
 <script>
 import UserStore from "../../../../../stores/UserStore";
-import { endpoint } from "../../../../../utils/endpoint";
+import Message from "./Message";
 
 export default {
   props: {
     messages: Array,
+    connectedUsers: Array
   },
-  data() {
-    return {
-      userStore: UserStore
-    };
-  },
+  components: { Message },
   methods: {
     /**
-     * Gets a photo URL for a user
+     * Return true if the user is connected, false otherwise
+     * @param the user that we want to know if it's connected
+     * @returns {Boolean} true if the user is connected, false otherwise
      */
-    getPhotoUrl(user) {
-      if (!user.profilePhoto) {
-        return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
-      }
-      return endpoint(`/users/photos/${user.profilePhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
-    },
+    isUserConnected(user) {
+      // to make sure it doesn't break if the API returns only some parts of the user
+      // for one of the user objects
+      return this.connectedUsers.filter(u => u.userId === user.userId).length > 0;
+    }
   }
 };
 </script>
 
-<style lang="scss">
-
-
-
-
-</style>
-
 <style lang="scss" scoped>
-@import "../../../../../styles/_variables.scss";
 
 #messages {
   padding: 15px;
   display: flex;
   flex-direction: column;
-}
-
-.message {
-    margin-bottom: 20px;
-}
-
-.your-message {
-  float: right;
-  background-color: $secondary;
-}
-
-.your-avatar {
-  float: right;
-  margin-top: 5px;
-}
-
-.other-avatar {
-  float: left;
-}
-
-.your-message, .other-message {
-  border-radius: 20px;
-  color: #FFF;
-  padding: 8px;
-  max-width: 270px;
-  word-wrap: break-word;
-}
-
-.other-message {
-  background-color: $text-light-grey !important;
-  color: black !important;
-  float: left;
 }
 
 </style>

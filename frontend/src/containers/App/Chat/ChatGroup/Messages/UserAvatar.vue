@@ -1,0 +1,64 @@
+<template>
+  <v-avatar
+    :size="size"
+    :class="avatarClass"
+  >
+    <img :src="getPhotoUrl(user)" />
+  </v-avatar>    
+</template>
+
+<script>
+import { endpoint } from "../../../../../utils/endpoint";
+
+export default {
+  props: {
+    isConnected: Boolean,
+    isOwnUser: Boolean,
+    user: Object,
+    size: Number
+  },
+  methods: {
+    /**
+     * Gets a photo URL for a user
+     */
+    getPhotoUrl(user) {
+      if (!user.profilePhoto) {
+        return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
+      }
+      return endpoint(`/users/photos/${user.profilePhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+    }
+  },
+  computed: {
+    /**
+     * Get the CSS class for the avatar
+     * @returns {String} the CSS class for the avatar
+     */
+    avatarClass() {
+      const avatarOwnership = this.isOwnUser ? "your-avatar" : "other-avatar";
+      const connectionStatus = this.isConnected ? "connected" : "disconnected";
+      return `${avatarOwnership} ${connectionStatus}`;
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+@import "../../../../../styles/_variables.scss";
+
+.connected > img {
+  border: solid 2px $success;
+}
+
+.disconnected > img {
+  border: solid 2px $error;
+}
+
+.your-avatar {
+  float: right;
+  margin-top: 5px;
+}
+
+.other-avatar {
+  float: left;
+}
+</style>
