@@ -41,6 +41,7 @@
 <script>
 import { sendMessage, getChatMessages, getConnectedUsers } from "./ChatGroupService";
 import Messages from "./Messages/Messages";
+import UserStore from "../../../../stores/UserStore";
 
 export default {
   components: {
@@ -54,7 +55,8 @@ export default {
       message: "",
       shouldSend: true,
       sending: false,
-      connectedUsers: []
+      connectedUsers: [],
+      userSocket: UserStore.data.socket
     };
   },
   mounted() {
@@ -64,8 +66,24 @@ export default {
       contents.scrollTop = contents.scrollHeight;
     }
     this.getConnectedUsersForChat();
+    this.listenForSocketMessages();
   },
   methods: {
+    /**
+     * Listen for user connections and disconnections
+     */
+    listenForSocketMessages() {
+      this.userSocket.addEventListener("message", (event) => {
+        const socketMessage = JSON.parse(event.data);
+        if (socketMessage.type === "disconnected") {
+          const disconnectedUserId = socketMessage.user.userId;
+          this.connectedUsers = this.connectedUsers.filter(user => user.userId !== disconnectedUserId);
+        } else if (socketMessage.type === "connected") {
+          const { user } = socketMessage;
+          this.connectedUsers.push(user);
+        }
+      });
+    },
     /**
      * Get the connected users for the chat group.
      */
@@ -135,7 +153,6 @@ export default {
         const isAtBottom = contents.scrollTop + contents.clientHeight > contents.scrollHeight - 50;
 
         if (isAtBottom) {
-          console.log("is it true: " + isAtBottom);
           setTimeout(() => {
             contents.scrollTop = contents.scrollHeight;
           }, 0);
