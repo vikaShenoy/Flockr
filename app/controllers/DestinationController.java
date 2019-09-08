@@ -1057,14 +1057,21 @@ public class DestinationController extends Controller {
   }
 
   /**
-   * Allows an admin to get all the destination proposals
-   *
+   * Allows an admin to get all the destination proposals on a given page
+   * @param request the Http request object containing the query string for the page to retrieve
    * @return A response that complies with the API spec
    */
   @With({LoggedIn.class, Admin.class})
-  public CompletionStage<Result> getProposals() {
+  public CompletionStage<Result> getProposals(Http.Request request) {
+      int page = 1;
+      try {
+          String pageString = request.getQueryString("page");
+          page = Integer.parseInt(pageString);
+      } catch (Exception e) {
+          System.out.println("No page provided, using default of 1");
+      }
     return destinationRepository
-        .getDestinationProposals()
+        .getDestinationProposals(page)
         .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));
   }
 

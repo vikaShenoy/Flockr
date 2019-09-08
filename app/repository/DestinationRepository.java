@@ -412,12 +412,19 @@ public class DestinationRepository {
     }
 
     /**
-     * Gets all destination proposals information
+     * Get a page of destination proposals
      *
      * @return the destination proposals
      */
-    public CompletionStage<List<DestinationProposal>> getDestinationProposals() {
-        return supplyAsync(DestinationProposal.find::all);
+    public CompletionStage<List<DestinationProposal>> getDestinationProposals(int page) {
+
+        int pageSize = 5;
+        int offset = (page - 1) * pageSize;
+
+        return supplyAsync(() -> DestinationProposal.find.query()
+                .setFirstRow(offset)
+                .setMaxRows(pageSize)
+                .findList());
     }
 
     /**

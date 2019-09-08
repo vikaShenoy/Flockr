@@ -45,6 +45,13 @@ public class DestinationControllerTest {
   private User adminUser;
   private Destination destination;
   private DestinationProposal destinationProposal;
+  private DestinationProposal destinationProposal2;
+  private DestinationProposal destinationProposal3;
+  private DestinationProposal destinationProposal4;
+  private DestinationProposal destinationProposal5;
+  private DestinationProposal destinationProposal6;
+  private DestinationProposal destinationProposal7;
+  private DestinationProposal destinationProposal8;
   private TravellerType travellerType;
   private TravellerType travellerType2;
 
@@ -106,6 +113,20 @@ public class DestinationControllerTest {
     travellerTypes.add(travellerType);
     destinationProposal = new DestinationProposal(destination, travellerTypes, user);
     destinationProposal.save();
+    destinationProposal2 = new DestinationProposal(destination, travellerTypes, user);
+    destinationProposal2.save();
+    destinationProposal3 = new DestinationProposal(destination, travellerTypes, user);
+    destinationProposal3.save();
+    destinationProposal4 = new DestinationProposal(destination, travellerTypes, user);
+    destinationProposal4.save();
+    destinationProposal5 = new DestinationProposal(destination, travellerTypes, user);
+    destinationProposal5.save();
+    destinationProposal6 = new DestinationProposal(destination, travellerTypes, user);
+    destinationProposal6.save();
+    destinationProposal7 = new DestinationProposal(destination, travellerTypes, user);
+    destinationProposal7.save();
+    destinationProposal8 = new DestinationProposal(destination, travellerTypes, user);
+    destinationProposal8.save();
   }
 
   @After
@@ -469,4 +490,46 @@ public class DestinationControllerTest {
   public void userAttemptsToModifyProposal() {
     modifyProposal(403, user.getToken(), false);
   }
+
+  @Test
+  public void getProposalsNoPageProvided() throws IOException {
+
+    String token = adminUser.getToken();
+    String endpoint = "/api/destinations/proposals";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, token);
+    JsonNode body = PlayResultToJson.convertResultToJson(result);
+    Assert.assertEquals(200, result.status());
+    Assert.assertEquals(5, body.size());
+  }
+
+  @Test
+  public void getFirstPageOfProposals() throws IOException {
+    String token = adminUser.getToken();
+    String endpoint = "/api/destinations/proposals?page=1";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, token);
+    JsonNode body = PlayResultToJson.convertResultToJson(result);
+    Assert.assertEquals(200, result.status());
+    Assert.assertEquals(5, body.size());
+  }
+
+  @Test
+  public void getSecondPageOfProposals() throws IOException {
+    String token = adminUser.getToken();
+    String endpoint = "/api/destinations/proposals?page=2";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, token);
+    JsonNode body = PlayResultToJson.convertResultToJson(result);
+    Assert.assertEquals(200, result.status());
+    Assert.assertEquals(3, body.size());
+  }
+
+  @Test
+  public void getThirdPageOfProposals() throws IOException {
+    String token = adminUser.getToken();
+    String endpoint = "/api/destinations/proposals?page=3";
+    Result result = fakeClient.makeRequestWithToken("GET", endpoint, token);
+    JsonNode body = PlayResultToJson.convertResultToJson(result);
+    Assert.assertEquals(200, result.status());
+    Assert.assertEquals(0, body.size());
+  }
+
 }
