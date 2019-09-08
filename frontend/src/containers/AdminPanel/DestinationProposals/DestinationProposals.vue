@@ -144,11 +144,17 @@
     },
     methods: {
 
+      /**
+       * Increment the page by one and make a call to the backend to retrieve this new page
+       */
       nextPage() {
         this.page += 1;
         this.getAllProposals(this.page);
       },
 
+      /**
+       * Decrement the page by one and make a call to the backend to retrieve this new page
+       */
       backPage() {
         this.page -= 1;
         this.getAllProposals(this.page);
@@ -190,16 +196,16 @@
 
         try {
           this.destinationProposals[proposalIndex] = await updateProposal(modifiedProposal);
-          this.getAllProposals();
+          this.getAllProposals(this.page);
 
           const undoCommand = async (proposal) => {
             this.destinationProposals[proposalIndex] = await updateProposal(proposal);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const redoCommand = async (proposal) => {
             this.destinationProposals[proposalIndex] = await updateProposal(proposal);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const modifyProposalCommand = new Command(undoCommand.bind(null, originalProposal),
@@ -211,7 +217,7 @@
           }
           if (error.status === 404) {
             this.$emit("showError", "This destination Proposal does not exist.");
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           }
         }
       },
@@ -240,17 +246,17 @@
 
         try {
           this.destinationProposals[proposalIndex] = await updateProposal(modifiedProposal);
-          this.getAllProposals();
+          this.getAllProposals(this.page);
           this.$refs[proposal.destinationProposalId].reset();
 
           const undoCommand = async (proposal) => {
             this.destinationProposals[proposalIndex] = await updateProposal(proposal);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const redoCommand = async (proposal) => {
             this.destinationProposals[proposalIndex] = await updateProposal(proposal);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const modifyProposalCommand = new Command(undoCommand.bind(null, originalProposal),
@@ -262,7 +268,7 @@
           }
           if (error.status === 404) {
             this.$emit("showError", "This destination Proposal does not exist.");
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           }
         }
       },
@@ -282,13 +288,13 @@
           const undoCommand = async () => {
             await undeleteProposal(destinationProposalId);
             await sendUpdateDestination(this.oldDestination, this.destinationId);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const redoCommand = async () => {
             await acceptProposal(destinationProposalId);
             this.filterOutDestinationProposalId(destinationProposalId);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId),
@@ -297,6 +303,7 @@
 
           this.filterOutDestinationProposalId(destinationProposalId);
           this.$emit("showMessage", "Accepted Proposal");
+          this.getAllProposals(this.page);
         } catch (e) {
           this.$emit("showError", "Could not accept proposal");
         }
@@ -313,13 +320,13 @@
 
           const undoCommand = async () => {
             await undeleteProposal(destinationProposalId);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const redoCommand = async () => {
             await declineProposal(destinationProposalId);
             this.filterOutDestinationProposalId(destinationProposalId);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const declineProposalCommand = new Command(undoCommand.bind(null, destinationProposalId),
@@ -327,6 +334,7 @@
           this.$emit("addUndoCommand", declineProposalCommand);
           this.filterOutDestinationProposalId(destinationProposalId);
           this.$emit("showMessage", "Rejected Proposal");
+          this.getAllProposals(this.page);
         } catch (e) {
           this.$emit("showError", "Could not decline proposal");
         }

@@ -3,6 +3,7 @@ import {endpoint} from "../../../utils/endpoint"
 
 /**
  * Get all destination proposals.
+ * @param page: the number of the page of proposals to retrieve
  * @returns {Object} the destination proposals.
  */
 export async function getDestinationProposals(page) {
