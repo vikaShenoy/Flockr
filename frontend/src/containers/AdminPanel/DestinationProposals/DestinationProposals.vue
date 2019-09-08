@@ -115,7 +115,7 @@
       };
     },
     /**
-     * Gets all traveller types and proposals used for rendering in table
+     * Get all traveller types and proposals used for rendering in table.
      */
     async mounted() {
       try {
@@ -132,7 +132,7 @@
     },
     methods: {
       /**
-       * Returns a list of traveller types not in the given list.
+       * Return a list of traveller types not in the given list.
        *
        * @param travellerTypes the unavailable traveller types.
        * @return Array<Object> the traveller types still available.
@@ -244,7 +244,10 @@
         }
       },
       /**
-       * Accept proposal for traveller type change
+       * Called when admin clicked accept button for proposal.
+       * Sends a request to change the destination proposal to the new proposal.
+       * Sets undo/redo commands.
+       * @param destinationProposalId id of the proposal to be accepted.
        */
       async acceptProposal(destinationProposalId) {
         try {
@@ -276,7 +279,10 @@
         }
       },
       /**
-       * Declines proposal for traveller type change
+       * Decline proposal for traveller type change.
+       * Send a request to delete the proposal.
+       * Set undo/redo commands.
+       * @param destinationProposalId id of the destination proposal to be discarded.
        */
       async declineProposal(destinationProposalId) {
         try {
@@ -303,14 +309,19 @@
         }
       },
       /**
-       * Filters out the destination proposal that was just accepted
-       * or rejected
+       * Called after a proposal is accepted or rejected.
+       * Remove a destination proposal from the list of viewable destination proposals.
+       * @param destinationProposalId id of the proposal which is removed.
        */
       filterOutDestinationProposalId(destinationProposalId) {
         this.destinationProposals = this.destinationProposals.filter(destinationProposal => {
           return destinationProposal.destinationProposalId !== destinationProposalId;
         });
       },
+      /**
+       * Call endpoint to populate the array of destination proposals to be displayed.
+       * @returns {Promise<void>} body of request containing destination proposals.
+       */
       async getAllProposals() {
         this.destinationProposals = await getDestinationProposals();
       },
