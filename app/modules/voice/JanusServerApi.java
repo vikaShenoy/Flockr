@@ -42,7 +42,6 @@ public class JanusServerApi implements VoiceServerApi {
     ExistsRequest existsRequest = new ExistsRequest(roomId);
     return sendRequest(existsRequest, sessionId, pluginHandle)
             .thenApplyAsync(jsonResponse -> jsonResponse.get("plugindata").get("data").get("exists").asBoolean());
-
   }
 
   /**

@@ -5,24 +5,17 @@
         <template v-slot:header>
           <div v-if="!chatIsOpen">
             <v-icon
-                    v-if="!isShowingCreateChat"
+                    v-if="!currentChatId && !isShowingCreateChat"
                     flat
                     class="header-button"
                     color="secondary"
                     @click="isShowingCreateChat = true"
             >add</v-icon>
-            <v-icon
-                    v-else
-                    flat
-                    class="header-button"
-                    color="secondary"
-                    @click="isShowingCreateChat = false"
-            >arrow_back</v-icon>
-          </div>
+         </div>
 
-          <h4 id="title" v-if="currentChatId == null">Chat</h4>
+          <h4 id="title" v-if="!currentChatId">Chat</h4>
 
-          <div v-else id="chat-group-title">
+          <div v-if="currentChatId || isShowingCreateChat || isShowingManageChat" id="chat-group-title">
             <v-icon color="secondary" id="back-to-chats-icon" @click="goBackToChats()"
                     class="hover-white">chevron_left</v-icon>
 
@@ -221,8 +214,14 @@ export default {
      * Goes back to the chats list.
      */
     goBackToChats() {
-      this.currentChatId = null;
-      this.isShowingManageChat = false;
+
+      if (this.isShowingManageChat) {
+        this.isShowingManageChat = false;
+      } else {
+        this.currentChatId = null;
+        this.isShowingCreateChat = false;
+      }
+
       event.stopPropagation();
     },
     /**
