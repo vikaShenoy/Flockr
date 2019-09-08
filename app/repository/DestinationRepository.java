@@ -52,6 +52,39 @@ public class DestinationRepository {
     }
 
     /**
+     * Get all destinations with an offset, sorted by destination name.
+     * @param offset the offset for the results
+     * @return destinations in the specified offset
+     */
+    public CompletionStage<List<Destination>> getDestinations(int offset) {
+        int maxRows = 30;
+        return supplyAsync(() -> Destination.find.query().where()
+            .orderBy("destinationName")
+            .setFirstRow(offset)
+            .setMaxRows(maxRows)
+            .findList()
+        , executionContext);
+    }
+
+    /**
+     * Get the destinations that match a certain criterion and offset, sorted by
+     * destination name.
+     * @param searchCriterion the criterion by which we are filtering destinations
+     * @param offset the offset for results
+     * @return the list of destinations matching the query
+     */
+    public CompletionStage<List<Destination>> getDestinations(String searchCriterion, int offset) {
+        int maxRows = 30;
+        return supplyAsync(() -> Destination.find.query().where()
+                .ilike("destinationName", searchCriterion)
+                .orderBy("destinationName")
+                .setFirstRow(offset)
+                .setMaxRows(maxRows)
+                .findList()
+        , executionContext);
+    }
+
+    /**
      * Gets a destination by it's ID
      *
      * @param destinationId The ID of the destination to get

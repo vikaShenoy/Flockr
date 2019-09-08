@@ -130,10 +130,9 @@ public class AdminSteps {
         reqJsonBody.put("password", "password");
 
         Result loginResult = fakeClient.makeRequestWithNoToken("POST", reqJsonBody, "/api/auth/users/login");
+        Assert.assertEquals(200, loginResult.status());
 
         JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
-
-        Assert.assertEquals(200, loginResult.status());
 
         this.authToken = authenticationResponseAsJson.get("token").asText();
 

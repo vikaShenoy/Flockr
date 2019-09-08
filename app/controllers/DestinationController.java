@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import models.Country;
@@ -31,10 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.With;
+import play.mvc.*;
 import repository.DestinationRepository;
 import repository.PhotoRepository;
 import util.DestinationUtil;
@@ -73,17 +71,32 @@ public class DestinationController extends Controller {
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> getDestinations(Http.Request request) {
-    return destinationRepository
-        .getDestinations()
-        .thenApplyAsync(
-            destinations -> {
-              List<Destination> publicDestinations =
-                  destinations.stream()
-                      .filter(Destination::getIsPublic)
-                      .collect(Collectors.toList());
-              return ok(Json.toJson(publicDestinations));
-            },
-            httpExecutionContext.current());
+    String searchCriterion = request.getQueryString("search"); // optional
+    String offsetString = request.getQueryString("offset");
+    Integer offset;
+
+    try {
+        offset = Integer.parseInt(offsetString);
+    } catch (NumberFormatException e) {
+        return supplyAsync(Results::badRequest, httpExecutionContext.current());
+    }
+
+    CompletionStage<List<Destination>> destinations;
+
+    if (searchCriterion == null) {
+        destinations = destinationRepository.getDestinations(offset);
+    } else {
+        destinations = destinationRepository.getDestinations(searchCriterion, offset);
+    }
+
+    return destinations.thenApplyAsync(allDestinations -> {
+        List<Destination> publicDestinations =
+            allDestinations.stream()
+                .filter(Destination::getIsPublic)
+                .collect(Collectors.toList());
+        return ok(Json.toJson(publicDestinations));
+    },
+    httpExecutionContext.current());
   }
 
   /**
