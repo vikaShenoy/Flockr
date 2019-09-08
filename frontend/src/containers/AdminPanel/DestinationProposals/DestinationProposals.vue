@@ -62,6 +62,15 @@
       </template>
     </v-data-table>
 
+    <div style="text-align: center !important;">
+      <v-btn :disabled="page <= 1" small fab @click="backPage">
+        <v-icon>navigate_before</v-icon>
+      </v-btn>
+      <v-btn :disabled="destinationProposals.length < 5" small fab @click="nextPage">
+        <v-icon>navigate_next</v-icon>
+      </v-btn>
+    </div>
+
   </v-card>
 </template>
 
@@ -111,7 +120,10 @@
         destinationProposals: null,
         oldDestination: null,
         destinationId: null,
-        allTravellerTypes: []
+        allTravellerTypes: [],
+        backDisabled: true,
+        forwardDisabled: false,
+        page: 1
       };
     },
     /**
@@ -131,6 +143,17 @@
       }
     },
     methods: {
+
+      nextPage() {
+        this.page += 1;
+        this.getAllProposals(this.page);
+      },
+
+      backPage() {
+        this.page -= 1;
+        this.getAllProposals(this.page);
+      },
+
       /**
        * Return a list of traveller types not in the given list.
        *
@@ -322,8 +345,11 @@
        * Call endpoint to populate the array of destination proposals to be displayed.
        * @returns {Promise<void>} body of request containing destination proposals.
        */
-      async getAllProposals() {
-        this.destinationProposals = await getDestinationProposals();
+      async getAllProposals(page) {
+        this.destinationProposals = await getDestinationProposals(page);
+        if (this.destinationProposals.length < 5) {
+          this.forwardDisabled = true;
+        }
       },
     }
   };

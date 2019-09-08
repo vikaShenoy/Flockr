@@ -5,8 +5,8 @@ import {endpoint} from "../../../utils/endpoint"
  * Get all destination proposals.
  * @returns {Object} the destination proposals.
  */
-export async function getDestinationProposals() {
-   const res = await superagent.get(endpoint("/destinations/proposals"))
+export async function getDestinationProposals(page) {
+   const res = await superagent.get(endpoint("/destinations/proposals?page=" + page))
                 .set("Authorization", localStorage.getItem("authToken"));
 
   return res.body;
