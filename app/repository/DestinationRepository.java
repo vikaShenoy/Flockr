@@ -16,7 +16,6 @@ import models.Destination;
 import models.DestinationPhoto;
 import models.DestinationProposal;
 import models.DestinationType;
-import models.District;
 import play.db.ebean.EbeanConfig;
 
 public class DestinationRepository {
@@ -233,22 +232,6 @@ public class DestinationRepository {
             () -> {
                 List<DestinationType> destinationTypes = DestinationType.find.query().findList();
                 return destinationTypes;
-            },
-            executionContext);
-    }
-
-    /**
-     * Gets a list of districts
-     *
-     * @param countryId The country id to get the districts from
-     * @return The list of districts as Json
-     */
-    public CompletionStage<List<District>> getDistricts(int countryId) {
-        return supplyAsync(
-            () -> {
-                List<District> districts =
-                    District.find.query().where().eq("country_country_id", countryId).findList();
-                return districts;
             },
             executionContext);
     }

@@ -1,3 +1,6 @@
+# --- Created by Ebean DDL
+# To stop Ebean DDL generation, remove this comment and start using Evolutions
+
 # --- !Ups
 
 create table chat_group (
@@ -24,7 +27,7 @@ create table destination (
   destination_id                integer auto_increment not null,
   destination_name              varchar(255),
   destination_type_destination_type_id integer,
-  destination_district_district_id integer,
+  destination_district          varchar(255),
   destination_lat               double,
   destination_lon               double,
   destination_country_country_id integer,
@@ -63,13 +66,6 @@ create table destination_type (
   destination_type_id           integer auto_increment not null,
   destination_type_name         varchar(255),
   constraint pk_destination_type primary key (destination_type_id)
-);
-
-create table district (
-  district_id                   integer auto_increment not null,
-  district_name                 varchar(255),
-  country_country_id            integer,
-  constraint pk_district primary key (district_id)
 );
 
 create table message (
@@ -225,9 +221,6 @@ alter table chat_group_user add constraint fk_chat_group_user_user foreign key (
 create index ix_destination_destination_type_destination_type_id on destination (destination_type_destination_type_id);
 alter table destination add constraint fk_destination_destination_type_destination_type_id foreign key (destination_type_destination_type_id) references destination_type (destination_type_id) on delete restrict on update restrict;
 
-create index ix_destination_destination_district_district_id on destination (destination_district_district_id);
-alter table destination add constraint fk_destination_destination_district_district_id foreign key (destination_district_district_id) references district (district_id) on delete restrict on update restrict;
-
 create index ix_destination_destination_country_country_id on destination (destination_country_country_id);
 alter table destination add constraint fk_destination_destination_country_country_id foreign key (destination_country_country_id) references country (country_id) on delete restrict on update restrict;
 
@@ -248,9 +241,6 @@ alter table destination_proposal_traveller_type add constraint fk_destination_pr
 
 create index ix_destination_proposal_traveller_type_traveller_type on destination_proposal_traveller_type (traveller_type_traveller_type_id);
 alter table destination_proposal_traveller_type add constraint fk_destination_proposal_traveller_type_traveller_type foreign key (traveller_type_traveller_type_id) references traveller_type (traveller_type_id) on delete restrict on update restrict;
-
-create index ix_district_country_country_id on district (country_country_id);
-alter table district add constraint fk_district_country_country_id foreign key (country_country_id) references country (country_id) on delete restrict on update restrict;
 
 create index ix_message_chat_group_chat_group_id on message (chat_group_chat_group_id);
 alter table message add constraint fk_message_chat_group_chat_group_id foreign key (chat_group_chat_group_id) references chat_group (chat_group_id) on delete restrict on update restrict;
@@ -327,9 +317,6 @@ drop index if exists ix_chat_group_user_user;
 alter table destination drop constraint if exists fk_destination_destination_type_destination_type_id;
 drop index if exists ix_destination_destination_type_destination_type_id;
 
-alter table destination drop constraint if exists fk_destination_destination_district_district_id;
-drop index if exists ix_destination_destination_district_district_id;
-
 alter table destination drop constraint if exists fk_destination_destination_country_country_id;
 drop index if exists ix_destination_destination_country_country_id;
 
@@ -350,9 +337,6 @@ drop index if exists ix_destination_proposal_traveller_type_destination_proposal
 
 alter table destination_proposal_traveller_type drop constraint if exists fk_destination_proposal_traveller_type_traveller_type;
 drop index if exists ix_destination_proposal_traveller_type_traveller_type;
-
-alter table district drop constraint if exists fk_district_country_country_id;
-drop index if exists ix_district_country_country_id;
 
 alter table message drop constraint if exists fk_message_chat_group_chat_group_id;
 drop index if exists ix_message_chat_group_chat_group_id;
@@ -432,8 +416,6 @@ drop table if exists destination_proposal;
 drop table if exists destination_proposal_traveller_type;
 
 drop table if exists destination_type;
-
-drop table if exists district;
 
 drop table if exists message;
 

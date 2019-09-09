@@ -37,8 +37,7 @@ public class Destination extends Model {
     @ManyToMany(mappedBy= "destinations" ,cascade = CascadeType.PERSIST)
     private List<TravellerType> travellerTypes;
 
-    @ManyToOne
-    private District destinationDistrict;
+    private String destinationDistrict;
 
     private Double destinationLat;
     private Double destinationLon;
@@ -118,7 +117,7 @@ public class Destination extends Model {
      * @param destinationOwner the owner of the destination
      * @param isPublic whether or not the destination is public
      */
-    public Destination(String destinationName, DestinationType destinationType, District destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, Integer destinationOwner, List<TravellerType> travellerTypes, boolean isPublic ) {
+    public Destination(String destinationName, DestinationType destinationType, String destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, Integer destinationOwner, List<TravellerType> travellerTypes, boolean isPublic ) {
         this.destinationName = destinationName;
         this.destinationType = destinationType;
         this.destinationDistrict = destinationDistrict;
@@ -177,11 +176,11 @@ public class Destination extends Model {
         this.destinationType = destinationType;
     }
 
-    public District getDestinationDistrict() {
+    public String getDestinationDistrict() {
         return destinationDistrict;
     }
 
-    public void setDestinationDistrict(District destinationDistrict) {
+    public void setDestinationDistrict(String destinationDistrict) {
         this.destinationDistrict = destinationDistrict;
     }
 

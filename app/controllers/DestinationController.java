@@ -24,7 +24,6 @@ import models.Destination;
 import models.DestinationPhoto;
 import models.DestinationProposal;
 import models.DestinationType;
-import models.District;
 import models.PersonalPhoto;
 import models.TravellerType;
 import models.User;
@@ -210,7 +209,7 @@ public class DestinationController extends Controller {
 
       String destinationName;
       int destinationTypeId;
-      int districtId;
+      String districtName;
       double latitude;
       double longitude;
       int countryId;
@@ -219,7 +218,7 @@ public class DestinationController extends Controller {
       try {
         destinationName = jsonRequest.get("destinationName").asText();
         destinationTypeId = jsonRequest.get("destinationTypeId").asInt();
-        districtId = jsonRequest.get("districtId").asInt();
+        districtName = jsonRequest.get("districtName").asText();
         latitude = jsonRequest.get("latitude").asDouble();
         longitude = jsonRequest.get("longitude").asDouble();
         countryId = jsonRequest.get("countryId").asInt();
@@ -230,9 +229,10 @@ public class DestinationController extends Controller {
       }
 
       DestinationType destinationTypeAdd = DestinationType.find.byId(destinationTypeId);
-      District districtAdd = District.find.byId(districtId);
       Country countryAdd = Country.find.byId(countryId);
-      if (destinationTypeAdd == null || districtAdd == null || countryAdd == null) {
+      //District districtAdd = new District(districtName, countryAdd);
+
+      if (destinationTypeAdd == null || countryAdd == null) {
         throw new BadRequestException("One of the fields you have selected does not exist.");
       }
 
@@ -244,7 +244,7 @@ public class DestinationController extends Controller {
           new Destination(
               destinationName,
               destinationTypeAdd,
-              districtAdd,
+              districtName,
               latitude,
               longitude,
               countryAdd,
@@ -317,11 +317,12 @@ public class DestinationController extends Controller {
               }
 
               JsonNode jsonBody = request.body().asJson();
+              System.out.println(jsonBody);
 
               String destinationName = jsonBody.get("destinationName").asText();
               int destinationTypeId = jsonBody.get("destinationTypeId").asInt();
               int countryId = jsonBody.get("countryId").asInt();
-              int districtId = jsonBody.get("districtId").asInt();
+              String districtName = jsonBody.get("districtName").asText();
               double latitude = jsonBody.get("latitude").asDouble();
               double longitude = jsonBody.get("longitude").asDouble();
               boolean isPublic = jsonBody.get("isPublic").asBoolean();
@@ -338,13 +339,10 @@ public class DestinationController extends Controller {
               Country country = new Country(null, null, true);
               country.setCountryId(countryId);
 
-              District district = new District(null, null);
-              district.setDistrictId(districtId);
-
               destination.setDestinationName(destinationName);
               destination.setDestinationType(destType);
               destination.setDestinationCountry(country);
-              destination.setDestinationDistrict(district);
+              destination.setDestinationDistrict(districtName);
               destination.setDestinationLat(latitude);
               destination.setDestinationLon(longitude);
               destination.setIsPublic(isPublic);
@@ -387,7 +385,8 @@ public class DestinationController extends Controller {
                   destinationRepository.insertDestinationPhoto(photo);
                 }
               }
-
+              System.out.println(destination);
+              System.out.println(destination.getDestinationDistrict());
               return destinationRepository.update(destination);
             },
             httpExecutionContext.current())
@@ -566,24 +565,24 @@ public class DestinationController extends Controller {
         .exceptionally(e -> internalServerError());
   }
 
-  /**
-   * Endpoint to get all districts for a country.
-   *
-   * @param countryId country to get districts for.
-   * @return A completion stage and status code of 200 with districts in the json body if
-   *     successful.
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> getDistricts(int countryId) {
-    return destinationRepository
-        .getDistricts(countryId)
-        .thenApplyAsync(
-            districts -> {
-              JsonNode districtsJson = Json.toJson(districts);
-              return ok(districtsJson);
-            },
-            httpExecutionContext.current());
-  }
+//  /**
+//   * Endpoint to get all districts for a country.
+//   *
+//   * @param countryId country to get districts for.
+//   * @return A completion stage and status code of 200 with districts in the json body if
+//   *     successful.
+//   */
+//  @With(LoggedIn.class)
+//  public CompletionStage<Result> getDistricts(int countryId) {
+//    return destinationRepository
+//        .getDistricts(countryId)
+//        .thenApplyAsync(
+//            districts -> {
+//              JsonNode districtsJson = Json.toJson(districts);
+//              return ok(districtsJson);
+//            },
+//            httpExecutionContext.current());
+//  }
 
   /**
    * Adds a photo to a destination
