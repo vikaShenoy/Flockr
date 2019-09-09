@@ -29,7 +29,7 @@
             >settings
             </v-icon>
 
-            <VoiceChat :chatGroup="getCurrentChat()"/>
+            <VoiceChat :chatGroup="getCurrentChat()" @participants="participants => voiceParticipants = participants"/>
           </div>
 
         </template>
@@ -69,7 +69,7 @@
                     @goToChatGroup="goToChatGroup"
             />
             <div v-else>
-              <VoiceUsers />
+              <VoiceUsers :usersInChat="getCurrentChat().users" :userIdsInVoice="voiceParticipants"/>
               <ChatGroup @newMessage = "newMessage" :chatGroup="getCurrentChat()"
                        @messagesRetrieved="messagesRetrieved"
                        @newMessages="newMessages"/>
@@ -93,6 +93,7 @@ import VoiceChat from "./VoiceChat/VoiceChat";
 import ManageChat from "./ManageChat/ManageChat";
 import UndoRedo from "../../../components/UndoRedo/UndoRedo";
 import Command from "../../../components/UndoRedo/Command";
+import VoiceUsers from "./VoiceUsers/VoiceUsers";
 
 export default {
   components: {
@@ -101,6 +102,7 @@ export default {
     VoiceChat,
     CreateChat,
     ManageChat,
+    VoiceUsers
   },
   data() {
     return {
@@ -109,7 +111,8 @@ export default {
       isShowingManageChat: false,
       // Specifies the current chat the user is viewing. If null then list is being viewed
       currentChatId: null,
-      chatIsOpen: true
+      chatIsOpen: true,
+      voiceParticipants: []
     };
   },
   mounted() {

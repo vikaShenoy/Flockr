@@ -73,13 +73,14 @@ export class VoiceChat extends EventEmitter {
    * Joins a voice room. Will be called when user wants to
    * participate in voice chat
    */
-  joinRoom = async (chatGroupId) => {
+  joinRoom = async (chatGroupId, userId) => {
     const {room, token} = await this.getRoomDetails(chatGroupId);
     const message = {
       request: "join",
       room: room,
         token: token,
       display: UserStore.data.name,
+      id: userId
     };
     this.channel.send({ message });
   };

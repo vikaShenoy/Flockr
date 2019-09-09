@@ -12,6 +12,7 @@
 <script>
 import { VoiceChat } from "./voice";
 import Janus from "./janus";
+import UserStore from "../../../../stores/UserStore.js";
 
 export default {
   props: {
@@ -42,6 +43,8 @@ export default {
 
     this.voiceChat.on("joined", this.handleJoin);
 
+    this.voiceChat.on("participants", this.handleParticipants);
+
     this.voiceChat.on("left", this.handleLeave);
 
     this.voiceChat.on("error", error => {
@@ -54,7 +57,7 @@ export default {
      */
     toggleVoiceChat() {
       if (!this.isInChat) {
-        this.voiceChat.joinRoom(this.chatGroup.chatGroupId);
+        this.voiceChat.joinRoom(this.chatGroup.chatGroupId, UserStore.data.userId);
 
       } else {
         this.voiceChat.leaveRoom();
@@ -67,6 +70,12 @@ export default {
       handleLeave() {
           this.isInChat = false;
           this.soundEffects.leave.play();
+      },
+      handleParticipants(participants) {
+        console.log(participants);
+        const participantIds = participants.map(participant => participant.id);
+        console.log(participantIds);
+        this.$emit("participants", participantIds);
       }
   },
   /**

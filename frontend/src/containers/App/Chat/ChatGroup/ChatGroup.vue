@@ -199,7 +199,7 @@ export default {
 }
 
 #contents {
-  height: 340px;
+  height: 300px;
   overflow: auto;
 }
 
