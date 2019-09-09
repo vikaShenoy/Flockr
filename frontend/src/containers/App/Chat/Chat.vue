@@ -68,9 +68,12 @@
                     :chats="chats"
                     @goToChatGroup="goToChatGroup"
             />
-            <ChatGroup @newMessage = "newMessage" v-else :chatGroup="getCurrentChat()"
+            <div v-else>
+              <VoiceUsers />
+              <ChatGroup @newMessage = "newMessage" :chatGroup="getCurrentChat()"
                        @messagesRetrieved="messagesRetrieved"
                        @newMessages="newMessages"/>
+            </div>
           </div>
 
         </v-card>
@@ -287,6 +290,8 @@ export default {
 #chat {
   .v-expansion-panel__header {
     cursor: default;
+    padding: 12px ;
+
   }
 }
 
@@ -308,6 +313,8 @@ export default {
 
 #title {
   color: $secondary;
+  width: 100%;
+  padding-bottom:0px;
 }
 
 #chats {
@@ -317,6 +324,9 @@ export default {
 
 #chat-group-title {
   display: flex;
+  width: 100%;
+  align-items: center;
+
 }
 
 #toggle-chat {
@@ -330,10 +340,11 @@ export default {
   }
 }
 
-.header-button {
+.header-button, chevron_left {
   width: 5px;
   min-width: 5px;
-  margin: 5px;
+  margin-left: 5px;
+
 }
 
 </style>

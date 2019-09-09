@@ -6,7 +6,6 @@
 
       <audio ref="roomAudio" autoplay></audio>
       <audio ref="join" src="user_join.mp3" autoplay></audio>
-
   </div>
 </template>
 
@@ -94,4 +93,5 @@ export default {
     color: white;
   } 
 }
+
 </style>
