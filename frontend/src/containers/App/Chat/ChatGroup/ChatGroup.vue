@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="contents" ref="contents" v-on:scroll="handleScroll()">
+    <div id="contents" ref="contents" v-on:scroll="handleScroll()" :style="{height: voiceParticipants.length ? '290px' : '330px'}">
         <div v-if="sending && shouldSend" id="loadingMessages">
             <v-progress-circular
             indeterminate
@@ -48,7 +48,8 @@ export default {
     Messages
   },
   props: {
-    chatGroup: Object
+    chatGroup: Object,
+    voiceParticipants: Array
   },
   data() {
     return {
@@ -141,9 +142,6 @@ export default {
               this.shouldSend = false;
           }
       }
-      //console.log("scrolling");
-      //console.log(nearTop);
-
     }
   },
   watch: {
@@ -199,8 +197,8 @@ export default {
 }
 
 #contents {
-  height: 300px;
   overflow: auto;
+  transition: height 0.1s ease-in;
 }
 
 

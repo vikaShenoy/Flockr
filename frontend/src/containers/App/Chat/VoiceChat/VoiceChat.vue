@@ -45,6 +45,8 @@ export default {
 
     this.voiceChat.on("participants", this.handleParticipants);
 
+    this.voiceChat.on("participantLeft", this.handleParticipantLeft)
+
     this.voiceChat.on("left", this.handleLeave);
 
     this.voiceChat.on("error", error => {
@@ -68,15 +70,20 @@ export default {
           this.soundEffects.join.play();
       },
       handleLeave() {
-          this.isInChat = false;
-          this.soundEffects.leave.play();
+        this.$emit("participants", []);
+        this.isInChat = false;
+        this.soundEffects.leave.play();
       },
       handleParticipants(participants) {
-        console.log(participants);
+        // Have to add self to participant ID's
         const participantIds = participants.map(participant => participant.id);
-        console.log(participantIds);
+        participantIds.push(UserStore.data.userId);
         this.$emit("participants", participantIds);
+      },
+      handleParticipantLeft(userId) {
+        this.$emit("participantLeft", userId);
       }
+      
   },
   /**
    * Make sure that if you leave the chat group page, that the user leaves the room

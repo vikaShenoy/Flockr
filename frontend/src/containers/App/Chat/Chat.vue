@@ -29,7 +29,7 @@
             >settings
             </v-icon>
 
-            <VoiceChat :chatGroup="getCurrentChat()" @participants="participants => voiceParticipants = participants"/>
+            <VoiceChat :chatGroup="getCurrentChat()" @participants="participants => voiceParticipants = participants" @participantLeft="participantLeft" />
           </div>
 
         </template>
@@ -70,7 +70,9 @@
             />
             <div v-else>
               <VoiceUsers :usersInChat="getCurrentChat().users" :userIdsInVoice="voiceParticipants"/>
-              <ChatGroup @newMessage = "newMessage" :chatGroup="getCurrentChat()"
+              <ChatGroup
+                :voiceParticipants="voiceParticipants"
+                      @newMessage = "newMessage" :chatGroup="getCurrentChat()"
                        @messagesRetrieved="messagesRetrieved"
                        @newMessages="newMessages"/>
             </div>
@@ -232,6 +234,7 @@ export default {
     },
     /**
      * Gets called when new message is created. Adds message to data.
+     * @param {string} message The message that was added
      */
     newMessage(message) {
       const currentChat = this.getCurrentChat();
@@ -246,16 +249,20 @@ export default {
     },
     /**
      * Gets emitted when a messages is retrieved
+     * @param {string} message 
      */
     messagesRetrieved(messages) {
       this.$set(this.getCurrentChat(), "messages", messages);
     },
-      async newMessages(messages) {
-          const currentChat = this.getCurrentChat();
-          const newMessages = messages.concat(currentChat.messages);
-          console.log(newMessages)
-          currentChat.messages = newMessages;
-      },
+    /**
+     * Gets called when new messages have been retrieved for a chat group
+     * @param {string} messages The message that have been retrieved
+     */
+    async newMessages(messages) {
+      const currentChat = this.getCurrentChat();
+      const newMessages = messages.concat(currentChat.messages);
+      currentChat.messages = newMessages;
+    },
     /**
      * Listens on any incoming messages and adds it to the corresponding chat
      */
@@ -275,6 +282,12 @@ export default {
           }
         });
     },
+    /**
+     * Gets called when a user leaves the voice chat. Filters out user
+     */
+    participantLeft(userId) {
+      this.voiceParticipants = this.voiceParticipants.filter(currentUserId => userId !== currentUserId);
+    }
   },
   computed: {
     /**
