@@ -70,33 +70,19 @@ public class DestinationController extends Controller {
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> getDestinations(Http.Request request) {
-    String searchCriterion = request.getQueryString("search"); // optional
-    String offsetString = request.getQueryString("offset");
-    Integer offset;
-
-    try {
-        offset = Integer.parseInt(offsetString);
-    } catch (NumberFormatException e) {
-        return supplyAsync(Results::badRequest, httpExecutionContext.current());
-    }
-
-    CompletionStage<List<Destination>> destinations;
-
-    if (searchCriterion == null) {
-        destinations = destinationRepository.getDestinations(offset);
-    } else {
-        destinations = destinationRepository.getDestinations(searchCriterion, offset);
-    }
-
-    return destinations.thenApplyAsync(allDestinations -> {
-        List<Destination> publicDestinations =
-            allDestinations.stream()
-                .filter(Destination::getIsPublic)
-                .collect(Collectors.toList());
-        return ok(Json.toJson(publicDestinations));
-    },
-    httpExecutionContext.current());
+      return destinationRepository
+              .getDestinations()
+              .thenApplyAsync(
+                      destinations -> {
+                          List<Destination> publicDestinations =
+                                  destinations.stream()
+                                          .filter(Destination::getIsPublic)
+                                          .collect(Collectors.toList());
+                          return ok(Json.toJson(publicDestinations));
+                      },
+                      httpExecutionContext.current());
   }
+
 
   /**
    * A function that retrieves a destination details based on the destination ID given
