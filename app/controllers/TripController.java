@@ -120,7 +120,7 @@ public class TripController extends Controller {
                             List<User> users;
 
                             try {
-                                List<User> allUsers = User.find.all();
+                                List<User> allUsers = User.find.all(); //TODO surely we don't want to be doing this
                                 Set<TripComposite> trips = tripRepository.getAllTrips();
                                 tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
                                 users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);

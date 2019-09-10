@@ -107,7 +107,7 @@ public class TripUtil {
         List<User> users = new ArrayList<>();
 
         for (JsonNode userIdJson : userIdsJson) {
-            int currentUserId = userIdJson.asInt();
+            int currentUserId = userIdJson.get("userId").asInt();
             if (currentUserId == user.getUserId()) {
                 throw new ForbiddenRequestException("You cannot add yourself to a trip");
             }
@@ -149,7 +149,7 @@ public class TripUtil {
         List<User> users = new ArrayList<>();
 
         for (JsonNode userIdJson : userIdsJson) {
-            int currentUserId = userIdJson.asInt();
+            int currentUserId =  userIdJson.get("userId").asInt();
 
             User currentUser = null;
 
