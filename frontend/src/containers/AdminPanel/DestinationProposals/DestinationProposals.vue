@@ -62,6 +62,15 @@
       </template>
     </v-data-table>
 
+    <div style="text-align: center !important;">
+      <v-btn :disabled="page <= 1" small fab @click="backPage">
+        <v-icon>navigate_before</v-icon>
+      </v-btn>
+      <v-btn :disabled="destinationProposals.length < 5" small fab @click="nextPage">
+        <v-icon>navigate_next</v-icon>
+      </v-btn>
+    </div>
+
   </v-card>
 </template>
 
@@ -111,7 +120,10 @@
         destinationProposals: null,
         oldDestination: null,
         destinationId: null,
-        allTravellerTypes: []
+        allTravellerTypes: [],
+        backDisabled: true,
+        forwardDisabled: false,
+        page: 1
       };
     },
     /**
@@ -131,6 +143,23 @@
       }
     },
     methods: {
+
+      /**
+       * Increment the page by one and make a call to the backend to retrieve this new page
+       */
+      nextPage() {
+        this.page += 1;
+        this.getAllProposals(this.page);
+      },
+
+      /**
+       * Decrement the page by one and make a call to the backend to retrieve this new page
+       */
+      backPage() {
+        this.page -= 1;
+        this.getAllProposals(this.page);
+      },
+
       /**
        * Return a list of traveller types not in the given list.
        *
@@ -167,16 +196,16 @@
 
         try {
           this.destinationProposals[proposalIndex] = await updateProposal(modifiedProposal);
-          this.getAllProposals();
+          this.getAllProposals(this.page);
 
           const undoCommand = async (proposal) => {
             this.destinationProposals[proposalIndex] = await updateProposal(proposal);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const redoCommand = async (proposal) => {
             this.destinationProposals[proposalIndex] = await updateProposal(proposal);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const modifyProposalCommand = new Command(undoCommand.bind(null, originalProposal),
@@ -188,7 +217,7 @@
           }
           if (error.status === 404) {
             this.$emit("showError", "This destination Proposal does not exist.");
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           }
         }
       },
@@ -217,17 +246,17 @@
 
         try {
           this.destinationProposals[proposalIndex] = await updateProposal(modifiedProposal);
-          this.getAllProposals();
+          this.getAllProposals(this.page);
           this.$refs[proposal.destinationProposalId].reset();
 
           const undoCommand = async (proposal) => {
             this.destinationProposals[proposalIndex] = await updateProposal(proposal);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const redoCommand = async (proposal) => {
             this.destinationProposals[proposalIndex] = await updateProposal(proposal);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const modifyProposalCommand = new Command(undoCommand.bind(null, originalProposal),
@@ -239,7 +268,7 @@
           }
           if (error.status === 404) {
             this.$emit("showError", "This destination Proposal does not exist.");
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           }
         }
       },
@@ -259,13 +288,13 @@
           const undoCommand = async () => {
             await undeleteProposal(destinationProposalId);
             await sendUpdateDestination(this.oldDestination, this.destinationId);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const redoCommand = async () => {
             await acceptProposal(destinationProposalId);
             this.filterOutDestinationProposalId(destinationProposalId);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const acceptProposalCommand = new Command(undoCommand.bind(null, destinationProposalId),
@@ -274,6 +303,7 @@
 
           this.filterOutDestinationProposalId(destinationProposalId);
           this.$emit("showMessage", "Accepted Proposal");
+          this.getAllProposals(this.page);
         } catch (e) {
           this.$emit("showError", "Could not accept proposal");
         }
@@ -290,13 +320,13 @@
 
           const undoCommand = async () => {
             await undeleteProposal(destinationProposalId);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const redoCommand = async () => {
             await declineProposal(destinationProposalId);
             this.filterOutDestinationProposalId(destinationProposalId);
-            this.getAllProposals();
+            this.getAllProposals(this.page);
           };
 
           const declineProposalCommand = new Command(undoCommand.bind(null, destinationProposalId),
@@ -304,6 +334,7 @@
           this.$emit("addUndoCommand", declineProposalCommand);
           this.filterOutDestinationProposalId(destinationProposalId);
           this.$emit("showMessage", "Rejected Proposal");
+          this.getAllProposals(this.page);
         } catch (e) {
           this.$emit("showError", "Could not decline proposal");
         }
@@ -322,8 +353,11 @@
        * Call endpoint to populate the array of destination proposals to be displayed.
        * @returns {Promise<void>} body of request containing destination proposals.
        */
-      async getAllProposals() {
-        this.destinationProposals = await getDestinationProposals();
+      async getAllProposals(page) {
+        this.destinationProposals = await getDestinationProposals(page);
+        if (this.destinationProposals.length < 5) {
+          this.forwardDisabled = true;
+        }
       },
     }
   };

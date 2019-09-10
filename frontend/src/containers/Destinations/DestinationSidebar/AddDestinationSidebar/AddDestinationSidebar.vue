@@ -33,6 +33,28 @@
             <CountryPicker v-on:change="updateCountry"></CountryPicker>
           </v-flex>
 
+          <!--
+          <v-col cols="12" sm="6" md="3">
+            <v-text-field
+              label="District"
+              placeholder="District"
+              v-model="destination.destinationDistrict.districtName"
+              :value="destination.destinationDistrict.districtName"
+              :items="districts"
+            ></v-text-field>
+          </v-col>
+          -->
+
+          <v-flex>
+            <v-text-field
+              v-model="destination.destinationDistrict.districtName"
+              :value="destination.destinationDistrict.districtName"
+              label="District"
+              :rules="requiredRule">
+            </v-text-field>
+          </v-flex>
+
+          <!--
           <v-flex>
             <v-select
                 v-model="destination.destinationDistrict.districtId"
@@ -44,6 +66,7 @@
                 label="District"
                 :rules="requiredRule"></v-select>
           </v-flex>
+          -->
 
           <v-flex>
             <v-combobox
@@ -151,7 +174,6 @@
             destinationTypeName: null
           },
           destinationDistrict: {
-            districtId: null,
             districtName: null
           },
           travellerTypes: [],
@@ -176,7 +198,6 @@
         districtDisabled: true,
         editDistrictDisabled: false,
         countries: [],
-        districts: [],
         destinationTypes: [],
         travellerTypes: [],
         locationDisabled: false,
@@ -272,7 +293,6 @@
             destinationTypeName: null
           },
           destinationDistrict: {
-            districtId: null,
             districtName: null
           },
           travellerTypes: [],
@@ -303,6 +323,7 @@
           try {
             this.destination.destinationLat = this.latitude;
             this.destination.destinationLon = this.longitude;
+            console.log(this.destination);
             const insertedDestination = await sendAddDestination(this.destination);
             this.$emit("addNewDestination", insertedDestination);
             this.closeDialog();
@@ -320,26 +341,6 @@
       updateCountry(newValue) {
         this.destination.destinationCountry = newValue;
       }
-    },
-
-    watch: {
-      /**
-       * Called when the country is selected.
-       * Requests the district for the given country.
-       */
-      async destCountry() {
-        try {
-          this.districts = await requestDistricts(
-              this.destination.destinationCountry.countryId
-          );
-        } catch (error) {
-          this.$emit("displayMessage", {
-            show: true,
-            text: error.message,
-            color: "red"
-          });
-        }
-      },
     }
   }
 </script>

@@ -146,4 +146,12 @@ public interface FakeClient {
      * @return the result of the request
      */
     Result makeMultipartFormRequestNoToken(String method, String endpoint, Map<String, String> otherFields);
+
+    /**
+     * Convert a Play result to JSON.
+     * @param result the Play result for a request you've made
+     * @throws IOException when can't convert result to JSON
+     * @return the json for the given result
+     */
+    JsonNode converResultToJSON(Result result) throws IOException;
 }

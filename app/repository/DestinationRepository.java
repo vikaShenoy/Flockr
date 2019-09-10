@@ -16,7 +16,6 @@ import models.Destination;
 import models.DestinationPhoto;
 import models.DestinationProposal;
 import models.DestinationType;
-import models.District;
 import play.db.ebean.EbeanConfig;
 
 public class DestinationRepository {
@@ -49,6 +48,39 @@ public class DestinationRepository {
                 return destinations;
             },
             executionContext);
+    }
+
+    /**
+     * Get all destinations with an offset, sorted by destination name.
+     * @param offset the offset for the results
+     * @return destinations in the specified offset
+     */
+    public CompletionStage<List<Destination>> getDestinations(int offset) {
+        int maxRows = 30;
+        return supplyAsync(() -> Destination.find.query().where()
+            .orderBy("destinationName")
+            .setFirstRow(offset)
+            .setMaxRows(maxRows)
+            .findList()
+        , executionContext);
+    }
+
+    /**
+     * Get the destinations that match a certain criterion and offset, sorted by
+     * destination name.
+     * @param searchCriterion the criterion by which we are filtering destinations
+     * @param offset the offset for results
+     * @return the list of destinations matching the query
+     */
+    public CompletionStage<List<Destination>> getDestinations(String searchCriterion, int offset) {
+        int maxRows = 30;
+        return supplyAsync(() -> Destination.find.query().where()
+                .ilike("destinationName", searchCriterion)
+                .orderBy("destinationName")
+                .setFirstRow(offset)
+                .setMaxRows(maxRows)
+                .findList()
+        , executionContext);
     }
 
     /**
@@ -200,22 +232,6 @@ public class DestinationRepository {
             () -> {
                 List<DestinationType> destinationTypes = DestinationType.find.query().findList();
                 return destinationTypes;
-            },
-            executionContext);
-    }
-
-    /**
-     * Gets a list of districts
-     *
-     * @param countryId The country id to get the districts from
-     * @return The list of districts as Json
-     */
-    public CompletionStage<List<District>> getDistricts(int countryId) {
-        return supplyAsync(
-            () -> {
-                List<District> districts =
-                    District.find.query().where().eq("country_country_id", countryId).findList();
-                return districts;
             },
             executionContext);
     }
@@ -379,12 +395,19 @@ public class DestinationRepository {
     }
 
     /**
-     * Gets all destination proposals information
+     * Get a page of destination proposals
      *
      * @return the destination proposals
      */
-    public CompletionStage<List<DestinationProposal>> getDestinationProposals() {
-        return supplyAsync(DestinationProposal.find::all);
+    public CompletionStage<List<DestinationProposal>> getDestinationProposals(int page) {
+
+        int pageSize = 5;
+        int offset = (page - 1) * pageSize;
+
+        return supplyAsync(() -> DestinationProposal.find.query()
+                .setFirstRow(offset)
+                .setMaxRows(pageSize)
+                .findList());
     }
 
     /**

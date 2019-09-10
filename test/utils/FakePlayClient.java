@@ -250,6 +250,11 @@ public class FakePlayClient implements FakeClient {
         return Helpers.route(this.application, request);
     }
 
+    @Override
+    public JsonNode converResultToJSON(Result result) throws IOException {
+        return PlayResultToJson.convertResultToJson(result);
+    }
+
     /**
      * Gets the content type from an image file.
      *

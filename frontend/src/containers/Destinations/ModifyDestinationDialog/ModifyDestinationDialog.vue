@@ -40,6 +40,14 @@
               <CountryPicker v-if="destinationToEdit" v-bind:country="destinationToEdit.destinationCountry" v-on:change="updateCountry"></CountryPicker>
               <CountryPicker v-else v-on:change="updateCountry"></CountryPicker>
 
+              <v-text-field
+                v-model="destination.destinationDistrict"
+                :value="destination.destinationDistrict"
+                label="District"
+                :rules="requiredRule"
+              />
+
+              <!--
               <v-select
                 v-model="destination.destinationDistrict.districtId"
                 :value="destination.destinationDistrict.districtId"
@@ -50,6 +58,7 @@
                 label="District"
                 :rules="requiredRule"
               />
+              -->
 
               <v-combobox v-model="destination.travellerTypes" :items="travellerTypes" item-text="travellerTypeName"
                 item-value="travellerTypeId" :rules="requiredRule" label="Traveller Types" chips clearable solo
@@ -133,7 +142,6 @@ import {
   requestCountries,
   requestDestinationTypes,
   requestTravellerTypes,
-  requestDistricts
 } from "./ModifyDestinationDialogService";
 import CountryPicker from "../../../components/Country/CountryPicker"
 import DestinationMap from "../../../components/DestinationMap/DestinationMap";
@@ -156,10 +164,7 @@ export default {
         destinationTypeName: String,
         destinationTypeId: Number
       },
-      destinationDistrict: {
-        districtName: String,
-        districtId: Number
-      },
+      destinationDistrict: "",
       destinationCountry: {
         countryName: String,
         countryId: Number
@@ -187,10 +192,7 @@ export default {
           destinationTypeId: null,
           destinationTypeName: null
         },
-        destinationDistrict: {
-          districtId: null,
-          districtName: null
-        },
+        destinationDistrict: "",
         travellerTypes: [],
         destinationLat: "",
         destinationLon: "",
@@ -213,7 +215,6 @@ export default {
       districtDisabled: true,
       editDistrictDisabled: false,
       countries: [],
-      districts: [],
       destinationTypes: [],
       travellerTypes: [],
       locationDisabled: false,
@@ -244,7 +245,6 @@ export default {
         return []
       } else {
         const destination = { ...this.destinationToEdit };
-
         // overwrite coordinates from prop with coordinates from form
         // to update the map marker when new coordinates are selected
         const { destinationLat, destinationLon } = this.destination;
@@ -311,18 +311,18 @@ export default {
       const destinationTypes = await requestDestinationTypes();
       this.destinationTypes = destinationTypes;
     },
-    /**
-     * Gets districts in a specific country and sets it as state
-     * @param {number} countryId The country of where to get districts from
-     */
-    async getDistricts(countryId) {
-      try {
-        const districts = await requestDistricts(countryId);
-        this.districts = districts;
-      } catch (e) {
-        this.showError("Could not get districts");
-      }
-    },
+    // /**
+    //  * Gets districts in a specific country and sets it as state
+    //  * @param {number} countryId The country of where to get districts from
+    //  */
+    // async getDistricts(countryId) {
+    //   try {
+    //     const districts = await requestDistricts(countryId);
+    //     this.districts = districts;
+    //   } catch (e) {
+    //     this.showError("Could not get districts");
+    //   }
+    // },
     /**
      * Gets all traveller types
      */
@@ -350,7 +350,6 @@ export default {
             destinationTypeName: null
           },
           destinationDistrict: {
-            districtId: null,
             districtName: null
           },
           travellerTypes: [],
@@ -434,23 +433,23 @@ export default {
     dataDialog() {
       this.$emit("dialogChanged", this.dataDialog);
     },
-    /**
-     * Called when the country is selected.
-     * Requests the district for the given country.
-     */
-    async destCountry() {
-      try {
-        this.districts = await requestDistricts(
-          this.destination.destinationCountry.countryId
-        );
-      } catch (error) {
-        this.$emit("displayMessage", {
-          show: true,
-          text: error.message,
-          color: "red"
-        });
-      }
-    },
+    // /**
+    //  * Called when the country is selected.
+    //  * Requests the district for the given country.
+    //  */
+    // async destCountry() {
+    //   try {
+    //     this.districts = await requestDistricts(
+    //       this.destination.destinationCountry.countryId
+    //     );
+    //   } catch (error) {
+    //     this.$emit("displayMessage", {
+    //       show: true,
+    //       text: error.message,
+    //       color: "red"
+    //     });
+    //   }
+    // },
   }
 };
 </script>

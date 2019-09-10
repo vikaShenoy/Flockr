@@ -354,7 +354,7 @@ public class DestinationTestingSteps {
         this.destinationNode = Json.newObject();
         this.destinationNode.put("destinationName", firstRow.get("destinationName"));
         this.destinationNode.put("destinationTypeId", firstRow.get("destinationTypeId"));
-        this.destinationNode.put("districtId", firstRow.get("districtId"));
+        this.destinationNode.put("districtName", firstRow.get("districtName"));
         this.destinationNode.put("latitude", firstRow.get("latitude"));
         this.destinationNode.put("longitude", firstRow.get("longitude"));
         this.destinationNode.put("countryId", firstRow.get("countryId"));
@@ -370,8 +370,7 @@ public class DestinationTestingSteps {
         Assert.assertEquals(firstRow.get("destinationName"), destination.getDestinationName());
         Assert.assertEquals(firstRow.get("latitude"), destination.getDestinationLat().toString());
         Assert.assertEquals(firstRow.get("longitude"), destination.getDestinationLon().toString());
-        Assert.assertEquals(Double.parseDouble(firstRow.get("districtId")),
-                destination.getDestinationDistrict().getDistrictId(), delta);
+        Assert.assertEquals(firstRow.get("districtName"), destination.getDestinationDistrict());
         Assert.assertEquals(Double.parseDouble(firstRow.get("countryId")),
                 destination.getDestinationCountry().getCountryId(), delta);
         Assert.assertEquals(Double.parseDouble(firstRow.get("destinationTypeId")),
@@ -391,7 +390,7 @@ public class DestinationTestingSteps {
 
         Assert.assertEquals(destinationNode.get("destinationName").asText(), originalDestination.get("destinationName").asText());
         Assert.assertEquals(destinationNode.get("destinationTypeId").asText(), originalDestination.get("destinationType").get("destinationTypeId").asText());
-        Assert.assertEquals(destinationNode.get("districtId").asText(), originalDestination.get("destinationDistrict").get("districtId").asText());
+        Assert.assertEquals(destinationNode.get("districtName").asText(), originalDestination.get("destinationDistrict").asText());
         Assert.assertNotEquals(destinationNode.get("latitude").asInt(), originalDestination.get("destinationLat").asInt());
         Assert.assertNotEquals(destinationNode.get("longitude").asInt(), originalDestination.get("destinationLon").asInt());
         Assert.assertEquals(destinationNode.get("countryId").asInt(), originalDestination.get("destinationCountry").get("countryId").asInt());
@@ -409,7 +408,7 @@ public class DestinationTestingSteps {
         this.destinationNode = Json.newObject();
         this.destinationNode.put("destinationName", firstRow.get("destinationName"));
         this.destinationNode.put("destinationTypeId", firstRow.get("destinationTypeId"));
-        this.destinationNode.put("districtId", firstRow.get("districtId"));
+        this.destinationNode.put("districtName", firstRow.get("districtName"));
         this.destinationNode.put("latitude", firstRow.get("latitude"));
         this.destinationNode.put("longitude", firstRow.get("longitude"));
         this.destinationNode.put("countryId", firstRow.get("countryId"));
@@ -470,7 +469,7 @@ public class DestinationTestingSteps {
         this.destinationNode = Json.newObject();
         this.destinationNode.put("destinationName", firstRow.get("destinationName"));
         this.destinationNode.put("destinationTypeId", firstRow.get("destinationTypeId"));
-        this.destinationNode.put("districtId", firstRow.get("districtId"));
+        this.destinationNode.put("districtName", firstRow.get("districtName"));
         this.destinationNode.put("latitude", firstRow.get("latitude"));
         this.destinationNode.put("longitude", firstRow.get("longitude"));
         this.destinationNode.put("countryId", firstRow.get("countryId"));
