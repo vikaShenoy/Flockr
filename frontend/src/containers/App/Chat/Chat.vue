@@ -11,9 +11,9 @@
                     color="secondary"
                     @click="isShowingCreateChat = true"
             >add</v-icon>
-         </div>
+          </div>
 
-          <h4 id="title" v-if="!currentChatId">Chat</h4>
+          <h4 id="title" v-if="!currentChatId && !isShowingCreateChat">Chat</h4>
 
           <div v-if="currentChatId || isShowingCreateChat || isShowingManageChat" id="chat-group-title">
             <v-icon color="secondary" id="back-to-chats-icon" @click="goBackToChats()"
@@ -179,7 +179,6 @@ export default {
     async createChat(userIds, chatName) {
       try {
         const res = await createChat(userIds, chatName);
-        console.log(res);
         this.showSnackbar("Chat created", "success", 2000);
         this.isShowingCreateChat = false;
         this.getChats();
@@ -207,7 +206,6 @@ export default {
         const chats = await getChats();
         this.chats = chats;
       } catch (e) {
-        console.log(e);
         this.showErrorSnackbar("Error getting chats");
       }
     },
@@ -222,14 +220,12 @@ export default {
      * Goes back to the chats list.
      */
     goBackToChats() {
-
+      this.currentChatId = null;
       if (this.isShowingManageChat) {
         this.isShowingManageChat = false;
       } else {
-        this.currentChatId = null;
         this.isShowingCreateChat = false;
       }
-
       event.stopPropagation();
     },
     /**
