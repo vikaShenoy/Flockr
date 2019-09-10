@@ -106,45 +106,51 @@ public class TripController extends Controller {
         JsonNode tripNodesJson = jsonBody.get("tripNodes");
         JsonNode userIdsJson = jsonBody.get("userIds");
 
-        return userRepository
-                .getUserById(userId)
-                .thenComposeAsync(
-                        optionalUser -> {
-                            if (!optionalUser.isPresent()) {
-                                throw new CompletionException(new BadRequestException("User does not exist"));
-                            }
+    return userRepository
+        .getUserById(userId)
+        .thenComposeAsync(
+            optionalUser -> {
+              if (!optionalUser.isPresent()) {
+                throw new CompletionException(new BadRequestException("User does not exist"));
+              }
 
-                            User user = optionalUser.get();
+              User user = optionalUser.get();
 
-                            List<TripNode> tripNodes;
-                            List<User> users;
+              List<TripNode> tripNodes;
+              List<User> users;
 
-                            try {
-                                List<User> allUsers = User.find.all(); //TODO surely we don't want to be doing this
-                                Set<TripComposite> trips = tripRepository.getAllTrips();
-                                tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
-                                users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
-                            } catch (BadRequestException e) {
-                                return CompletableFuture.completedFuture(badRequest(e.getMessage()));
-                            } catch (ForbiddenRequestException e) {
-                                return CompletableFuture.completedFuture(forbidden(e.getMessage()));
-                            } catch (NotFoundException e) {
-                                return CompletableFuture.completedFuture(notFound(e.getMessage()));
-                            }
+              try {
+                List<User> allUsers = User.find.all(); // TODO surely we don't want to be doing this
+                Set<TripComposite> trips = tripRepository.getAllTrips();
+                tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
+                users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
+              } catch (BadRequestException e) {
+                return CompletableFuture.completedFuture(badRequest(e.getMessage()));
+              } catch (ForbiddenRequestException e) {
+                return CompletableFuture.completedFuture(forbidden(e.getMessage()));
+              } catch (NotFoundException e) {
+                return CompletableFuture.completedFuture(notFound(e.getMessage()));
+              }
 
-                            List<CompletionStage<Destination>> updateDestinations =
-                                    checkAndUpdateOwners(userId, tripNodes);
+              List<CompletionStage<Destination>> updateDestinations =
+                  checkAndUpdateOwners(userId, tripNodes);
 
-                            return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
-                                    .thenComposeAsync(
-                                            destinations -> {
-                                                TripComposite trip = new TripComposite(tripNodes, users, tripName);
-                                                return tripRepository.saveTrip(trip);
-                                            })
-                                    .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
-                                    .exceptionally(e -> internalServerError());
-                        },
-                        httpExecutionContext.current());
+              return CompletableFuture.allOf(updateDestinations.toArray(new CompletableFuture[0]))
+                  .thenComposeAsync(
+                      destinations -> {
+                        TripComposite trip = new TripComposite(tripNodes, users, tripName);
+                        return tripRepository.saveTrip(trip);
+                      })
+                  .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
+                  .exceptionally(
+                      e -> {
+                        System.out.println(e.getMessage());
+                        System.out.println(e.getCause());
+                        System.out.println(e.getStackTrace());
+                        return internalServerError();
+                      });
+            },
+            httpExecutionContext.current());
     }
 
     /**

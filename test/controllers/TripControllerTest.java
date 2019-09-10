@@ -230,7 +230,10 @@ public class TripControllerTest {
     tripDestinations.add(tripDestination2);
     tripBody.put("name", "Pirate Trip");
     tripBody.putArray("tripNodes").addAll(tripDestinations);
-    tripBody.set("userIds", Json.toJson(userIds));
+    tripBody.putArray("userIds").add(Json.newObject().put("userId", otherUser.getUserId()));
+    // tripBody.set("userIds", Json.toJson(userIds));
+
+    System.out.println(tripBody.toString());
     Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
     Assert.assertEquals(201, result.status());
     int tripId = PlayResultToJson.convertResultToJson(result).get("tripNodeId").asInt();
