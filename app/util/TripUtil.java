@@ -125,6 +125,22 @@ public class TripUtil {
                 throw new NotFoundException("User not found");
             }
 
+            if (userIdJson.get("role").asText().equals("owner")) {
+                System.out.println("setting to owner");
+                List<Role> userRoles = currentUser.getRoles();
+                userRoles.add(new Role(RoleType.TRIP_OWNER));
+                currentUser.setRoles(userRoles);
+            } else if (userIdJson.get("role").asText().equals("manager")) {
+                List<Role> userRoles = currentUser.getRoles();
+                userRoles.add(new Role(RoleType.TRIP_MANAGER));
+                currentUser.setRoles(userRoles);
+            } else if (userIdJson.get("role").asText().equals("member")) {
+                List<Role> userRoles = currentUser.getRoles();
+                userRoles.add(new Role(RoleType.TRIP_MEMBER));
+                currentUser.setRoles(userRoles);
+
+            }
+
             users.add(currentUser);
         }
 
