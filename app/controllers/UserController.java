@@ -556,6 +556,9 @@ public class UserController extends Controller {
         long ageMax;
         ageMax = -1;
         String gender = "";
+        String name = null;
+        int offset = 0;
+        int limit = 20;
 
         try {
             String nationalityQuery = request.getQueryString("nationality");
@@ -582,11 +585,33 @@ public class UserController extends Controller {
         try {
             gender = request.getQueryString("gender");
         } catch (Exception e){ log.error("No Parameter gender");}
+
+        try {
+          name = request.getQueryString("name");
+        } catch (NullPointerException e) {
+          log.info("No parameter name, excluding from search");
+        }
+
+        try {
+           String offsetQuery = request.getQueryString("offset");
+           offset = Integer.parseInt(offsetQuery);
+        } catch (NumberFormatException e) {
+          log.info("No parameter offset");
+        }
+
+        try {
+          String limitQuery = request.getQueryString("limit");
+          System.out.println(limitQuery);
+          limit = Integer.parseInt(limitQuery);
+        } catch (NumberFormatException e) {
+          log.info("No parameter limit");
+        }
+
         Date dateMin = new Date(ageMin);
         Date dateMax = new Date(ageMax);
         log.debug("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
 
-        return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType)  //Just for testing purposes
+        return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType, name, offset, limit)  //Just for testing purposes
                 .thenApplyAsync((user) -> {
                     JsonNode userAsJson = Json.toJson(user);
                     log.debug(userAsJson.asText());

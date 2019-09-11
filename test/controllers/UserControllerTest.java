@@ -95,7 +95,7 @@ public class UserControllerTest {
         List<User> users = new ArrayList<>();
         // Create extra users to test pagination works as expected
         for (int i = 0; i < 10; i++) {
-            users.add(fakeClient.signUpUser("a" + i, "b" + i, "tester" + i + "@gmail.com", "abc123"));
+            users.add(fakeClient.signUpUser("testing", "testing", "tester" + i + "@gmail.com", "abc123"));
         }
 
         return users;
@@ -177,9 +177,7 @@ public class UserControllerTest {
         Assert.assertEquals(200, result.status());
         JsonNode userJson = PlayResultToJson.convertResultToJson(result);
         Assert.assertEquals(4, userJson.size());
-        ObjectMapper objectMapper = new ObjectMapper();
-        User firstUser = objectMapper.treeToValue(userJson.get(0), User.class);
-        Assert.assertEquals(firstUser.getUserId(), additionalUsers.get(7).getUserId());
+        Assert.assertEquals(additionalUsers.get(6).getUserId(), userJson.get(0).get("userId").asInt());
     }
 
     @Test
@@ -191,9 +189,18 @@ public class UserControllerTest {
         Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
         Assert.assertEquals(200, result.status());
         JsonNode userJson = PlayResultToJson.convertResultToJson(result);
-        ObjectMapper objectMapper = new ObjectMapper();
-        User firstUser = objectMapper.treeToValue(userJson.get(0), User.class);
         Assert.assertEquals(13, userJson.size());
-        Assert.assertEquals(user.getUserId(), firstUser.getUserId());
+
+    }
+
+    @Test
+    public void iCanSearchForUsers() throws Exception {
+        String endpoint = "/api/users/search?name=mmy";
+        Result result = fakeClient.makeRequestWithToken("GET", endpoint, user.getToken());
+        Assert.assertEquals(200, result.status());
+        JsonNode userJson = PlayResultToJson.convertResultToJson(result);
+        Assert.assertEquals(2, userJson.size());
+        Assert.assertEquals(user.getUserId(), userJson.get(0).get("userId").asInt());
+        Assert.assertEquals(otherUser.getUserId(), userJson.get(1).get("userId").asInt());
     }
 }
