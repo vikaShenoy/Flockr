@@ -613,6 +613,8 @@ public class UserController extends Controller {
 
         return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType, name, offset, limit)  //Just for testing purposes
                 .thenApplyAsync((user) -> {
+                  System.out.println("The users are: ");
+                  System.out.println(user);
                     JsonNode userAsJson = Json.toJson(user);
                     log.debug(userAsJson.asText());
 

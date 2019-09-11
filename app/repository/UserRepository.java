@@ -258,8 +258,8 @@ public class UserRepository {
             }
 
             List<User> users  = query.where()
-              .setFirstRow(offset)
-              .setMaxRows(limit).findList();
+                    .setFirstRow(offset)
+                    .setMaxRows(limit).findList();
 
             if (nationality != -1) {
                 List<User> filteredUsers = new ArrayList<User>();
