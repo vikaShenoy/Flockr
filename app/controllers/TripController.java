@@ -139,7 +139,11 @@ public class TripController extends Controller {
                   .thenComposeAsync(
                       destinations -> {
                         TripComposite trip = new TripComposite(tripNodes, users, tripName);
+                        for (User roledUser : users) {
+                            userRepository.updateUser(roledUser);
+                        }
                         return tripRepository.saveTrip(trip);
+
                       })
                   .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
                   .exceptionally(

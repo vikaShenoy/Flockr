@@ -47,6 +47,7 @@ public class UserRepository {
      * @return Nothing
      */
     public CompletionStage<User> updateUser(User user) {
+    System.out.println("I am updating" + user.getFirstName() + user.getLastName() + "and there role is " + user.getRoles().toString());
         return supplyAsync(() -> {
             user.save();
             return user;
@@ -67,6 +68,15 @@ public class UserRepository {
             roles.add(role);
         }
         return roles;
+    }
+
+    /**
+     * Function to get a single role from a given role type string
+     * @param roleType the string of the role to retrieve
+     * @return the Role with given roleType
+     */
+    public Role getSingleRoleByType(String roleType) {
+        return Role.find.query().where().eq("role_type", roleType).findOne();
     }
 
     /**

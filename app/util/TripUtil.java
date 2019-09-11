@@ -1,10 +1,12 @@
 package util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.*;
+import repository.UserRepository;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -13,6 +15,14 @@ import java.util.List;
 import java.util.Set;
 
 public class TripUtil {
+
+    private final UserRepository userRepository;
+    @Inject
+    public TripUtil (UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+
     /**
      * Gets trip to update from from list of trip objects based on ID
      * @param tripNodeJson JSON representation of trip node
@@ -125,22 +135,11 @@ public class TripUtil {
                 throw new NotFoundException("User not found");
             }
 
-            if (userIdJson.get("role").asText().equals("owner")) {
-                System.out.println("setting to owner");
-                List<Role> userRoles = currentUser.getRoles();
-                userRoles.add(new Role(RoleType.TRIP_OWNER));
-                currentUser.setRoles(userRoles);
-            } else if (userIdJson.get("role").asText().equals("manager")) {
-                List<Role> userRoles = currentUser.getRoles();
-                userRoles.add(new Role(RoleType.TRIP_MANAGER));
-                currentUser.setRoles(userRoles);
-            } else if (userIdJson.get("role").asText().equals("member")) {
-                List<Role> userRoles = currentUser.getRoles();
-                userRoles.add(new Role(RoleType.TRIP_MEMBER));
-                currentUser.setRoles(userRoles);
-
-            }
-
+            Role role = userRepository.getSingleRoleByType(userIdJson.get("role").asText());
+            List<Role> userRoles = currentUser.getRoles();
+            userRoles.add(role);
+            currentUser.setRoles(userRoles);
+            
             users.add(currentUser);
         }
 

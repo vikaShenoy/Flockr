@@ -156,7 +156,7 @@
                 // Specifies the extra users that should be added to the trip
                 let userIds = [];
                 this.selectedUsers.forEach(function (selectedUser) {
-                    userIds.push({userId: selectedUser.userId, role: "owner"});
+                    userIds.push({userId: selectedUser.userId, role: "TRIP_OWNER"});
                 });
                 const subTrip = await createTrip(this.tripName, this.tripDestinations, userIds);
 
