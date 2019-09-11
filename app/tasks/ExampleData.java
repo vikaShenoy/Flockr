@@ -1,64 +1,60 @@
 package tasks;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
-
 import akka.actor.ActorSystem;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
-import models.Country;
-import models.Destination;
-import models.DestinationType;
-import models.Nationality;
-import models.Passport;
-import models.Role;
-import models.RoleType;
-import models.TravellerType;
-import models.TripComposite;
-import models.TripDestinationLeaf;
-import models.TripNode;
-import models.User;
+import models.*;
 import play.Environment;
 import repository.UserRepository;
-import scala.Array;
-import scala.Option;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 import util.Security;
 
+import javax.inject.Inject;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+
+/**
+ * Task to create 10,000 example users in the system with valid data. Users have random names but
+ * the same date of birth to help locate them within the database.
+ */
 public class ExampleData {
 
-    private final UserRepository userRepository;
-    private final ActorSystem actorSystem;
-    private final ExecutionContext executionContext;
-    private final Security security;
-    private final Environment environment;
-
-    @Inject
-    public ExampleData(
-            ActorSystem actorSystem,
-            ExecutionContext executionContext,
-            Security security,
-            Environment environment,
-            UserRepository userRepository) {
-        this.actorSystem = actorSystem;
-        this.executionContext = executionContext;
-        this.security = security;
-        this.environment = environment;
-        this.userRepository = userRepository;
-        this.initialise();
+  private final UserRepository userRepository;
+  private final ActorSystem actorSystem;
+  private final ExecutionContext executionContext;
+  private final Security security;
 
 
+    /**
+     * Constructor
+     * @param actorSystem
+     * @param executionContext
+     * @param security
+     * @param userRepository
+     */
+  @Inject
+  public ExampleData(
+      ActorSystem actorSystem,
+      ExecutionContext executionContext,
+      Security security,
+      UserRepository userRepository) {
+    this.actorSystem = actorSystem;
+    this.executionContext = executionContext;
+    this.security = security;
+    this.userRepository = userRepository;
+    this.initialise();
+  }
 
-    }
-
-    private void initialise() {
+  /** Initialise the scheduled task */
+  private void initialise() {
 
     this.actorSystem
         .scheduler()
@@ -67,23 +63,22 @@ public class ExampleData {
             () ->
                 supplyAsync(
                     () -> {
-                      int userNo = 0;
                       try {
-                          Role userRole = new Role(RoleType.TRAVELLER);
-                          List<Role> rolesList = new ArrayList<>();
-                          rolesList.add(userRole);
-                          BufferedReader firstReader =
+                        Role userRole = new Role(RoleType.TRAVELLER);
+                        List<Role> rolesList = new ArrayList<>();
+                        rolesList.add(userRole);
+                        BufferedReader firstReader =
                             new BufferedReader(new FileReader("SampleData/FirstNames.txt"));
                         String firstName;
                         BufferedReader lastReader =
                             new BufferedReader(new FileReader("SampleData/LastNames.txt"));
                         String lastName;
-                          List<Nationality> nationalities =
-                                  userRepository.getAllNationalities().toCompletableFuture().get();
-                          List<TravellerType> travellerTypes =
-                                  userRepository.getAllTravellerTypes().toCompletableFuture().get();
-                          List<Passport> passports =
-                                  userRepository.getAllPassports().toCompletableFuture().get();
+                        List<Nationality> nationalities =
+                            userRepository.getAllNationalities().toCompletableFuture().get();
+                        List<TravellerType> travellerTypes =
+                            userRepository.getAllTravellerTypes().toCompletableFuture().get();
+                        List<Passport> passports =
+                            userRepository.getAllPassports().toCompletableFuture().get();
                         while ((firstName = firstReader.readLine()) != null) {
                           lastName = lastReader.readLine();
                           User user =
@@ -97,8 +92,8 @@ public class ExampleData {
                                   nationalities,
                                   travellerTypes,
                                   new Date(631152000),
-                                      passports,
-                                     rolesList,
+                                  passports,
+                                  rolesList,
                                   "abcdef78584");
                           user.save();
                         }
@@ -109,14 +104,14 @@ public class ExampleData {
                       } catch (IOException e) {
                         e.printStackTrace();
                       } catch (InterruptedException e) {
-                          e.printStackTrace();
+                        e.printStackTrace();
                       } catch (ExecutionException e) {
-                          e.printStackTrace();
+                        e.printStackTrace();
                       }
 
-                        System.out.println("Ended populating Example data");
+                      System.out.println("Ended populating Example profile data");
                       return null;
                     }),
             this.executionContext);
-    }
+  }
 }
