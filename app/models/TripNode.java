@@ -130,6 +130,14 @@ public abstract class TripNode extends Model {
         this.userRoles.add(userRole);
     }
 
+    public List<UserRole> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(List<UserRole> userRoles) {
+        this.userRoles = userRoles;
+    }
+
     /**
      * This is required by EBean to make queries on the database.
      */

@@ -150,6 +150,12 @@ public class TripController extends Controller {
 
 
                         }
+
+                          Role role = userRepository.getSingleRoleByType("TRIP_OWNER");
+                          UserRole userRole = new UserRole(users.get(users.size() - 1), role);
+                          userRole.save();
+                          trip.addUserRole(userRole);
+
                         return tripRepository.saveTrip(trip);
 
                       })

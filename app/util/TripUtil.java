@@ -134,11 +134,6 @@ public class TripUtil {
             if (currentUser == null) {
                 throw new NotFoundException("User not found");
             }
-
-            Role role = userRepository.getSingleRoleByType(userIdJson.get("role").asText());
-            List<Role> userRoles = currentUser.getRoles();
-            userRoles.add(role);
-            currentUser.setRoles(userRoles);
             
             users.add(currentUser);
         }
