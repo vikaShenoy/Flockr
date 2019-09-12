@@ -85,6 +85,9 @@
     getPublicDestinations,
     undoDeleteTreasureHuntData
   } from "./TreasureHuntsService"
+
+  // TODO: change getPublicDestinations to DestinationService. Will require offset (optional) and search query parameters.
+
   import Command from "../../components/UndoRedo/Command";
 
   export default {
@@ -127,7 +130,11 @@
        * Calls the treasure hunt service to update the list of public destinations displayed in the dropdown box
        */
       async getDestinations() {
-        this.destinations = await getPublicDestinations()
+        try {
+          this.destinations = await getPublicDestinations();
+        } catch (err) {
+          this.$root.$emit("show-error-snackbar", "Could not get public destinations", 3000);
+        }
       },
 
       /**

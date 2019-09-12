@@ -65,8 +65,10 @@ public class DestinationController extends Controller {
    * HTTP client
    *
    * @param request Http.Request the http request
-   * @return a completion stage and a status code 200 if the request is successful, otherwise
-   *     returns 500.
+   * @return a completion stage with status code
+   * - 200 - Got destinations successfully
+   * - 400 - Bad Request, e.g. was missing offset query parameter
+   * - 500 - Internal server error
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> getDestinations(Http.Request request) {

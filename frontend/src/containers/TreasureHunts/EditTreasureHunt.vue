@@ -84,6 +84,7 @@
 
 <script>
   import moment from "moment";
+  // TODO: change getPublicDestinations to DestinationService. Will require offset (optional) and search query parameters.
   import {editTreasureHunt, getPublicDestinations} from "./TreasureHuntsService"
   import Command from "../../components/UndoRedo/Command";
 
@@ -132,7 +133,11 @@
        * Calls the treasure hunt service to get all public destinations required for the drop down in the form
        */
       async getDestinations() {
-        this.destinations = await getPublicDestinations()
+        try {
+          this.destinations = await getPublicDestinations();
+        } catch (err) {
+          this.$root.$emit("show-error-snackbar", "Could not get public destinations", 3000);
+        }
       },
 
       /**

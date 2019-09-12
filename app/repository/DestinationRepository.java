@@ -22,6 +22,7 @@ public class DestinationRepository {
 
     private final EbeanServer ebeanServer;
     private final DatabaseExecutionContext executionContext;
+    private String destinationNamePropertyName = "destinationName";
 
     /**
      * Dependency injection
@@ -75,11 +76,11 @@ public class DestinationRepository {
     public CompletionStage<List<Destination>> getDestinations(String searchCriterion, int offset) {
         int maxRows = 30;
         return supplyAsync(() -> Destination.find.query().where()
-                .ilike("destinationName", searchCriterion)
-                .orderBy("destinationName")
-                .setFirstRow(offset)
-                .setMaxRows(maxRows)
-                .findList()
+            .ilike(destinationNamePropertyName, searchCriterion + "%")
+            .orderBy(destinationNamePropertyName)
+            .setFirstRow(offset)
+            .setMaxRows(maxRows)
+            .findList()
         , executionContext);
     }
 
@@ -93,7 +94,8 @@ public class DestinationRepository {
         return supplyAsync(
             () -> {
                 Optional<Destination> destination =
-                    Destination.find.query().where().eq("destination_id", destinationId)
+                    Destination.find.query().where()
+                        .eq("destination_id", destinationId)
                         .findOneOrEmpty();
                 return destination;
             },
@@ -147,7 +149,8 @@ public class DestinationRepository {
         return supplyAsync(
             () -> {
                 List<Destination> destinations =
-                    Destination.find.query().where().eq("destination_owner", userId).findList();
+                    Destination.find.query().where()
+                        .eq("destination_owner", userId).findList();
                 return destinations;
             },
             executionContext);
