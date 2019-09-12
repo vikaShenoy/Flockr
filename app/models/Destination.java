@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
     uniqueConstraints =
         @UniqueConstraint(
             columnNames = {
-              "destination_name, "
-                  + "destination_country_country_id, "
-                  + "destination_type_destination_type_id"
+                "destination_name",
+                "destination_country_country_id",
+                "destination_type_destination_type_id"
             }))
 public class Destination extends Model {
 

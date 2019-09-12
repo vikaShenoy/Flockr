@@ -84,6 +84,7 @@ create table destination (
   is_public                     tinyint(1) default 0 not null,
   deleted_expiry                datetime(6),
   deleted                       BOOLEAN DEFAULT FALSE not null,
+  constraint uq_destination_destination_name_destination_country_count_1 unique (destination_name,destination_country_country_id,destination_type_destination_type_id),
   constraint pk_destination primary key (destination_id)
 );
 
