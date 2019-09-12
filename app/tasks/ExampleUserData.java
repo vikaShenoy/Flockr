@@ -2,6 +2,8 @@ package tasks;
 
 import akka.actor.ActorSystem;
 import models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import repository.UserRepository;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
@@ -30,6 +32,8 @@ public class ExampleUserData {
   private final ActorSystem actorSystem;
   private final ExecutionContext executionContext;
   private final Security security;
+  private int userCount = 0;
+  final Logger log = LoggerFactory.getLogger(this.getClass());
 
   /**
    * Constructor
@@ -63,69 +67,82 @@ public class ExampleUserData {
                 supplyAsync(
                     () -> {
                       try {
-                        Role userRole = new Role(RoleType.TRAVELLER);
+                        Role userRole =
+                            Role.find.query().where().eq("role_type", "TRAVELLER").findOne();
                         List<Role> rolesList = new ArrayList<>();
                         rolesList.add(userRole);
                         BufferedReader firstReader =
                             new BufferedReader(
                                 new FileReader("./app/tasks/SampleData/FirstNames.txt"));
-                        String firstName;
                         BufferedReader lastReader =
                             new BufferedReader(
                                 new FileReader("./app/tasks/SampleData/LastNames.txt"));
+                        String firstName;
                         String lastName;
                         List<Nationality> nationalities =
                             userRepository.getAllNationalities().toCompletableFuture().get();
-                        System.out.println(nationalities.size());
                         List<TravellerType> travellerTypes =
                             userRepository.getAllTravellerTypes().toCompletableFuture().get();
-                        System.out.println(travellerTypes.size());
                         List<Passport> passports =
                             userRepository.getAllPassports().toCompletableFuture().get();
-                        System.out.println(passports.size());
                         int natIndex = 0;
                         int passIndex = 0;
                         int travellerTypeIndex = 0;
-                        while ((firstName = firstReader.readLine()) != null) {
-                          while ((lastName = lastReader.readLine()) != null) {
+                        int natSize = nationalities.size();
+                        int passSize = passports.size();
+                        int travSize = travellerTypes.size();
+                        List<String> firstNameList = new ArrayList<>();
+                        List<String> lastNameList = new ArrayList<>();
 
+                        while ((firstName = firstReader.readLine()) != null) {
+                          firstNameList.add(firstName);
+                        }
+
+                        while ((lastName = lastReader.readLine()) != null) {
+                          lastNameList.add(lastName);
+                        }
+                        firstReader.close();
+                        lastReader.close();
+                        log.info(
+                            String.format(
+                                "Number of users to add:%d",
+                                firstNameList.size() * lastNameList.size()));
+
+                        for (String first : firstNameList) {
+                          for (String last : lastNameList) {
                             List<Nationality> nationalityToAdd = new ArrayList<>();
-                            nationalityToAdd.add(
-                                nationalities.get((natIndex % nationalities.size())));
+                            nationalityToAdd.add(nationalities.get((natIndex % natSize)));
                             natIndex++;
 
                             List<Passport> passportToAdd = new ArrayList<>();
-                            passportToAdd.add(passports.get((passIndex % passports.size())));
+                            passportToAdd.add(passports.get((passIndex % passSize)));
                             passIndex++;
 
                             List<TravellerType> travellerTypeToAdd = new ArrayList<>();
                             travellerTypeToAdd.add(
-                                travellerTypes.get((travellerTypeIndex % travellerTypes.size())));
+                                travellerTypes.get((travellerTypeIndex % travSize)));
                             travellerTypeIndex++;
                             User user =
                                 new User(
-                                    firstName,
+                                    first,
                                     " ",
-                                    lastName,
+                                    last,
                                     this.security.hashPassword("so-secure"),
                                     "Female",
-                                    firstName.toLowerCase()
+                                    first.toLowerCase()
                                         + "."
-                                        + lastName.toLowerCase()
+                                        + last.toLowerCase()
                                         + "@example-user.com",
                                     nationalityToAdd,
                                     travellerTypeToAdd,
                                     new Date(631152000),
                                     passportToAdd,
                                     rolesList,
-                                    "abcdef78584");
-                            // TODO: uncomment when live
-                            // user.save();
-                            System.out.println(user.getEmail());
+                                    "abcdef");
+                            user.save();
+                            userCount++;
                           }
                         }
-                        lastReader.close();
-                        firstReader.close();
                       } catch (InterruptedException e) {
                         e.printStackTrace();
                       } catch (ExecutionException e) {
@@ -136,7 +153,10 @@ public class ExampleUserData {
                         e.printStackTrace();
                       }
 
-                      System.out.println("Ended populating Example profile data");
+                      log.info(
+                          String.format(
+                              "Ended populating Example profile data. Total profiles added: %d",
+                              userCount));
                       return null;
                     }),
             this.executionContext);
