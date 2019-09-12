@@ -142,7 +142,9 @@ public class TripController extends Controller {
                             for (JsonNode userIdJson : userIdsJson) {
                                 if (userIdJson.get("userId").asInt() == roledUser.getUserId()) {
                                     Role role = userRepository.getSingleRoleByType(userIdJson.get("role").asText());
-                                    trip.addUserRole(new UserRole(roledUser, role));
+                                    UserRole userRole = new UserRole(roledUser, role);
+                                    userRole.save();
+                                    trip.addUserRole(userRole);
                                 }
                             }
 
