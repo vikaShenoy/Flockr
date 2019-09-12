@@ -1,6 +1,5 @@
 package tasks;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import akka.actor.ActorSystem;
@@ -12,8 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import models.Country;
 import models.Destination;
 import models.DestinationType;
@@ -23,7 +20,6 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
-import util.CountrySchedulerUtil;
 
 /**
  * This class contains the code needed to populate destinations from an external API. Only runs when
@@ -33,23 +29,17 @@ public class ExampleDestinationDataTask {
 
   private ActorSystem actorSystem;
   private ExecutionContext executionContext;
-  private final CountrySchedulerUtil countrySchedulerUtil;
   final Logger log = LoggerFactory.getLogger(this.getClass());
   private final WSClient ws;
-  private static int offset = 0;
   private static List<Country> countries;
   private static int countryIndex = 0;
   private static DestinationType cityDestinationType;
 
   @Inject
   public ExampleDestinationDataTask(
-      ActorSystem actorSystem,
-      ExecutionContext executionContext,
-      CountrySchedulerUtil countrySchedulerUtil,
-      WSClient ws) {
+      ActorSystem actorSystem, ExecutionContext executionContext, WSClient ws) {
     this.actorSystem = actorSystem;
     this.executionContext = executionContext;
-    this.countrySchedulerUtil = countrySchedulerUtil;
     this.ws = ws;
     initialise();
   }
@@ -62,7 +52,7 @@ public class ExampleDestinationDataTask {
   private CompletionStage<List<JsonNode>> fetchCitiesFromCountry(Country country) {
     String countryUrl =
         "https://public.opendatasoft.com/api/records/1.0/search/?dataset=worldcitiespop&rows=10000&facet=country&refine.country="
-            + country.getISOCode().toLowerCase() + "&start=" + offset;
+            + country.getISOCode().toLowerCase();
     List<JsonNode> cities = new ArrayList<>();
     return ws.url(countryUrl)
         .get()
@@ -70,14 +60,9 @@ public class ExampleDestinationDataTask {
             response -> {
               JsonNode resJson = response.asJson().get("records");
 
-              if (resJson.size() < 10000) {
-                offset = 0;
-                countryIndex++;
-              } else {
-                offset += 10000;
-              }
+              countryIndex++;
 
-              for (JsonNode cityJson: resJson) {
+              for (JsonNode cityJson : resJson) {
                 JsonNode cityDetails = cityJson.get("fields");
                 ObjectNode city = Json.newObject();
                 city.put("name", cityDetails.get("accentcity").asText());
@@ -130,15 +115,15 @@ public class ExampleDestinationDataTask {
               Destination.find
                   .query()
                   .where()
-                  .eq(
-                      "destination_country_country_id",
-                      destination.getDestinationCountry().getCountryId())
-                  .and()
                   .eq("destination_name", destination.getDestinationName())
                   .and()
                   .eq(
                       "destination_type_destination_type_id",
                       destination.getDestinationType().getDestinationTypeId())
+                  .and()
+                  .eq(
+                      "destination_country_country_id",
+                      destination.getDestinationCountry().getCountryId())
                   .findOneOrEmpty();
           return optionalDestination.isPresent();
         });
@@ -168,7 +153,7 @@ public class ExampleDestinationDataTask {
         .scheduler()
         .schedule(
             Duration.create(1, TimeUnit.SECONDS), // initial delay
-            Duration.create(1, TimeUnit.MINUTES), // interval
+            Duration.create(15, TimeUnit.SECONDS), // interval
             () -> {
               // Initialise country and city type variables.
               if (countries == null) {
@@ -186,14 +171,18 @@ public class ExampleDestinationDataTask {
                           }
                         });
               } else {
-                //
                 supplyAsync(
                     () -> {
-                      log.info("Beginning getting cities from open data soft api");
-                      System.out.println("Beginning getting cities from open data soft api");
                       if (countryIndex < countries.size()) {
                         Country country = countries.get(countryIndex);
-                        System.out.println(country.getCountryId());
+                        log.info(
+                            String.format(
+                                "Beginning getting cities from open data soft api for %s",
+                                country.getCountryName()));
+                        System.out.println(
+                            String.format(
+                                "Beginning getting cities from open data soft api for %s",
+                                country.getCountryName()));
                         fetchCitiesFromCountry(country)
                             .thenAcceptAsync(
                                 cities -> {
@@ -236,9 +225,14 @@ public class ExampleDestinationDataTask {
                                               }
                                             });
                                   }
-                                  log.info("Finished getting cities from open data soft api");
+                                  log.info(
+                                      String.format(
+                                          "Finished getting cities from open data soft api for %s",
+                                          country.getCountryName()));
                                   System.out.println(
-                                      "Finished getting cities from open data soft api");
+                                      String.format(
+                                          "Finished getting cities from open data soft api for %s",
+                                          country.getCountryName()));
                                 });
                       }
                       return null;
