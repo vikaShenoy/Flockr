@@ -31,5 +31,8 @@ public class TasksController extends AbstractModule {
      }
 
     // you may add more tasks here
+
+    //If you want to populate example User data uncomment the next line.
+    bind(ExampleUserData.class).asEagerSingleton();
   }
 }
