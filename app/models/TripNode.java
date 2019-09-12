@@ -23,6 +23,9 @@ public abstract class TripNode extends Model {
     @Id
     protected int tripNodeId;
 
+    @ManyToMany
+    private List<UserRole> userRoles = new ArrayList<>();
+
 
     @ManyToMany(mappedBy = "parents", cascade=CascadeType.PERSIST)
     protected List<TripNode> tripNodes = new ArrayList<>();
@@ -122,6 +125,10 @@ public abstract class TripNode extends Model {
     public abstract Destination getDestination();
 
     public abstract List<User> getUsers();
+
+    public void addUserRole(UserRole userRole) {
+        this.userRoles.add(userRole);
+    }
 
     /**
      * This is required by EBean to make queries on the database.

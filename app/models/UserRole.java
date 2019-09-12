@@ -3,6 +3,7 @@ package models;
 import io.ebean.Model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 /**
  * Linking class to show the association between users and roles.
@@ -12,32 +13,36 @@ public class UserRole extends Model {
 
     @Id
     private int userRoleId;
-    private int roleId;
-    private int userId;
+
+    @ManyToOne
+    private User user;
+
+    @ManyToOne
+    private Role role;
 
     /**
      * Create a new user role.
-     * @param roleId id of the role the user has.
-     * @param userId id of the user who has the role.
+     * @param role id of the role the user has.
+     * @param user id of the user who has the role.
      */
-    public UserRole(int roleId, int userId) {
-        this.roleId = roleId;
-        this.userId = userId;
+    public UserRole(User user, Role role) {
+        this.role = role;
+        this.user = user;
     }
 
-    public int getRoleId() {
-        return roleId;
+    public User getUser() {
+        return user;
     }
 
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public int getUserId() {
-        return userId;
+    public Role getRole() {
+        return role;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

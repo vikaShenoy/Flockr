@@ -28,11 +28,14 @@ import play.Application;
 import play.libs.Json;
 import play.mvc.Result;
 import play.test.Helpers;
+import repository.UserRepository;
 import util.TripUtil;
 import utils.FakeClient;
 import utils.FakePlayClient;
 import utils.PlayResultToJson;
 import utils.TestState;
+
+import javax.inject.Inject;
 
 public class TripControllerTest {
 
@@ -55,7 +58,12 @@ public class TripControllerTest {
   private ObjectNode tripDestination3;
   private ObjectNode tripComposite1;
   private TripUtil tripUtil;
+  private UserRepository userRepository;
 
+  @Inject
+  public TripControllerTest(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
   @Before
   public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
 
@@ -66,7 +74,7 @@ public class TripControllerTest {
     testSettings.put("play.evolutions.db.default.enabled", "true");
     testSettings.put("play.evolutions.db.default.autoApply", "true");
     testSettings.put("play.evolutions.db.default.autoApplyDowns", "true");
-    tripUtil = new TripUtil();
+    tripUtil = new TripUtil(userRepository);
 
     // Fake Client
     application = Helpers.fakeApplication(testSettings);

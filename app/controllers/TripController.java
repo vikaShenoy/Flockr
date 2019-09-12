@@ -5,6 +5,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import actions.ActionState;
 import actions.LoggedIn;
 import akka.actor.ActorRef;
+import models.*;
 import modules.websocket.ConnectedUsers;
 import modules.websocket.TripNotifier;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,10 +25,6 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 
-import models.Destination;
-import models.TripComposite;
-import models.TripNode;
-import models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -139,8 +136,17 @@ public class TripController extends Controller {
                   .thenComposeAsync(
                       destinations -> {
                         TripComposite trip = new TripComposite(tripNodes, users, tripName);
+
                         for (User roledUser : users) {
-                            userRepository.updateUser(roledUser);
+
+                            for (JsonNode userIdJson : userIdsJson) {
+                                if (userIdJson.get("userId").asInt() == roledUser.getUserId()) {
+                                    Role role = userRepository.getSingleRoleByType(userIdJson.get("role").asText());
+                                    trip.addUserRole(new UserRole(user, role));
+                                }
+                            }
+
+
                         }
                         return tripRepository.saveTrip(trip);
 

@@ -18,6 +18,7 @@ import org.junit.Test;
 import play.Application;
 import play.libs.Json;
 import play.test.Helpers;
+import repository.UserRepository;
 import utils.FakeClient;
 import utils.TestState;
 
@@ -28,6 +29,12 @@ public class TripUtilTest {
     JsonNode testData3;
     Application application;
     Set<TripComposite> tripComposites;
+
+    private UserRepository userRepository;
+
+    public TripUtilTest(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Before
     public void setUp() {
@@ -40,7 +47,7 @@ public class TripUtilTest {
         application = Helpers.fakeApplication(testSettings);
         Helpers.start(application);
 
-        util = new TripUtil();
+        util = new TripUtil(userRepository);
         Date arrivalDate = new Date();
         Date departureDate = new Date();
         int arrivalTime = 100;

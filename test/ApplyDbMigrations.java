@@ -31,7 +31,7 @@ public class ApplyDbMigrations {
      * You can uncomment the following lines to action any pending drops from a previous version XML
      */
     // generate a migration using drops from a prior version
-    // System.setProperty("ddl.migration.pendingDropsFor", "1.2");
+    //System.setProperty("ddl.migration.pendingDropsFor", "1.2");
 
     DbMigration dbMigration = DbMigration.create();
     dbMigration.setPlatform(Platform.MYSQL);
