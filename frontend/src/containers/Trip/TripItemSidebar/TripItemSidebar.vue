@@ -13,6 +13,7 @@
           flat
           color="secondary"
           id="manage-trip-btn"
+          v-if="true || isUserOwner"
           @click="isShowingManageTripDialog = true"
       >Manage
       </v-btn>
@@ -129,12 +130,14 @@
 
 <script>
   import Timeline from "./Timeline/Timeline.vue";
+  import UserStore from "../../../stores/UserStore";
   import ModifyTripDestinationDialog
     from "./ModifyTripDestinationDialog/ModifyTripDestinationDialog";
   import ManageTripDialog from "./ManageTripDialog/ManageTripDialog";
   import ModifySubtripDialog from "./ModifySubtripDialog/ModifySubtripDialog";
   import {rules} from "../../../utils/rules";
   import {editTrip} from "../TripService";
+import roleType from '../../../stores/roleType';
 
 export default {
   components: {
@@ -267,6 +270,11 @@ export default {
     computeWidth() {
       const width = 300 + (this.findDeepestNodeLevel(this.trip) * 50);
       return `${width}px`;
+    },
+    isUserOwner() {
+      const user = this.trip.users.find(user => user.userId === UserStore.data.userId);
+      const userRole = this.trip.userRoles.find(userRole => userRole.user.userId === user.userId && userRole.role.roleType === roleType.TRIP_OWNER);
+      return userRole ? true : false; 
     }
   },
   watch: {

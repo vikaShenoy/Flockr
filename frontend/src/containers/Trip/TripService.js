@@ -50,6 +50,7 @@ export function transformTripNode(tripNode) {
     transformedTripNode.users = tripNode.users;
     transformedTripNode.isShowing = false;
     transformedTripNode.isSubTrip = true;
+    transformedTripNode.userRoles = tripNode.userRoles;
   } else {
     transformedTripNode.destination = tripNode.destination;
     // For consistency reasons, set tripNodes to empty list

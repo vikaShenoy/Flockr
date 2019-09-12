@@ -20,10 +20,11 @@
 
           <ul>
             <li
-              v-for="user in selectedUsers"
-              v-bind:key="user.userId"
+              v-for="userRole in userRoles"
+              v-bind:key="userRole.user.userId"
+              class="selected-user"
             >
-            {{ formatName(user) }}
+            {{ formatName(userRole.user) }} <v-select v-model="getUserPermission" :items="roleTypes" class="role-type" item-text="name" item-value="value" color="secondary"></v-select>
             </li>
           </ul>
 
@@ -100,6 +101,7 @@ import { getAllUsers } from '../../../AddTrip/AddTripService';
 import UserStore from "../../../../stores/UserStore";
 import { editTrip } from '../../TripService';
 import { deleteTripFromList } from '../../../Trips/OldTripsService';
+import roleType from '../../../../stores/roleType';
 
 export default {
   props: {
@@ -109,10 +111,16 @@ export default {
   data() {
     return {
       isShowingDialog: false,
+      userRoles: [],
       selectedUsers: [],
       users: [],
       isLoading: false,
-      showAlertCard: false
+      showAlertCard: false,
+      roleTypes: [
+        {name: "Trip Manager", value: roleType.TRIP_MANAGER},
+        {name: "Trip Member", value: roleType.TRIP_MEMBER},
+        {name: "Trip Owner", value: roleType.TRIP_OWNER}
+      ]
     };
   },
   methods: {
@@ -165,6 +173,10 @@ export default {
       this.isLoading = false;
       this.isShowingDialog = false;
       this.$emit("newUsers", users);
+    },
+    getUserPermission(user) {
+      const userRole = this.trip.userRoles.find(userRole => userRole.user === user.userId);
+      return userRole.role.roleType;
     }
   },
   mounted() {
@@ -172,15 +184,31 @@ export default {
   },
   watch: {
     /**
-     * Refreshes selectedUsers when opening up modal
+     * Refreshes userRoles when opening up modal
      */
     isShowingDialog(value) {
       if (value) {
+        this.userRoles = [...this.trip.userRoles]
+          .filter(userRole => userRole.user.userId !== UserStore.data.userId);
+
         this.selectedUsers = [...this.trip.users]
           .filter(user => user.userId !== UserStore.data.userId);
+
       }
       
       this.$emit("update:isShowing", value);
+    },
+    selectedUsers() {
+      const userRoles = this.selectedUsers.map(user => {
+        const userRole = this.userRoles.find(userRole => userRole.user.userId === user.userId);
+        if (userRole) {
+          return userRole;
+        } else {
+          return {
+            
+          };
+        }
+      });
     },
     isShowing(value) {
       this.isShowingDialog = value;
@@ -219,6 +247,18 @@ export default {
 #selected-users-title {
   text-align: left;
   color: $secondary;
+}
+
+.role-type {
+  margin-left: 10px;
+  flex: none;
+  width: 150px;
+}
+
+
+.selected-user {
+  display: flex;
+  align-items: center;
 }
 
 </style>
