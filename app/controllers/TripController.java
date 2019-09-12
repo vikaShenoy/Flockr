@@ -142,7 +142,7 @@ public class TripController extends Controller {
                             for (JsonNode userIdJson : userIdsJson) {
                                 if (userIdJson.get("userId").asInt() == roledUser.getUserId()) {
                                     Role role = userRepository.getSingleRoleByType(userIdJson.get("role").asText());
-                                    trip.addUserRole(new UserRole(user, role));
+                                    trip.addUserRole(new UserRole(roledUser, role));
                                 }
                             }
 
@@ -157,6 +157,7 @@ public class TripController extends Controller {
                         System.out.println(e.getMessage());
                         System.out.println(e.getCause());
                         System.out.println(e.getStackTrace());
+                        e.printStackTrace();
                         return internalServerError();
                       });
             },

@@ -60,31 +60,52 @@ public class DestinationController extends Controller {
     this.security = security;
   }
 
-  /**
-   * A function that gets a list of all the destinations and returns it with a 200 ok code to the
-   * HTTP client
-   *
-   * @param request Http.Request the http request
-   * @return a completion stage and a status code 200 if the request is successful, otherwise
-   *     returns 500.
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> getDestinations(Http.Request request) {
-      return destinationRepository
-              .getDestinations()
-              .thenApplyAsync(
-                      destinations -> {
-                          List<Destination> publicDestinations =
-                                  destinations.stream()
-                                          .filter(Destination::getIsPublic)
-                                          .collect(Collectors.toList());
-                          return ok(Json.toJson(publicDestinations));
-                      },
-                      httpExecutionContext.current());
-  }
+    /**
+     * A function that gets a list of all the destinations and returns it with a 200 ok code to the
+     * HTTP client
+     *
+     * @param request Http.Request the http request
+     * @return a completion stage and a status code 200 if the request is successful, otherwise
+     *     returns 500.
+     */
+    @With(LoggedIn.class)
+    public CompletionStage<Result> getDestinations(Http.Request request) {
+        String searchCriterion = request.getQueryString("search"); // optional
+        String offsetString = request.getQueryString("offset");
+        Integer offset;
+        if (offsetString == null) {
+            offsetString = "0";
+        }
+
+        try {
+            offset = Integer.parseInt(offsetString);
+        } catch (NumberFormatException e) {
+            return supplyAsync(Results::badRequest, httpExecutionContext.current());
+        }
+
+        CompletionStage<List<Destination>> destinations;
+
+        if (searchCriterion == null) {
+            destinations = destinationRepository.getDestinations(offset);
+        } else {
+            destinations = destinationRepository.getDestinations(searchCriterion, offset);
+        }
+
+        return destinations.thenApplyAsync(
+                allDestinations -> {
+                    List<Destination> publicDestinations =
+                            allDestinations.stream()
+                                    .filter(Destination::getIsPublic)
+                                    .collect(Collectors.toList());
+                    return ok(Json.toJson(publicDestinations));
+                },
+                httpExecutionContext.current());
+    }
 
 
-  /**
+
+
+    /**
    * A function that retrieves a destination details based on the destination ID given
    *
    * @param destinationId the destination Id of the destination to retrieve
