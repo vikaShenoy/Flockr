@@ -16,13 +16,6 @@ import java.util.Set;
 
 public class TripUtil {
 
-    private final UserRepository userRepository;
-    @Inject
-    public TripUtil (UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-
     /**
      * Gets trip to update from from list of trip objects based on ID
      * @param tripNodeJson JSON representation of trip node

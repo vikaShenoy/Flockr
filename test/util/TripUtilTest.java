@@ -47,7 +47,7 @@ public class TripUtilTest {
         application = Helpers.fakeApplication(testSettings);
         Helpers.start(application);
 
-        util = new TripUtil(userRepository);
+        util = new TripUtil();
         Date arrivalDate = new Date();
         Date departureDate = new Date();
         int arrivalTime = 100;
