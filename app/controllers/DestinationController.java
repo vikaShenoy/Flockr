@@ -75,29 +75,33 @@ public class DestinationController extends Controller {
     String searchCriterion = request.getQueryString("search"); // optional
     String offsetString = request.getQueryString("offset");
     Integer offset;
+    if (offsetString == null) {
+      offsetString = "0";
+    }
 
     try {
-        offset = Integer.parseInt(offsetString);
+      offset = Integer.parseInt(offsetString);
     } catch (NumberFormatException e) {
-        return supplyAsync(Results::badRequest, httpExecutionContext.current());
+      return supplyAsync(Results::badRequest, httpExecutionContext.current());
     }
 
     CompletionStage<List<Destination>> destinations;
 
     if (searchCriterion == null) {
-        destinations = destinationRepository.getDestinations(offset);
+      destinations = destinationRepository.getDestinations(offset);
     } else {
-        destinations = destinationRepository.getDestinations(searchCriterion, offset);
+      destinations = destinationRepository.getDestinations(searchCriterion, offset);
     }
 
-    return destinations.thenApplyAsync(allDestinations -> {
-        List<Destination> publicDestinations =
-            allDestinations.stream()
-                .filter(Destination::getIsPublic)
-                .collect(Collectors.toList());
-        return ok(Json.toJson(publicDestinations));
-    },
-    httpExecutionContext.current());
+    return destinations.thenApplyAsync(
+        allDestinations -> {
+          List<Destination> publicDestinations =
+              allDestinations.stream()
+                  .filter(Destination::getIsPublic)
+                  .collect(Collectors.toList());
+          return ok(Json.toJson(publicDestinations));
+        },
+        httpExecutionContext.current());
   }
 
   /**
@@ -232,7 +236,7 @@ public class DestinationController extends Controller {
 
       DestinationType destinationTypeAdd = DestinationType.find.byId(destinationTypeId);
       Country countryAdd = Country.find.byId(countryId);
-      //District districtAdd = new District(districtName, countryAdd);
+      // District districtAdd = new District(districtName, countryAdd);
 
       if (destinationTypeAdd == null || countryAdd == null) {
         throw new BadRequestException("One of the fields you have selected does not exist.");
@@ -567,24 +571,24 @@ public class DestinationController extends Controller {
         .exceptionally(e -> internalServerError());
   }
 
-//  /**
-//   * Endpoint to get all districts for a country.
-//   *
-//   * @param countryId country to get districts for.
-//   * @return A completion stage and status code of 200 with districts in the json body if
-//   *     successful.
-//   */
-//  @With(LoggedIn.class)
-//  public CompletionStage<Result> getDistricts(int countryId) {
-//    return destinationRepository
-//        .getDistricts(countryId)
-//        .thenApplyAsync(
-//            districts -> {
-//              JsonNode districtsJson = Json.toJson(districts);
-//              return ok(districtsJson);
-//            },
-//            httpExecutionContext.current());
-//  }
+  //  /**
+  //   * Endpoint to get all districts for a country.
+  //   *
+  //   * @param countryId country to get districts for.
+  //   * @return A completion stage and status code of 200 with districts in the json body if
+  //   *     successful.
+  //   */
+  //  @With(LoggedIn.class)
+  //  public CompletionStage<Result> getDistricts(int countryId) {
+  //    return destinationRepository
+  //        .getDistricts(countryId)
+  //        .thenApplyAsync(
+  //            districts -> {
+  //              JsonNode districtsJson = Json.toJson(districts);
+  //              return ok(districtsJson);
+  //            },
+  //            httpExecutionContext.current());
+  //  }
 
   /**
    * Adds a photo to a destination
@@ -901,8 +905,8 @@ public class DestinationController extends Controller {
    * @param destinationProposalId the id of the destination proposal to modify
    * @param request the HTTP request object containing a list of traveller type ids
    * @return A response that complies with the API spec http status codes: - 200 - OK - Successfully
-   * updated proposal. - 400 - Bad Request - Request body incorrect. - 404 - Not Found - Destination
-   * proposal not found.
+   *     updated proposal. - 400 - Bad Request - Request body incorrect. - 404 - Not Found -
+   *     Destination proposal not found.
    */
   @With({LoggedIn.class, Admin.class})
   public CompletionStage<Result> modifyProposal(int destinationProposalId, Http.Request request) {
@@ -1059,18 +1063,19 @@ public class DestinationController extends Controller {
 
   /**
    * Allows an admin to get all the destination proposals on a given page
+   *
    * @param request the Http request object containing the query string for the page to retrieve
    * @return A response that complies with the API spec
    */
   @With({LoggedIn.class, Admin.class})
   public CompletionStage<Result> getProposals(Http.Request request) {
-      int page = 1;
-      try {
-          String pageString = request.getQueryString("page");
-          page = Integer.parseInt(pageString);
-      } catch (Exception e) {
-          System.out.println("No page provided, using default of 1");
-      }
+    int page = 1;
+    try {
+      String pageString = request.getQueryString("page");
+      page = Integer.parseInt(pageString);
+    } catch (Exception e) {
+      System.out.println("No page provided, using default of 1");
+    }
     return destinationRepository
         .getDestinationProposals(page)
         .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));

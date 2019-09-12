@@ -20,6 +20,7 @@ public class TasksController extends AbstractModule {
     bind(DeleteExpiredTreasureHunts.class).asEagerSingleton();
     bind(DeleteExpiredDestinationPhotos.class).asEagerSingleton();
     bind(SetupTask.class).asEagerSingleton();
+    bind(ExampleDestinationDataTask.class).asEagerSingleton();
 
     Config conf = ConfigFactory.load();
     String environment = conf.getString("environment");
@@ -31,5 +32,8 @@ public class TasksController extends AbstractModule {
      }
 
     // you may add more tasks here
+
+    //If you want to populate example User data uncomment the next line.
+    //bind(ExampleUserData.class).asEagerSingleton();
   }
 }
