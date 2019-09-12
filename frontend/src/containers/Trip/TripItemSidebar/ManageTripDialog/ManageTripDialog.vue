@@ -24,7 +24,7 @@
               v-bind:key="userRole.user.userId"
               class="selected-user"
             >
-            {{ formatName(userRole.user) }} <v-select v-model="getUserPermission" :items="roleTypes" class="role-type" item-text="name" item-value="value" color="secondary"></v-select>
+            {{ formatName(userRole.user) }} <v-select v-model="userRole.role" :items="roleTypes" class="role-type" color="secondary"></v-select>
             </li>
           </ul>
 
@@ -117,9 +117,9 @@ export default {
       isLoading: false,
       showAlertCard: false,
       roleTypes: [
-        {name: "Trip Manager", value: roleType.TRIP_MANAGER},
-        {name: "Trip Member", value: roleType.TRIP_MEMBER},
-        {name: "Trip Owner", value: roleType.TRIP_OWNER}
+        roleType.TRIP_MANAGER,
+        roleType.TRIP_MEMBER,
+        roleType.TRIP_OWNER
       ]
     };
   },
@@ -189,7 +189,8 @@ export default {
     isShowingDialog(value) {
       if (value) {
         this.userRoles = [...this.trip.userRoles]
-          .filter(userRole => userRole.user.userId !== UserStore.data.userId);
+          .filter(userRole => userRole.user.userId !== UserStore.data.userId)
+          .map(userRole => ({user: userRole.user, role: userRole.role.roleType}));
 
         this.selectedUsers = [...this.trip.users]
           .filter(user => user.userId !== UserStore.data.userId);
@@ -205,7 +206,8 @@ export default {
           return userRole;
         } else {
           return {
-            
+            user,
+            role: null
           };
         }
       });
