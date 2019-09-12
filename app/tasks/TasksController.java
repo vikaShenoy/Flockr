@@ -7,6 +7,8 @@ import com.typesafe.config.ConfigFactory;
 /** Registers the tasks that need to be handled by the application. */
 public class TasksController extends AbstractModule {
 
+  private boolean populate = false;
+
   @Override
   protected void configure() {
     bind(SetupTask.class).asEagerSingleton();
@@ -31,9 +33,10 @@ public class TasksController extends AbstractModule {
 
       // you may add more tasks here
 
-      // If you want to populate example User data uncomment the next line.
-//      bind(ExampleUserData.class).asEagerSingleton();
-      bind(ExampleDestinationDataTask.class).asEagerSingleton();
+      if (populate) {
+        bind(ExampleUserData.class).asEagerSingleton();
+        bind(ExampleDestinationDataTask.class).asEagerSingleton();
+      }
     }
   }
 }
