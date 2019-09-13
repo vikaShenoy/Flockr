@@ -37,14 +37,16 @@ public class DestinationRepository {
   }
 
   /**
-   * Gets a list of all destinations
+   * Get a list of destinations which are owned by the user.
    *
+   * @param userId user to get destinations for.
    * @return <b>List</b> of destinations
    */
-  public CompletionStage<List<Destination>> getDestinations() {
+  public CompletionStage<List<Destination>> getUserDestinations(int userId) {
     return supplyAsync(
         () -> {
-          List<Destination> destinations = Destination.find.query().findList();
+          List<Destination> destinations = Destination.
+                  find.query().where().eq("destination_owner", userId).findList();
           return destinations;
         },
         executionContext);
