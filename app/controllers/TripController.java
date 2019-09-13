@@ -364,6 +364,8 @@ public class TripController extends Controller {
                                 users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
                             } catch (BadRequestException e) {
+                                System.out.println(1);
+                                System.out.println(e);
                                 throw new CompletionException(new BadRequestException());
                             } catch (ForbiddenRequestException e) {
                                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
@@ -379,6 +381,9 @@ public class TripController extends Controller {
                                     .thenComposeAsync(
                                             destinations -> {
                                                 TripComposite trip = optionalTrip.get();
+
+                                                // TODO - implement helper function then add conditionals.
+                                                //RoleType userRoleType = getTripUserRole(userFromMiddleware.getRoles(), trip.getUserRoles());
 
                                                 // Delete old destination leaf nodes.
                                                 tripRepository.deleteListOfTrips(trip.getTripNodes());
@@ -422,6 +427,15 @@ public class TripController extends Controller {
                             }
                         });
     }
+
+    /**
+     * Determine what role the user has in relation to the given trip.
+     * @param userRoles list of the user's roles.
+     * @param userTripRoles list of user roles associated with a trip
+     * @return the roletype the user has.
+     */
+/*    private RoleType getTripUserRole(List<Role> userRoles, List<UserRole> userTripRoles) {
+    }*/
 
     /**
      * Creates a list of completable futures that: Check the owners of each destination and updates
