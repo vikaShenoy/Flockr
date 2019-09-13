@@ -17,6 +17,8 @@
       v-on:addDestinationClicked="addDestinationClicked"
       @addNewDestination="addNewDestination"
       @refreshDestinations="refreshDestinations"
+      @search-criterion-updated="searchCriterionUpdated"
+      :destinationsLoading="destinationsLoading"
       ref="sidebar"
       :latitude="latitude"
       :longitude="longitude"
@@ -48,13 +50,23 @@
         yourDestinations: null,
         publicDestinations: null,
         showCreateDestDialog: false,
-        viewOption: "your"
+        viewOption: "your",
+        destinationsOffset: 0, // offset the destinations result
+        searchCriterion: '', // to ask API to only return destinations with this in the name
+        destinationsLoading: false // whether there is a pending API call to get destinations
       };
     },
     mounted() {
       this.getYourDestinations();
     },
     methods: {
+      /**
+       * Called when the search criterion is updated
+       */
+      searchCriterionUpdated(newValue) {
+        this.searchCriterion = newValue;
+        this.getPublicDestinations();
+      },
       /**
        * Sets the latitude and longitude coordinates to the given coordinates
        */
@@ -78,10 +90,13 @@
        */
       async getYourDestinations() {
         try {
+          this.destinationsLoading = true;
           const yourDestinations = await getYourDestinations();
           this.yourDestinations = yourDestinations;
+          this.destinationsLoading = false;
         } catch (e) {
           this.showSnackbar("Could not get your destinations", "error", 3000);
+          this.destinationsLoading = false;
         }
       },
       /**
@@ -89,9 +104,13 @@
        */
       async getPublicDestinations() {
         try {
-          this.publicDestinations = await getPublicDestinations();
+          const { searchCriterion, destinationsOffset } = this; 
+          this.destinationsLoading = true;
+          this.publicDestinations = await getPublicDestinations(searchCriterion, destinationsOffset);
+          this.destinationsLoading = false;
         } catch (e) {
           this.showSnackbar("Could not get public destinations", "error", 3000);
+          this.destinationsLoading = false;
         }
       },
       /**
@@ -111,7 +130,7 @@
        * @param {Number} the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
-        this.$root.$emit({
+        this.$root.$emit("show-snackbar", {
           message: message,
           color: color,
           timeout: timeout
@@ -188,7 +207,6 @@
       height: 100%;
     }
   }
-
 </style>
 
 

@@ -91,6 +91,7 @@ Feature: The user can manage destinations
       | America         | 1000              | Auckland     | 40.0     | 184.9     | 1         | true     |
     Then I get an error indicating that I am not allowed to make changes on the destination
 
+
   @UserPhoto
   Scenario: A user updates a destination that has a duplicate
     Given that user 0 logged in
