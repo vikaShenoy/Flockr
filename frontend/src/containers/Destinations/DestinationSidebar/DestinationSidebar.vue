@@ -1,6 +1,7 @@
 <template>
   <v-card
     id="destination-sidebar"
+    ref="destinationSidebar"
     :elevation="20"
   >
     <div id="title">
@@ -58,15 +59,12 @@
 
       </div>
 
-      <div v-else>
-        <DestinationSummary
-                v-for="destination in getDestinationsList"
-                v-bind:key="destination.destinationId"
-                :destination="destination"
-                @showDeleteDestination="showDeleteDestination"
-        />
-      </div>
-
+      <DestinationSummary
+        v-for="destination in getDestinationsList"
+        v-bind:key="destination.destinationId"
+        :destination="destination"
+        @showDeleteDestination="showDeleteDestination"
+      />
     </div>
 
     <PromptDialog
@@ -123,7 +121,8 @@
         trips: [],
         cannotDeleteDestDialog: false,
         currentDeletingDestinationId: null,
-        usedTrips: []
+        usedTrips: [],
+        destinationSearchWatchdog: null // used for debouncing
       };
     },
     mounted() {
@@ -134,7 +133,8 @@
        * Emitted when someone types in the input for searching destinations
        */
       searchCriterionUpdated(newValue) {
-        this.$emit('search-criterion-updated', newValue);
+        clearTimeout(this.destinationSearchWatchdog);
+        this.destinationSearchWatchdog = setTimeout(() => this.$emit('search-criterion-updated', newValue), 400);
       },
       /**
        * Resets the coordinates to nothing
