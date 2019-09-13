@@ -6,6 +6,7 @@ import akka.actor.ActorSystem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,12 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.ws.WSClient;
+import play.libs.ws.WSRequest;
+import play.libs.ws.WSResponse;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
 /**
  * This class contains the code needed to populate destinations from an external API. Only runs when
- * the server is compiled.
+ * populate feature flag is on. (See TasksController)
  */
 public class ExampleDestinationDataTask {
 
@@ -52,14 +55,15 @@ public class ExampleDestinationDataTask {
   private CompletionStage<List<JsonNode>> fetchCitiesFromCountry(Country country) {
     String countryUrl =
         "https://public.opendatasoft.com/api/records/1.0/search/?dataset=worldcitiespop&rows=10000&facet=country&refine.country="
-            + country.getISOCode().toLowerCase();
+            + country.getISOCode().toLowerCase()
+            + "&sort=population";
     List<JsonNode> cities = new ArrayList<>();
-    return ws.url(countryUrl)
-        .get()
-        .thenAcceptAsync(
+    WSRequest request = ws.url(countryUrl);
+    CompletionStage<? extends WSResponse> responsePromise = request.get();
+    return responsePromise
+        .thenApplyAsync(
             response -> {
               JsonNode resJson = response.asJson().get("records");
-
               countryIndex++;
 
               for (JsonNode cityJson : resJson) {
@@ -71,8 +75,17 @@ public class ExampleDestinationDataTask {
                 city.put("countryId", country.getCountryId());
                 cities.add(city);
               }
+              return cities;
             })
-        .thenApplyAsync(nada -> cities);
+        .exceptionally(
+            e -> {
+              try {
+                throw e.getCause();
+              } catch (Throwable throwable) {
+                throwable.printStackTrace();
+                return cities;
+              }
+            });
   }
 
   /**
@@ -171,72 +184,69 @@ public class ExampleDestinationDataTask {
                           }
                         });
               } else {
-                supplyAsync(
-                    () -> {
-                      if (countryIndex < countries.size()) {
-                        Country country = countries.get(countryIndex);
-                        log.info(
-                            String.format(
-                                "Beginning getting cities from open data soft api for %s",
-                                country.getCountryName()));
-                        System.out.println(
-                            String.format(
-                                "Beginning getting cities from open data soft api for %s",
-                                country.getCountryName()));
-                        fetchCitiesFromCountry(country)
-                            .thenAcceptAsync(
-                                cities -> {
-                                  for (JsonNode city : cities) {
-                                    String cityName = city.get("name").asText();
-                                    Double cityLatitude = city.get("latitude").asDouble();
-                                    Double cityLongitude = city.get("longitude").asDouble();
-                                    Destination destination =
-                                        new Destination(
-                                            cityName,
-                                            cityDestinationType,
-                                            "",
-                                            cityLatitude,
-                                            cityLongitude,
-                                            country,
-                                            null,
-                                            new ArrayList<>(),
-                                            true);
-                                    destinationExists(destination)
-                                        .thenAcceptAsync(
-                                            exists -> {
-                                              if (!exists) {
-                                                saveCityDestination(destination)
-                                                    .thenAcceptAsync(
-                                                        savedCity -> {
-                                                          log.info(
-                                                              String.format(
-                                                                  "%s saved to the database.",
-                                                                  savedCity.getDestinationName()));
-                                                          System.out.println(
-                                                              String.format(
-                                                                  "%s saved to the database.",
-                                                                  savedCity.getDestinationName()));
-                                                        });
-                                              } else {
-                                                log.info(
-                                                    String.format(
-                                                        "%s already exists in the database.",
-                                                        city.get("name").asText()));
-                                              }
-                                            });
-                                  }
-                                  log.info(
-                                      String.format(
-                                          "Finished getting cities from open data soft api for %s",
-                                          country.getCountryName()));
-                                  System.out.println(
-                                      String.format(
-                                          "Finished getting cities from open data soft api for %s",
-                                          country.getCountryName()));
-                                });
-                      }
-                      return null;
-                    });
+                if (countryIndex < countries.size()) {
+                  Country country = countries.get(countryIndex);
+                  log.info(
+                      String.format(
+                          "Beginning getting cities from open data soft api for %s",
+                          country.getCountryName()));
+                  System.out.println(
+                      String.format(
+                          "Beginning getting cities from open data soft api for %s",
+                          country.getCountryName()));
+                  fetchCitiesFromCountry(country)
+                      .thenApplyAsync(
+                          cities -> {
+                            for (JsonNode city : cities) {
+                              String cityName = city.get("name").asText();
+                              Double cityLatitude = city.get("latitude").asDouble();
+                              Double cityLongitude = city.get("longitude").asDouble();
+                              Destination destination =
+                                  new Destination(
+                                      cityName,
+                                      cityDestinationType,
+                                      "",
+                                      cityLatitude,
+                                      cityLongitude,
+                                      country,
+                                      null,
+                                      new ArrayList<>(),
+                                      true);
+                              destinationExists(destination)
+                                  .thenAcceptAsync(
+                                      exists -> {
+                                        if (!exists) {
+                                          saveCityDestination(destination)
+                                              .thenAcceptAsync(
+                                                  savedCity -> {
+                                                    log.info(
+                                                        String.format(
+                                                            "%s saved to the database.",
+                                                            savedCity.getDestinationName()));
+                                                    System.out.println(
+                                                        String.format(
+                                                            "%s saved to the database.",
+                                                            savedCity.getDestinationName()));
+                                                  });
+                                        } else {
+                                          log.info(
+                                              String.format(
+                                                  "%s already exists in the database.",
+                                                  city.get("name").asText()));
+                                        }
+                                      });
+                            }
+                            log.info(
+                                String.format(
+                                    "Finished getting cities from open data soft api for %s",
+                                    country.getCountryName()));
+                            System.out.println(
+                                String.format(
+                                    "Finished getting cities from open data soft api for %s",
+                                    country.getCountryName()));
+                            return null;
+                          });
+                }
               }
             },
             this.executionContext);
