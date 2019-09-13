@@ -169,6 +169,14 @@ export default {
       const users = [...this.selectedUsers, UserStore.data]
       this.isLoading = true;
       this.trip.users = users;
+      this.trip.userRoles = this.userRoles.map(userRole => ({
+        user: userRole.user,
+        role: {
+          roleType: userRole.role
+        }          
+      }));
+
+
       await editTrip(this.trip);
       this.isLoading = false;
       this.isShowingDialog = false;
@@ -199,18 +207,21 @@ export default {
       
       this.$emit("update:isShowing", value);
     },
-    selectedUsers() {
-      const userRoles = this.selectedUsers.map(user => {
-        const userRole = this.userRoles.find(userRole => userRole.user.userId === user.userId);
-        if (userRole) {
-          return userRole;
-        } else {
-          return {
-            user,
-            role: null
-          };
-        }
-      });
+    selectedUsers: {
+      handler() {
+        this.userRoles = this.selectedUsers.map(user => {
+          const userRole = this.userRoles.find(userRole => userRole.user.userId === user.userId);
+          if (userRole) {
+            return userRole;
+          } else {
+            return {
+              user,
+              role: "TRIP_MEMBER" 
+            };
+          }
+        });
+      },
+      deep: true
     },
     isShowing(value) {
       this.isShowingDialog = value;
