@@ -65,10 +65,8 @@ public class DestinationController extends Controller {
    * HTTP client
    *
    * @param request Http.Request the http request
-   * @return a completion stage with status code
-   * - 200 - Got destinations successfully
-   * - 400 - Bad Request, e.g. was missing offset query parameter
-   * - 500 - Internal server error
+   * @return a completion stage with status code - 200 - Got destinations successfully - 400 - Bad
+   *     Request, e.g. was missing offset query parameter - 500 - Internal server error
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> getDestinations(Http.Request request) {
@@ -195,6 +193,7 @@ public class DestinationController extends Controller {
   /**
    * Function to add destinations to the database
    *
+   * @param userId the userId of the user.
    * @param request the HTTP post request.
    * @return a completion stage with a 200 status code and the new json object or a status code 400.
    */
@@ -259,13 +258,13 @@ public class DestinationController extends Controller {
               false);
 
       return destinationRepository
-          .getDestinations()
+          .getDuplicateDestinations(destinationToAdd, userId)
           .thenComposeAsync(
               destinations -> {
                 for (Destination dest : destinations) {
                   boolean ownsDestination =
                       dest.getDestinationOwner() != null && dest.getDestinationOwner() == userId;
-                  if (dest.equals(destinationToAdd) && (dest.getIsPublic() || ownsDestination)) {
+                  if (dest.getIsPublic() || ownsDestination) {
                     throw new CompletionException(
                         new ConflictingRequestException("Destination already exists."));
                   }
@@ -356,47 +355,51 @@ public class DestinationController extends Controller {
 
               List<Integer> duplicatedDestinationIds = new ArrayList<>();
               // Checks if destination is a duplicate destination
-              boolean exists, duplicate = false;
-              List<Destination> destinations = Destination.find.query().findList();
-              for (Destination dest : destinations) {
-                if (dest.getDestinationId() != destinationId && destination.getIsPublic()) {
-                  exists = destination.equals(dest);
-                  // Checks if the destination found is private
-                  if (exists && !dest.getIsPublic()) {
-                    duplicatedDestinationIds.add(dest.getDestinationId());
-                  } // Checks if the destination is a duplicate (both public)
-                  else if (exists && (dest.getIsPublic() && optionalDest.get().getIsPublic())) {
-                    duplicate = true;
-                  }
-                }
-              }
+              return destinationRepository
+                  .getDuplicateDestinations(destination, user.getUserId())
+                  .thenComposeAsync(
+                      destinations -> {
+                        boolean exists, duplicate = false;
+                        for (Destination dest : destinations) {
+                          if (dest.getDestinationId() != destinationId
+                              && destination.getIsPublic()) {
+                            exists = destination.equals(dest);
+                            // Checks if the destination found is private
+                            if (exists && !dest.getIsPublic()) {
+                              duplicatedDestinationIds.add(dest.getDestinationId());
+                            } // Checks if the destination is a duplicate (both public)
+                            else if (exists
+                                && (dest.getIsPublic() && optionalDest.get().getIsPublic())) {
+                              duplicate = true;
+                            }
+                          }
+                        }
 
-              if (duplicate) {
-                throw new CompletionException(
-                    new BadRequestException(
-                        "There is already a Destination with the following information"));
-              }
+                        if (duplicate) {
+                          throw new CompletionException(
+                              new BadRequestException(
+                                  "There is already a Destination with the following information"));
+                        }
 
-              for (int destId : duplicatedDestinationIds) {
-                List<DestinationPhoto> photoDest =
-                    DestinationPhoto.find
-                        .query()
-                        .where()
-                        .eq("destination_destination_id", destId)
-                        .findList();
-                destinationRepository.deleteDestination(destId);
+                        for (int destId : duplicatedDestinationIds) {
+                          List<DestinationPhoto> photoDest =
+                              DestinationPhoto.find
+                                  .query()
+                                  .where()
+                                  .eq("destination_destination_id", destId)
+                                  .findList();
+                          destinationRepository.deleteDestination(destId);
 
-                for (DestinationPhoto photo : photoDest) {
-                  photo.setDestination(destination);
-                  destinationRepository.insertDestinationPhoto(photo);
-                }
-              }
-              System.out.println(destination);
-              System.out.println(destination.getDestinationDistrict());
-              return destinationRepository.update(destination);
+                          for (DestinationPhoto photo : photoDest) {
+                            photo.setDestination(destination);
+                            destinationRepository.insertDestinationPhoto(photo);
+                          }
+                        }
+                        return destinationRepository.update(destination);
+                      });
             },
             httpExecutionContext.current())
-        .thenApplyAsync(destination -> (Result) ok(), httpExecutionContext.current())
+        .thenApplyAsync(destination -> ok(Json.toJson(destination)), httpExecutionContext.current())
         .exceptionally(
             error -> {
               try {

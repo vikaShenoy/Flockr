@@ -18,7 +18,9 @@ import java.util.stream.Collectors;
             columnNames = {
                 "destination_name",
                 "destination_country_country_id",
-                "destination_type_destination_type_id"
+                "destination_type_destination_type_id",
+                "is_public",
+                "destination_owner"
             }))
 public class Destination extends Model {
 
@@ -103,24 +105,11 @@ public class Destination extends Model {
         this.destinationName
             .toLowerCase()
             .equals(destinationToCompare.getDestinationName().toLowerCase());
-    boolean sameDistrict =
-        this.destinationDistrict.equals(destinationToCompare.getDestinationDistrict());
     boolean sameType = this.destinationType.equals(destinationToCompare.getDestinationType());
     boolean sameCountry =
         this.destinationCountry.equals(destinationToCompare.getDestinationCountry());
 
-    if (travellerTypes.size() != destinationToCompare.travellerTypes.size()) {
-      return false;
-    }
-
-    boolean sameTravellerTypes = true;
-    for (int i = 0; i < travellerTypes.size(); i++) {
-      if (!travellerTypes.get(i).equals(destinationToCompare.travellerTypes.get(i))) {
-        sameTravellerTypes = false;
-      }
-    }
-
-    return (sameName && sameDistrict && sameType && sameCountry && sameTravellerTypes);
+    return (sameName && sameType && sameCountry);
   }
 
   /**
