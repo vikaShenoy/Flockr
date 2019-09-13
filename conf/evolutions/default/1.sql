@@ -168,6 +168,26 @@ create table treasure_hunt (
   constraint pk_treasure_hunt primary key (treasure_hunt_id)
 );
 
+create table trip (
+  trip_id                       integer auto_increment not null,
+  user_user_id                  integer,
+  trip_name                     varchar(255),
+  deleted_expiry                timestamp,
+  deleted                       BOOLEAN DEFAULT FALSE not null,
+  constraint pk_trip primary key (trip_id)
+);
+
+create table trip_destination (
+  trip_destination_id           integer auto_increment not null,
+  trip_trip_id                  integer,
+  destination_destination_id    integer,
+  arrival_date                  timestamp,
+  arrival_time                  integer,
+  departure_date                timestamp,
+  departure_time                integer,
+  constraint pk_trip_destination primary key (trip_destination_id)
+);
+
 create table trip_node (
   dtype                         varchar(31) not null,
   trip_node_id                  integer auto_increment not null,
@@ -182,6 +202,12 @@ create table trip_node (
   constraint pk_trip_node primary key (trip_node_id)
 );
 
+create table trip_node_user_role (
+  trip_node_trip_node_id        integer not null,
+  user_role_user_role_id        integer not null,
+  constraint pk_trip_node_user_role primary key (trip_node_trip_node_id,user_role_user_role_id)
+);
+
 create table trip_node_parent (
   trip_node_child_id            integer not null,
   trip_node_parent_id           integer not null,
@@ -192,6 +218,14 @@ create table trip_node_user (
   trip_node_trip_node_id        integer not null,
   user_user_id                  integer not null,
   constraint pk_trip_node_user primary key (trip_node_trip_node_id,user_user_id)
+);
+
+create table trip_user_role (
+  trip_user_role_id             integer auto_increment not null,
+  user_user_id                  integer,
+  trip_trip_node_id             integer,
+  role_role_id                  integer,
+  constraint pk_trip_user_role primary key (trip_user_role_id)
 );
 
 create table user (
@@ -215,8 +249,8 @@ create table user (
 
 create table user_role (
   user_role_id                  integer auto_increment not null,
-  role_id                       integer not null,
-  user_id                       integer not null,
+  user_user_id                  integer,
+  role_role_id                  integer,
   constraint pk_user_role primary key (user_role_id)
 );
 
@@ -299,8 +333,23 @@ alter table treasure_hunt add constraint fk_treasure_hunt_treasure_hunt_destinat
 create index ix_treasure_hunt_owner_user_id on treasure_hunt (owner_user_id);
 alter table treasure_hunt add constraint fk_treasure_hunt_owner_user_id foreign key (owner_user_id) references user (user_id) on delete restrict on update restrict;
 
+create index ix_trip_user_user_id on trip (user_user_id);
+alter table trip add constraint fk_trip_user_user_id foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
+create index ix_trip_destination_trip_trip_id on trip_destination (trip_trip_id);
+alter table trip_destination add constraint fk_trip_destination_trip_trip_id foreign key (trip_trip_id) references trip (trip_id) on delete restrict on update restrict;
+
+create index ix_trip_destination_destination_destination_id on trip_destination (destination_destination_id);
+alter table trip_destination add constraint fk_trip_destination_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
+
 create index ix_trip_node_destination_destination_id on trip_node (destination_destination_id);
 alter table trip_node add constraint fk_trip_node_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
+
+create index ix_trip_node_user_role_trip_node on trip_node_user_role (trip_node_trip_node_id);
+alter table trip_node_user_role add constraint fk_trip_node_user_role_trip_node foreign key (trip_node_trip_node_id) references trip_node (trip_node_id) on delete restrict on update restrict;
+
+create index ix_trip_node_user_role_user_role on trip_node_user_role (user_role_user_role_id);
+alter table trip_node_user_role add constraint fk_trip_node_user_role_user_role foreign key (user_role_user_role_id) references user_role (user_role_id) on delete restrict on update restrict;
 
 create index ix_trip_node_parent_trip_node_1 on trip_node_parent (trip_node_child_id);
 alter table trip_node_parent add constraint fk_trip_node_parent_trip_node_1 foreign key (trip_node_child_id) references trip_node (trip_node_id) on delete restrict on update restrict;
@@ -314,7 +363,22 @@ alter table trip_node_user add constraint fk_trip_node_user_trip_node foreign ke
 create index ix_trip_node_user_user on trip_node_user (user_user_id);
 alter table trip_node_user add constraint fk_trip_node_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
+create index ix_trip_user_role_user_user_id on trip_user_role (user_user_id);
+alter table trip_user_role add constraint fk_trip_user_role_user_user_id foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
+create index ix_trip_user_role_trip_trip_node_id on trip_user_role (trip_trip_node_id);
+alter table trip_user_role add constraint fk_trip_user_role_trip_trip_node_id foreign key (trip_trip_node_id) references trip_node (trip_node_id) on delete restrict on update restrict;
+
+create index ix_trip_user_role_role_role_id on trip_user_role (role_role_id);
+alter table trip_user_role add constraint fk_trip_user_role_role_role_id foreign key (role_role_id) references role (role_id) on delete restrict on update restrict;
+
 alter table user add constraint fk_user_profile_photo_photo_id foreign key (profile_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
+
+create index ix_user_role_user_user_id on user_role (user_user_id);
+alter table user_role add constraint fk_user_role_user_user_id foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
+create index ix_user_role_role_role_id on user_role (role_role_id);
+alter table user_role add constraint fk_user_role_role_role_id foreign key (role_role_id) references role (role_id) on delete restrict on update restrict;
 
 
 # --- !Downs
@@ -398,8 +462,23 @@ drop index if exists ix_treasure_hunt_treasure_hunt_destination_destination_id;
 alter table treasure_hunt drop constraint if exists fk_treasure_hunt_owner_user_id;
 drop index if exists ix_treasure_hunt_owner_user_id;
 
+alter table trip drop constraint if exists fk_trip_user_user_id;
+drop index if exists ix_trip_user_user_id;
+
+alter table trip_destination drop constraint if exists fk_trip_destination_trip_trip_id;
+drop index if exists ix_trip_destination_trip_trip_id;
+
+alter table trip_destination drop constraint if exists fk_trip_destination_destination_destination_id;
+drop index if exists ix_trip_destination_destination_destination_id;
+
 alter table trip_node drop constraint if exists fk_trip_node_destination_destination_id;
 drop index if exists ix_trip_node_destination_destination_id;
+
+alter table trip_node_user_role drop constraint if exists fk_trip_node_user_role_trip_node;
+drop index if exists ix_trip_node_user_role_trip_node;
+
+alter table trip_node_user_role drop constraint if exists fk_trip_node_user_role_user_role;
+drop index if exists ix_trip_node_user_role_user_role;
 
 alter table trip_node_parent drop constraint if exists fk_trip_node_parent_trip_node_1;
 drop index if exists ix_trip_node_parent_trip_node_1;
@@ -413,7 +492,22 @@ drop index if exists ix_trip_node_user_trip_node;
 alter table trip_node_user drop constraint if exists fk_trip_node_user_user;
 drop index if exists ix_trip_node_user_user;
 
+alter table trip_user_role drop constraint if exists fk_trip_user_role_user_user_id;
+drop index if exists ix_trip_user_role_user_user_id;
+
+alter table trip_user_role drop constraint if exists fk_trip_user_role_trip_trip_node_id;
+drop index if exists ix_trip_user_role_trip_trip_node_id;
+
+alter table trip_user_role drop constraint if exists fk_trip_user_role_role_role_id;
+drop index if exists ix_trip_user_role_role_role_id;
+
 alter table user drop constraint if exists fk_user_profile_photo_photo_id;
+
+alter table user_role drop constraint if exists fk_user_role_user_user_id;
+drop index if exists ix_user_role_user_user_id;
+
+alter table user_role drop constraint if exists fk_user_role_role_role_id;
+drop index if exists ix_user_role_role_role_id;
 
 drop table if exists chat_group;
 
@@ -457,11 +551,19 @@ drop table if exists traveller_type_destination;
 
 drop table if exists treasure_hunt;
 
+drop table if exists trip;
+
+drop table if exists trip_destination;
+
 drop table if exists trip_node;
+
+drop table if exists trip_node_user_role;
 
 drop table if exists trip_node_parent;
 
 drop table if exists trip_node_user;
+
+drop table if exists trip_user_role;
 
 drop table if exists user;
 

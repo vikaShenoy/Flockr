@@ -152,7 +152,7 @@ public class TripUtil {
         List<User> users = new ArrayList<>();
 
         for (JsonNode userIdJson : userIdsJson) {
-            int currentUserId =  userIdJson.get("userId").asInt();
+            int currentUserId =  userIdJson.asInt();
 
             User currentUser = null;
 

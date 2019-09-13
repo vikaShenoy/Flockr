@@ -261,7 +261,8 @@ public class TripControllerTest {
     tripDestinations.add(tripDestination2);
     tripBody.put("name", "Pirate trip");
     tripBody.putArray("tripNodes").addAll(tripDestinations);
-    tripBody.set("userIds", Json.toJson(userIds));
+    tripBody.putArray("userIds").add(Json.newObject().put("userId", user.getUserId()).put("role", "TRIP_MEMBER"));
+    //tripBody.set("userIds", Json.toJson(userIds));
     Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
     Assert.assertEquals(403, result.status());
   }
