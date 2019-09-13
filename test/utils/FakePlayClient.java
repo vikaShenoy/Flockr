@@ -144,6 +144,7 @@ public class FakePlayClient implements FakeClient {
         } else if (result.status() == 401) {
             throw new UnauthorizedException("You are not authorized to perform this operation.");
         } else {
+            System.out.println(result.status());
             throw new ServerErrorException();
         }
     }

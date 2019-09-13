@@ -60,52 +60,49 @@ public class DestinationController extends Controller {
     this.security = security;
   }
 
-    /**
-     * A function that gets a list of all the destinations and returns it with a 200 ok code to the
-     * HTTP client
-     *
-     * @param request Http.Request the http request
-     * @return a completion stage and a status code 200 if the request is successful, otherwise
-     *     returns 500.
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> getDestinations(Http.Request request) {
-        String searchCriterion = request.getQueryString("search"); // optional
-        String offsetString = request.getQueryString("offset");
-        Integer offset;
-        if (offsetString == null) {
-            offsetString = "0";
-        }
-
-        try {
-            offset = Integer.parseInt(offsetString);
-        } catch (NumberFormatException e) {
-            return supplyAsync(Results::badRequest, httpExecutionContext.current());
-        }
-
-        CompletionStage<List<Destination>> destinations;
-
-        if (searchCriterion == null) {
-            destinations = destinationRepository.getDestinations(offset);
-        } else {
-            destinations = destinationRepository.getDestinations(searchCriterion, offset);
-        }
-
-        return destinations.thenApplyAsync(
-                allDestinations -> {
-                    List<Destination> publicDestinations =
-                            allDestinations.stream()
-                                    .filter(Destination::getIsPublic)
-                                    .collect(Collectors.toList());
-                    return ok(Json.toJson(publicDestinations));
-                },
-                httpExecutionContext.current());
+  /**
+   * A function that gets a list of all the destinations and returns it with a 200 ok code to the
+   * HTTP client
+   *
+   * @param request Http.Request the http request
+   * @return a completion stage with status code - 200 - Got destinations successfully - 400 - Bad
+   *     Request, e.g. was missing offset query parameter - 500 - Internal server error
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> getDestinations(Http.Request request) {
+    String searchCriterion = request.getQueryString("search"); // optional
+    String offsetString = request.getQueryString("offset");
+    Integer offset;
+    if (offsetString == null) {
+      offsetString = "0";
     }
 
+    try {
+      offset = Integer.parseInt(offsetString);
+    } catch (NumberFormatException e) {
+      return supplyAsync(Results::badRequest, httpExecutionContext.current());
+    }
 
+    CompletionStage<List<Destination>> destinations;
 
+    if (searchCriterion == null) {
+      destinations = destinationRepository.getDestinations(offset);
+    } else {
+      destinations = destinationRepository.getDestinations(searchCriterion, offset);
+    }
 
-    /**
+    return destinations.thenApplyAsync(
+        allDestinations -> {
+          List<Destination> publicDestinations =
+              allDestinations.stream()
+                  .filter(Destination::getIsPublic)
+                  .collect(Collectors.toList());
+          return ok(Json.toJson(publicDestinations));
+        },
+        httpExecutionContext.current());
+  }
+
+  /**
    * A function that retrieves a destination details based on the destination ID given
    *
    * @param destinationId the destination Id of the destination to retrieve
@@ -196,6 +193,7 @@ public class DestinationController extends Controller {
   /**
    * Function to add destinations to the database
    *
+   * @param userId the userId of the user.
    * @param request the HTTP post request.
    * @return a completion stage with a 200 status code and the new json object or a status code 400.
    */
@@ -237,7 +235,7 @@ public class DestinationController extends Controller {
 
       DestinationType destinationTypeAdd = DestinationType.find.byId(destinationTypeId);
       Country countryAdd = Country.find.byId(countryId);
-      //District districtAdd = new District(districtName, countryAdd);
+      // District districtAdd = new District(districtName, countryAdd);
 
       if (destinationTypeAdd == null || countryAdd == null) {
         throw new BadRequestException("One of the fields you have selected does not exist.");
@@ -260,13 +258,13 @@ public class DestinationController extends Controller {
               false);
 
       return destinationRepository
-          .getDestinations()
+          .getDuplicateDestinations(destinationToAdd, userId)
           .thenComposeAsync(
               destinations -> {
                 for (Destination dest : destinations) {
                   boolean ownsDestination =
                       dest.getDestinationOwner() != null && dest.getDestinationOwner() == userId;
-                  if (dest.equals(destinationToAdd) && (dest.getIsPublic() || ownsDestination)) {
+                  if (dest.getIsPublic() || ownsDestination) {
                     throw new CompletionException(
                         new ConflictingRequestException("Destination already exists."));
                   }
@@ -357,47 +355,51 @@ public class DestinationController extends Controller {
 
               List<Integer> duplicatedDestinationIds = new ArrayList<>();
               // Checks if destination is a duplicate destination
-              boolean exists, duplicate = false;
-              List<Destination> destinations = Destination.find.query().findList();
-              for (Destination dest : destinations) {
-                if (dest.getDestinationId() != destinationId && destination.getIsPublic()) {
-                  exists = destination.equals(dest);
-                  // Checks if the destination found is private
-                  if (exists && !dest.getIsPublic()) {
-                    duplicatedDestinationIds.add(dest.getDestinationId());
-                  } // Checks if the destination is a duplicate (both public)
-                  else if (exists && (dest.getIsPublic() && optionalDest.get().getIsPublic())) {
-                    duplicate = true;
-                  }
-                }
-              }
+              return destinationRepository
+                  .getDuplicateDestinations(destination, user.getUserId())
+                  .thenComposeAsync(
+                      destinations -> {
+                        boolean exists, duplicate = false;
+                        for (Destination dest : destinations) {
+                          if (dest.getDestinationId() != destinationId
+                              && destination.getIsPublic()) {
+                            exists = destination.equals(dest);
+                            // Checks if the destination found is private
+                            if (exists && !dest.getIsPublic()) {
+                              duplicatedDestinationIds.add(dest.getDestinationId());
+                            } // Checks if the destination is a duplicate (both public)
+                            else if (exists
+                                && (dest.getIsPublic() && optionalDest.get().getIsPublic())) {
+                              duplicate = true;
+                            }
+                          }
+                        }
 
-              if (duplicate) {
-                throw new CompletionException(
-                    new BadRequestException(
-                        "There is already a Destination with the following information"));
-              }
+                        if (duplicate) {
+                          throw new CompletionException(
+                              new BadRequestException(
+                                  "There is already a Destination with the following information"));
+                        }
 
-              for (int destId : duplicatedDestinationIds) {
-                List<DestinationPhoto> photoDest =
-                    DestinationPhoto.find
-                        .query()
-                        .where()
-                        .eq("destination_destination_id", destId)
-                        .findList();
-                destinationRepository.deleteDestination(destId);
+                        for (int destId : duplicatedDestinationIds) {
+                          List<DestinationPhoto> photoDest =
+                              DestinationPhoto.find
+                                  .query()
+                                  .where()
+                                  .eq("destination_destination_id", destId)
+                                  .findList();
+                          destinationRepository.deleteDestination(destId);
 
-                for (DestinationPhoto photo : photoDest) {
-                  photo.setDestination(destination);
-                  destinationRepository.insertDestinationPhoto(photo);
-                }
-              }
-              System.out.println(destination);
-              System.out.println(destination.getDestinationDistrict());
-              return destinationRepository.update(destination);
+                          for (DestinationPhoto photo : photoDest) {
+                            photo.setDestination(destination);
+                            destinationRepository.insertDestinationPhoto(photo);
+                          }
+                        }
+                        return destinationRepository.update(destination);
+                      });
             },
             httpExecutionContext.current())
-        .thenApplyAsync(destination -> (Result) ok(), httpExecutionContext.current())
+        .thenApplyAsync(destination -> ok(Json.toJson(destination)), httpExecutionContext.current())
         .exceptionally(
             error -> {
               try {
@@ -572,24 +574,24 @@ public class DestinationController extends Controller {
         .exceptionally(e -> internalServerError());
   }
 
-//  /**
-//   * Endpoint to get all districts for a country.
-//   *
-//   * @param countryId country to get districts for.
-//   * @return A completion stage and status code of 200 with districts in the json body if
-//   *     successful.
-//   */
-//  @With(LoggedIn.class)
-//  public CompletionStage<Result> getDistricts(int countryId) {
-//    return destinationRepository
-//        .getDistricts(countryId)
-//        .thenApplyAsync(
-//            districts -> {
-//              JsonNode districtsJson = Json.toJson(districts);
-//              return ok(districtsJson);
-//            },
-//            httpExecutionContext.current());
-//  }
+  //  /**
+  //   * Endpoint to get all districts for a country.
+  //   *
+  //   * @param countryId country to get districts for.
+  //   * @return A completion stage and status code of 200 with districts in the json body if
+  //   *     successful.
+  //   */
+  //  @With(LoggedIn.class)
+  //  public CompletionStage<Result> getDistricts(int countryId) {
+  //    return destinationRepository
+  //        .getDistricts(countryId)
+  //        .thenApplyAsync(
+  //            districts -> {
+  //              JsonNode districtsJson = Json.toJson(districts);
+  //              return ok(districtsJson);
+  //            },
+  //            httpExecutionContext.current());
+  //  }
 
   /**
    * Adds a photo to a destination
@@ -906,8 +908,8 @@ public class DestinationController extends Controller {
    * @param destinationProposalId the id of the destination proposal to modify
    * @param request the HTTP request object containing a list of traveller type ids
    * @return A response that complies with the API spec http status codes: - 200 - OK - Successfully
-   * updated proposal. - 400 - Bad Request - Request body incorrect. - 404 - Not Found - Destination
-   * proposal not found.
+   *     updated proposal. - 400 - Bad Request - Request body incorrect. - 404 - Not Found -
+   *     Destination proposal not found.
    */
   @With({LoggedIn.class, Admin.class})
   public CompletionStage<Result> modifyProposal(int destinationProposalId, Http.Request request) {
@@ -1064,18 +1066,19 @@ public class DestinationController extends Controller {
 
   /**
    * Allows an admin to get all the destination proposals on a given page
+   *
    * @param request the Http request object containing the query string for the page to retrieve
    * @return A response that complies with the API spec
    */
   @With({LoggedIn.class, Admin.class})
   public CompletionStage<Result> getProposals(Http.Request request) {
-      int page = 1;
-      try {
-          String pageString = request.getQueryString("page");
-          page = Integer.parseInt(pageString);
-      } catch (Exception e) {
-          System.out.println("No page provided, using default of 1");
-      }
+    int page = 1;
+    try {
+      String pageString = request.getQueryString("page");
+      page = Integer.parseInt(pageString);
+    } catch (Exception e) {
+      System.out.println("No page provided, using default of 1");
+    }
     return destinationRepository
         .getDestinationProposals(page)
         .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));

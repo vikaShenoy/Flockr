@@ -10,255 +10,282 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
-/**
- * A destination that a traveller can choose to go to.
- */
+/** A destination that a traveller can choose to go to. */
 @Entity
+@Table(
+    uniqueConstraints =
+        @UniqueConstraint(
+            columnNames = {
+                "destination_name",
+                "destination_country_country_id",
+                "destination_type_destination_type_id",
+                "is_public",
+                "destination_owner"
+            }))
 public class Destination extends Model {
 
-    @Id
-    private int destinationId;
+  @Id private int destinationId;
 
-    private String destinationName;
+  private String destinationName;
 
-    @ManyToOne
-    private DestinationType destinationType;
+  @ManyToOne private DestinationType destinationType;
 
-    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
-    private List<TripDestinationLeaf> tripDestinations;
+  @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
+  private List<TripDestinationLeaf> tripDestinations;
 
-    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
-    private List<DestinationPhoto> destinationPhotos;
+  @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
+  private List<DestinationPhoto> destinationPhotos;
 
-    @OneToMany(mappedBy = "treasureHuntDestination", cascade = CascadeType.ALL)
-    private List<TreasureHunt> treasureHunts;
+  @OneToMany(mappedBy = "treasureHuntDestination", cascade = CascadeType.ALL)
+  private List<TreasureHunt> treasureHunts;
 
-    @ManyToMany(mappedBy= "destinations" ,cascade = CascadeType.PERSIST)
-    private List<TravellerType> travellerTypes;
+  @ManyToMany(mappedBy = "destinations", cascade = CascadeType.PERSIST)
+  private List<TravellerType> travellerTypes;
 
-    private String destinationDistrict;
+  private String destinationDistrict;
 
-    private Double destinationLat;
-    private Double destinationLon;
-    @ManyToOne
-    private Country destinationCountry;
+  private Double destinationLat;
+  private Double destinationLon;
+  @ManyToOne private Country destinationCountry;
 
-    @ManyToOne
-    private Integer destinationOwner;
+  @ManyToOne private Integer destinationOwner;
 
-    private boolean isPublic;
+  private boolean isPublic;
 
-    @JsonIgnore
-    @SoftDelete
-    @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean deleted;
+  @JsonIgnore
+  @SoftDelete
+  @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
+  private boolean deleted;
 
-    @JsonIgnore
-    private Timestamp deletedExpiry;
+  @JsonIgnore private Timestamp deletedExpiry;
 
+  @Override
+  public int hashCode() {
+    return destinationId;
+  }
 
-    @Override
-    public int hashCode() {
-        return destinationId;
+  @Override
+  public String toString() {
+    return "Destination{"
+        + "destinationId="
+        + destinationId
+        + ", destinationName='"
+        + destinationName
+        + '\''
+        + ", destinationType="
+        + destinationType
+        + ", tripDestinations="
+        + tripDestinations
+        + ", destinationPhotos="
+        + destinationPhotos
+        + ", destinationDistrict="
+        + destinationDistrict
+        + ", destinationLat="
+        + destinationLat
+        + ", destinationLon="
+        + destinationLon
+        + ", destinationCountry="
+        + destinationCountry
+        + ", destinationOwner="
+        + destinationOwner
+        + ", travellerTypes="
+        + travellerTypes
+        + ", isPublic="
+        + isPublic
+        + '}';
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Destination)) {
+      return false;
     }
+    Destination destinationToCompare = (Destination) obj;
+    boolean sameName =
+        this.destinationName
+            .toLowerCase()
+            .equals(destinationToCompare.getDestinationName().toLowerCase());
+    boolean sameType = this.destinationType.equals(destinationToCompare.getDestinationType());
+    boolean sameCountry =
+        this.destinationCountry.equals(destinationToCompare.getDestinationCountry());
 
-    @Override
-    public String toString() {
-        return "Destination{" +
-                "destinationId=" + destinationId +
-                ", destinationName='" + destinationName + '\'' +
-                ", destinationType=" + destinationType +
-                ", tripDestinations=" + tripDestinations +
-                ", destinationPhotos=" + destinationPhotos +
-                ", destinationDistrict=" + destinationDistrict +
-                ", destinationLat=" + destinationLat +
-                ", destinationLon=" + destinationLon +
-                ", destinationCountry=" + destinationCountry +
-                ", destinationOwner=" + destinationOwner +
-                ", travellerTypes=" + travellerTypes +
-                ", isPublic=" + isPublic +
-                '}';
-    }
+    return (sameName && sameType && sameCountry);
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Destination)) {
-            return false;
-        }
-        Destination destinationToCompare = (Destination) obj;
-        boolean sameName = this.destinationName.toLowerCase().equals(destinationToCompare.getDestinationName().toLowerCase());
-        boolean sameDistrict = this.destinationDistrict.equals(destinationToCompare.getDestinationDistrict());
-        boolean sameType = this.destinationType.equals(destinationToCompare.getDestinationType());
-        boolean sameCountry = this.destinationCountry.equals(destinationToCompare.getDestinationCountry());
+  /**
+   * Constructor.
+   *
+   * @param destinationName name of the destination
+   * @param destinationType type of destination
+   * @param destinationDistrict district the destination is in
+   * @param destinationLat latitiude of the destination
+   * @param destinationLon longitude of the destination
+   * @param destinationCountry country the destination is in
+   * @param destinationOwner the owner of the destination
+   * @param isPublic whether or not the destination is public
+   */
+  public Destination(
+      String destinationName,
+      DestinationType destinationType,
+      String destinationDistrict,
+      Double destinationLat,
+      Double destinationLon,
+      Country destinationCountry,
+      Integer destinationOwner,
+      List<TravellerType> travellerTypes,
+      boolean isPublic) {
+    this.destinationName = destinationName;
+    this.destinationType = destinationType;
+    this.destinationDistrict = destinationDistrict;
+    this.destinationLat = destinationLat;
+    this.destinationLon = destinationLon;
+    this.destinationCountry = destinationCountry;
+    this.destinationOwner = destinationOwner;
+    this.travellerTypes = travellerTypes;
+    this.isPublic = isPublic;
+  }
 
-        if (travellerTypes.size() != destinationToCompare.travellerTypes.size()) {
-            return false;
-        }
+  /** Constuctor for destination ID */
+  public Destination(int destinationId) {
+    this.destinationId = destinationId;
+  }
 
-        boolean sameTravellerTypes = true;
-        for (int i = 0; i < travellerTypes.size(); i++) {
-             if (!travellerTypes.get(i).equals(destinationToCompare.travellerTypes.get(i))) {
-                 sameTravellerTypes = false;
-             }
-        }
+  public boolean isDeleted() {
+    return deleted;
+  }
 
-        return (sameName && sameDistrict && sameType && sameCountry && sameTravellerTypes);
-    }
+  public void setDeleted(boolean deleted) {
+    this.deleted = deleted;
+  }
 
-    /**
-     * Constructor.
-     * @param destinationName name of the destination
-     * @param destinationType type of destination
-     * @param destinationDistrict district the destination is in
-     * @param destinationLat latitiude of the destination
-     * @param destinationLon longitude of the destination
-     * @param destinationCountry country the destination is in
-     * @param destinationOwner the owner of the destination
-     * @param isPublic whether or not the destination is public
-     */
-    public Destination(String destinationName, DestinationType destinationType, String destinationDistrict, Double destinationLat, Double destinationLon, Country destinationCountry, Integer destinationOwner, List<TravellerType> travellerTypes, boolean isPublic ) {
-        this.destinationName = destinationName;
-        this.destinationType = destinationType;
-        this.destinationDistrict = destinationDistrict;
-        this.destinationLat = destinationLat;
-        this.destinationLon = destinationLon;
-        this.destinationCountry = destinationCountry;
-        this.destinationOwner = destinationOwner;
-        this.travellerTypes = travellerTypes;
-        this.isPublic = isPublic;
-    }
+  public Timestamp getDeletedExpiry() {
+    return deletedExpiry;
+  }
 
-    /**
-     * Constuctor for destination ID
-     */
-    public Destination(int destinationId) {
-        this.destinationId = destinationId;
-    }
+  public void setDeletedExpiry(Timestamp deletedExpiry) {
+    this.deletedExpiry = deletedExpiry;
+  }
 
-    public boolean isDeleted() {
-        return deleted;
-    }
+  public int getDestinationId() {
+    return destinationId;
+  }
 
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
+  public void setDestinationId(int destinationId) {
+    this.destinationId = destinationId;
+  }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
+  public String getDestinationName() {
+    return destinationName;
+  }
 
-    public void setDeletedExpiry(Timestamp deletedExpiry) {
-        this.deletedExpiry = deletedExpiry;
-    }
+  public void setDestinationName(String destinationName) {
+    this.destinationName = destinationName;
+  }
 
-    public int getDestinationId() {
-        return destinationId;
-    }
+  public DestinationType getDestinationType() {
+    return destinationType;
+  }
 
-    public void setDestinationId(int destinationId) {
-        this.destinationId = destinationId;
-    }
+  public void setDestinationType(DestinationType destinationType) {
+    this.destinationType = destinationType;
+  }
 
-    public String getDestinationName() {
-        return destinationName;
-    }
+  public String getDestinationDistrict() {
+    return destinationDistrict;
+  }
 
-    public void setDestinationName(String destinationName) {
-        this.destinationName = destinationName;
-    }
+  public void setDestinationDistrict(String destinationDistrict) {
+    this.destinationDistrict = destinationDistrict;
+  }
 
-    public DestinationType getDestinationType() {
-        return destinationType;
-    }
+  public Double getDestinationLat() {
+    return destinationLat;
+  }
 
-    public void setDestinationType(DestinationType destinationType) {
-        this.destinationType = destinationType;
-    }
+  public void setDestinationLat(Double destinationLat) {
+    this.destinationLat = destinationLat;
+  }
 
-    public String getDestinationDistrict() {
-        return destinationDistrict;
-    }
+  public Double getDestinationLon() {
+    return destinationLon;
+  }
 
-    public void setDestinationDistrict(String destinationDistrict) {
-        this.destinationDistrict = destinationDistrict;
-    }
+  public void setDestinationLon(Double destinationLon) {
+    this.destinationLon = destinationLon;
+  }
 
-    public Double getDestinationLat() {
-        return destinationLat;
-    }
+  public Country getDestinationCountry() {
+    return destinationCountry;
+  }
 
-    public void setDestinationLat(Double destinationLat) {
-        this.destinationLat = destinationLat;
-    }
+  public void setDestinationCountry(Country destinationCountry) {
+    this.destinationCountry = destinationCountry;
+  }
 
-    public Double getDestinationLon() {
-        return destinationLon;
-    }
+  public void setDestinationOwner(Integer destinationOwner) {
+    this.destinationOwner = destinationOwner;
+  }
 
-    public void setDestinationLon(Double destinationLon) {
-        this.destinationLon = destinationLon;
-    }
+  public Integer getDestinationOwner() {
+    return this.destinationOwner;
+  }
 
-    public Country getDestinationCountry() {
-        return destinationCountry;
-    }
+  public void setIsPublic(boolean isPublic) {
+    this.isPublic = isPublic;
+  }
 
-    public void setDestinationCountry(Country destinationCountry) {
-        this.destinationCountry = destinationCountry;
-    }
+  public boolean getIsPublic() {
+    return this.isPublic;
+  }
 
-    public void setDestinationOwner(Integer destinationOwner) { this.destinationOwner = destinationOwner; }
+  public List<TravellerType> getTravellerTypes() {
+    return travellerTypes;
+  }
 
-    public Integer getDestinationOwner() { return this.destinationOwner; }
+  public void setTravellerTypes(List<TravellerType> travellerTypes) {
+    this.travellerTypes = travellerTypes;
+  }
 
-    public void setIsPublic (boolean isPublic) { this.isPublic = isPublic; }
+  public void setDestinationPhotos(List<DestinationPhoto> destinationPhotos) {
+    this.destinationPhotos = destinationPhotos;
+  }
 
-    public boolean getIsPublic() { return this.isPublic; }
+  public List<DestinationPhoto> getDestinationPhotos() {
+    return destinationPhotos;
+  }
 
+  /**
+   * Get the the public photos linked to the destination
+   *
+   * @return a list of all the public photos in the destination
+   */
+  public List<DestinationPhoto> getPublicDestinationPhotos() {
+    return destinationPhotos
+        .parallelStream()
+        .filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().isPublic()))
+        .collect(Collectors.toList());
+  }
 
-    public List<TravellerType> getTravellerTypes() {
-        return travellerTypes;
-    }
+  /**
+   * Get the private photos from a particular user linked to the destination
+   *
+   * @param userId the id of the user for which we want the private photos in the destination
+   * @return the private photos for the given user that are linked with the destination
+   */
+  public List<DestinationPhoto> getPrivatePhotosForUserWithId(int userId) {
+    return destinationPhotos
+        .parallelStream()
+        .filter(
+            (destinationPhoto ->
+                destinationPhoto.getPersonalPhoto().getUser().getUserId() == userId))
+        .filter(destinationPhoto -> !destinationPhoto.getPersonalPhoto().isPublic())
+        .collect(Collectors.toList());
+  }
 
-    public void setTravellerTypes(List<TravellerType> travellerTypes) {
-        this.travellerTypes = travellerTypes;
-    }
+  public boolean canModifyDestination(User user) {
+    return user.isAdmin() || (destinationOwner != null && destinationOwner == user.getUserId());
+  }
 
-    public void setDestinationPhotos(List<DestinationPhoto> destinationPhotos) {
-        this.destinationPhotos = destinationPhotos;
-    }
-
-    public List<DestinationPhoto> getDestinationPhotos() {
-        return destinationPhotos;
-    }
-
-    /**
-     * Get the the public photos linked to the destination
-     * @return a list of all the public photos in the destination
-     */
-    public List<DestinationPhoto> getPublicDestinationPhotos() {
-        return destinationPhotos.parallelStream().filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().isPublic())).collect(Collectors.toList());
-    }
-
-    /**
-     * Get the private photos from a particular user linked to the destination
-     * @param userId the id of the user for which we want the private photos in the destination
-     * @return the private photos for the given user that are linked with the destination
-     */
-    public List<DestinationPhoto> getPrivatePhotosForUserWithId(int userId) {
-        return destinationPhotos.parallelStream()
-            .filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().getUser().getUserId() == userId))
-            .filter(destinationPhoto -> !destinationPhoto.getPersonalPhoto().isPublic())
-            .collect(Collectors.toList());
-    }
-
-    public boolean canModifyDestination(User user) {
-        return user.isAdmin() || (destinationOwner != null && destinationOwner == user.getUserId());
-    }
-
-    /**
-     * This is required by EBean to make queries on the database.
-     */
-    public static final Finder<Integer, Destination> find = new Finder<>(Destination.class);
+  /** This is required by EBean to make queries on the database. */
+  public static final Finder<Integer, Destination> find = new Finder<>(Destination.class);
 }
