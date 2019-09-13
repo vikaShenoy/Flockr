@@ -233,7 +233,7 @@ public class TripControllerTest {
     tripDestinations.add(tripDestination2);
     tripBody.put("name", "Pirate Trip");
     tripBody.putArray("tripNodes").addAll(tripDestinations);
-    tripBody.putArray("userIds").add(Json.newObject().put("userId", otherUser.getUserId()));
+    tripBody.putArray("userIds").add(Json.newObject().put("userId", otherUser.getUserId()).put("role", "TRIP_MEMBER"));
     // tripBody.set("userIds", Json.toJson(userIds));
 
     System.out.println(tripBody.toString());
