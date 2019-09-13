@@ -28,7 +28,18 @@
           </ul>
 
           <div id="selected-users">
-            <v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>
+
+            <GenericCombobox
+              label="Users"
+              :get-function="searchUser"
+              :item-text="(user) => user.firstName + ' ' + user.lastName"
+              multiple
+              @items-selected="updateSelectedUsers"
+            ></GenericCombobox>
+
+
+
+            <!--<v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>-->
           </div>
         </v-flex>
       </v-layout>
@@ -96,12 +107,14 @@
 </template>
 
 <script>
-import { getAllUsers } from '../../../AddTrip/AddTripService';
+import { getUsers } from '../../../AddTrip/AddTripService';
 import UserStore from "../../../../stores/UserStore";
 import { editTrip } from '../../TripService';
 import { deleteTripFromList } from '../../../Trips/OldTripsService';
+import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
 
 export default {
+  components: {GenericCombobox},
   props: {
     isShowing: Boolean,
     trip: Object
@@ -116,16 +129,22 @@ export default {
     };
   },
   methods: {
+
+    updateSelectedUsers(newUsers) {
+      this.selectedUsers = newUsers
+    },
+
+    searchUser: async name => await getUsers(name),
+
     /**
      * Gets all users and filters out own user ID
      */
-    async getAllUsers() {
+    async getAllUsers(name) {
       // Filter out user's own ID
-      const users = (await getAllUsers())
+      const users = (await getUsers(name))
         .filter(user => user.userId !== UserStore.data.userId);
-
-
       this.users = users;
+      return users;
     },
     /**
      * Formats full name for combobox input

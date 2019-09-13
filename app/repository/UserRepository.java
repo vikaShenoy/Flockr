@@ -246,7 +246,7 @@ public class UserRepository {
             }
 
             if (name != null) {
-                query = query.where().like("concat(firstName, ' ' , lastName)", "%" + name + "%");
+                query = query.where().ilike("concat(firstName, ' ' , lastName)", "%" + name + "%");
             }
 
             if (travellerTypeId != -1) {

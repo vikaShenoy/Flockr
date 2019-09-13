@@ -8,6 +8,7 @@
         :label="label"
         @update:searchInput="handleTyping"
         @input="handleNewItemSelection"
+        :multiple="multiple"
     />
 </template>
 
@@ -15,7 +16,7 @@
 export default {
     props: {
         itemText: { // specifies what to display for each item, if a primitive will just show the primitive
-            type: String,
+            type: [String, Function],
             required: false,
             default: undefined
         },
@@ -27,6 +28,10 @@ export default {
             // NOTE: will need to only take one parameter: the search string to filter items by
             type: Function,
             required: false
+        },
+        multiple: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -57,7 +62,11 @@ export default {
          * @param newSelectedItem
          */
         handleNewItemSelection(newSelectedItem) {
-            this.$emit('item-selected', newSelectedItem);
+            if (!this.multiple) {
+                this.$emit('item-selected', newSelectedItem);
+            } else {
+                this.$emit('items-selected', newSelectedItem);
+            }
         },
         /**
          * Get the items
