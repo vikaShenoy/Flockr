@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -364,8 +365,6 @@ public class TripController extends Controller {
                                 users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
                             } catch (BadRequestException e) {
-                                System.out.println(1);
-                                System.out.println(e);
                                 throw new CompletionException(new BadRequestException());
                             } catch (ForbiddenRequestException e) {
                                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
@@ -382,8 +381,11 @@ public class TripController extends Controller {
                                             destinations -> {
                                                 TripComposite trip = optionalTrip.get();
 
-                                                // TODO - implement helper function then add conditionals.
-                                                //RoleType userRoleType = getTripUserRole(userFromMiddleware.getRoles(), trip.getUserRoles());
+                                                List<String> tripUserRoles = trip.getUserRoles().stream().
+                                                        filter(tripUserRole -> tripUserRole.getUser().getUserId() ==
+                                                                userFromMiddleware.getUserId()).
+                                                        map(userRole -> userRole.getRole().getRoleType()).collect(Collectors.toList());
+                                                System.out.println(tripUserRoles);
 
                                                 // Delete old destination leaf nodes.
                                                 tripRepository.deleteListOfTrips(trip.getTripNodes());
@@ -427,15 +429,6 @@ public class TripController extends Controller {
                             }
                         });
     }
-
-    /**
-     * Determine what role the user has in relation to the given trip.
-     * @param userRoles list of the user's roles.
-     * @param userTripRoles list of user roles associated with a trip
-     * @return the roletype the user has.
-     */
-/*    private RoleType getTripUserRole(List<Role> userRoles, List<UserRole> userTripRoles) {
-    }*/
 
     /**
      * Creates a list of completable futures that: Check the owners of each destination and updates
