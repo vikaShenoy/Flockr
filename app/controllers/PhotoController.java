@@ -505,7 +505,7 @@ public class PhotoController extends Controller {
      *
      * @return returns true only if both the storage and storage/photos are created, false otherwise.
      */
-    private boolean checkForAndCreatePhotosDirectory() {
+    public boolean checkForAndCreatePhotosDirectory() {
         String path = System.getProperty("user.dir") + "/storage";
         File file = new File(path);
         if (!file.exists() && file.mkdir()) {
@@ -621,7 +621,7 @@ public class PhotoController extends Controller {
      * @param photoContentType     the type of image.
      * @throws IOException thrown when the thumbnail cannot be written to disk.
      */
-    private void saveThumbnail(File originalImage, File thumbFileDestination, String photoContentType) throws IOException {
+    public void saveThumbnail(File originalImage, File thumbFileDestination, String photoContentType) throws IOException {
         BufferedImage bufferedImage = ImageIO.read(originalImage);
         ImageIO.write(bufferedImage, photoContentType, originalImage);
 
