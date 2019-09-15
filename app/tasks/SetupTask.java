@@ -29,8 +29,8 @@ public class SetupTask {
   }
 
   private void initialise() {
-    Config conf = ConfigFactory.load();
-    if (!conf.getString("db.default.url").equals("jdbc:h2:mem:play")) {
+
+    if (environment.isDev()) {
       return;
     }
 
@@ -46,7 +46,7 @@ public class SetupTask {
 
                     SqlUpdate sqlUpdate = Ebean.createSqlUpdate(statement);
                     sqlUpdate.execute();
-
+                    System.out.println("ADDING CHILD INDEX THINGY");
                     System.out.println("Ended Setup tasks");
                     return null;
                   });

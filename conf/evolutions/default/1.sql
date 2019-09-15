@@ -209,6 +209,7 @@ create table user (
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint uq_user_email unique (email),
   constraint uq_user_profile_photo_photo_id unique (profile_photo_photo_id),
+  constraint uq_user_user_id unique (user_id),
   constraint pk_user primary key (user_id)
 );
 
@@ -219,6 +220,7 @@ create table user_role (
   constraint pk_user_role primary key (user_role_id)
 );
 
+create index ix_destination_destination_name on destination (destination_name);
 create index ix_chat_group_user_chat_group on chat_group_user (chat_group_chat_group_id);
 alter table chat_group_user add constraint fk_chat_group_user_chat_group foreign key (chat_group_chat_group_id) references chat_group (chat_group_id) on delete restrict on update restrict;
 
@@ -484,3 +486,4 @@ drop table if exists user;
 
 drop table if exists user_role;
 
+drop index if exists ix_destination_destination_name;
