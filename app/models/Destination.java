@@ -1,5 +1,6 @@
 package models;
 
+import io.ebean.annotation.Index;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,6 +21,7 @@ public class Destination extends Model {
     @Id
     private int destinationId;
 
+    @Index
     private String destinationName;
 
     @ManyToOne

@@ -40,6 +40,18 @@ public class UserRepository {
         this.executionContext = executionContext;
     }
 
+
+    /**
+     * Return the users with the given ids
+     * @param ids the list of ids we want to get the users for
+     * @return the list of users that are in the list
+     */
+    public List<User> getUsersWithIds(List<Integer> ids) {
+        return User.find.query().where()
+            .idIn(ids)
+            .findList();
+    }
+
     /**
      * Updates a users details
      *

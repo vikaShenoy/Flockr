@@ -117,10 +117,9 @@ public class TripController extends Controller {
               List<User> users;
 
               try {
-                List<User> allUsers = User.find.all(); // TODO surely we don't want to be doing this
                 Set<TripComposite> trips = tripRepository.getAllTrips();
                 tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
-                users = tripUtil.getUsersFromJson(userIdsJson, user, allUsers);
+                users = tripUtil.getUsersFromJson(userIdsJson, user);
               } catch (BadRequestException e) {
                 return CompletableFuture.completedFuture(badRequest(e.getMessage()));
               } catch (ForbiddenRequestException e) {
@@ -162,9 +161,9 @@ public class TripController extends Controller {
                   .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
                   .exceptionally(
                       e -> {
-                        System.out.println(e.getMessage());
-                        System.out.println(e.getCause());
-                        System.out.println(e.getStackTrace());
+                        System.err.println(e.getMessage());
+                        System.err.println(e.getCause());
+                        System.err.println(e.getStackTrace());
                         e.printStackTrace();
                         return internalServerError();
                       });
