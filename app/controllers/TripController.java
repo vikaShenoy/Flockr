@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -379,6 +380,12 @@ public class TripController extends Controller {
                                     .thenComposeAsync(
                                             destinations -> {
                                                 TripComposite trip = optionalTrip.get();
+
+                                                List<String> tripUserRoles = trip.getUserRoles().stream().
+                                                        filter(tripUserRole -> tripUserRole.getUser().getUserId() ==
+                                                                userFromMiddleware.getUserId()).
+                                                        map(userRole -> userRole.getRole().getRoleType()).collect(Collectors.toList());
+                                                System.out.println(tripUserRoles);
 
                                                 // Delete old destination leaf nodes.
                                                 tripRepository.deleteListOfTrips(trip.getTripNodes());

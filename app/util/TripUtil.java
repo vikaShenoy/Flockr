@@ -148,11 +148,13 @@ public class TripUtil {
         if (userIdsJson == null) {
             return null;
         }
+        System.out.println(userIdsJson);
 
         List<User> users = new ArrayList<>();
 
         for (JsonNode userIdJson : userIdsJson) {
-            int currentUserId =  userIdJson.asInt();
+            int currentUserId =  userIdJson.get("userId").asInt();
+
 
             User currentUser = null;
 
