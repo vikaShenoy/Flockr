@@ -13,7 +13,7 @@
           flat
           color="secondary"
           id="manage-trip-btn"
-          v-if="true || isUserOwner"
+          v-if="isUserOwner"
           @click="isShowingManageTripDialog = true"
       >Manage
       </v-btn>
@@ -32,7 +32,7 @@
             :rules="rule"
         ></v-text-field>
       </v-spacer>
-      <h2 id="trip-name" v-else @click="enableEditName">{{ trip.name }}</h2>
+      <h2 id="trip-name" v-else @click="hasPermissionToEdit && enableEditName()">{{ trip.name }}</h2>
     </div>
 
     <div id="trip-destinations-list">
@@ -52,13 +52,14 @@
       <div v-else>
         <Timeline
             :trip="trip"
+            :rootTrip="trip"
             @toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
             @tripNodeOrderChanged="tripNodeOrderChanged"
             @showEditTripDestination="showEditTripDestination"
             @deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
             @tripNameUpdated="(tripNode, newName) => $emit('nestedTripNameUpdated', tripNode, newName)"
         />
-        <v-spacer align="center">
+        <v-spacer align="center" v-if="hasPermissionToEdit">
           <v-btn
               depressed
               color="secondary"
@@ -275,6 +276,10 @@ export default {
       const user = this.trip.users.find(user => user.userId === UserStore.data.userId);
       const userRole = this.trip.userRoles.find(userRole => userRole.user.userId === user.userId && userRole.role.roleType === roleType.TRIP_OWNER);
       return userRole ? true : false; 
+    },
+    hasPermissionToEdit() {
+      const userRole = this.trip.userRoles.find(userRole => userRole.user.userId === UserStore.data.userId);
+      return userRole.role.roleType === roleType.TRIP_MANAGER || userRole.role.roleType === roleType.TRIP_OWNER;
     }
   },
   watch: {

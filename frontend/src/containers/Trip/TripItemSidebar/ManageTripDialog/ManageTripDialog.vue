@@ -24,7 +24,7 @@
               v-bind:key="userRole.user.userId"
               class="selected-user"
             >
-            {{ formatName(userRole.user) }} <v-select v-model="userRole.role" :items="roleTypes" class="role-type" color="secondary"></v-select>
+            {{ formatName(userRole.user) }} <v-select v-model="userRole.role" :items="roleTypes" class="role-type" color="secondary" item-text="name" item-value="value"></v-select>
             </li>
           </ul>
 
@@ -117,9 +117,18 @@ export default {
       isLoading: false,
       showAlertCard: false,
       roleTypes: [
-        roleType.TRIP_MANAGER,
-        roleType.TRIP_MEMBER,
-        roleType.TRIP_OWNER
+        {
+          name: "Trip Manager",
+          value: roleType.TRIP_MANAGER 
+        },
+        {
+          name: "Trip Member",
+          value: roleType.TRIP_MEMBER
+        },
+        {
+          name: "Trip Owner",
+          value: roleType.TRIP_OWNER
+        }
       ]
     };
   },
