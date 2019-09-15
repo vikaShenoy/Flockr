@@ -1,9 +1,16 @@
 package tasks;
 
+import static io.ebean.config.TenantMode.DB;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import akka.actor.ActorSystem;
 import com.google.inject.Inject;
+import io.ebean.Ebean;
+import io.ebean.Query;
+import io.ebean.RawSql;
+import io.ebean.RawSqlBuilder;
+import io.ebean.SqlQuery;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -33,7 +40,7 @@ public class ExampleTripsDataTask {
   final Logger log = LoggerFactory.getLogger(this.getClass());
   private final WSClient ws;
   private TripRepository tripRepository;
-  Date pointOfReference = Date.from(Instant.now().plus(1, ChronoUnit.MONTHS));
+  Date pointOfReference = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
 
   @Inject
   public ExampleTripsDataTask(
@@ -80,13 +87,14 @@ public class ExampleTripsDataTask {
    * @return true if the user has trips.
    */
   private boolean doesUserHaveTrips(User user) {
-    return TripNode.find
-        .query()
-        .fetchLazy("user", "user_id")
-        .where()
-        .eq("user_id", user.getUserId())
-        .findOneOrEmpty()
-        .isPresent();
+    boolean exists =
+        TripNode.find
+            .query()
+            .fetchLazy("users", "user_id")
+            .where()
+            .in("users.userId", user.getUserId())
+            .exists();
+    return exists;
   }
 
   /**
@@ -733,12 +741,12 @@ public class ExampleTripsDataTask {
         .scheduleOnce(
             Duration.create(1, TimeUnit.SECONDS), // initial delay
             () ->
-                supplyAsync(
+                runAsync(
                     () -> {
+                      System.out.println("Loading Example Trips");
                       int countryIndex = 0;
                       List<Country> countries = Country.find.all();
                       List<User> users = fetchAllUsers();
-
                       for (User user : users) {
                         if (!doesUserHaveTrips(user)) {
                           List<User> thisUserList = new ArrayList<>();
@@ -746,13 +754,19 @@ public class ExampleTripsDataTask {
 
                           // Get countries
                           Country countryOne = countries.get(countryIndex);
-                          List<Destination> countryOneDestinations =
-                              fetchNumDestinationsFromCountry(countryOne, 5);
-                          countryIndex++;
+                          List<Destination> countryOneDestinations = new ArrayList<>();
+                          while (countryOneDestinations.size() < 5) {
+                            countryOneDestinations = fetchNumDestinationsFromCountry(countryOne, 5);
+                            countryIndex = (countryIndex + 1) % countries.size();
+                            countryOne = countries.get(countryIndex);
+                          }
                           Country countryTwo = countries.get(countryIndex);
-                          List<Destination> countryTwoDestinations =
-                              fetchNumDestinationsFromCountry(countryTwo, 5);
-                          countryIndex++;
+                          List<Destination> countryTwoDestinations = new ArrayList<>();
+                          while (countryTwoDestinations.size() < 5) {
+                            countryTwoDestinations = fetchNumDestinationsFromCountry(countryTwo, 5);
+                            countryIndex = (countryIndex + 1) % countries.size();
+                            countryTwo = countries.get(countryIndex);
+                          }
 
                           List<TripNode> tripNodes1 =
                               makeTripNodesList(
@@ -770,12 +784,9 @@ public class ExampleTripsDataTask {
                                       user.getFirstName(),
                                       countryOne.getCountryName(),
                                       countryTwo.getCountryName()));
-                          tripRepository
-                              .saveTrip(tripOne)
-                              .thenAcceptAsync(
-                                  trip ->
-                                      System.out.println(
-                                          String.format("%s has been created", trip.getName())));
+                          tripOne.save();
+                          System.out.println(
+                              String.format("%s has been created", tripOne.getName()));
 
                           List<TripNode> tripNodes2 =
                               makeTripNodesList(
@@ -786,7 +797,8 @@ public class ExampleTripsDataTask {
 
                           List<TripNode> tripNodes3 =
                               makeTripNodesList(
-                                  countryTwoDestinations.get(4), countryTwoDestinations.get(5));
+                                  countryOneDestinations.get(4),
+                                  countryTwoDestinations.get(4));
 
                           TripComposite tripThree =
                               new TripComposite(
@@ -805,26 +817,18 @@ public class ExampleTripsDataTask {
                                   tripNodes2,
                                   thisUserList,
                                   String.format(
-                                      "%s's trip from %s to %s",
+                                      "%s's return trip from %s to %s",
                                       user.getFirstName(),
                                       countryTwo.getCountryName(),
                                       countryOne.getCountryName()));
 
-                          tripRepository
-                              .saveTrip(tripThree)
-                              .thenAcceptAsync(
-                                  trip -> {
-                                    System.out.println(
-                                        String.format("%s has been created", trip.getName()));
-                                    tripRepository
-                                        .saveTrip(tripTwo)
-                                        .thenAcceptAsync(
-                                            otherTrip ->
-                                                System.out.println(
-                                                    String.format(
-                                                        "%s has been created",
-                                                        otherTrip.getName())));
-                                  });
+                          tripThree.save();
+                          System.out.println(
+                              String.format("%s has been created", tripThree.getName()));
+
+                          tripTwo.save();
+                          System.out.println(
+                              String.format("%s has been created", tripTwo.getName()));
                         }
                       }
                       // TODO: everyone create a user each and we add them all to these trips
@@ -884,7 +888,7 @@ public class ExampleTripsDataTask {
                               .where()
                               .eq("country_name", "United States of America")
                               .findOne());
-                      return null;
+                      System.out.println("Finished Loading Example Trips");
                     }),
             this.executionContext);
   }

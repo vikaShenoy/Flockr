@@ -36,7 +36,7 @@ public class TasksController extends AbstractModule {
       if (populate) {
         bind(ExampleUserData.class).asEagerSingleton();
         bind(ExampleDestinationDataTask.class).asEagerSingleton();
-//        bind(ExampleTripsDataTask.class).asEagerSingleton();
+        bind(ExampleTripsDataTask.class).asEagerSingleton();
       }
     }
   }
