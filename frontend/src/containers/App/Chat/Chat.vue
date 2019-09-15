@@ -220,12 +220,17 @@ export default {
      * Goes back to the chats list.
      */
     goBackToChats() {
-      this.currentChatId = null;
       if (this.isShowingManageChat) {
         this.isShowingManageChat = false;
       } else {
-        this.isShowingCreateChat = false;
+        this.currentChatId = null;
+        if (this.isShowingManageChat) {
+          this.isShowingManageChat = false;
+        } else {
+          this.isShowingCreateChat = false;
+        }
       }
+
       event.stopPropagation();
     },
     /**

@@ -49,12 +49,10 @@ export default {
   border: solid 2px $success;
 }
 
-.disconnected > img {
-  border: solid 2px $error;
-}
 
 .your-avatar {
   float: right;
+  margin-left: 5px;
   margin-top: 5px;
 }
 

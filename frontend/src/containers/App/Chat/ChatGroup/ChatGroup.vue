@@ -100,9 +100,17 @@ export default {
           if (!this.message.length) {
               return;
           }
-        const message = await sendMessage(this.chatGroup.chatGroupId, this.message);
+        const message = {
+          chatGroup: this.chatGroup,
+          contents: this.message,
+          user: {
+            userId: UserStore.data.userId
+          }
+        };
+
         this.$emit("newMessage", message);
         this.message = "";
+        await sendMessage(this.chatGroup.chatGroupId, this.message);
       } catch (e) {
         this.$root.$emit("show-error-snackbar", "Error sending message", 2000);
       }
