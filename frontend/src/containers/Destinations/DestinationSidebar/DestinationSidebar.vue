@@ -247,11 +247,11 @@
   }
 
   #destination-sidebar {
-    height: 100%;
     width: 315px;
     justify-self: flex-end;
     display: flex;
     flex-direction: column;
+    height: calc(100vh - 60px);
 
     #title {
       background-color: $primary;
@@ -323,6 +323,10 @@
       position: absolute;
       right: 25px;
       margin-top: 17px;
+    }
+
+    #destinations-list {
+      overflow: auto;
     }
   }
 </style>
