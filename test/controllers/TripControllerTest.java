@@ -1,5 +1,6 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
@@ -555,9 +556,46 @@ public class TripControllerTest {
   @Test
   public void updateHigherLevelTripBad() {}
 
+
+  @Test
+  public void createSoloTripOwner() throws IOException {
+
+      String endpoint = "/api/users/" + user.getUserId() + "/trips";
+      ObjectNode tripBody = Json.newObject();
+      ArrayNode tripDestinations = Json.newArray();
+      tripDestinations.add(tripDestination1);
+      tripDestinations.add(tripDestination2);
+      tripBody.put("name", "Solo Trip");
+      tripBody.putArray("tripNodes").addAll(tripDestinations);
+      tripBody.putArray("userIds");
+    System.out.println(tripBody.toString());
+      Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
+      Assert.assertEquals(201, result.status());
+      JsonNode jsonResult = PlayResultToJson.convertResultToJson(result);
+      int tripId = jsonResult.get("tripNodeId").asInt();
+      Optional<TripComposite> receivedTrip = TripComposite.find.query().where().eq("tripNodeId", tripId).findOneOrEmpty();
+      Assert.assertTrue(receivedTrip.isPresent());
+      if (receivedTrip.isPresent()) {
+        receivedTrip.ifPresent((tripComposite) -> {
+          Assert.assertEquals(1, tripComposite.getUsers().size());
+          System.out.println(tripComposite.getUsers());
+        });
+
+      }
+
+
+  }
+
+  @Test
+  public void createGroupTripOwnerManagerMember() {
+
+  }
+
+
   @After
   public void tearDown() {
     Helpers.stop(application);
     TestState.clear();
   }
+
 }
