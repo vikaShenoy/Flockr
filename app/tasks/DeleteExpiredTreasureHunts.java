@@ -56,8 +56,8 @@ public class DeleteExpiredTreasureHunts {
                                         for (TreasureHunt treasureHunt: treasureHuntsList) {
                                             treasureHunt.deletePermanent();
                                         }
-                                        log.info(String.format(" %d Destination Proposals deleted successfully", treasureHuntsList.size()));
-                                        System.out.printf(" %d Destination Proposals deleted successfully", treasureHuntsList.size());
+                                        log.info(String.format("%d treasure hunts deleted successfully", treasureHuntsList.size()));
+                                        System.out.println(String.format("%d treasure hunts deleted successfully", treasureHuntsList.size()));
                                         return treasureHuntsList;
                                     }),
                                     this.executionContext);

@@ -127,12 +127,8 @@ public class CommonTestSteps {
         unitedStatesOfAmerica.save();
         australia.save();
 
-        District blackRockCity = new District("Black Rock City", unitedStatesOfAmerica);
-        District newFarm = new District("New Farm", australia);
-
-        blackRockCity.save();
-        newFarm.save();
-
+        String blackRockCity = "Black Rock City";
+        String newFarm ="New Farm";
 
         Destination burningMan = new Destination("Burning Man",event, blackRockCity, 12.1234,12.1234, unitedStatesOfAmerica,  null, new ArrayList<>(), false);
         Destination brisbaneCity = new Destination("Brisbane City", city, newFarm, 11.1234,11.1234, australia, null, new ArrayList<>(), false);

@@ -280,7 +280,7 @@ public class TripRepository {
           List<TripComposite> trips =
               TripComposite.find
                   .query()
-                  .fetch("users")
+                  .fetchLazy("users","userId")
                   .where()
                   .in("users.userId", travellerId)
                   .findList();

@@ -229,27 +229,37 @@ public class UserRepository {
      * @param dateMin         min age Date
      * @param dateMax         max age Date
      * @param travellerTypeId traveller type Id
+     * @param name            user's name
      * @return List of users or empty list
      */
-    public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax, int travellerTypeId) {
+    public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax, int travellerTypeId, String name, int offset, int limit) {
 
 
         return supplyAsync(() -> {
             boolean found;
             ExpressionList<User> query = User.find.query()
                     .fetch("travellerTypes").where();
+
+
             if (gender != null) {
                 query = query.eq("gender", gender);
             }
+
+            if (name != null) {
+                query = query.where().ilike("concat(firstName, ' ' , lastName)", "%" + name + "%");
+            }
+
             if (travellerTypeId != -1) {
                 query = query.where().eq("traveller_type_id", travellerTypeId);
             }
-            query = query.where().between("dateOfBirth", dateMax, dateMin)
-                    .isNotNull("dateOfBirth")
-                    .isNotNull("gender")
-                    .isNotEmpty("travellerTypes");
 
-            List<User> users = query.findList();
+            if (dateMin.getTime() > 0 && dateMax.getTime() > 0)  {
+                query = query.where().between("dateOfBirth", dateMax, dateMin);
+            }
+
+            List<User> users  = query.where()
+                    .setFirstRow(offset)
+                    .setMaxRows(limit).findList();
 
             if (nationality != -1) {
                 List<User> filteredUsers = new ArrayList<User>();

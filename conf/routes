@@ -37,7 +37,7 @@ PUT           /api/users/:userId/profilephoto/:photoId/undo                     
 
 
 # Destination Proposal endpoints
-GET           /api/destinations/proposals                                             controllers.DestinationController.getProposals
+GET           /api/destinations/proposals                                             controllers.DestinationController.getProposals(request: Request)
 GET           /api/destinations/proposals/:destinationProposalId                      controllers.DestinationController.getProposalById(destinationProposalId: Int)
 POST          /api/users/:userId/destinations/:destinationId/proposals                controllers.DestinationController.addProposal(userId: Int, request: Request, destinationId: Int)
 PATCH         /api/destinations/proposals/:destinationProposalId                      controllers.DestinationController.acceptProposal(destinationProposalId: Int)
@@ -49,7 +49,6 @@ PUT           /api/destinations/proposals/:destinationProposalId/undoReject     
 GET           /api/destinations                                                       controllers.DestinationController.getDestinations(request: Request)
 GET           /api/users/:userId/destinations                                         controllers.DestinationController.getUserDestinations(userId: Int, request: Request)
 GET           /api/destinations/countries                                             controllers.DestinationController.getCountries
-GET           /api/destinations/countries/:countryId/districts                        controllers.DestinationController.getDistricts(countryId: Int)
 GET           /api/destinations/types                                                 controllers.DestinationController.getDestinationTypes
 GET           /api/destinations/:destinationId                                        controllers.DestinationController.getDestination(destinationId: Int, request: Request)
 DELETE        /api/destinations/:destinationId                                        controllers.DestinationController.deleteDestination(destinationId: Int, request: Request)

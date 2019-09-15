@@ -144,6 +144,7 @@ public class FakePlayClient implements FakeClient {
         } else if (result.status() == 401) {
             throw new UnauthorizedException("You are not authorized to perform this operation.");
         } else {
+            System.out.println(result.status());
             throw new ServerErrorException();
         }
     }
@@ -248,6 +249,11 @@ public class FakePlayClient implements FakeClient {
 
         // Send the request and return the result
         return Helpers.route(this.application, request);
+    }
+
+    @Override
+    public JsonNode converResultToJSON(Result result) throws IOException {
+        return PlayResultToJson.convertResultToJson(result);
     }
 
     /**

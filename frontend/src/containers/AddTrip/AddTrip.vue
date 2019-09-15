@@ -57,7 +57,7 @@
 
 <script>
   import TripTable from "../../components/TripTable/TripTable";
-  import {createTrip, getAllUsers} from "./AddTripService.js";
+  import {createTrip, getUsers} from "./AddTripService.js";
   import UserStore from "../../stores/UserStore";
 
   const rules = {
@@ -104,7 +104,7 @@
        * Gets all users and filters out the logged in user
        */
       async getUsers() {
-        const users = (await getAllUsers())
+        const users = (await getUsers())
             .filter(user => user.userId !== UserStore.data.userId);
         this.users = users;
       },
