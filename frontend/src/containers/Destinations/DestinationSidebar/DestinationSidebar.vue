@@ -40,23 +40,21 @@
 
     </div>
 
-    <div id="destinations-list">
+    <div id="destinations-list" ref="destinationsList" @scroll="handleScrolling">
       <div v-if="shouldShowEditor">
         <AddDestinationSidebar
-            v-on:addNewDestination="addNewDestination"
-            :latitude="latitude"
-            :longitude="longitude"
+          v-on:addNewDestination="addNewDestination"
+          :latitude="latitude"
+          :longitude="longitude"
         ></AddDestinationSidebar>
       </div>
 
       <div v-else-if="shouldShowSpinner" id="spinner">
         <v-progress-circular
-                indeterminate
-                color="secondary"
-                style="align-self: center;"
-        >
-        </v-progress-circular>
-
+          indeterminate
+          color="secondary"
+          style="align-self: center;"
+        />
       </div>
 
       <DestinationSummary
@@ -129,6 +127,17 @@
       this.getUserTrips();
     },
     methods: {
+      /**
+       * Called when the destinationsList is scrolled
+       */
+      handleScrolling() {
+        const { destinationsList } = this.$refs;
+        const { scrollHeight, scrollTop, clientHeight } = destinationsList;
+        const nearBottom = scrollHeight - scrollTop === clientHeight;
+        if (nearBottom) {
+          this.$emit('get-more-public-destinations');
+        }
+      },
       /**
        * Emitted when someone types in the input for searching destinations
        */
