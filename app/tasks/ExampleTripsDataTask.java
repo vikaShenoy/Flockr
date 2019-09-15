@@ -1,16 +1,9 @@
 package tasks;
 
-import static io.ebean.config.TenantMode.DB;
 import static java.util.concurrent.CompletableFuture.runAsync;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import akka.actor.ActorSystem;
 import com.google.inject.Inject;
-import io.ebean.Ebean;
-import io.ebean.Query;
-import io.ebean.RawSql;
-import io.ebean.RawSqlBuilder;
-import io.ebean.SqlQuery;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -41,6 +34,7 @@ public class ExampleTripsDataTask {
   private final WSClient ws;
   private TripRepository tripRepository;
   Date pointOfReference = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
+  private boolean readyForBigTrips = false;
 
   @Inject
   public ExampleTripsDataTask(
@@ -797,8 +791,7 @@ public class ExampleTripsDataTask {
 
                           List<TripNode> tripNodes3 =
                               makeTripNodesList(
-                                  countryOneDestinations.get(4),
-                                  countryTwoDestinations.get(4));
+                                  countryOneDestinations.get(4), countryTwoDestinations.get(4));
 
                           TripComposite tripThree =
                               new TripComposite(
@@ -831,63 +824,69 @@ public class ExampleTripsDataTask {
                               String.format("%s has been created", tripTwo.getName()));
                         }
                       }
-                      // TODO: everyone create a user each and we add them all to these trips
-                      List<User> vipUsers = new ArrayList<>();
+                      if (readyForBigTrips) {
+                        // TODO: everyone create a user each and we add them all to these trips
+                        List<User> vipUsers = new ArrayList<>();
 
-                      vipUsers.add(
-                          User.find
-                              .query()
-                              .where()
-                              .eq("first_name", "Andy")
-                              .and()
-                              .eq("last_name", "Holden")
-                              .findOne());
+                        vipUsers.add(
+                            User.find
+                                .query()
+                                .where()
+                                .eq("first_name", "Andy")
+                                .and()
+                                .eq("last_name", "Holden")
+                                .findOne());
 
-                      makeIslandCruise(vipUsers);
-                      makeRugbyChampionshipTour(vipUsers);
-                      makeElViajeDeSudamerica(vipUsers);
-                      makeRugbyWorldCupJapanTour(vipUsers);
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Australia").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Austria").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "England").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Germany").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find
-                              .query()
-                              .where()
-                              .eq("country_name", "South Africa")
-                              .findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "China").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Argentina").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Brazil").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Peru").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "New Zealand").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find
-                              .query()
-                              .where()
-                              .eq("country_name", "United States of America")
-                              .findOne());
+                        makeIslandCruise(vipUsers);
+                        makeRugbyChampionshipTour(vipUsers);
+                        makeElViajeDeSudamerica(vipUsers);
+                        makeRugbyWorldCupJapanTour(vipUsers);
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Australia").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Austria").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "England").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Germany").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find
+                                .query()
+                                .where()
+                                .eq("country_name", "South Africa")
+                                .findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "China").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Argentina").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Brazil").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Peru").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find
+                                .query()
+                                .where()
+                                .eq("country_name", "New Zealand")
+                                .findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find
+                                .query()
+                                .where()
+                                .eq("country_name", "United States of America")
+                                .findOne());
+                      }
                       System.out.println("Finished Loading Example Trips");
                     }),
             this.executionContext);
