@@ -48,7 +48,7 @@
           </v-btn>
 
           <v-btn
-                  class="action-button"
+                  class="act../../Profile/ProfilePic/defaultProfilePicture.pngion-button"
                   :disabled="!this.canRemoveAdminPriviledge"
                   @click="showPrompt('Are you sure?', removeAdminPriviledge)"
                   depressed
@@ -115,7 +115,8 @@
   import SignUp from "../../Signup/Signup";
   import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
   import UserStore from "../../../stores/UserStore";
-  import roleType from '../../../stores/roleType';
+  import roleType from "../../../stores/roleType";
+  import defaultPic from "../../Profile/ProfilePic/defaultProfilePicture.png";
 
   export default {
     components: {
@@ -273,7 +274,7 @@
           const queryAuthorization = `?Authorization=${authToken}`;
           return endpoint(`/users/photos/${profilePhoto.photoId}${queryAuthorization}`);
         } else {
-          return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
+          return defaultPic;
         }
       },
       /**
