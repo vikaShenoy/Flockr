@@ -45,7 +45,7 @@ function transformTripNodes(tripNodes) {
  */
 export async function getAllUsers() {
   const authToken = localStorage.getItem("authToken");
-  const res = await superagent.get(endpoint(`/users`))
+  const res = await superagent.get(endpoint(`/users/search`))
     .set("Authorization", authToken);
 
   return res.body;

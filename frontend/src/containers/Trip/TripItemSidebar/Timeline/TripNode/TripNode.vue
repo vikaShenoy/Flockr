@@ -7,6 +7,7 @@
       :right="alignRight"
       :hide-dot="tripNode.nodeType === 'TripComposite'"
     >
+
       <v-card v-bind:class="(tripNode.arrivalDate && tripNode.departureDate) ? '' : 'no-date'">
         <v-card-title class="secondary trip-destination-title">
           <v-text-field
@@ -24,7 +25,8 @@
             @click="goToTripNode()"
             class="white--text font-weight-light"
           >{{ tripNode.name }}</h3>
-          <v-spacer align="right">
+
+          <v-spacer align="right" v-if="hasPermissionToEdit">
             <v-btn
               class="edit-btn"
               flat
@@ -92,6 +94,7 @@
             @showEditTripDestination="tripNode => $emit('showEditTripDestination', tripNode)"
             :trip="tripNode"
             isSubTrip
+            :rootTrip="rootTrip"
           />
         </div>
       </div>
@@ -104,6 +107,8 @@
 <script>
 import moment from "moment";
 import { rules } from "../../../../../utils/rules";
+import UserStore from "../../../../../stores/UserStore";
+import roleType from '../../../../../stores/roleType';
 
 export default {
   components: {
@@ -112,7 +117,8 @@ export default {
   name: "TimelineDestination",
   props: {
     tripNode: Object,
-    alignRight: Boolean
+    alignRight: Boolean,
+    rootTrip: Object
   },
   data() {
     return {
@@ -137,7 +143,11 @@ export default {
 		getDepartureTime() {
       const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
       return isLeaf ? this.tripNode.departureTime : this.getTripNodeDepartureTime(this.tripNode);
-		}
+    },
+    hasPermissionToEdit() {
+      const userRole = this.rootTrip.userRoles.find(userRole => userRole.user.userId === UserStore.data.userId);
+      return userRole.role.roleType === roleType.TRIP_MANAGER || userRole.role.roleType === roleType.TRIP_OWNER;
+    }
 	},
   methods: {
     getTripNodeArrivalDate(tripNode) {

@@ -24,7 +24,7 @@
               v-bind:key="userRole.user.userId"
               class="selected-user"
             >
-            {{ formatName(userRole.user) }} <v-select v-model="getUserPermission" :items="roleTypes" class="role-type" item-text="name" item-value="value" color="secondary"></v-select>
+            {{ formatName(userRole.user) }} <v-select v-model="userRole.role" :items="roleTypes" class="role-type" color="secondary" item-text="name" item-value="value"></v-select>
             </li>
           </ul>
 
@@ -117,9 +117,18 @@ export default {
       isLoading: false,
       showAlertCard: false,
       roleTypes: [
-        {name: "Trip Manager", value: roleType.TRIP_MANAGER},
-        {name: "Trip Member", value: roleType.TRIP_MEMBER},
-        {name: "Trip Owner", value: roleType.TRIP_OWNER}
+        {
+          name: "Trip Manager",
+          value: roleType.TRIP_MANAGER 
+        },
+        {
+          name: "Trip Member",
+          value: roleType.TRIP_MEMBER
+        },
+        {
+          name: "Trip Owner",
+          value: roleType.TRIP_OWNER
+        }
       ]
     };
   },
@@ -169,6 +178,14 @@ export default {
       const users = [...this.selectedUsers, UserStore.data]
       this.isLoading = true;
       this.trip.users = users;
+      this.trip.userRoles = this.userRoles.map(userRole => ({
+        user: userRole.user,
+        role: {
+          roleType: userRole.role
+        }          
+      }));
+
+
       await editTrip(this.trip);
       this.isLoading = false;
       this.isShowingDialog = false;
@@ -189,7 +206,8 @@ export default {
     isShowingDialog(value) {
       if (value) {
         this.userRoles = [...this.trip.userRoles]
-          .filter(userRole => userRole.user.userId !== UserStore.data.userId);
+          .filter(userRole => userRole.user.userId !== UserStore.data.userId)
+          .map(userRole => ({user: userRole.user, role: userRole.role.roleType}));
 
         this.selectedUsers = [...this.trip.users]
           .filter(user => user.userId !== UserStore.data.userId);
@@ -198,17 +216,21 @@ export default {
       
       this.$emit("update:isShowing", value);
     },
-    selectedUsers() {
-      const userRoles = this.selectedUsers.map(user => {
-        const userRole = this.userRoles.find(userRole => userRole.user.userId === user.userId);
-        if (userRole) {
-          return userRole;
-        } else {
-          return {
-            
-          };
-        }
-      });
+    selectedUsers: {
+      handler() {
+        this.userRoles = this.selectedUsers.map(user => {
+          const userRole = this.userRoles.find(userRole => userRole.user.userId === user.userId);
+          if (userRole) {
+            return userRole;
+          } else {
+            return {
+              user,
+              role: "TRIP_MEMBER" 
+            };
+          }
+        });
+      },
+      deep: true
     },
     isShowing(value) {
       this.isShowingDialog = value;

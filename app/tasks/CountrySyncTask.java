@@ -2,7 +2,6 @@ package tasks;
 
 import akka.actor.ActorSystem;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.inject.Inject;
 import models.Country;
 import models.Nationality;
@@ -11,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
-import play.libs.ws.WSResponse;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 import util.CountrySchedulerUtil;
@@ -19,8 +17,6 @@ import util.CountrySchedulerUtil;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 /**
  * This class contains the code needed to sync the countries from the external countries API.
@@ -54,7 +50,6 @@ public class CountrySyncTask {
      */
     private CompletionStage<Map<String, Country>> fetchCountryApi() {
         String countryUrl = "https://restcountries.eu/rest/v2/all?fields=name;alpha2Code";
-        WSRequest request = ws.url(countryUrl);
         return ws.url(countryUrl).get() .thenApplyAsync(response -> {
                     JsonNode resJson = response.asJson();
                     Map<String, Country> countries = new HashMap<>();
@@ -75,7 +70,7 @@ public class CountrySyncTask {
      * Gets all countries already in the db
      * @return current countries as a map
      */
-    public Map<String, Country> getCurrentCountries() {
+    private Map<String, Country> getCurrentCountries() {
         Map<String, Country> currentCountriesMap = new HashMap<>();
         List<Country> currentCountries = Country.find.all();
 
@@ -90,7 +85,7 @@ public class CountrySyncTask {
      * passports
      * @return current passports in the database as a map
      */
-    public Map<String, Passport> getCurrentPassports() {
+    private Map<String, Passport> getCurrentPassports() {
         Map<String, Passport> currentPassportsMap = new HashMap<>();
         List<Passport> currentPassports = Passport.find.all();
 
@@ -105,7 +100,7 @@ public class CountrySyncTask {
      * current nationalities
      * @return the current nationalities in the database as a map
      */
-    public Map<String, Nationality> getCurrentNationalities() {
+    private Map<String, Nationality> getCurrentNationalities() {
         Map<String, Nationality> currentNationalitiesMap = new HashMap<>();
         List<Nationality> currentNationalities = Nationality.find.all();
 
@@ -117,9 +112,9 @@ public class CountrySyncTask {
 
     /**
      * Saves all countries that need to be inserted or updated
-     * @param countries
+     * @param countries the list of countries to be saved.
      */
-    public void saveCountries(List<Country> countries) {
+    private void saveCountries(List<Country> countries) {
         for (Country country: countries) {
             country.save();
         }
@@ -129,7 +124,7 @@ public class CountrySyncTask {
      * Saves all the country passports that needs to be updated or inserted in the database
      * @param passports the passports that either needs to be inserted or updated
      */
-    public void savePassports(List<Passport> passports) {
+    private void savePassports(List<Passport> passports) {
         for (Passport passport : passports) {
             passport.save();
         }
@@ -140,7 +135,7 @@ public class CountrySyncTask {
      * database
      * @param nationalities the nationalities that either needs to be inserted or updated
      */
-    public void saveNationalities(List<Nationality> nationalities) {
+    private void saveNationalities(List<Nationality> nationalities) {
         for (Nationality nationality : nationalities) {
             nationality.save();
         }
@@ -160,7 +155,7 @@ public class CountrySyncTask {
                     log.info("Country Schedule started");
                     long startTime = System.currentTimeMillis();
                     fetchCountryApi()
-                            .thenApplyAsync(newCountries -> {
+                            .thenAcceptAsync(newCountries -> {
                                 Map<String, Country> oldCountries = getCurrentCountries();
                                 Map<String, Passport> oldPassports = getCurrentPassports();
                                 Map<String, Nationality> oldNationalities = getCurrentNationalities();
@@ -173,7 +168,6 @@ public class CountrySyncTask {
                                 long endTime = System.currentTimeMillis();
                                 long duration = (endTime - startTime) / 1000;
                                 log.info("Country schedule finished, took: " + duration + " seconds");
-                                return null;
                            });
                 },
                 this.executionContext

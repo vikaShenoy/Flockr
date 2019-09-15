@@ -16,11 +16,20 @@ export async function getYourDestinations() {
 
 /**
  * Get a list of all public destinations
- * @returns {Promise<Array>} the list of public destinations
+ * @param {String} searchCriterion optional, to filter destinations by name
+ * @param {Number} offset the offset for the returned public destinations
+ * @returns {Promise<Array>} the list of public destinations, sorted by name
  */
-export async function getPublicDestinations() {
+export async function getPublicDestinations(searchCriterion, offset) {
+  const query = {
+    offset: offset
+  };
+  if (searchCriterion) {
+    query.search = searchCriterion;
+  }
   const res = await superagent.get(endpoint("/destinations"))
-    .set("Authorization", localStorage.getItem("authToken"));
+    .set("Authorization", localStorage.getItem("authToken"))
+    .query(query);
 
   return res.body;
 }

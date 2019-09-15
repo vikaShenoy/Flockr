@@ -11,15 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import models.Country;
-import models.Destination;
-import models.DestinationType;
-import models.Role;
-import models.RoleType;
-import models.TripComposite;
-import models.TripDestinationLeaf;
-import models.TripNode;
-import models.User;
+
+import models.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -233,7 +226,7 @@ public class TripControllerTest {
     tripDestinations.add(tripDestination2);
     tripBody.put("name", "Pirate Trip");
     tripBody.putArray("tripNodes").addAll(tripDestinations);
-    tripBody.putArray("userIds").add(Json.newObject().put("userId", otherUser.getUserId()));
+    tripBody.putArray("userIds").add(Json.newObject().put("userId", otherUser.getUserId()).put("role", "TRIP_MEMBER"));
     // tripBody.set("userIds", Json.toJson(userIds));
 
     System.out.println(tripBody.toString());
@@ -261,7 +254,8 @@ public class TripControllerTest {
     tripDestinations.add(tripDestination2);
     tripBody.put("name", "Pirate trip");
     tripBody.putArray("tripNodes").addAll(tripDestinations);
-    tripBody.set("userIds", Json.toJson(userIds));
+    tripBody.putArray("userIds").add(Json.newObject().put("userId", user.getUserId()).put("role", "TRIP_MEMBER"));
+    //tripBody.set("userIds", Json.toJson(userIds));
     Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
     Assert.assertEquals(403, result.status());
   }
@@ -531,6 +525,35 @@ public class TripControllerTest {
     optionalTrip.ifPresent(
         tripComposite -> Assert.assertEquals("PutTest", tripComposite.getName()));
   }
+
+  @Test
+  public void updateTripAsTripMember() {
+    // Make the user a member of the trip.
+    List<User> tripUsers = new ArrayList<>();
+    List<UserRole> tripUserRoles = new ArrayList<>();
+    tripUsers.add(user);
+    trip.setUsers(tripUsers);
+    Role memberRole = new Role(RoleType.TRIP_MEMBER);
+    UserRole userRole = new UserRole(user, memberRole);
+    trip.setUserRoles(tripUserRoles);
+    // Try and change the trip's name with a put request.
+    updateTrip(user.getToken(), user.getUserId(), 403, true);
+  }
+
+  @Test
+  public void updateTripAsTripManager() {}
+
+  @Test
+  public void updateTripAsTripOwner() {}
+
+  @Test
+  public void updateTripUserPermissions() {}
+
+  @Test
+  public void updateLowerLevelTripBad() {}
+
+  @Test
+  public void updateHigherLevelTripBad() {}
 
   @After
   public void tearDown() {

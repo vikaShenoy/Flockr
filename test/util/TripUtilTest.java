@@ -30,12 +30,6 @@ public class TripUtilTest {
     Application application;
     Set<TripComposite> tripComposites;
 
-    private UserRepository userRepository;
-
-    public TripUtilTest(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     @Before
     public void setUp() {
         Map<String, String> testSettings = new HashMap<>();

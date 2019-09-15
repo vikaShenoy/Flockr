@@ -261,7 +261,7 @@ public class TripRepository {
                   .findOneOrEmpty();
           if (trip.isPresent()) {
             List<TripNode> tripNodes = recursiveGetTripNodesWithSoftDelete(tripId);
-            trip.get().setTripNodes(tripNodes);
+//            trip.get().setTripNodes(tripNodes);
           }
           return trip;
         },

@@ -133,64 +133,59 @@ public class DestinationControllerTest {
     TestState.clear();
   }
 
-//  @Test
-//  public void badRequestOnNoOffsetGettingDestinations() {
-//    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations", user.getToken());
-//    Assert.assertEquals(400, result.status());
-//  }
-//
-//  @Test
-//  public void canGetDestinationsWithOffsetOnly() throws IOException {
-//    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?offset=0", user.getToken());
-//    Assert.assertEquals(200, result.status());
-//    JsonNode destinations = fakeClient.converResultToJSON(result);
-//    for (JsonNode destination : destinations) {
-//      Assert.assertFalse(destination.get("destinationName").asText().isEmpty());
-//    }
-//  }
-//
-//  @Test
-//  public void canSearchForDestinationsByName() throws IOException {
-//    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?search=Test&offset=0", user.getToken());
-//    Assert.assertEquals(200, result.status());
-//    JsonNode destinations = fakeClient.converResultToJSON(result);
-//    for (JsonNode destination : destinations) {
-//      Assert.assertFalse(destination.get("destinationName").asText().contains("Test"));
-//    }
-//  }
-//
-//  @Test
-//  public void unsuccessfulSearchYieldsEmptyJSONArray() throws IOException {
-//    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?search=notadestination&offset=0", user.getToken());
-//    Assert.assertEquals(200, result.status());
-//    JsonNode destinations = fakeClient.converResultToJSON(result);
-//    Assert.assertEquals(0, destinations.size());
-//  }
-//
-//  @Test
-//  public void offsettingTooFarYieldsEmptyJSONArray() throws IOException {
-//    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?search=Test&offset=5000", user.getToken());
-//    Assert.assertEquals(200, result.status());
-//    JsonNode destinations = fakeClient.converResultToJSON(result);
-//    Assert.assertEquals(0, destinations.size());
-//  }
-//
-//  @Test
-//  public void unauthorizedWhenGettingDestinationsWithNoToken() throws IOException {
-//    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?offset=0", "");
-//    Assert.assertEquals(401, result.status());
-//  }
-//
-//  @Test
-//  public void getDestinationsEndpointOnlyReturnsPublicDestinations() throws IOException {
-//    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?offset=0", user.getToken());
-//    Assert.assertEquals(200, result.status());
-//    JsonNode destinations = fakeClient.converResultToJSON(result);
-//
-//    for (JsonNode destination : destinations) {
-//      Assert.assertTrue(destination.get("isPublic").asBoolean());
-//    }
-//  }
+  @Test
+  public void canGetDestinationsWithOffsetOnly() throws IOException {
+    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?offset=0", user.getToken());
+    Assert.assertEquals(200, result.status());
+    JsonNode destinations = fakeClient.converResultToJSON(result);
+    for (JsonNode destination : destinations) {
+      Assert.assertFalse(destination.get("destinationName").asText().isEmpty());
+    }
+  }
+
+  @Test
+  public void canSearchForDestinationsByName() throws IOException {
+    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?search=Test&offset=0", user.getToken());
+    Assert.assertEquals(200, result.status());
+    JsonNode destinations = fakeClient.converResultToJSON(result);
+    for (JsonNode destination : destinations) {
+      System.out.println(destination.toString());
+      Assert.assertTrue(destination.get("destinationName").asText().contains("Test"));
+    }
+  }
+
+  @Test
+  public void unsuccessfulSearchYieldsEmptyJSONArray() throws IOException {
+    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?search=notadestination&offset=0", user.getToken());
+    Assert.assertEquals(200, result.status());
+    JsonNode destinations = fakeClient.converResultToJSON(result);
+    Assert.assertEquals(0, destinations.size());
+  }
+
+  @Test
+  public void offsettingTooFarYieldsEmptyJSONArray() throws IOException {
+    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?search=Test&offset=5000", user.getToken());
+    Assert.assertEquals(200, result.status());
+    JsonNode destinations = fakeClient.converResultToJSON(result);
+    Assert.assertEquals(0, destinations.size());
+  }
+
+  @Test
+  public void unauthorizedWhenGettingDestinationsWithNoToken() throws IOException {
+    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?offset=0", "");
+    Assert.assertEquals(401, result.status());
+  }
+
+  @Test
+  public void getDestinationsEndpointOnlyReturnsPublicDestinations() throws IOException {
+    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?offset=0", user.getToken());
+    Assert.assertEquals(200, result.status());
+    JsonNode destinations = fakeClient.converResultToJSON(result);
+
+    for (JsonNode destination : destinations) {
+      Assert.assertTrue(destination.get("isPublic").asBoolean());
+    }
+  }
 
   @Test
   public void undoDeleteGood() {

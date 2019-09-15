@@ -455,8 +455,8 @@
         } catch (e) {
           this.showError("Could not remove destination from trip");
         }
-      }
-    },
+      },
+   },
     watch: {
       /**
        * Watch for rerouting to the same page, if so, get new trip contents

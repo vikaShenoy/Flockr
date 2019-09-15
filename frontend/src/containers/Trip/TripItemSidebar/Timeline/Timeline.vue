@@ -9,6 +9,7 @@
         v-for="tripNode in trip.tripNodes"
         v-bind:key="tripNode.tripNodeId"
         :tripNode="tripNode"
+        :rootTrip="rootTrip"
         :alignRight="false"
         @toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
         @showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
@@ -24,6 +25,8 @@
 import Sortable from "sortablejs";
 import TripNode from "./TripNode/TripNode";
 import { sortTimeline } from "./TimelineService";
+import roleType from '../../../../stores/roleType';
+import UserStore from '../../../../stores/UserStore';
 
 export default {
   props: {
@@ -33,6 +36,10 @@ export default {
     },
     isSubTrip: {
       type: Boolean
+    },
+    // Need to pass the parent trip as Timeline component works recursively
+    rootTrip: {
+      type: Object 
     }
   },
   components: {
@@ -53,10 +60,15 @@ export default {
           });
         }
       }
+    },
+    hasPermissionToEdit() {
+      const userRole = this.rootTrip.userRoles.find(userRole => userRole.user.userId === UserStore.data.userId);
+      return userRole.role.roleType === roleType.TRIP_MANAGER || userRole.role.roleType === roleType.TRIP_OWNER;
     }
   },
   mounted() {
-    if (!this.isSubTrip) {
+    // User needs to be a trip manager or owner to change order of trip nodes
+    if (!this.isSubTrip && this.hasPermissionToEdit()) {
       setTimeout(() => {
         this.initSorting();
       }, 0);
@@ -66,7 +78,8 @@ export default {
     trip: {
       handler() {
         // Sorting should only be done once by the parent which is why flag is used
-        if (!this.isSubTrip) {
+        // User also needs to have the correct permissions to be able to drag and drop
+        if (!this.isSubTrip && this.hasPermissionToEdit()) {
           // setTimeout enforces that the function runs only when the whole view has rendered, meaning
           // that we initialise drag and drop for every level
           setTimeout(() => {

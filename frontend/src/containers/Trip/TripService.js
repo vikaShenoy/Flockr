@@ -184,9 +184,16 @@ export async function editTrip(trip) {
     tripNodes: transformedTripNodes,
   };
 
-  if (trip.users) {
-    tripData.userIds = trip.users.map(user => user.userId);
+  if (trip.userRoles) {
+    tripData.userIds = trip.userRoles.map(userRole => {
+      return {
+        userId: userRole.user.userId,
+        permission: userRole.role.roleType
+      };
+    });
   }
+
+
   await superagent
   .put(endpoint(`/users/${userId}/trips/${trip.tripNodeId}`))
   .set("Authorization", authToken)
