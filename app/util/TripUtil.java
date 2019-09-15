@@ -148,7 +148,6 @@ public class TripUtil {
         if (userIdsJson == null) {
             return null;
         }
-        System.out.println(userIdsJson);
 
         List<User> users = new ArrayList<>();
 

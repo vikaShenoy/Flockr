@@ -163,9 +163,6 @@ public class TripController extends Controller {
                   .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
                   .exceptionally(
                       e -> {
-                        System.out.println(e.getMessage());
-                        System.out.println(e.getCause());
-                        System.out.println(e.getStackTrace());
                         e.printStackTrace();
                         return internalServerError();
                       });
@@ -339,7 +336,6 @@ public class TripController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> updateTrip(Http.Request request, int userId, int tripId) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
-
         if (!security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
@@ -369,7 +365,6 @@ public class TripController extends Controller {
                             } catch (ForbiddenRequestException e) {
                                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
                             } catch (NotFoundException e) {
-                                System.out.println(e.getMessage());
                                 return CompletableFuture.completedFuture(notFound(e.getMessage()));
                             }
 
@@ -381,22 +376,40 @@ public class TripController extends Controller {
                                             destinations -> {
                                                 TripComposite trip = optionalTrip.get();
 
-                                                List<String> tripUserRoles = trip.getUserRoles().stream().
-                                                        filter(tripUserRole -> tripUserRole.getUser().getUserId() ==
-                                                                userFromMiddleware.getUserId()).
-                                                        map(userRole -> userRole.getRole().getRoleType()).collect(Collectors.toList());
-                                                System.out.println(tripUserRoles);
+                                                String userPermissionLevel = getTripUserPermissionLevel(
+                                                        trip, userFromMiddleware.getUserId());
+
+                                                // Trip members can't edit anything.
+                                                if (userPermissionLevel.equals("TRIP_MEMBER")) {
+                                                    throw new CompletionException(
+                                                            new ForbiddenRequestException(
+                                                                    "You do not have permission to edit this trip."));
+                                                }
 
                                                 // Delete old destination leaf nodes.
                                                 tripRepository.deleteListOfTrips(trip.getTripNodes());
-
                                                 trip.setTripNodes(tripNodes);
                                                 trip.setName(tripName);
 
-                                                if (tripNodesJson != null) {
-                                                    trip.setUsers(users);
+                                                // Set users/permissions. Only trip owners have permission.
+                                                List<UserRole> tripUserRoles = new ArrayList<>();
+                                                if (userPermissionLevel.equals("TRIP_OWNER")) {
+                                                    if (tripNodesJson != null) {
+                                                        trip.setUsers(users);
+                                                    }
+                                                    for (User user : users) {
+                                                        for (JsonNode userJson : userIdsJson) {
+                                                            if (userJson.get("userId").asInt() == user.getUserId()) {
+                                                                Role role = userRepository.getSingleRoleByType(
+                                                                        userJson.get("role").asText());
+                                                                UserRole userRole = new UserRole(user, role);
+                                                                userRole.save();
+                                                                tripUserRoles.add(userRole);
+                                                            }
+                                                        }
+                                                    }
+                                                    trip.setUserRoles(tripUserRoles);
                                                 }
-
                                                 return tripRepository.update(trip);
                                             })
                                     .thenComposeAsync(trip -> {
@@ -407,10 +420,7 @@ public class TripController extends Controller {
                                         if (!optionalUpdatedTrip.isPresent()) {
                                             return ok();
                                         }
-
                                         tripNotifier.notifyTripUpdate(userFromMiddleware, optionalUpdatedTrip.get());
-
-
                                         return ok(Json.toJson(optionalUpdatedTrip.get()));
                                     });
                         },
@@ -428,6 +438,25 @@ public class TripController extends Controller {
                                 return internalServerError();
                             }
                         });
+    }
+
+    /**
+     * Finds the highest trip permission level a user has.
+     * @param trip the trip the permission level is being found for.
+     * @param userId id of the user to find permission level for.
+     * @return a string of the user's highest permission level.
+     */
+    private String getTripUserPermissionLevel(TripComposite trip, int userId) {
+        List<String> tripUserRoles = trip.getUserRoles().stream().
+                filter(tripUserRole -> tripUserRole.getUser().getUserId() == userId).
+                map(userRole -> userRole.getRole().getRoleType()).collect(
+                Collectors.toList());
+        if (tripUserRoles.contains("TRIP_OWNER")) {
+            return "TRIP_OWNER";
+        } else if (tripUserRoles.contains("TRIP_MANAGER")) {
+            return "TRIP_MANAGER";
+        }
+        return "TRIP_MEMBER";
     }
 
     /**
