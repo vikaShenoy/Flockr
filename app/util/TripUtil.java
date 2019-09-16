@@ -111,24 +111,29 @@ public class TripUtil {
      * @return the list of users
      */
     public List<User> getUsersFromJson(JsonNode userIdsJson, User user) throws ForbiddenRequestException, NotFoundException{
-        List<User> users;
+        List<User> users = new ArrayList<>();
         List<Integer> userIds = new ArrayList<>();
 
         // parse user if from JSON, add user id to the list of user id integers
-        for (JsonNode userIdJson : userIdsJson) {
-            int currentUserId = userIdJson.get("userId").asInt();
-            userIds.add(currentUserId);
+        if (userIdsJson != null) {
+            for (JsonNode userIdJson : userIdsJson) {
+                int currentUserId = userIdJson.get("userId").asInt();
+                userIds.add(currentUserId);
+            }
+            if (userIds.size() > 0) {
+                users = userRepository.getUsersWithIds(userIds);
+            }
+
+
+            if (users.contains(user)) {
+                throw new ForbiddenRequestException("You cannot add yourself to a trip");
+            }
+
+            if (users.contains(null)) {
+                throw new NotFoundException("User not found");
+            }
         }
 
-        users = userRepository.getUsersWithIds(userIds);
-
-        if (users.contains(user)) {
-            throw new ForbiddenRequestException("You cannot add yourself to a trip");
-        }
-
-        if (users.contains(null)) {
-            throw new NotFoundException("User not found");
-        }
 
         // Add own user to list of users
         users.add(user);
