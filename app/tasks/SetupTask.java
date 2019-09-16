@@ -46,8 +46,6 @@ public class SetupTask {
 
                     SqlUpdate sqlUpdate = Ebean.createSqlUpdate(statement);
                     sqlUpdate.execute();
-                    System.out.println("ADDING CHILD INDEX THINGY");
-                    System.out.println("Ended Setup tasks");
                     return null;
                   });
             },

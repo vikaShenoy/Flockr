@@ -2,6 +2,7 @@ package controllers;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import actions.ActionState;
+import actions.Admin;
 import actions.LoggedIn;
 import akka.actor.ActorRef;
 import models.*;
@@ -362,8 +363,9 @@ public class TripController extends Controller {
                                             destinations -> {
                                                 TripComposite trip = optionalTrip.get();
 
+                                                // CHECK IF USER IS AN ADMIN
                                                 String userPermissionLevel = getTripUserPermissionLevel(
-                                                        trip, userFromMiddleware.getUserId());
+                                                        trip, userFromMiddleware);
 
                                                 // Trip members can't edit anything.
                                                 if (userPermissionLevel.equals("TRIP_MEMBER")) {
@@ -419,6 +421,8 @@ public class TripController extends Controller {
                                 return notFound();
                             } catch (BadRequestException badRequestError) {
                                 return badRequest();
+                            } catch (ForbiddenRequestException forbiddenRequestError) {
+                                return forbidden();
                             } catch (Throwable serverError) {
                                 serverError.printStackTrace();
                                 return internalServerError();
@@ -428,16 +432,17 @@ public class TripController extends Controller {
 
     /**
      * Finds the highest trip permission level a user has.
+     * NOTE - if the user is a system admin they automatically get the highest permission level.
      * @param trip the trip the permission level is being found for.
-     * @param userId id of the user to find permission level for.
+     * @param user user to find permission level for.
      * @return a string of the user's highest permission level.
      */
-    private String getTripUserPermissionLevel(TripComposite trip, int userId) {
+    private String getTripUserPermissionLevel(TripComposite trip, User user) {
         List<String> tripUserRoles = trip.getUserRoles().stream().
-                filter(tripUserRole -> tripUserRole.getUser().getUserId() == userId).
+                filter(tripUserRole -> tripUserRole.getUser().getUserId() == user.getUserId()).
                 map(userRole -> userRole.getRole().getRoleType()).collect(
                 Collectors.toList());
-        if (tripUserRoles.contains("TRIP_OWNER")) {
+        if (tripUserRoles.contains("TRIP_OWNER") || user.isAdmin()) {
             return "TRIP_OWNER";
         } else if (tripUserRoles.contains("TRIP_MANAGER")) {
             return "TRIP_MANAGER";
