@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-class TripControllerTestUtil {
+public class TripControllerTestUtil {
 
     /**
      * Helper function for giving the test a user a trip role.
@@ -17,7 +17,7 @@ class TripControllerTestUtil {
      * @param trip the trip to set role for.
      * @param roleType role to give the test user.
      */
-    static void setUserTripRole(User user, TripComposite trip, RoleType roleType) {
+    public static void setUserTripRole(User user, TripComposite trip, RoleType roleType) {
         List<User> tripUsers = new ArrayList<>();
         List<UserRole> tripUserRoles = new ArrayList<>();
         tripUsers.add(user);
@@ -30,7 +30,7 @@ class TripControllerTestUtil {
         trip.save();
     }
 
-    static ObjectNode createTripJsonBody(String name, List<ObjectNode> tripNodes, Map<User, String> users) {
+    public static ObjectNode createTripJsonBody(String name, List<ObjectNode> tripNodes, Map<User, String> users) {
         ObjectNode body = Json.newObject();
         ArrayNode userJson = Json.newArray();
         ArrayNode tripNodeJson = Json.newArray();
