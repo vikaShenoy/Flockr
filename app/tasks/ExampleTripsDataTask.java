@@ -31,7 +31,6 @@ public class ExampleTripsDataTask {
   private ActorSystem actorSystem;
   private ExecutionContext executionContext;
   final Logger log = LoggerFactory.getLogger(this.getClass());
-  private final WSClient ws;
   private TripRepository tripRepository;
   Date pointOfReference = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
   private boolean readyForBigTrips = false;
@@ -45,7 +44,6 @@ public class ExampleTripsDataTask {
     this.actorSystem = actorSystem;
     this.executionContext = executionContext;
     this.tripRepository = tripRepository;
-    this.ws = ws;
     initialise();
   }
 
@@ -81,14 +79,12 @@ public class ExampleTripsDataTask {
    * @return true if the user has trips.
    */
   private boolean doesUserHaveTrips(User user) {
-    boolean exists =
-        TripNode.find
+    return TripNode.find
             .query()
             .fetchLazy("users", "user_id")
             .where()
             .in("users.userId", user.getUserId())
             .exists();
-    return exists;
   }
 
   /**
@@ -748,16 +744,20 @@ public class ExampleTripsDataTask {
 
                           // Get countries
                           Country countryOne = countries.get(countryIndex);
+                          String countryOneName = countryOne.getCountryName();
                           List<Destination> countryOneDestinations = new ArrayList<>();
                           while (countryOneDestinations.size() < 5) {
                             countryOneDestinations = fetchNumDestinationsFromCountry(countryOne, 5);
+                            countryOneName = countryOne.getCountryName();
                             countryIndex = (countryIndex + 1) % countries.size();
                             countryOne = countries.get(countryIndex);
                           }
                           Country countryTwo = countries.get(countryIndex);
+                          String countryTwoName = countryTwo.getCountryName();
                           List<Destination> countryTwoDestinations = new ArrayList<>();
                           while (countryTwoDestinations.size() < 5) {
                             countryTwoDestinations = fetchNumDestinationsFromCountry(countryTwo, 5);
+                            countryTwoName = countryTwo.getCountryName();
                             countryIndex = (countryIndex + 1) % countries.size();
                             countryTwo = countries.get(countryIndex);
                           }
@@ -774,13 +774,11 @@ public class ExampleTripsDataTask {
                                   tripNodes1,
                                   thisUserList,
                                   String.format(
-                                      "%s's trip from %s to %s",
+                                      "%s %s's trip from %s to %s",
                                       user.getFirstName(),
-                                      countryOne.getCountryName(),
-                                      countryTwo.getCountryName()));
-                          tripOne.save();
-                          System.out.println(
-                              String.format("%s has been created", tripOne.getName()));
+                                      user.getLastName(),
+                                      countryOneName,
+                                      countryTwoName));
 
                           List<TripNode> tripNodes2 =
                               makeTripNodesList(
@@ -798,10 +796,11 @@ public class ExampleTripsDataTask {
                                   tripNodes3,
                                   thisUserList,
                                   String.format(
-                                      "%s's trip from %s to %s",
+                                      "%s %s's trip from %s to %s",
                                       user.getFirstName(),
-                                      countryTwo.getCountryName(),
-                                      countryOne.getCountryName()));
+                                      user.getLastName(),
+                                      countryTwoName,
+                                      countryOneName));
 
                           tripNodes2.add(tripThree);
 
@@ -810,10 +809,16 @@ public class ExampleTripsDataTask {
                                   tripNodes2,
                                   thisUserList,
                                   String.format(
-                                      "%s's return trip from %s to %s",
+                                      "%s %s's return trip from %s to %s",
                                       user.getFirstName(),
-                                      countryTwo.getCountryName(),
-                                      countryOne.getCountryName()));
+                                      user.getLastName(),
+                                      countryTwoName,
+                                      countryOneName));
+
+                          //TODO:: Need to add permissions once group trip permissions is added.
+                          tripOne.save();
+                          System.out.println(
+                              String.format("%s has been created", tripOne.getName()));
 
                           tripThree.save();
                           System.out.println(
