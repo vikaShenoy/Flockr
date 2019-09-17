@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
+import exceptions.ServerErrorException;
+import java.nio.file.StandardCopyOption;
 import models.PersonalPhoto;
 import models.User;
 import org.slf4j.Logger;
@@ -453,7 +455,8 @@ public class PhotoController extends Controller {
                                 isPublic,
                                 receivingUser,
                                 isPrimary,
-                                finalThumbFilename);
+                                finalThumbFilename,
+                                false);
                         return photoRepository
                             .insert(personalPhoto)
                             .thenApplyAsync(
@@ -726,7 +729,7 @@ public class PhotoController extends Controller {
               }
               return photoRepository
                   .getPhotoById(photoId)
-                  .thenApplyAsync(
+                  .thenComposeAsync(
                       optionalPhoto -> {
                         if (!optionalPhoto.isPresent()) {
                           throw new CompletionException(new NotFoundException("Photo not found"));
@@ -737,11 +740,55 @@ public class PhotoController extends Controller {
                               new ForbiddenRequestException(
                                   "User does not have permission to perform this request"));
                         }
-                        user.setCoverPhoto(photo);
-                        return userRepository.updateUser(user);
+
+                        // start copying the file to file system
+                        String[] filenameArray = photo.getFilenameHash().split("\\.");
+                        String extension = "." + filenameArray[filenameArray.length - 1];
+
+                        String path = System.getProperty("user.dir") + "/storage/photos";
+
+                        File currentPhoto = new File(path, photo.getFilenameHash());
+                        if (!currentPhoto.exists()) {
+                          throw new CompletionException(new NotFoundException("File Not Found"));
+                        }
+
+                        Security security = new Security();
+                        String token = security.generateToken();
+                        String filename = token + extension;
+                        File fileDestination = new File(path, filename);
+
+                        // if the file path already exists, generate another token
+                        while (fileDestination.exists()) {
+                          token = security.generateToken();
+                          filename = token + extension;
+                          fileDestination = new File(path, filename);
+                        }
+
+                        try {
+                          java.nio.file.Files.copy(
+                              currentPhoto.toPath(),
+                              fileDestination.toPath(),
+                              StandardCopyOption.COPY_ATTRIBUTES);
+                        } catch (IOException e) {
+                          log.error("File Error", e);
+                          throw new CompletionException(new ServerErrorException());
+                        }
+
+                        PersonalPhoto coverPhoto =
+                            new PersonalPhoto(filename, true, user, false, null, true);
+                        return photoRepository
+                            .insert(coverPhoto)
+                            .thenComposeAsync(
+                                savedCoverPhoto -> {
+                                  if (user.getCoverPhoto() != null) {
+                                    photoRepository.deletePhoto(user.getCoverPhoto());
+                                  }
+                                  user.setCoverPhoto(savedCoverPhoto);
+                                  return userRepository.updateUser(user);
+                                });
                       });
             })
-        .thenApplyAsync(photo -> ok(Json.toJson(photo)))
+        .thenApplyAsync(user -> ok(Json.toJson(user.getCoverPhoto())))
         .exceptionally(this::getResult);
   }
 

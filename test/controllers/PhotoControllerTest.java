@@ -279,7 +279,7 @@ public class PhotoControllerTest {
   @Test
   public void iCanUndoAProfilePhoto() {
     // Set profile photo and delete "old" photo
-    PersonalPhoto personalPhoto = new PersonalPhoto("abc", true, user, true, "thumb");
+    PersonalPhoto personalPhoto = new PersonalPhoto("abc", true, user, true, "thumb", false);
     personalPhoto.save();
     user.setProfilePhoto(personalPhoto);
 

@@ -113,6 +113,7 @@ create table personal_photo (
   user_user_id                  integer,
   is_public                     boolean default false not null,
   is_primary                    boolean default false not null,
+  is_cover                      boolean default false not null,
   filename_hash                 varchar(255),
   thumbnail_name                varchar(255),
   deleted_expiry                timestamp,
