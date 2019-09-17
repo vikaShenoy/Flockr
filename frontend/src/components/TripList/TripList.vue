@@ -46,53 +46,11 @@
     },
     data() {
       return {
-        trips: [
-          {
-            tripid: 1,
-            tripName: "Hello world"  ,
-            status: "Pending"
-          },
-          {
-            tripId: 2,
-            tripName: "Hello world2",
-            status: "Pending"
-          },
-          {
-            tripid: 3,
-            tripName: "Hello world"  ,
-            status: "Pending"
-          },
-          {
-            tripId: 4,
-            tripName: "Hello world2",
-            status: "Pending"
-          },
-          {
-            tripid: 5,
-            tripName: "Hello world"  ,
-            status: "Pending"
-          },
-          {
-            tripId: 6,
-            tripName: "Hello world2",
-            status: "Pending"
-          },
-          {
-            tripid: 7,
-            tripName: "Hello world"  ,
-            status: "Pending"
-          },
-          {
-            tripId: 8,
-            tripName: "Hello world2",
-            status: "Pending"
-          },
-
-        ]
+        trips: null
       };
     },
     async mounted() {
-      // this.refreshList();
+      this.refreshList();
     },
     methods: {
       /**
