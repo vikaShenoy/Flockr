@@ -180,17 +180,21 @@ public class PhotoControllerTest {
   }
 
   @Test
-  public void undoDeleteCoverPhotoNotFound() {
+  public void undoDeleteCoverPhotoNotFoundPhoto() {
     undoDeleteCoverPhotoWithToken(adminUser.getToken(), 404, adminUser.getUserId(), false);
+  }
+
+  @Test
+  public void undoDeleteCoverPhotoNotFoundUser() {
+    undoDeleteCoverPhotoWithToken(user.getToken(), 404, 900000, false);
   }
 
   @Test
   public void undoDeleteCoverPhotoUnauthorised() {
     Result result =
-        fakeClient.makeRequestWithToken(
+        fakeClient.makeRequestWithNoToken(
             "PUT",
-            String.format("/api/users/%d/photos/cover/undodelete", user.getUserId()),
-            otherUser.getToken());
+            String.format("/api/users/%d/photos/cover/undodelete", user.getUserId()));
     Assert.assertEquals(401, result.status());
   }
 

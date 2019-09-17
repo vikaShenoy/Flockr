@@ -25,7 +25,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -98,7 +97,7 @@ public class PhotoController extends Controller {
             optionalPhoto -> {
               // If the photo with the given photo id does not exists
               if (!optionalPhoto.isPresent()) {
-                throw new CompletionException(new NotFoundException());
+                throw new CompletionException(new NotFoundException("Could not find a photo with the given photo ID"));
               }
 
               // Checks that the user is either the admin or the owner of the photo to change
@@ -107,7 +106,7 @@ public class PhotoController extends Controller {
                   && user.getUserId() != optionalPhoto.get().getUser().getUserId()) {
                 throw new CompletionException(
                     new ForbiddenRequestException(
-                        "You're not allowed to change the permission group."));
+                        "You do not have permission to change the photo permission of the photo"));
               }
 
               PersonalPhoto photo = optionalPhoto.get();
@@ -115,23 +114,9 @@ public class PhotoController extends Controller {
               photo.setPrimary(isPrimary);
               return photoRepository.updatePhoto(photo);
             })
-        .thenApplyAsync(PersonalPhoto -> ok("Successfully updated permission groups"))
+        .thenApplyAsync(personalPhoto -> ok("Successfully updated permission groups"))
         .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                response.put("message", "Could not find a photo with the given photo ID");
-                return notFound(response);
-              } catch (ForbiddenRequestException forbiddenException) {
-                response.put(
-                    "message", "You are unauthorised to change the photo permission of the photo");
-                return forbidden(response);
-              } catch (Throwable serverException) {
-                response.put("message", "Endpoint under development");
-                return internalServerError(response);
-              }
-            });
+            this::getResult);
   }
 
   /**
@@ -168,26 +153,7 @@ public class PhotoController extends Controller {
             })
         .thenApplyAsync(photo -> ok(Json.toJson(photo)))
         .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (BadRequestException error) {
-                ObjectNode message = Json.newObject();
-                message.put("message", error.getMessage());
-                return badRequest(message);
-              } catch (NotFoundException error) {
-                ObjectNode message = Json.newObject();
-                message.put("message", error.getMessage());
-                return notFound(message);
-              } catch (ForbiddenRequestException error) {
-                ObjectNode message = Json.newObject();
-                message.put("message", error.getMessage());
-                return forbidden(message);
-              } catch (Throwable throwable) {
-                log.error("500 - Internal Server Error", throwable);
-                return internalServerError();
-              }
-            });
+            this::getResult);
   }
 
   /**
@@ -205,7 +171,7 @@ public class PhotoController extends Controller {
         .thenComposeAsync(
             (optionalPhoto) -> {
               if (!optionalPhoto.isPresent()) {
-                throw new CompletionException(new NotFoundException());
+                throw new CompletionException(new NotFoundException("The photo with the given id is not found"));
               }
               PersonalPhoto photo = optionalPhoto.get();
               if (user.getUserId() != photo.getUser().getUserId() && !user.isAdmin()) {
@@ -216,21 +182,7 @@ public class PhotoController extends Controller {
             })
         .thenApplyAsync(photo -> (Result) ok())
         .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException error) {
-                ObjectNode message = Json.newObject();
-                message.put("message", "The photo with the given id is not found");
-                return notFound(message);
-              } catch (ForbiddenRequestException error) {
-                ObjectNode message = Json.newObject();
-                message.put("message", error.getMessage());
-                return forbidden(message);
-              } catch (Throwable serverError) {
-                return internalServerError();
-              }
-            });
+            this::getResult);
   }
 
   /**
@@ -297,7 +249,7 @@ public class PhotoController extends Controller {
         .thenApplyAsync(
             photo -> {
               if (!photo.isPresent()) {
-                throw new CompletionException(new NotFoundException());
+                throw new CompletionException(new NotFoundException("Please provide a valid request body according to the API spec"));
               } else if (!user.isAdmin()
                   && !photo.get().isPublic()
                   && user.getUserId() != photo.get().getUser().getUserId()) {
@@ -318,20 +270,7 @@ public class PhotoController extends Controller {
               }
             })
         .exceptionally(
-            error -> {
-              try {
-                throw error.getCause();
-              } catch (NotFoundException notFoundException) {
-                ObjectNode message = Json.newObject();
-                message.put(
-                    "message", "Please provide a valid request body according to the API spec");
-                return notFound(message);
-              } catch (Throwable throwable) {
-                ObjectNode message = Json.newObject();
-                message.put("message", "Something went wrong while retrieving your image.");
-                return internalServerError(message);
-              }
-            });
+            this::getResult);
   }
 
   /**
@@ -542,20 +481,7 @@ public class PhotoController extends Controller {
             },
             httpExecutionContext.current())
         .exceptionally(
-            error -> {
-              try {
-                throw error.getCause();
-              } catch (ForbiddenRequestException forbiddenRequest) {
-                response.put(messageKey, forbiddenRequest.getMessage());
-                return forbidden(response);
-              } catch (Throwable throwable) {
-                System.err.println(
-                    "Unexpected error when uploading a photo: "
-                        + Arrays.toString(throwable.getStackTrace()));
-                response.put(messageKey, "Something went wrong trying to upload the photo");
-                return internalServerError(response);
-              }
-            });
+            this::getResult);
   }
 
   /**
@@ -592,7 +518,7 @@ public class PhotoController extends Controller {
         .thenApplyAsync(
             photo -> {
               if (!photo.isPresent()) {
-                throw new CompletionException(new NotFoundException());
+                throw new CompletionException(new NotFoundException("Please provide a valid request body according to the API spec"));
               } else if (!user.isAdmin()
                   && !photo.get().isPublic()
                   && user.getUserId() != photo.get().getUser().getUserId()) {
@@ -607,20 +533,7 @@ public class PhotoController extends Controller {
               }
             })
         .exceptionally(
-            error -> {
-              try {
-                throw error.getCause();
-              } catch (NotFoundException notFoundException) {
-                ObjectNode message = Json.newObject();
-                message.put(
-                    "message", "Please provide a valid request body according to the API spec");
-                return notFound(message);
-              } catch (Throwable throwable) {
-                ObjectNode message = Json.newObject();
-                message.put("message", "Something went wrong while retrieving your image.");
-                return internalServerError(message);
-              }
-            });
+            this::getResult);
   }
 
   @With(LoggedIn.class)
@@ -667,19 +580,7 @@ public class PhotoController extends Controller {
               return (Result) ok();
             })
         .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (ForbiddenRequestException forbiddenError) {
-                return forbidden(e.getMessage());
-              } catch (NotFoundException notFoundError) {
-                return notFound(notFoundError.getMessage());
-              } catch (BadRequestException badRequest) {
-                return badRequest(e.getMessage());
-              } catch (Throwable serverError) {
-                return internalServerError();
-              }
-            });
+            this::getResult);
   }
 
   /**
@@ -733,9 +634,11 @@ public class PhotoController extends Controller {
    *
    * @param userId the id of the user.
    * @param request the http request.
-   * @return the http response with one of the following status codes. - 200 - OK - successfully
-   *     deleted. - 401 - Unauthorised - user not logged in. - 403 - Forbidden - user does not have
-   *     permission. - 404 - Not Found - user not found or user has no cover photo.
+   * @return the http response with one of the following status codes.
+   * - 200 - OK - successfully deleted.
+   * - 401 - Unauthorised - user not logged in.
+   * - 403 - Forbidden - user does not have permission.
+   * - 404 - Not Found - user not found or user has no cover photo.
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> deleteCoverPhoto(int userId, Http.Request request) {
@@ -759,16 +662,69 @@ public class PhotoController extends Controller {
         .thenApplyAsync(photo -> (Result) ok())
         .exceptionally(
             e -> {
-              try {
-                throw e.getCause();
-              } catch (ForbiddenRequestException exception) {
-                return forbidden();
-              } catch (NotFoundException exception) {
-                return notFound();
-              } catch (Throwable throwable) {
-                log.error(throwable.getMessage());
-                return internalServerError();
-              }
+              return getResult(e);
             });
+  }
+
+  /**
+   * Undoes the deletion of a cover photo for a user.
+   *
+   * @param userId the id of the user.
+   * @param request the http request.
+   * @return the http response with one of the following status codes. - 200 - OK - successfully
+   *     deleted. - 401 - Unauthorised - user not logged in. - 403 - Forbidden - user does not have
+   *     permission. - 404 - Not Found - user not found or user has no cover photo.
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> undoDeleteCoverPhoto(int userId, Http.Request request) {
+    return userRepository
+        .getUserById(userId)
+        .thenComposeAsync(
+            optionalUser -> {
+              if (!optionalUser.isPresent() || optionalUser.get().getCoverPhoto() == null) {
+                throw new CompletionException(
+                    new NotFoundException("User or cover photo not found"));
+              }
+              User user = optionalUser.get();
+              User userFromMiddleware = request.attrs().get(ActionState.USER);
+              if (userFromMiddleware.getUserId() != userId && !userFromMiddleware.isAdmin()) {
+                throw new CompletionException(
+                    new ForbiddenRequestException(
+                        "User does not have permission to perform this request"));
+              }
+              return photoRepository.undoPhotoDelete(user.getCoverPhoto());
+            })
+        .thenApplyAsync(photo -> (Result) ok())
+        .exceptionally(
+            this::getResult);
+  }
+
+  /**
+   * Gets a result based on an error that has been thrown.
+   * @param error the error that has been thrown.
+   * @return the result to reply in the http response.
+   */
+  private Result getResult(Throwable error) {
+    try {
+      throw error.getCause();
+    } catch (BadRequestException exception) {
+      ObjectNode message = Json.newObject();
+      message.put("message", exception.getMessage());
+      return badRequest(message);
+    } catch (ForbiddenRequestException exception) {
+      ObjectNode message = Json.newObject();
+      message.put("message", exception.getMessage());
+      return forbidden(message);
+    } catch (NotFoundException exception) {
+      ObjectNode message = Json.newObject();
+      message.put("message", exception.getMessage());
+      return notFound(message);
+    } catch (Throwable throwable) {
+      ObjectNode message = Json.newObject();
+      message.put("message", throwable.getMessage());
+      throwable.printStackTrace();
+      log.error("500 - Internal Server Error", throwable);
+      return internalServerError(message);
+    }
   }
 }
