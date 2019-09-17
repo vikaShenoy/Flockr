@@ -137,6 +137,40 @@ public class PhotoControllerTest {
   }
 
   @Test
+  public void addCoverPhotoGood() {
+    setUserCoverPhoto(user.getToken(), 200, user.getUserId(), photo.getPhotoId());
+  }
+
+  @Test
+  public void addCoverPhotoGoodAdmin() {
+    setUserCoverPhoto(adminUser.getToken(), 200, user.getUserId(), photo.getPhotoId());
+  }
+
+  @Test
+  public void addCoverPhotoNotFoundPhoto() {
+    setUserCoverPhoto(user.getToken(), 200, user.getUserId(), 90000);
+  }
+
+  @Test
+  public void addCoverPhotoNotFoundUser() {
+    setUserCoverPhoto(user.getToken(), 200, 90000, photo.getPhotoId());
+  }
+
+  @Test
+  public void addCoverPhotoUnauthorised() {
+    Result result =
+        fakeClient.makeRequestWithNoToken(
+            "PUT",
+            String.format("/api/users/%d/photos/%d/cover", user.getUserId(), photo.getPhotoId()));
+    Assert.assertEquals(401, result.status());
+  }
+
+  @Test
+  public void addCoverPhotoForbidden() {
+    setUserCoverPhoto(otherUser.getToken(), 403, user.getUserId(), photo.getPhotoId());
+  }
+
+  @Test
   public void deleteCoverPhotoGood() {
     deleteCoverPhotoWithToken(user.getToken(), 200, user.getUserId());
   }
@@ -193,8 +227,7 @@ public class PhotoControllerTest {
   public void undoDeleteCoverPhotoUnauthorised() {
     Result result =
         fakeClient.makeRequestWithNoToken(
-            "PUT",
-            String.format("/api/users/%d/photos/cover/undodelete", user.getUserId()));
+            "PUT", String.format("/api/users/%d/photos/cover/undodelete", user.getUserId()));
     Assert.assertEquals(401, result.status());
   }
 
@@ -385,18 +418,38 @@ public class PhotoControllerTest {
     Result result =
         fakeClient.makeRequestWithToken(
             "PUT",
-            "/api/destinations/"
-                + destination.getDestinationId()
-                + "/photos/"
-                + photoId
-                + "/undodelete",
+            String.format(
+                "/api/destinations/%d/photos/%d/undodelete",
+                destination.getDestinationId(), photoId),
             token);
     Assert.assertEquals(statusCode, result.status());
 
     if (statusCode == 200) {
-      Optional<PersonalPhoto> optionalPhoto =
-          PersonalPhoto.find.query().where().eq("photo_id", photo.getPhotoId()).findOneOrEmpty();
-      Assert.assertTrue(optionalPhoto.isPresent());
+      boolean exists =
+          PersonalPhoto.find.query().where().eq("photo_id", photo.getPhotoId()).exists();
+      Assert.assertTrue(exists);
+    }
+  }
+
+  /**
+   * Sends a request to set the cover photo for a user and check the expected response code.
+   *
+   * @param token the token of the user requesting.
+   * @param statusCode the expected status code.
+   * @param userId the id of the user to set the cover photo.
+   * @param photoId the id pof the photo to set as the cover photo.
+   */
+  private void setUserCoverPhoto(String token, int statusCode, int userId, int photoId) {
+    Result result =
+        fakeClient.makeRequestWithToken(
+            "PUT", String.format("/api/users/%d/photos/%d/cover", userId, photoId), token);
+    Assert.assertEquals(statusCode, result.status());
+
+    if (statusCode == 200) {
+      Optional<User> optionalUser =
+          User.find.query().where().eq("user_id", user.getUserId()).findOneOrEmpty();
+      Assert.assertTrue(optionalUser.isPresent());
+      Assert.assertNotNull(optionalUser.get().getCoverPhoto());
     }
   }
 }
