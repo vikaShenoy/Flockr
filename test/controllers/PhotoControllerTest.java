@@ -148,12 +148,12 @@ public class PhotoControllerTest {
 
   @Test
   public void addCoverPhotoNotFoundPhoto() {
-    setUserCoverPhoto(user.getToken(), 200, user.getUserId(), 90000);
+    setUserCoverPhoto(user.getToken(), 404, user.getUserId(), 90000);
   }
 
   @Test
   public void addCoverPhotoNotFoundUser() {
-    setUserCoverPhoto(user.getToken(), 200, 90000, photo.getPhotoId());
+    setUserCoverPhoto(user.getToken(), 404, 90000, photo.getPhotoId());
   }
 
   @Test
@@ -166,8 +166,13 @@ public class PhotoControllerTest {
   }
 
   @Test
-  public void addCoverPhotoForbidden() {
+  public void addCoverPhotoForbiddenWrongUser() {
     setUserCoverPhoto(otherUser.getToken(), 403, user.getUserId(), photo.getPhotoId());
+  }
+
+  @Test
+  public void addCoverPhotoForbiddenWrongOwner() {
+    setUserCoverPhoto(otherUser.getToken(), 403, otherUser.getUserId(), photo.getPhotoId());
   }
 
   @Test

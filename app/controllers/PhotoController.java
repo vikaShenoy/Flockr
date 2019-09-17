@@ -97,7 +97,8 @@ public class PhotoController extends Controller {
             optionalPhoto -> {
               // If the photo with the given photo id does not exists
               if (!optionalPhoto.isPresent()) {
-                throw new CompletionException(new NotFoundException("Could not find a photo with the given photo ID"));
+                throw new CompletionException(
+                    new NotFoundException("Could not find a photo with the given photo ID"));
               }
 
               // Checks that the user is either the admin or the owner of the photo to change
@@ -115,8 +116,7 @@ public class PhotoController extends Controller {
               return photoRepository.updatePhoto(photo);
             })
         .thenApplyAsync(personalPhoto -> ok("Successfully updated permission groups"))
-        .exceptionally(
-            this::getResult);
+        .exceptionally(this::getResult);
   }
 
   /**
@@ -152,8 +152,7 @@ public class PhotoController extends Controller {
               return photoRepository.undoPhotoDelete(photo);
             })
         .thenApplyAsync(photo -> ok(Json.toJson(photo)))
-        .exceptionally(
-            this::getResult);
+        .exceptionally(this::getResult);
   }
 
   /**
@@ -171,7 +170,8 @@ public class PhotoController extends Controller {
         .thenComposeAsync(
             (optionalPhoto) -> {
               if (!optionalPhoto.isPresent()) {
-                throw new CompletionException(new NotFoundException("The photo with the given id is not found"));
+                throw new CompletionException(
+                    new NotFoundException("The photo with the given id is not found"));
               }
               PersonalPhoto photo = optionalPhoto.get();
               if (user.getUserId() != photo.getUser().getUserId() && !user.isAdmin()) {
@@ -181,8 +181,7 @@ public class PhotoController extends Controller {
               return this.photoRepository.deletePhoto(photo);
             })
         .thenApplyAsync(photo -> (Result) ok())
-        .exceptionally(
-            this::getResult);
+        .exceptionally(this::getResult);
   }
 
   /**
@@ -249,7 +248,9 @@ public class PhotoController extends Controller {
         .thenApplyAsync(
             photo -> {
               if (!photo.isPresent()) {
-                throw new CompletionException(new NotFoundException("Please provide a valid request body according to the API spec"));
+                throw new CompletionException(
+                    new NotFoundException(
+                        "Please provide a valid request body according to the API spec"));
               } else if (!user.isAdmin()
                   && !photo.get().isPublic()
                   && user.getUserId() != photo.get().getUser().getUserId()) {
@@ -269,8 +270,7 @@ public class PhotoController extends Controller {
                 return ok().sendFile(photoToBeSent);
               }
             })
-        .exceptionally(
-            this::getResult);
+        .exceptionally(this::getResult);
   }
 
   /**
@@ -480,8 +480,7 @@ public class PhotoController extends Controller {
                       });
             },
             httpExecutionContext.current())
-        .exceptionally(
-            this::getResult);
+        .exceptionally(this::getResult);
   }
 
   /**
@@ -518,7 +517,9 @@ public class PhotoController extends Controller {
         .thenApplyAsync(
             photo -> {
               if (!photo.isPresent()) {
-                throw new CompletionException(new NotFoundException("Please provide a valid request body according to the API spec"));
+                throw new CompletionException(
+                    new NotFoundException(
+                        "Please provide a valid request body according to the API spec"));
               } else if (!user.isAdmin()
                   && !photo.get().isPublic()
                   && user.getUserId() != photo.get().getUser().getUserId()) {
@@ -532,8 +533,7 @@ public class PhotoController extends Controller {
                 return ok().sendFile(new File(path, filename));
               }
             })
-        .exceptionally(
-            this::getResult);
+        .exceptionally(this::getResult);
   }
 
   @With(LoggedIn.class)
@@ -579,8 +579,7 @@ public class PhotoController extends Controller {
               }
               return (Result) ok();
             })
-        .exceptionally(
-            this::getResult);
+        .exceptionally(this::getResult);
   }
 
   /**
@@ -634,11 +633,10 @@ public class PhotoController extends Controller {
    *
    * @param userId the id of the user.
    * @param request the http request.
-   * @return the http response with one of the following status codes.
-   * - 200 - OK - successfully deleted.
-   * - 401 - Unauthorised - user not logged in.
-   * - 403 - Forbidden - user does not have permission.
-   * - 404 - Not Found - user not found or user has no cover photo.
+   * @return the http response with one of the following status codes. - 200 - OK - successfully
+   *     deleted. - 401 - Unauthorised - user not logged in. - 403 - Forbidden - user does not have
+   *     permission. - 404 - Not Found - user not found or user has no cover photo. - 500 - Internal
+   *     Server Error - an unexpected error occurred.
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> deleteCoverPhoto(int userId, Http.Request request) {
@@ -673,7 +671,8 @@ public class PhotoController extends Controller {
    * @param request the http request.
    * @return the http response with one of the following status codes. - 200 - OK - successfully
    *     deleted. - 401 - Unauthorised - user not logged in. - 403 - Forbidden - user does not have
-   *     permission. - 404 - Not Found - user not found or user has no cover photo.
+   *     permission. - 404 - Not Found - user not found or user has no cover photo. - 500 - Internal
+   *     Server Error - an unexpected error occurred.
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> undoDeleteCoverPhoto(int userId, Http.Request request) {
@@ -695,12 +694,60 @@ public class PhotoController extends Controller {
               return photoRepository.undoPhotoDelete(user.getCoverPhoto());
             })
         .thenApplyAsync(photo -> (Result) ok())
-        .exceptionally(
-            this::getResult);
+        .exceptionally(this::getResult);
+  }
+
+  /**
+   * Adds a cover photo to the given user.
+   *
+   * @param userId the isd of the user to add the cover photo to.
+   * @param photoId the id of the photo to set as the cover photo.
+   * @param request the http request.
+   * @return the http response with one of the following codes. - 200 - OK - successfully added the
+   *     cover photo. - 401 - Unauthorized - user not logged in. - 403 - Forbidden - User does not
+   *     have permission. - 404 - Not Found - user or photo not found. - 500 - Internal Server Error
+   *     - an unexpected error occurred.
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> addCoverPhoto(int userId, int photoId, Http.Request request) {
+    return userRepository
+        .getUserById(userId)
+        .thenComposeAsync(
+            optionalUser -> {
+              if (!optionalUser.isPresent()) {
+                throw new CompletionException(new NotFoundException("User not found"));
+              }
+              User user = optionalUser.get();
+              User userFromMiddleware = request.attrs().get(ActionState.USER);
+              if (userFromMiddleware.getUserId() != userId && !userFromMiddleware.isAdmin()) {
+                throw new CompletionException(
+                    new ForbiddenRequestException(
+                        "User does not have permission to perform this request"));
+              }
+              return photoRepository
+                  .getPhotoById(photoId)
+                  .thenApplyAsync(
+                      optionalPhoto -> {
+                        if (!optionalPhoto.isPresent()) {
+                          throw new CompletionException(new NotFoundException("Photo not found"));
+                        }
+                        PersonalPhoto photo = optionalPhoto.get();
+                        if (photo.getOwnerId() != user.getUserId()) {
+                          throw new CompletionException(
+                              new ForbiddenRequestException(
+                                  "User does not have permission to perform this request"));
+                        }
+                        user.setCoverPhoto(photo);
+                        return userRepository.updateUser(user);
+                      });
+            })
+        .thenApplyAsync(photo -> ok(Json.toJson(photo)))
+        .exceptionally(this::getResult);
   }
 
   /**
    * Gets a result based on an error that has been thrown.
+   *
    * @param error the error that has been thrown.
    * @return the result to reply in the http response.
    */
