@@ -199,6 +199,7 @@ create table user (
   gender                        varchar(255),
   email                         varchar(255),
   profile_photo_photo_id        integer,
+  cover_photo_photo_id          integer,
   password_hash                 varchar(255),
   token                         varchar(255),
   deleted_expiry                timestamp,
@@ -206,6 +207,7 @@ create table user (
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint uq_user_email unique (email),
   constraint uq_user_profile_photo_photo_id unique (profile_photo_photo_id),
+  constraint uq_user_cover_photo_photo_id unique (profile_photo_photo_id),
   constraint pk_user primary key (user_id)
 );
 
@@ -314,6 +316,7 @@ create index ix_trip_node_user_user on trip_node_user (user_user_id);
 alter table trip_node_user add constraint fk_trip_node_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
 alter table user add constraint fk_user_profile_photo_photo_id foreign key (profile_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
+alter table user add constraint fk_user_cover_photo_photo_id foreign key (cover_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
 
 
 # --- !Downs
@@ -416,6 +419,7 @@ alter table trip_node_user drop constraint if exists fk_trip_node_user_user;
 drop index if exists ix_trip_node_user_user;
 
 alter table user drop constraint if exists fk_user_profile_photo_photo_id;
+alter table user drop constraint if exists fk_user_cover_photo_photo_id;
 
 drop table if exists chat_group;
 

@@ -34,6 +34,8 @@ PATCH         /api/users/photos/:photoId                                        
 GET           /api/users/photos/:photoId/thumbnail                                    controllers.PhotoController.getThumbnail(photoId: Int, request: Request)
 PUT           /api/users/photos/:photoId/undodelete                                   controllers.PhotoController.undoDelete(photoId: Int, request: Request)
 PUT           /api/users/:userId/profilephoto/:photoId/undo                           controllers.PhotoController.undoProfilePhoto(userId: Int, photoId: Int, request: Request)
+DELETE        /api/users/:userId/photos/cover                                         controllers.PhotoController.deleteCoverPhoto(userId: Int, request: Request)
+#PUT           /api/users/:userId/photos/cover/undodelete                              controllers.PhotoController.undoDeleteCoverPhoto(userId: Int, request: Request)
 
 
 # Destination Proposal endpoints

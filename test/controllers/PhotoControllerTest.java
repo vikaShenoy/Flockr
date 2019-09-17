@@ -147,8 +147,13 @@ public class PhotoControllerTest {
   }
 
   @Test
-  public void deleteCoverPhotoNotFound() {
+  public void deleteCoverPhotoNotFoundPhoto() {
     deleteCoverPhotoWithToken(adminUser.getToken(), 404, adminUser.getUserId());
+  }
+
+  @Test
+  public void deleteCoverPhotoNotFoundUser() {
+    deleteCoverPhotoWithToken(adminUser.getToken(), 404, 90000);
   }
 
   @Test
