@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <Navbar/>
-    <Sidebar/>
+    <Sidebar v-if="isLoggedIn"/>
     <v-content>
       <v-container fluid fill-height id="container">
         <v-layout>
@@ -16,19 +16,31 @@
 </template>
 
 <script>
-import Sidebar from "./Sidebar/Sidebar";
-import Navbar from "./Navbar/Navbar";
-import GlobalSnackbar from "../../components/Snackbars/GlobalSnackbar";
+  import UserStore from "../../stores/UserStore";
+  import Sidebar from "./Sidebar/Sidebar";
+  import Navbar from "./Navbar/Navbar";
+  import GlobalSnackbar from "../../components/Snackbars/GlobalSnackbar";
+
+
 
 export default {
   components: {
     Sidebar,
     Navbar,
-    GlobalSnackbar
+    GlobalSnackbar,
   },
   name: "App",
   data() {
     return {}
+  },
+  computed: {
+    /**
+     * Checks if the user is currently logged in
+     * @returns {The user ID}
+     */
+    isLoggedIn() {
+      return UserStore.methods.loggedIn();
+    }
   }
 }
 </script>
