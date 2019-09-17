@@ -1,54 +1,54 @@
 <template>
   <div>
-    <v-carousel
-      class="carousel"
-      :cycle="false"
-    >
-      <v-carousel-item
-        v-for="(photo, index) in destinationPhotos"
-        :key="photo.photoId"
-        lazy
+      <v-carousel
+        class="carousel"
+        :cycle="false"
       >
-        <v-img
-          :src="photo.endpoint"
-          class="dest-image"
-          alt="Some Image"
-          @click="openPhotoDialog(photo, index)"
-        />
-      </v-carousel-item>
-    </v-carousel>
+        <v-carousel-item
+          v-for="(photo, index) in destinationPhotos"
+          :key="photo.photoId"
+          lazy
+        >
+          <v-img
+            :src="photo.endpoint"
+            class="dest-image"
+            alt="Some Image"
+            @click="openPhotoDialog(photo, index)"
+          />
+        </v-carousel-item>
+      </v-carousel>
 
-    <destination-photo-panel
-      :photo="currentPhoto"
-      :showDialog="showPhotoDialog"
-      :hasOwnerRights="hasOwnerRights"
-      @closeDialog="closePhotoPanel"
-      @displayError="displayError"
-      @permissionUpdated="permissionUpdated"
-      @displayRemovePrompt="displayRemovePrompt"
-    />
-    <AddPhotoDialog
-      :destinationPhotos="destinationPhotos"
-      :destinationId="destinationId"
-      :showDialog="showAddPhotoDialog"
-      :userPhotos="userPhotos"
-      @closeAddPhotoDialog="closeAddPhotoDialogHandler"
-      @addPhoto="addPhoto"
-    />
-    <v-img
-      v-if="destinationPhotos.length === 0"
-      class="dest-image"
-      :src="defaultDestinationPhoto"
-    />
-    <v-btn
-      class="carousel"
-      id="add-button"
-      color="blue-grey darken-3"
-      fab
-      @click="openAddPhotoDialog()"
-    >
-      <v-icon>add</v-icon>
-    </v-btn>
+  <destination-photo-panel
+    :photo="currentPhoto"
+    :showDialog="showPhotoDialog"
+    :hasOwnerRights="hasOwnerRights"
+    @closeDialog="closePhotoPanel"
+    @displayError="displayError"
+    @permissionUpdated="permissionUpdated"
+    @displayRemovePrompt="displayRemovePrompt"
+  />
+  <AddPhotoDialog
+    :destinationPhotos="destinationPhotos"
+    :destinationId="destinationId"
+    :showDialog="showAddPhotoDialog"
+    :userPhotos="userPhotos"
+    @closeAddPhotoDialog="closeAddPhotoDialogHandler"
+    @addPhoto="addPhoto"
+  />
+  <v-img
+    v-if="destinationPhotos.length === 0"
+    class="dest-image"
+    :src="defaultDestinationPhoto"
+  />
+  <v-btn
+    class="carousel"
+    id="add-button"
+    color="blue-grey darken-3"
+    fab
+    @click="openAddPhotoDialog()"
+  >
+    <v-icon>add</v-icon>
+  </v-btn>
   </div>
 </template>
 

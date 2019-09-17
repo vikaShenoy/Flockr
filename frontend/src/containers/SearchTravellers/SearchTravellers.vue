@@ -253,7 +253,7 @@
           queries += "&travellerType=" + this.travellerTypes.ids[typeIndex];
         }
 
-        if (this.travellerType !== "") {
+        if (this.name !== "") {
           queries += `&name=${this.name}`;
         }
 
