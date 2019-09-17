@@ -28,8 +28,8 @@
         </v-card>
 
         <BasicInfo
-                :userProfile="userProfile"
-                @update-basic-info="this.updateBasicInfo"
+          :userProfile="userProfile"
+          @update-basic-info="this.updateBasicInfo"
         />
 
         <!-- TODO: move undo redo to unified component -->
@@ -60,10 +60,15 @@
                 :userId="userProfile.userId"
         />
         <div>
-          <Trips
-                  :trips.sync="userProfile.trips"
-                  viewOnly
-          />
+
+          <h3 class="trips-header">Trips</h3>
+            <v-card class="trips-card">
+              
+              <Trips
+                :trips.sync="userProfile.trips"
+                viewOnly
+              />
+            </v-card>
         </div>
       </div>
     </div>
@@ -325,6 +330,17 @@
       justify-content: flex-start;
       align-items: center;
     }
+  }
+
+  .trips-header {
+    text-align: left;
+    margin-bottom: 7px;
+    margin-top: 30px;
+  }
+
+  .trips-card {
+    max-height: 350px;
+    overflow-y: auto;
   }
 </style>
 

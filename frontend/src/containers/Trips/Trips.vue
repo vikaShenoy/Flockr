@@ -6,7 +6,7 @@
     </v-card>
 
     <div v-if="!isAddingATrip" class="trips-container" :key="tripListKey">
-      <v-container grid-list-xl text-center>
+      <v-container grid-list-xl text-center class="padding-container">
         <v-layout wrap>
           <v-flex xs10 offset-xs1>
             <TripList :userId="userId" @delete-trip="deleteTrip" :viewOnly="viewOnly"/>
@@ -148,5 +148,9 @@
     width: 100%;
     height: 100%;
     padding: 15px;
+  }
+
+  .padding-container {
+    padding-top: 0px;
   }
 </style>

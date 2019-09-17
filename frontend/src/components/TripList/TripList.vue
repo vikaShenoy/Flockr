@@ -5,6 +5,7 @@
         <v-icon>directions_walk</v-icon>
         No Trips Available
       </h3>
+
       <TripItem
         @handleDelete="handleDelete"
         @refreshList="refreshList"
@@ -45,11 +46,53 @@
     },
     data() {
       return {
-        trips: null
+        trips: [
+          {
+            tripid: 1,
+            tripName: "Hello world"  ,
+            status: "Pending"
+          },
+          {
+            tripId: 2,
+            tripName: "Hello world2",
+            status: "Pending"
+          },
+          {
+            tripid: 3,
+            tripName: "Hello world"  ,
+            status: "Pending"
+          },
+          {
+            tripId: 4,
+            tripName: "Hello world2",
+            status: "Pending"
+          },
+          {
+            tripid: 5,
+            tripName: "Hello world"  ,
+            status: "Pending"
+          },
+          {
+            tripId: 6,
+            tripName: "Hello world2",
+            status: "Pending"
+          },
+          {
+            tripid: 7,
+            tripName: "Hello world"  ,
+            status: "Pending"
+          },
+          {
+            tripId: 8,
+            tripName: "Hello world2",
+            status: "Pending"
+          },
+
+        ]
       };
     },
     async mounted() {
-      this.refreshList();
+      // this.refreshList();
     },
     methods: {
       /**
