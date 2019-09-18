@@ -9,6 +9,7 @@
         @update:searchInput="handleTyping"
         @input="handleNewItemSelection"
         :multiple="multiple"
+        :required="required"
     />
 </template>
 
@@ -20,7 +21,7 @@ export default {
             required: false,
             default: undefined
         },
-        label: {
+        label: { // the label shown before anything is selected e.g. Destinations
             type: String,
             required: true
         },
@@ -31,6 +32,11 @@ export default {
         },
         multiple: {
             type: Boolean,
+            default: false
+        },
+        required: { // will be passed down to underlying v-combobox for integration with v-form components
+            type: Boolean,
+            required: false,
             default: false
         }
     },
