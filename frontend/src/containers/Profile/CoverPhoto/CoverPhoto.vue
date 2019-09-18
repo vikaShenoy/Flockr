@@ -7,15 +7,25 @@
     >
       <v-btn @click="openCoverPhotoDialog" id="edit-btn" v-if="hasPermissionToEdit" color="secondary" fab><v-icon>edit</v-icon></v-btn>
     </v-img>
+
+    <cover-photo-dialog
+      :dialog="displayCoverPhotoDialog"
+      :photo="userProfile.coverPhoto"
+      @closeDialog="displayCoverPhotoDialog = false"
+      @deleteCoverPhoto="$emit('deleteCoverPhoto')"/>
   </div>
 </template>
 
 <script>
   import {endpoint} from "../../../utils/endpoint";
   import UserStore from "../../../stores/UserStore";
+  import CoverPhotoDialog from "./CoverPhotoDialog/CoverPhotoDialog";
 
   export default {
     name: "cover-photo",
+    components: {
+      CoverPhotoDialog
+    },
     data() {
       return {
         displayCoverPhotoDialog: false
@@ -47,10 +57,16 @@
     },
     methods: {
       /**
+       * Closes the cover photo dialog.
+       */
+      closeCoverPhotoDialog() {
+        this.displayCoverPhotoDialog = false;
+      },
+      /**
        * Opens the cover photo dialog.
        */
       openCoverPhotoDialog() {
-
+        this.displayCoverPhotoDialog = true;
       },
       /**
        * Emits an event to update the profile picture.

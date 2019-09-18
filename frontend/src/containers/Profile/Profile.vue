@@ -17,8 +17,9 @@
               :userProfile="userProfile"
               v-on:updateProfilePic="updateProfilePic"
               v-on:showError="showError"
-              id="cover-photo"/>
-
+              id="cover-photo"
+              @deleteCoverPhoto="deleteCoverPhoto"
+              ref="cover-photo"/>
 
           <ProfilePic
               :profilePhoto="userProfile.profilePhoto"
@@ -100,7 +101,7 @@
   import Command from "../../components/UndoRedo/Command";
   import UserStore from "../../stores/UserStore";
   import moment from "moment";
-  import {getUser} from "./ProfileService";
+  import {getUser, requestDeleteCoverPhoto, requestUndoDeleteCoverPhoto} from "./ProfileService";
   import {updateBasicInfo} from "./BasicInfo/BasicInfoService";
   import {updateNationalities} from "./Nationalities/NationalityService";
   import {updatePassports} from "./Passports/PassportService";
@@ -132,6 +133,49 @@
       this.getUserInfo();
     },
     methods: {
+      async deleteCoverPhoto() {
+        try {
+          await requestDeleteCoverPhoto(this.userProfile.userId);
+          this.userProfile.coverPhoto = null;
+          this.$refs["cover-photo"].closeCoverPhotoDialog();
+
+          const undoCommand = async () => {
+            try {
+              console.log("undo");
+              this.userProfile.coverPhoto = await requestUndoDeleteCoverPhoto(this.userProfile.userId);
+            } catch (error) {
+              this.$root.$emit("show-snackbar", {
+                timeout: 4000,
+                color: "error",
+                message: "Error undoing cover photo deletion"
+              });
+            }
+          };
+
+          let redoCommand = async () => {
+            try {
+              console.log("redo");
+              await requestDeleteCoverPhoto(this.userProfile.userId);
+              this.userProfile.coverPhoto = null;
+            } catch (error) {
+              this.$root.$emit("show-snackbar", {
+                timeout: 4000,
+                color: "error",
+                message: "Error redoing cover photo deletion"
+              });
+            }
+          };
+
+          const deleteCoverPhotoCommand = new Command(undoCommand, redoCommand);
+          this.$refs.undoRedo.addUndo(deleteCoverPhotoCommand);
+        } catch (error) {
+          this.$root.$emit("show-snackbar", {
+            timeout: 4000,
+            color: "error",
+            message: "Error deleting cover photo" //TODO: do this properly.
+          });
+        }
+      },
       /**
        * Add an undo/redo command to the stack.
        * */
