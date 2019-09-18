@@ -33,6 +33,7 @@ public class TripControllerTest {
   private User user;
   private User otherUser;
   private User adminUser;
+  private User anotherUser;
   private Destination christchurch;
   private Destination westMelton;
   private Destination helkett;
@@ -69,6 +70,7 @@ public class TripControllerTest {
     user = fakeClient.signUpUser("Tommy", "Tester", "tommy@tester.com", "testing");
     otherUser = fakeClient.signUpUser("Indy", "Inspector", "indy@inspector.com", "testing");
     adminUser = fakeClient.signUpUser("Sam", "Admin", "sam@admin.com", "testing");
+    anotherUser = fakeClient.signUpUser("Another", "User", "user@test.com", "testing");
 
     // Making an admin
     // TODO - investigate why this code causes duplicate key exception. Must be to do with
@@ -765,27 +767,42 @@ public class TripControllerTest {
       tripBody.put("name", "Solo Trip");
       tripBody.putArray("tripNodes").addAll(tripDestinations);
       tripBody.putArray("userIds");
-    System.out.println(tripBody.toString());
       Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
       Assert.assertEquals(201, result.status());
       JsonNode jsonResult = PlayResultToJson.convertResultToJson(result);
       int tripId = jsonResult.get("tripNodeId").asInt();
       Optional<TripComposite> receivedTrip = TripComposite.find.query().where().eq("tripNodeId", tripId).findOneOrEmpty();
       Assert.assertTrue(receivedTrip.isPresent());
-      if (receivedTrip.isPresent()) {
-        receivedTrip.ifPresent((tripComposite) -> {
-          Assert.assertEquals(1, tripComposite.getUsers().size());
-          System.out.println(tripComposite.getUsers());
-        });
-
-      }
-
-
+      Assert.assertEquals(1, jsonResult.get("userRoles").size());
+      Assert.assertEquals(user.getUserId(), jsonResult.get("userRoles").get(0).get("user").get("userId").asInt());
+      Assert.assertEquals("TRIP_OWNER", jsonResult.get("userRoles").get(0).get("role").get("roleType").asText());
   }
 
   @Test
-  public void createGroupTripOwnerManagerMember() {
+  public void createGroupTripOwnerManagerMember() throws IOException {
+    String endpoint = "/api/users/" + user.getUserId() + "/trips";
+    ObjectNode tripBody = Json.newObject();
+    ArrayNode tripDestinations = Json.newArray();
+    tripDestinations.add(tripDestination1);
+    tripDestinations.add(tripDestination2);
+    tripBody.put("name", "Solo Trip");
+    tripBody.putArray("tripNodes").addAll(tripDestinations);
+    JsonNode manager = Json.newObject().put("userId", otherUser.getUserId()).put("role", "TRIP_MANAGER");
+    JsonNode member = Json.newObject().put("userId", anotherUser.getUserId()).put("role", "TRIP_MEMBER");
+    tripBody.putArray("userIds").add(manager).add(member);
+    Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
+    JsonNode jsonResult = PlayResultToJson.convertResultToJson(result);
+    System.out.println(jsonResult.get("userRoles").toString());
+    Assert.assertEquals(3, jsonResult.get("userRoles").size());
 
+    Assert.assertEquals(otherUser.getUserId(), jsonResult.get("userRoles").get(0).get("user").get("userId").asInt());
+    Assert.assertEquals("TRIP_MANAGER", jsonResult.get("userRoles").get(0).get("role").get("roleType").asText());
+
+    Assert.assertEquals(anotherUser.getUserId(), jsonResult.get("userRoles").get(1).get("user").get("userId").asInt());
+    Assert.assertEquals("TRIP_MEMBER", jsonResult.get("userRoles").get(1).get("role").get("roleType").asText());
+
+    Assert.assertEquals(user.getUserId(), jsonResult.get("userRoles").get(2).get("user").get("userId").asInt());
+    Assert.assertEquals("TRIP_OWNER", jsonResult.get("userRoles").get(2).get("role").get("roleType").asText());
   }
 
 

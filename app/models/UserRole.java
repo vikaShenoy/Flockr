@@ -1,9 +1,8 @@
 package models;
 
 import io.ebean.Model;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+
+import javax.persistence.*;
 
 /**
  * Linking class to show the association between users and roles.
@@ -14,10 +13,10 @@ public class UserRole extends Model {
     @Id
     private int userRoleId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Role role;
 
     /**

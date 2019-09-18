@@ -124,28 +124,29 @@ public class TripController extends Controller {
                   .thenComposeAsync(
                       destinations -> {
                         TripComposite trip = new TripComposite(tripNodes, users, tripName);
-
+                        List<UserRole> userRoles = new ArrayList<>();
                         for (User roledUser : users) {
 
-                            for (JsonNode userIdJson : userIdsJson) {
-                                if (userIdJson.get("userId").asInt() == roledUser.getUserId()) {
-                                    Role role = userRepository.getSingleRoleByType(userIdJson.get("role").asText());
-                                    UserRole userRole = new UserRole(roledUser, role);
-                                    userRole.save();
-                                    trip.addUserRole(userRole);
-                                }
+                          for (JsonNode userIdJson : userIdsJson) {
+                            if (userIdJson.get("userId").asInt() == roledUser.getUserId()) {
+                              Role role =
+                                  userRepository.getSingleRoleByType(
+                                      userIdJson.get("role").asText());
+                              UserRole userRole = new UserRole(roledUser, role);
+                              userRole.save();
+                              userRoles.add(userRole);
                             }
-
-
+                          }
                         }
 
-                          Role role = userRepository.getSingleRoleByType("TRIP_OWNER");
-                          UserRole userRole = new UserRole(users.get(users.size() - 1), role);
-                          userRole.save();
-                          trip.addUserRole(userRole);
+                        Role role = userRepository.getSingleRoleByType("TRIP_OWNER");
+                        UserRole userRole = new UserRole(users.get(users.size() - 1), role);
+                        userRole.save();
+                        userRoles.add(userRole);
+                        trip.setUserRoles(userRoles);
+                        trip.save();
 
                         return tripRepository.saveTrip(trip);
-
                       })
                   .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
                   .exceptionally(

@@ -154,4 +154,15 @@ public class TripComposite extends TripNode {
   public void removeUser(User user) {
     users.remove(user);
   }
+
+  @Override
+  public String toString() {
+    return "TripComposite{" +
+            "name='" + name + '\'' +
+            ", users=" + users +
+            ", tripNodeId=" + tripNodeId +
+            ", userRoles=" + userRoles +
+            ", tripNodes=" + tripNodes +
+            '}';
+  }
 }
