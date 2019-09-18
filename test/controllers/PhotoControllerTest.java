@@ -1,5 +1,6 @@
 package controllers;
 
+import com.typesafe.config.ConfigException.Null;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import models.*;
@@ -29,6 +30,7 @@ public class PhotoControllerTest {
   PersonalPhoto photo;
   DestinationPhoto destPhoto;
   Destination destination;
+  private int coverPhotoId;
 
   @Before
   public void setUp() throws ServerErrorException, IOException, FailedToSignUpException {
@@ -131,7 +133,18 @@ public class PhotoControllerTest {
 
   @After
   public void tearDown() {
-    // TODO: delete created photo files.
+    String path = System.getProperty("user.dir") + "/storage/photos";
+
+    if (coverPhotoId != 0) {
+      PersonalPhoto coverPhoto = PersonalPhoto.find.byId(coverPhotoId);
+      File coverFile = new File(path, coverPhoto.getFilenameHash());
+      System.out.println(coverFile.delete());
+    }
+
+    File photoFile = new File(path, photo.getFilenameHash());
+    File thumbFile = new File(path, photo.getThumbnailName());
+    System.out.println(photoFile.delete());
+    System.out.println(thumbFile.delete());
     Helpers.stop(application);
     TestState.clear();
   }
@@ -449,6 +462,10 @@ public class PhotoControllerTest {
         fakeClient.makeRequestWithToken(
             "PUT", String.format("/api/users/%d/photos/%d/cover", userId, photoId), token);
     Assert.assertEquals(statusCode, result.status());
+
+    try {
+      coverPhotoId = PlayResultToJson.convertResultToJson(result).get("photoId").asInt();
+    } catch (IOException | NullPointerException e) {}
 
     if (statusCode == 200) {
       Optional<User> optionalUser =
