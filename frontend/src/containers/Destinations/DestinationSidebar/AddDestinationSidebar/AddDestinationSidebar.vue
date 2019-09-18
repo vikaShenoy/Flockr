@@ -33,18 +33,6 @@
             <CountryPicker v-on:change="updateCountry"></CountryPicker>
           </v-flex>
 
-          <!--
-          <v-col cols="12" sm="6" md="3">
-            <v-text-field
-              label="District"
-              placeholder="District"
-              v-model="destination.destinationDistrict.districtName"
-              :value="destination.destinationDistrict.districtName"
-              :items="districts"
-            ></v-text-field>
-          </v-col>
-          -->
-
           <v-flex>
             <v-text-field
               v-model="destination.destinationDistrict.districtName"
@@ -54,19 +42,6 @@
             </v-text-field>
           </v-flex>
 
-          <!--
-          <v-flex>
-            <v-select
-                v-model="destination.destinationDistrict.districtId"
-                :value="destination.destinationDistrict.districtId"
-                :items="districts"
-                item-value="districtId"
-                item-text="districtName"
-                :disabled="!destination.destinationCountry.countryId"
-                label="District"
-                :rules="requiredRule"></v-select>
-          </v-flex>
-          -->
 
           <v-flex>
             <v-combobox
