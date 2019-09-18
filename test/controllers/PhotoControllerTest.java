@@ -137,13 +137,13 @@ public class PhotoControllerTest {
     if (coverPhotoId != 0) {
       PersonalPhoto coverPhoto = PersonalPhoto.find.byId(coverPhotoId);
       File coverFile = new File(path, coverPhoto.getFilenameHash());
-      System.out.println(coverFile.delete());
+      coverFile.delete();
     }
 
     File photoFile = new File(path, photo.getFilenameHash());
     File thumbFile = new File(path, photo.getThumbnailName());
-    System.out.println(photoFile.delete());
-    System.out.println(thumbFile.delete());
+    photoFile.delete();
+    thumbFile.delete();
     Helpers.stop(application);
     TestState.clear();
   }
