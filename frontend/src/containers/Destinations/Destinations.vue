@@ -18,6 +18,7 @@
       @addNewDestination="addNewDestination"
       @refreshDestinations="refreshDestinations"
       @search-criterion-updated="searchCriterionUpdated"
+      @get-more-public-destinations="getMorePublicDestinations"
       :destinationsLoading="destinationsLoading"
       ref="sidebar"
       :latitude="latitude"
@@ -47,19 +48,34 @@
         destination: null,
         latitude: null,
         longitude: null,
-        yourDestinations: null,
-        publicDestinations: null,
+        yourDestinations: [],
+        publicDestinations: [],
         showCreateDestDialog: false,
         viewOption: "your",
-        destinationsOffset: 0, // offset the destinations result
         searchCriterion: '', // to ask API to only return destinations with this in the name
         destinationsLoading: false // whether there is a pending API call to get destinations
       };
     },
     mounted() {
       this.getYourDestinations();
+      this.getPublicDestinations();
     },
     methods: {
+      /**
+       * Called to get more public destinations by a lazy loading implementation
+       */
+      async getMorePublicDestinations() {
+        const numberOfPublicDestinations = this.publicDestinations.length;
+        this.destinationsLoading = true;
+        try {
+          const newDestinations = await getPublicDestinations(this.searchCriterion, numberOfPublicDestinations);
+          this.publicDestinations = [...this.publicDestinations, ...newDestinations];
+          this.destinationsLoading = false;
+        } catch (err) {
+          this.$root.$emit('show-error-snackbar', 'Could not get more public destinations', 3000);
+          this.destinationsLoading = false;
+        }
+      },
       /**
        * Called when the search criterion is updated
        */
@@ -104,9 +120,9 @@
        */
       async getPublicDestinations() {
         try {
-          const { searchCriterion, destinationsOffset } = this; 
+          const { searchCriterion, publicDestinations } = this;
           this.destinationsLoading = true;
-          this.publicDestinations = await getPublicDestinations(searchCriterion, destinationsOffset);
+          this.publicDestinations = await getPublicDestinations(searchCriterion, publicDestinations.length);
           this.destinationsLoading = false;
         } catch (e) {
           this.showSnackbar("Could not get public destinations", "error", 3000);
