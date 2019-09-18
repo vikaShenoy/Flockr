@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="header">
-      <h3>Basic Info</h3>
+      <h3 class="headline">Basic Info</h3>
       <!--Only show edit/save btn if user is logged in-->
 
       <div v-if="userStore.userId === userProfile.userId" id="edit-btn">

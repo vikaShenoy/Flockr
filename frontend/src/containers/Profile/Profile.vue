@@ -16,10 +16,24 @@
           <cover-photo
               :userProfile="userProfile"
               v-on:updateProfilePic="updateProfilePic"
-              v-on:showError="showError"/>
-          <v-card-title primary-title>
-            <div class="col-lg-4">
+              v-on:showError="showError"
+              id="cover-photo"/>
 
+
+          <ProfilePic
+              :profilePhoto="userProfile.profilePhoto"
+              :photos="userProfile.personalPhotos"
+              :userId="userProfile.userId"
+              v-on:updateProfilePic="updateProfilePic"
+              v-on:showError="showError"
+              :fullname="fullname"
+              class="profile-pic"
+          />
+
+
+          <v-card-title primary-title>
+
+            <div class="col-lg-5">
               <v-card id="undo-redo-card">
                 <p>You can undo and redo your changes.</p>
 
@@ -30,18 +44,9 @@
                   :userProfile="userProfile"
                   @update-basic-info="this.updateBasicInfo"
               />
-
-              <Photos
-                  :photos="userProfile.personalPhotos"
-                  @deletePhoto="deletePhoto"
-                  @undoDeletePhoto="undoDeletePhoto"
-                  @addPhoto="addImage"
-                  @showError="showError"
-                  @addPhotoCommand="addPhotoCommand"
-              />
             </div>
 
-            <div class="col-lg-8">
+            <div class="col-lg-7">
               <Nationalities
                   :userNationalities="userProfile.nationalities"
                   @update-user-nationalities="updateUserNationalities"
@@ -57,13 +62,25 @@
                   @update-user-traveller-types="updateUserTravellerTypes"
                   :userId="userProfile.userId"
               />
-              <div>
-                <Trips
-                    :trips.sync="userProfile.trips"
-                    viewOnly
-                />
-              </div>
             </div>
+
+            <v-flex sm12>
+              <Photos
+                  :photos="userProfile.personalPhotos"
+                  @deletePhoto="deletePhoto"
+                  @undoDeletePhoto="undoDeletePhoto"
+                  @addPhoto="addImage"
+                  @showError="showError"
+                  @addPhotoCommand="addPhotoCommand"/>
+            </v-flex>
+
+            <v-flex sm12>
+              <Trips
+                  :trips.sync="userProfile.trips"
+                  viewOnly
+              />
+            </v-flex>
+
           </v-card-title>
         </v-card>
       </v-flex>
@@ -72,6 +89,7 @@
 </template>
 
 <script>
+  import ProfilePic from "./ProfilePic/ProfilePic";
   import Nationalities from "./Nationalities/Nationalities";
   import Passports from "./Passports/Passports";
   import TravellerTypes from "./TravellerTypes/TravellerTypes";
@@ -95,6 +113,7 @@
   export default {
     components: {
       CoverPhoto,
+      ProfilePic,
       Nationalities,
       Passports,
       BasicInfo,
@@ -314,6 +333,16 @@
         this.userProfile.personalPhotos = this.userProfile.personalPhotos.filter(
             e => e.photoId !== image.photoId);
       }
+    },
+    computed: {
+      /**
+       * Gets the full name of the user.
+       *
+       * @return {string} the full name of the user.
+       */
+      fullname() {
+        return `${this.userProfile.firstName} ${this.userProfile.lastName}`;
+      },
     }
   };
 </script>
@@ -334,6 +363,21 @@
       justify-content: flex-start;
       align-items: center;
     }
+  }
+
+  .top-panel {
+    margin-top: 75px;
+  }
+
+
+  .profile-pic {
+    position: absolute;
+    left: 30px;
+    top: 230px;
+  }
+
+  #cover-photo {
+    margin-bottom: 75px;
   }
 </style>
 

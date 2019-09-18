@@ -5,30 +5,16 @@
         aspect-ratio="2.75"
         class="cover-photo"
     >
-
-      <ProfilePic
-          :profilePhoto="userProfile.profilePhoto"
-          :photos="userProfile.personalPhotos"
-          :userId="userProfile.userId"
-          v-on:updateProfilePic="updateProfilePic"
-          v-on:showError="showError"
-          :fullname="fullname"
-          class="profile-pic"
-      />
       <v-btn @click="openCoverPhotoDialog" id="edit-btn" v-if="hasPermissionToEdit" color="secondary" fab><v-icon>edit</v-icon></v-btn>
     </v-img>
   </div>
 </template>
 
 <script>
-  import ProfilePic from "../ProfilePic/ProfilePic";
   import {endpoint} from "../../../utils/endpoint";
   import UserStore from "../../../stores/UserStore";
 
   export default {
-    components: {
-      ProfilePic
-    },
     name: "cover-photo",
     data() {
       return {
@@ -50,14 +36,6 @@
                 "authToken")}`) : endpoint(
             `/photos/cover/default?Authorization=${localStorage.getItem(
                 "authToken")}`);
-      },
-      /**
-       * Gets the full name of the user.
-       *
-       * @return {string} the full name of the user.
-       */
-      fullname() {
-        return `${this.userProfile.firstName} ${this.userProfile.lastName}`;
       },
       /**
        * Gets whether the viewer has permission to edit this profile.
@@ -101,13 +79,6 @@
   .cover-photo {
     height: 400px;
     min-width: 800px;
-
-    .profile-pic {
-      position: absolute;
-      left: 30px;
-      bottom: 30px;
-      z-index: 99;
-    }
   }
 
   .cover-photo:hover #edit-btn {

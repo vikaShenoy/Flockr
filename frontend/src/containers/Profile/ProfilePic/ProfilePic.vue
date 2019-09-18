@@ -99,7 +99,7 @@
   #edit-btn {
     position: absolute;
     right: 10px;
-    bottom: 30px;
+    bottom: 10px;
     visibility: hidden;
     .v-icon {
       visibility: hidden;
@@ -112,9 +112,12 @@
   }
 
   .name {
-    -webkit-text-fill-color: $secondary;
-    -webkit-text-stroke-width: 2px;
-    -webkit-text-stroke-color: $primary;
+    position: absolute;
+    left: 250px;
+    bottom: 125px;
+    width: 100%;
+    -webkit-text-fill-color: white;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
   }
 </style>
 

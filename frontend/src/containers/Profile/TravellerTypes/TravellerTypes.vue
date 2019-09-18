@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <div class="header">
       <h3>Traveller Types</h3>
 
