@@ -11,8 +11,8 @@ POST          /api/auth/users/:userId/logout                                    
 GET           /api/auth/users/:email/available                                        controllers.AuthController.checkEmailAvailable(email: String)
 
 # Traveller routes
-GET           /api/users/all                                                          controllers.UserController.getAllTravellers()
-GET           /api/users                                                              controllers.UserController.getTravellers()
+GET           /api/users/all                                                          controllers.UserController.getAllTravellers
+GET           /api/users                                                              controllers.UserController.getTravellers
 GET           /api/users/search                                                       controllers.UserController.searchTravellers(request: Request)
 GET           /api/users/nationalities                                                controllers.UserController.getNationalities(request: Request)
 GET           /api/users/passports                                                    controllers.UserController.getAllPassports(request: Request)
@@ -37,6 +37,7 @@ PUT           /api/users/:userId/profilephoto/:photoId/undo                     
 DELETE        /api/users/:userId/photos/cover                                         controllers.PhotoController.deleteCoverPhoto(userId: Int, request: Request)
 PUT           /api/users/:userId/photos/cover/undodelete                              controllers.PhotoController.undoDeleteCoverPhoto(userId: Int, request: Request)
 PUT           /api/users/:userId/photos/:photoId/cover                                controllers.PhotoController.addCoverPhoto(userId: Int, photoId: Int, request: Request)
+GET           /api/photos/cover/default                                               controllers.PhotoController.getDefaultCoverPhoto
 
 
 # Destination Proposal endpoints

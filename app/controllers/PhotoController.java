@@ -62,6 +62,27 @@ public class PhotoController extends Controller {
   }
 
   /**
+   * Gets the default cover photo.
+   *
+   * @return the response with the default cover photo. If not logged in responds with 401 -
+   *     Unauthorized. If file is missing responds with an internal server error.
+   */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> getDefaultCoverPhoto() {
+    return supplyAsync(
+        () -> {
+          String path = System.getProperty("user.dir") + "/storage/defaults";
+
+          File photoToBeSent = new File(path, "defaultCoverPhoto.jpg");
+
+          if (!photoToBeSent.exists()) {
+            return internalServerError();
+          }
+          return ok().sendFile(photoToBeSent);
+        });
+  }
+
+  /**
    * This function is responsible for changing the permissions of a photo to either a private or a
    * public.
    *

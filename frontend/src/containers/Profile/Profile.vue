@@ -1,77 +1,77 @@
 <template>
   <div
-          id="root-container"
-          v-if="userProfile"
+      id="root-container"
+      v-if="userProfile"
   >
     <v-alert
-            :value="shouldShowBanner()"
-            color="info"
-            icon="info"
+        :value="shouldShowBanner()"
+        color="info"
+        icon="info"
     >
       Please fill in your full profile before using the site
     </v-alert>
+    <v-layout>
+      <v-flex xs10 offset-xs1>
+        <v-card>
+          <cover-photo
+              :userProfile="userProfile"
+              v-on:updateProfilePic="updateProfilePic"
+              v-on:showError="showError"/>
+          <v-card-title primary-title>
+            <div class="col-lg-4">
 
-    <div class="row">
-      <div class="col-lg-4">
-        <ProfilePic
-                :profilePhoto="userProfile.profilePhoto"
-                :photos="userProfile.personalPhotos"
-                :userId="userProfile.userId"
-                v-on:updateProfilePic="updateProfilePic"
-                v-on:showError="showError"
-        />
+              <v-card id="undo-redo-card">
+                <p>You can undo and redo your changes.</p>
 
-        <v-card id="undo-redo-card">
-          <p>You can undo and redo your changes.</p>
+                <UndoRedo ref="undoRedo"/>
+              </v-card>
 
-          <UndoRedo ref="undoRedo"/>
+              <BasicInfo
+                  :userProfile="userProfile"
+                  @update-basic-info="this.updateBasicInfo"
+              />
+
+              <Photos
+                  :photos="userProfile.personalPhotos"
+                  @deletePhoto="deletePhoto"
+                  @undoDeletePhoto="undoDeletePhoto"
+                  @addPhoto="addImage"
+                  @showError="showError"
+                  @addPhotoCommand="addPhotoCommand"
+              />
+            </div>
+
+            <div class="col-lg-8">
+              <Nationalities
+                  :userNationalities="userProfile.nationalities"
+                  @update-user-nationalities="updateUserNationalities"
+                  :userId="userProfile.userId"
+              />
+              <Passports
+                  :userPassports="userProfile.passports"
+                  @update-user-passports="updateUserPassports"
+                  :userId="userProfile.userId"
+              />
+              <TravellerTypes
+                  :userTravellerTypes="userProfile.travellerTypes"
+                  @update-user-traveller-types="updateUserTravellerTypes"
+                  :userId="userProfile.userId"
+              />
+              <div>
+                <Trips
+                    :trips.sync="userProfile.trips"
+                    viewOnly
+                />
+              </div>
+            </div>
+          </v-card-title>
         </v-card>
-
-        <BasicInfo
-                :userProfile="userProfile"
-                @update-basic-info="this.updateBasicInfo"
-        />
-
-        <!-- TODO: move undo redo to unified component -->
-        <Photos
-                :photos="userProfile.personalPhotos"
-                @deletePhoto="deletePhoto"
-                @undoDeletePhoto="undoDeletePhoto"
-                @addPhoto="addImage"
-                @showError="showError"
-                @addPhotoCommand="addPhotoCommand"
-        />
-      </div>
-
-      <div class="col-lg-8">
-        <Nationalities
-                :userNationalities="userProfile.nationalities"
-                @update-user-nationalities="updateUserNationalities"
-                :userId="userProfile.userId"
-        />
-        <Passports
-                :userPassports="userProfile.passports"
-                @update-user-passports="updateUserPassports"
-                :userId="userProfile.userId"
-        />
-        <TravellerTypes
-                :userTravellerTypes="userProfile.travellerTypes"
-                @update-user-traveller-types="updateUserTravellerTypes"
-                :userId="userProfile.userId"
-        />
-        <div>
-          <Trips
-                  :trips.sync="userProfile.trips"
-                  viewOnly
-          />
-        </div>
-      </div>
-    </div>
+      </v-flex>
+    </v-layout>
   </div>
 </template>
 
 <script>
-  import ProfilePic from "./ProfilePic/ProfilePic";
   import Nationalities from "./Nationalities/Nationalities";
   import Passports from "./Passports/Passports";
   import TravellerTypes from "./TravellerTypes/TravellerTypes";
@@ -90,10 +90,11 @@
   import {setProfilePictureToOldPicture} from "./ProfilePic/ProfilePicService";
   import {endpoint} from "../../utils/endpoint";
   import {deleteUserPhoto, undoDeleteUserPhoto} from '../UserGallery/UserGalleryService';
+  import CoverPhoto from "./CoverPhoto/CoverPhoto";
 
   export default {
     components: {
-      ProfilePic,
+      CoverPhoto,
       Nationalities,
       Passports,
       BasicInfo,
@@ -280,8 +281,11 @@
        * for it.
        */
       addImage(image) {
-        image.endpoint = endpoint(`/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
-        image.thumbEndpoint = endpoint(`/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+        image.endpoint = endpoint(
+            `/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
+        image.thumbEndpoint = endpoint(
+            `/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem(
+                "authToken")}`);
         this.userProfile.personalPhotos.push(image);
 
         const undoCommand = (
@@ -293,8 +297,12 @@
         const redoCommand = (
             async (image) => {
               await undoDeleteUserPhoto(image);
-              image.endpoint = endpoint(`/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
-              image.thumbEndpoint = endpoint(`/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+              image.endpoint = endpoint(
+                  `/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem(
+                      "authToken")}`);
+              image.thumbEndpoint = endpoint(
+                  `/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem(
+                      "authToken")}`);
               this.userProfile.personalPhotos.push(image);
             }
         ).bind(null, image);
@@ -303,7 +311,8 @@
         this.$refs.undoRedo.addUndo(undoUploadCommand);
       },
       undoAddPhoto(image) {
-        this.userProfile.personalPhotos = this.userProfile.personalPhotos.filter(e => e.photoId !== image.photoId);
+        this.userProfile.personalPhotos = this.userProfile.personalPhotos.filter(
+            e => e.photoId !== image.photoId);
       }
     }
   };
