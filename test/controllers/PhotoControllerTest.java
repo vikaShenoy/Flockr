@@ -1,6 +1,5 @@
 package controllers;
 
-import com.typesafe.config.ConfigException.Null;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import models.*;
