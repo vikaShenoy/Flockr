@@ -40,6 +40,14 @@
                 @click="login()"
         >Log in
         </v-btn>
+  <p id="no_account_text">No account?</p>
+        <v-btn
+                color="secondary"
+                depressed
+                class="col-sm-4 offset-sm-4"
+                @click="signUp()"
+        >Sign Up
+        </v-btn>
 
       </v-form>
 
@@ -73,6 +81,7 @@ import config from '../../config';
           return;
         }
 
+
         try {
           const user = await login(this.email, this.password);
           UserStore.methods.setData(user);
@@ -86,6 +95,12 @@ import config from '../../config';
           console.log(e);
           this.hasInvalidCredentials = true;
         }
+      },
+      /**
+       *Redirects user to the signup page if they choose
+       */
+      async signUp() {
+        this.$router.push("/signup");
       }
     }
   };
@@ -109,6 +124,9 @@ import config from '../../config';
     background-size: cover;
     width: 100%;
     height: 100%;
+  }
+  #no_account_text {
+    margin-bottom: 0;
   }
 
 </style>

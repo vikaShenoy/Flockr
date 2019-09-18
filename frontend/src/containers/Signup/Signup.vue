@@ -27,8 +27,14 @@
             <v-select :rules="[rules.required]" v-model="gender" :items="genderOptions" color="secondary"
                       label="Gender"/>
           </v-card>
-
+          <v-spacer row>
           <v-btn color="primary" @click="currStepperStep = 2" :disabled="!isBasicInfoStepperCompleted">Continue</v-btn>
+
+          <v-btn class="sign_in" color="primary"
+                 @click="signIn()">
+            Sign in
+          </v-btn>
+          </v-spacer>
         </v-stepper-content>
 
         <v-stepper-content step="2">
@@ -69,6 +75,7 @@
                  @click="sendTravellerInfo()">
             Continue
           </v-btn>
+
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -347,8 +354,12 @@
         } catch (err) {
           console.error(`Could not add traveller info for user with id ${signedUpUserId}: ${err}`);
         }
+      },
+      async signIn() {
+        this.$router.push("/login");
       }
     }
+
   };
 </script>
 
@@ -371,6 +382,10 @@
     height: 100%;
     align-items: center;
     justify-content: center;
+  }
+
+  .sign_in {
+    float:right;
   }
 </style>
 
