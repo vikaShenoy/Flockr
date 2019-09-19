@@ -16,8 +16,9 @@
       <v-container grid-list-md text-center>
       <v-layout wrap>
         <v-flex xs10 offset-xs1>
+          <div v-if="trip.users.length >= 2">
           <h4>Chat</h4>
-          <v-layout row>
+          <v-layout row >
             <v-text-field v-if="!chatExists" v-model="chatNameToCreate" placeholder="Chat name" />
             <v-btn v-if="!chatExists" color="info" @click="chatButtonClicked" :loading="isChatButtonLoading">
               <v-icon left>chat</v-icon>
@@ -26,6 +27,8 @@
 
             <p v-if="chatExists">To access your chat, please open the chat window</p>
           </v-layout>
+          </div>
+
 
           <h4>Selected users</h4>
           <ul>
@@ -47,9 +50,6 @@
               v-model="selectedUsers"
               @items-selected="updateSelectedUsers"
             ></GenericCombobox>
-
-
-
             <!--<v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>-->
           </div>
         </v-flex>
@@ -177,6 +177,7 @@ export default {
           this.chat = await createChat(userIds, this.chatNameToCreate);
           this.isChatButtonLoading = false;
           this.$root.$emit("show-success-snackbar", "Created the chat", 3000);
+          this.$root.$emit("add-chat");
         } catch (err) {
           // could not create the chat
           this.$root.$emit("show-error-snackbar", "Could not create the chat", 3000);

@@ -3,24 +3,12 @@
     <v-flex>
       <v-form ref="form">
         <v-text-field
-          class="light-pad"
+          class="padding"
           v-model="currentName"
           :rules="requiredRule"
         >
         </v-text-field>
 
-        <!--<v-select
-          label="Add users"
-          class="light-pad"
-          :items="addUsers"
-          v-model="usersToAdd"
-          item-text="firstName"
-          clearable
-          multiple
-          return-object
-        >
-
-        </v-select>-->
 
           <GenericCombobox
                   class="padding"
@@ -28,12 +16,11 @@
                   :get-function="searchUser"
                   :item-text="(user) => user.firstName + ' ' + user.lastName"
                   multiple
-                  v-model="selectedUsers"
-                  @items-selected="updateSelectedUsers"
+                  v-model="currentUsers"
           ></GenericCombobox>
 
         <UserSummary
-          class="light-pad"
+          class="padding"
           v-for="user in currentUsers"
           v-bind:key="user.userId"
           :user=user
@@ -41,16 +28,23 @@
         ></UserSummary>
 
         <v-spacer align="center">
-          <v-btn
-            color="secondary"
-            v-on:click="editChat">
-            Save Changes
-          </v-btn>
-          <v-btn
-            color="red"
-            v-on:click="deleteChat">
+         <v-btn
+            color="error"
+            v-on:click="deleteChat"
+            depressed
+          >
             Delete Chat
           </v-btn>
+
+          <v-btn
+            color="secondary"
+            v-on:click="editChat"
+            depressed
+            >
+            
+            Save Changes
+          </v-btn>
+ 
         </v-spacer>
       </v-form>
     </v-flex>
@@ -73,7 +67,7 @@
       return {
         addUsers: [],
         currentName: this.chatGroup.name,
-        selectedUsers: [], //todo had to change
+        currentUsers: [], //todo had to change
         usersToAdd: [],
         requiredRule: [rules.required],
       }
@@ -81,7 +75,7 @@
     methods: {
 
         updateSelectedUsers(newUsers) {
-            this.selectedUsers = newUsers
+          this.currentUsers = newUsers
         },
 
         searchUser: async name => await getUsers(name),
@@ -160,8 +154,8 @@
 <style scoped>
 
 .padding {
-  padding: 20px;
-  margin: 20px
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .light-pad {

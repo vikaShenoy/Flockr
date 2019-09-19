@@ -107,10 +107,10 @@ export default {
             userId: UserStore.data.userId
           }
         };
-
-        this.$emit("newMessage", message);
+        const messageContents = this.message;
         this.message = "";
-        await sendMessage(this.chatGroup.chatGroupId, this.message);
+        this.$emit("newMessage", message);
+        await sendMessage(this.chatGroup.chatGroupId, messageContents);
       } catch (e) {
         this.$root.$emit("show-error-snackbar", "Error sending message", 2000);
       }
@@ -138,8 +138,6 @@ export default {
       if (nearTop && !this.sending) {
           this.sending = true;
           const oldScroll = contents.scrollHeight;
-          console.log(oldScroll);
-          console.log("Passing an offset of length: " + this.chatGroup.messages.length)
           const messages = await getChatMessages(this.chatGroup.chatGroupId, this.chatGroup.messages.length, 20);
           if (messages.length > 0) {
               await this.$emit("newMessages", messages);

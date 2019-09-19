@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-icon class="hover-white" @click="toggleVoiceChat" >
+    <v-icon class="hover-white" @click="toggleVoiceChat" color="secondary">
       {{ isInChat ? "call_end" : "speaker_phone" }}
     </v-icon>
 
@@ -106,7 +106,7 @@ export default {
 
   transition: 0.1s ease-in all;
   &:hover {
-    color: white;
+    color: white !important;
   } 
 }
 

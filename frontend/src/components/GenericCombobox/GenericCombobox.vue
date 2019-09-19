@@ -13,6 +13,7 @@
         :hide-selected="multiple"
         :chips="multiple"
         :deletable-chips="multiple"
+        :rules="rules"
     />
 </template>
 
@@ -44,6 +45,10 @@ export default {
         },
         value: {
             type: [Array, Object]
+        },
+        rules: {
+            type: Array,
+            required: false
         }
     },
     data() {

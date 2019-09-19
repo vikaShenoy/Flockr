@@ -10,13 +10,13 @@
       ></v-text-field>
 
         <GenericCombobox
-                class="padding"
-                label="Users"
-                :get-function="searchUser"
-                :item-text="(user) => user.firstName + ' ' + user.lastName"
-                multiple
-                v-model="selectedUsers"
-                @items-selected="updateSelectedUsers"
+          class="padding"
+          label="Users"
+          :get-function="searchUser"
+          :item-text="(user) => user.firstName + ' ' + user.lastName"
+          multiple
+          v-model="selectedUsers"
+          @items-selected="updateSelectedUsers"
         ></GenericCombobox>
 
       <v-spacer align="center">
@@ -24,6 +24,7 @@
           color="secondary"
           dark
           v-on:click="createNewChat"
+          depressed
           >
           <v-icon>add</v-icon>
         </v-btn>
@@ -36,6 +37,7 @@
   import { createChat, getUsers } from "../ChatService";
   import { rules } from "../../../../utils/rules";
   import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
+import UserStore from '../../../../stores/UserStore';
 
   export default {
     name: "CreateChat",
@@ -56,20 +58,22 @@
       };
     },
     methods: {
-
-        updateSelectedUsers(newUsers) {
-            this.selectedUsers = newUsers
-        },
-
-        searchUser: async name => await getUsers(name),
+      updateSelectedUsers(newUsers) {
+          this.selectedUsers = newUsers
+      },
+      searchUser: async name => {
+        const allUsers = await getUsers(name)
+        return allUsers.filter(user => {
+          return user.userId !== UserStore.data.userId;
+        });
+      },
       /**
        * Retrieve all users in the system.
        * Filter out the user's own id from the list so they can't add themselves to the chat.
        */
       async getAllUsers() {
-        this.allUsers = await getUsers();
-        const ownId = Number(localStorage.getItem("ownUserId"));
-        this.allUsers = this.allUsers.filter(user => user.userId !== ownId);
+        const allUsers = await getUsers();
+        this.allUsers = allUsers.filter(user => user.userId !== UserStore.data.userId);
       },
       /**
        * Called when the user clicks the create chat button.
@@ -80,6 +84,12 @@
         if (!this.$refs.form.validate()) {
           return
         }
+
+        if (!this.selectedUsers.length) {
+          this.showSnackbar("Please select at least one user", "error", 2000);
+          return;
+        }
+
         try {
           const userIds = this.selectedUsers.map(user => user.userId);
           this.$emit("createChat", userIds, this.selectedChatName);
@@ -99,9 +109,6 @@
           timeout: timeout
         });
       },
-    },
-    mounted() {
-      this.getAllUsers();
     },
     watch: {
       isShowing(value) {

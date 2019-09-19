@@ -118,10 +118,21 @@ export default {
     };
   },
   mounted() {
+    this.listenOnNewChat();
     this.getChats();
     this.listenOnMessage();
   },
   methods: {
+    /**
+     * Listen on a new chat created in the manage trip dialog and
+     * add created chat to chat list
+     */
+    listenOnNewChat() {
+      // Listen on the add chat component from the manage trip dialog
+      this.$root.$on("add-chat", () => {
+        this.getChats();
+      });
+    },
     /**
      * Edit a chat group. Send request to backend. Show snackbar on success and return to
      * main chat screen. Show error snackbar if there's an error.
@@ -131,12 +142,14 @@ export default {
      */
     async editGroupChat(chatGroupId, chatName, users) {
       try {
+        const currentChat = this.getCurrentChat();
+        currentChat.users = users;
         const ownId = Number(localStorage.getItem("ownUserId"));
         let userIds = users.map(user => user.userId);
         userIds.push(ownId);
         const res = await editChat(chatGroupId, chatName, userIds);
-        this.getChats();
         this.goBackToChats();
+        
         this.showSnackbar("Changes saved", "success", 2000);
       } catch (e) {
         this.showSnackbar(e, "error", 2000);
@@ -151,7 +164,8 @@ export default {
       try {
         const res = await deleteChat(chatGroupId);
         this.chats = this.chats.filter(chat => chat.chatGroupId !== chatGroupId);
-        this.goBackToChats();
+        this.isShowingManageChat = false;
+        this.currentChatId = null;
         this.showSnackbar("Chat deleted", "success", 2000);
       } catch (e) {
         this.showSnackbar(e, "error", 2000);
@@ -204,6 +218,7 @@ export default {
     async getChats() {
       try {
         const chats = await getChats();
+        console.log(chats);
         this.chats = chats;
       } catch (e) {
         this.showErrorSnackbar("Error getting chats");
