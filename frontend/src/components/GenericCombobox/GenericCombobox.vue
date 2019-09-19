@@ -4,11 +4,15 @@
         :item-text="itemText"
         :loading="isLoadingItems"
         color="secondary"
-        v-model="selectedItem"
+        :value="value"
         :label="label"
         @update:searchInput="handleTyping"
         @input="handleNewItemSelection"
         :multiple="multiple"
+        :required="required"
+        :hide-selected="multiple"
+        :chips="multiple"
+        :deletable-chips="multiple"
     />
 </template>
 
@@ -20,7 +24,7 @@ export default {
             required: false,
             default: undefined
         },
-        label: {
+        label: { // the label shown before anything is selected e.g. Destinations
             type: String,
             required: true
         },
@@ -32,6 +36,14 @@ export default {
         multiple: {
             type: Boolean,
             default: false
+        },
+        required: { // will be passed down to underlying v-combobox for integration with v-form components
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        value: {
+            type: [Array, Object]
         }
     },
     data() {
@@ -43,15 +55,13 @@ export default {
             isLoadingItems: false
         };
     },
-    mounted() {
-        this.getItems();
-    },
     methods: {
         /**
          * Called when the user types into the combobox.
          * @param input the new text.
          */
         handleTyping(input) {
+            console.log("I am typing");
             this.searchString = input;
             const timeNeededSinceLastKeyPress = 400; // in milliseconds, how long to wait between keypresses until sending a request
             clearTimeout(this.watchdog);
@@ -62,10 +72,11 @@ export default {
          * @param newSelectedItem
          */
         handleNewItemSelection(newSelectedItem) {
-            if (!this.multiple) {
-                this.$emit('item-selected', newSelectedItem);
+            if (Array.isArray(newSelectedItem)) {
+                const items = newSelectedItem.filter(item => typeof item !== "string");
+                this.$emit("input", items);
             } else {
-                this.$emit('items-selected', newSelectedItem);
+                this.$emit("input", newSelectedItem);
             }
         },
         /**
@@ -82,6 +93,6 @@ export default {
                 this.isLoadingItems = false;
             }
         }
-    }
+    },
 }
 </script>

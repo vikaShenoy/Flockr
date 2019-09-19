@@ -34,9 +34,10 @@ public class TasksController extends AbstractModule {
       // you may add more tasks here
 
       if (populate) {
+        bind(ExampleUserPhotoData.class).asEagerSingleton();
         bind(ExampleUserData.class).asEagerSingleton();
         bind(ExampleDestinationDataTask.class).asEagerSingleton();
-//        bind(ExampleTripsDataTask.class).asEagerSingleton();
+        bind(ExampleTripsDataTask.class).asEagerSingleton();
       }
     }
   }

@@ -250,7 +250,7 @@ public class UserRepository {
             }
 
             if (travellerTypeId != -1) {
-                query = query.where().eq("traveller_type_id", travellerTypeId);
+                query = query.where().eq("travellerTypes.travellerTypeId", travellerTypeId);
             }
 
             if (dateMin.getTime() > 0 && dateMax.getTime() > 0)  {

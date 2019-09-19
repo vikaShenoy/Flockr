@@ -39,6 +39,7 @@
                       type="number"
               ></v-text-field>
             </div>
+
           </div>
         </v-card-text>
 
@@ -66,11 +67,20 @@
                   :value="travellerType"
                   v-model="travellerType"
           ></v-select>
-          <div class="">
-            <v-btn id="searchButton" color="secondary" depressed @click="search()" class="button button-card">Search
-            </v-btn>
+
+          <v-text-field
+            class="selector-input col-md-3"
+            label="Name" 
+            v-model="name"
+          >
+
+          </v-text-field>
+          <div class="search-buttons">
             <v-btn id="clearButton" color="secondary" depressed v-on:click="clearFilters" class="button button-card">
               Clear
+            </v-btn>
+
+            <v-btn id="searchButton" color="secondary" depressed @click="search()" class="button button-card">Search
             </v-btn>
           </div>
         </div>
@@ -82,6 +92,7 @@
                 :headers="headers"
                 :items="travellers"
                 class="elevation-1"
+                :loading="isLoading"
                 hide-actions
         >
           <template v-slot:items="props">
@@ -150,6 +161,7 @@
           names: [],
           ids: []
         },
+        name: "",
         nationality: "",
         travellerType: "",
         gender: "",
@@ -165,7 +177,8 @@
         ],
         travellers: [],
         pageIndex: 0,
-        pageLimit: PAGE_LIMIT
+        pageLimit: PAGE_LIMIT,
+        isLoading: false
       }
     },
     mounted: async function () {
@@ -240,6 +253,10 @@
           queries += "&travellerType=" + this.travellerTypes.ids[typeIndex];
         }
 
+        if (this.name !== "") {
+          queries += `&name=${this.name}`;
+        }
+
         const pageToGoTo = pageIndex || 0;
         queries += `&offset=${pageToGoTo * PAGE_LIMIT}`
 
@@ -249,7 +266,9 @@
 
         try {
           // call the get travellers function passing in the formatted queries
+          this.isLoading = true;
           const travellers = await requestTravellers(queries);
+          this.isLoading = false;
           const userId = localStorage.getItem("userId");
 
           this.travellers = travellers
@@ -377,6 +396,10 @@
     cursor: pointer;
     margin-left: 10px;
     margin-right: 10px;
+  }
+
+  .search-buttons {
+    margin-left: auto;
   }
 
 </style>

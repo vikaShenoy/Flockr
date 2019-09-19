@@ -1,6 +1,6 @@
 package tasks;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 import akka.actor.ActorSystem;
 import com.google.inject.Inject;
@@ -31,9 +31,9 @@ public class ExampleTripsDataTask {
   private ActorSystem actorSystem;
   private ExecutionContext executionContext;
   final Logger log = LoggerFactory.getLogger(this.getClass());
-  private final WSClient ws;
   private TripRepository tripRepository;
-  Date pointOfReference = Date.from(Instant.now().plus(1, ChronoUnit.MONTHS));
+  Date pointOfReference = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
+  private boolean readyForBigTrips = false;
 
   @Inject
   public ExampleTripsDataTask(
@@ -44,7 +44,6 @@ public class ExampleTripsDataTask {
     this.actorSystem = actorSystem;
     this.executionContext = executionContext;
     this.tripRepository = tripRepository;
-    this.ws = ws;
     initialise();
   }
 
@@ -81,12 +80,11 @@ public class ExampleTripsDataTask {
    */
   private boolean doesUserHaveTrips(User user) {
     return TripNode.find
-        .query()
-        .fetchLazy("user", "user_id")
-        .where()
-        .eq("user_id", user.getUserId())
-        .findOneOrEmpty()
-        .isPresent();
+            .query()
+            .fetchLazy("users", "user_id")
+            .where()
+            .in("users.userId", user.getUserId())
+            .exists();
   }
 
   /**
@@ -733,12 +731,12 @@ public class ExampleTripsDataTask {
         .scheduleOnce(
             Duration.create(1, TimeUnit.SECONDS), // initial delay
             () ->
-                supplyAsync(
+                runAsync(
                     () -> {
+                      System.out.println("Loading Example Trips");
                       int countryIndex = 0;
                       List<Country> countries = Country.find.all();
                       List<User> users = fetchAllUsers();
-
                       for (User user : users) {
                         if (!doesUserHaveTrips(user)) {
                           List<User> thisUserList = new ArrayList<>();
@@ -746,13 +744,23 @@ public class ExampleTripsDataTask {
 
                           // Get countries
                           Country countryOne = countries.get(countryIndex);
-                          List<Destination> countryOneDestinations =
-                              fetchNumDestinationsFromCountry(countryOne, 5);
-                          countryIndex++;
+                          String countryOneName = countryOne.getCountryName();
+                          List<Destination> countryOneDestinations = new ArrayList<>();
+                          while (countryOneDestinations.size() < 5) {
+                            countryOneDestinations = fetchNumDestinationsFromCountry(countryOne, 5);
+                            countryOneName = countryOne.getCountryName();
+                            countryIndex = (countryIndex + 1) % countries.size();
+                            countryOne = countries.get(countryIndex);
+                          }
                           Country countryTwo = countries.get(countryIndex);
-                          List<Destination> countryTwoDestinations =
-                              fetchNumDestinationsFromCountry(countryTwo, 5);
-                          countryIndex++;
+                          String countryTwoName = countryTwo.getCountryName();
+                          List<Destination> countryTwoDestinations = new ArrayList<>();
+                          while (countryTwoDestinations.size() < 5) {
+                            countryTwoDestinations = fetchNumDestinationsFromCountry(countryTwo, 5);
+                            countryTwoName = countryTwo.getCountryName();
+                            countryIndex = (countryIndex + 1) % countries.size();
+                            countryTwo = countries.get(countryIndex);
+                          }
 
                           List<TripNode> tripNodes1 =
                               makeTripNodesList(
@@ -766,16 +774,11 @@ public class ExampleTripsDataTask {
                                   tripNodes1,
                                   thisUserList,
                                   String.format(
-                                      "%s's trip from %s to %s",
+                                      "%s %s's trip from %s to %s",
                                       user.getFirstName(),
-                                      countryOne.getCountryName(),
-                                      countryTwo.getCountryName()));
-                          tripRepository
-                              .saveTrip(tripOne)
-                              .thenAcceptAsync(
-                                  trip ->
-                                      System.out.println(
-                                          String.format("%s has been created", trip.getName())));
+                                      user.getLastName(),
+                                      countryOneName,
+                                      countryTwoName));
 
                           List<TripNode> tripNodes2 =
                               makeTripNodesList(
@@ -786,17 +789,18 @@ public class ExampleTripsDataTask {
 
                           List<TripNode> tripNodes3 =
                               makeTripNodesList(
-                                  countryTwoDestinations.get(4), countryTwoDestinations.get(5));
+                                  countryOneDestinations.get(4), countryTwoDestinations.get(4));
 
                           TripComposite tripThree =
                               new TripComposite(
                                   tripNodes3,
                                   thisUserList,
                                   String.format(
-                                      "%s's trip from %s to %s",
+                                      "%s %s's trip from %s to %s",
                                       user.getFirstName(),
-                                      countryTwo.getCountryName(),
-                                      countryOne.getCountryName()));
+                                      user.getLastName(),
+                                      countryTwoName,
+                                      countryOneName));
 
                           tripNodes2.add(tripThree);
 
@@ -805,86 +809,90 @@ public class ExampleTripsDataTask {
                                   tripNodes2,
                                   thisUserList,
                                   String.format(
-                                      "%s's trip from %s to %s",
+                                      "%s %s's return trip from %s to %s",
                                       user.getFirstName(),
-                                      countryTwo.getCountryName(),
-                                      countryOne.getCountryName()));
+                                      user.getLastName(),
+                                      countryTwoName,
+                                      countryOneName));
 
-                          tripRepository
-                              .saveTrip(tripThree)
-                              .thenAcceptAsync(
-                                  trip -> {
-                                    System.out.println(
-                                        String.format("%s has been created", trip.getName()));
-                                    tripRepository
-                                        .saveTrip(tripTwo)
-                                        .thenAcceptAsync(
-                                            otherTrip ->
-                                                System.out.println(
-                                                    String.format(
-                                                        "%s has been created",
-                                                        otherTrip.getName())));
-                                  });
+                          //TODO:: Need to add permissions once group trip permissions is added.
+                          tripOne.save();
+                          System.out.println(
+                              String.format("%s has been created", tripOne.getName()));
+
+                          tripThree.save();
+                          System.out.println(
+                              String.format("%s has been created", tripThree.getName()));
+
+                          tripTwo.save();
+                          System.out.println(
+                              String.format("%s has been created", tripTwo.getName()));
                         }
                       }
-                      // TODO: everyone create a user each and we add them all to these trips
-                      List<User> vipUsers = new ArrayList<>();
+                      if (readyForBigTrips) {
+                        // TODO: everyone create a user each and we add them all to these trips
+                        List<User> vipUsers = new ArrayList<>();
 
-                      vipUsers.add(
-                          User.find
-                              .query()
-                              .where()
-                              .eq("first_name", "Andy")
-                              .and()
-                              .eq("last_name", "Holden")
-                              .findOne());
+                        vipUsers.add(
+                            User.find
+                                .query()
+                                .where()
+                                .eq("first_name", "Andy")
+                                .and()
+                                .eq("last_name", "Holden")
+                                .findOne());
 
-                      makeIslandCruise(vipUsers);
-                      makeRugbyChampionshipTour(vipUsers);
-                      makeElViajeDeSudamerica(vipUsers);
-                      makeRugbyWorldCupJapanTour(vipUsers);
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Australia").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Austria").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "England").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Germany").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find
-                              .query()
-                              .where()
-                              .eq("country_name", "South Africa")
-                              .findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "China").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Argentina").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Brazil").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "Peru").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find.query().where().eq("country_name", "New Zealand").findOne());
-                      makeTourOfCountry(
-                          vipUsers,
-                          Country.find
-                              .query()
-                              .where()
-                              .eq("country_name", "United States of America")
-                              .findOne());
-                      return null;
+                        makeIslandCruise(vipUsers);
+                        makeRugbyChampionshipTour(vipUsers);
+                        makeElViajeDeSudamerica(vipUsers);
+                        makeRugbyWorldCupJapanTour(vipUsers);
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Australia").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Austria").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "England").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Germany").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find
+                                .query()
+                                .where()
+                                .eq("country_name", "South Africa")
+                                .findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "China").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Argentina").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Brazil").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find.query().where().eq("country_name", "Peru").findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find
+                                .query()
+                                .where()
+                                .eq("country_name", "New Zealand")
+                                .findOne());
+                        makeTourOfCountry(
+                            vipUsers,
+                            Country.find
+                                .query()
+                                .where()
+                                .eq("country_name", "United States of America")
+                                .findOne());
+                      }
+                      System.out.println("Finished Loading Example Trips");
                     }),
             this.executionContext);
   }
