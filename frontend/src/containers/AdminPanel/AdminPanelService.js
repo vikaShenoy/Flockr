@@ -62,6 +62,21 @@ export async function getAllUsers() {
 }
 
 /**
+ * Get users from the search endpoint with offset for lazy loading.
+ * @param queries query params like offset, limit, search terms.
+ * @returns {Promise<Array>} list of users.
+ */
+export async function getMoreUsers(queries) {
+  const authToken = localStorage.getItem("authToken");
+  const res = await superagent.get(endpoint("/users/search")).
+      query(queries).
+      set("Authorization", authToken);
+  return res.body;
+
+}
+
+
+/**
  * Patch user to edit their details.
  * @param userId user to edit.
  * @param body new user data.
