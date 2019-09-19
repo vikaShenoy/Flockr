@@ -34,6 +34,7 @@
               :get-function="searchUser"
               :item-text="(user) => user.firstName + ' ' + user.lastName"
               multiple
+              v-model="selectedUsers"
               @items-selected="updateSelectedUsers"
             ></GenericCombobox>
 
