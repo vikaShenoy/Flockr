@@ -1,6 +1,6 @@
 package tasks;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 import akka.actor.ActorSystem;
 import java.util.ArrayList;
@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import models.Country;
 import models.Destination;
 import models.DestinationType;
-import models.District;
 import models.Nationality;
 import models.Passport;
 import models.Role;
@@ -57,7 +56,7 @@ public class PopulateTask {
         .scheduleOnce(
             Duration.create(0, TimeUnit.SECONDS),
             () ->
-                supplyAsync(
+                runAsync(
                     () -> {
                       Country newZealand = new Country("New Zealand", "NZL", true);
                       Nationality newZealandNationality = new Nationality("New Zealand");
@@ -131,8 +130,7 @@ public class PopulateTask {
                       destinationType.save();
                       Country country = new Country("New Zealand", "NZ", true);
                       country.save();
-                      District district = new District("Canterbury", country);
-                      district.save();
+                      String district ="Canterbury";
 
                       Destination destination1 =
                           new Destination(
@@ -263,7 +261,6 @@ public class PopulateTask {
                       trip6.save();
 
                       System.out.println("Ended populating data");
-                      return null;
                     }),
             this.executionContext);
   }

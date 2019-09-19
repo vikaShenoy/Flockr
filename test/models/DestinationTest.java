@@ -10,7 +10,7 @@ import java.util.List;
 public class DestinationTest {
 
     DestinationType destinationType;
-    District destinationDistrict;
+    String destinationDistrict;
     Double destinationLat;
     Double destinationLon;
     Country destinationCountry;
@@ -27,8 +27,9 @@ public class DestinationTest {
         destinationCountry.setCountryId(1);
         destinationType = new DestinationType("Backpacker");
         destinationType.setDestinationTypeId(2);
-        destinationDistrict = new District("Ilam", destinationCountry);
-        destinationDistrict.setDistrictId(1);
+        destinationDistrict = "Ilam";
+//        destinationDistrict = new District("Ilam", destinationCountry);
+//        destinationDistrict.setDistrictId(1);
         destinationLat = 3.0;
         destinationLon = 45.0;
         travellerTypes = new ArrayList<>();

@@ -36,7 +36,7 @@ public class Security {
      * Generates a token to be used for authentication
      * @return String the token for authentication
      */
-    public String generateToken() {
+    public static String generateToken() {
         SecureRandom random = new SecureRandom();
         byte[] bytes = new byte[20];
         random.nextBytes(bytes);

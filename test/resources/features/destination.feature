@@ -10,8 +10,8 @@ Feature: The user can manage destinations
   Scenario: A user tries to create a destination with complete valid data
     Given that user 0 logged in
     Given that I want to create a Destination with the following valid data:
-      | destinationName | destinationTypeId | districtId | latitude | longitude | countryId |
-      | Lower Hutt      | 1                 | 1          | -41.2    | 174.9     | 1         |
+      | destinationName | destinationTypeId | districtName | latitude | longitude | countryId |
+      | Lower Hutt      | 1                 | Hutt         | -41.2    | 174.9     | 1         |
     When I click the Add Destination button
     Then The destination should be created successfully
 
@@ -19,8 +19,8 @@ Feature: The user can manage destinations
   Scenario: A user tries to create a destination with no country
     Given that user 0 logged in
     Given that I want to create a Destination with the following incomplete data:
-      | destinationName | destinationTypeId | districtId | latitude | longitude    |
-      | Lower Hutt      | 1                 | 1          | -41.2    | latitudeTest |
+      | destinationName | destinationTypeId | districtName | latitude | longitude    |
+      | Lower Hutt      | 1                 | Hutt         | -41.2    | latitudeTest |
     When I click the Add Destination button
     Then I should receive an error, because the data is incomplete
 
@@ -28,17 +28,17 @@ Feature: The user can manage destinations
   Scenario: A user tries to delete a destination
     Given that user 0 logged in
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | Hutt         | -41.2    | 174.9     | 1         |
     When I click the Delete Destination button
     Then I should receive an error indicating that the Destination is not found
 
   Scenario: A user tries to get their own destination photos
     Given that user 0 logged in
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         | true     |
-      | Some Name                 | 1                 | 1          | -41.2    | 174.9     | 1         | false    |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | Auckland     | -41.2    | 174.9     | 1         | true     |
+      | Some Name                 | 1                 | Christchurch | -41.2    | 174.9     | 1         | false    |
     When the user gets their own destinations
     Then 2 destinations should be returned
 
@@ -46,9 +46,9 @@ Feature: The user can manage destinations
   Scenario: A user tries to access another user's destinations
     Given that user 0 logged in
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | The Dairy Down The Street | 1                 | 1          | -41.2    | 174.9     | 1         | true     |
-      | Some Name                 | 1                 | 1          | -41.2    | 174.9     | 1         | false    |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | Auckland     | -41.2    | 174.9     | 1         | true     |
+      | Some Name                 | 1                 | Auckland     | -41.2    | 174.9     | 1         | false    |
     When another user gets the user's destinations
     Then 1 destinations should be returned
 
@@ -56,64 +56,65 @@ Feature: The user can manage destinations
   Scenario: A user tries to update a destination with no change in the information
     Given that user 0 logged in
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | false    |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         | false    |
     When I update the Destination with the following information:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | false    |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         | false    |
     Then I should be allowed to update the Destination
 
   Scenario: A user tries to update a destination with new information
     Given that user 0 logged in
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         | false    |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         | false    |
     When I update the Destination with the following information:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | The Dairy Down The Street | 1                 | 1          | 40.0     | 184.9     | 1         |  true    |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | Auckland     | 40.0     | 184.9     | 1         | true     |
     Then the Destination information is updated
 
   Scenario: A user tries to update a non-existent destination with the given ID
     Given that user 0 logged in
     When I try to update the Destination with the following information:
-      | destinationId | destinationName | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | 10000         | America         | 1000              | 111        | 40.0     | 184.9     | 1         | true     |
+      | destinationId | destinationName | destinationTypeId | districtName | latitude | longitude | countryId | isPublic |
+      | 10000         | America         | 1000              | Auckland     | 40.0     | 184.9     | 1         | true     |
     Then I get an error indicating that the Destination is not found
 
 
   Scenario: A user tries to update another user's destination
     Given that user 0 logged in
     And that another user have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         |
     When I try to update another user's destination with the following information:
-      | destinationName | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | America         | 1000              | 111        | 40.0     | 184.9     | 1         | true     |
+      | destinationName | destinationTypeId | districtName | latitude | longitude | countryId | isPublic |
+      | America         | 1000              | Auckland     | 40.0     | 184.9     | 1         | true     |
     Then I get an error indicating that I am not allowed to make changes on the destination
+
 
   @UserPhoto
   Scenario: A user updates a destination that has a duplicate
     Given that user 0 logged in
     And that another user has the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         |
     And the user has the following photos in the system:
-      | filename      | isPrimary | isPublic |
-      | monkey.png    | false     | false    |
+      | filename   | isPrimary | isPublic |
+      | monkey.png | false     | false    |
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          | 41.2     | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         |
     When I update the Destination with the following information:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId | isPublic |
-      | The Dairy Down The Street | 1                 | 1          | 40.0     | 184.9     | 1         | true     |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId | isPublic |
+      | The Dairy Down The Street | 1                 | Auckland     | 40.0     | 184.9     | 1         | true     |
     Then the other user's private destination is deleted
 
   # Test adding a photo to a destination
   Scenario: A user tries to add a photo to a destination with a photo that doesn't exist
     Given that user 0 logged in
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         |
     And the user has the following photos in the system:
       | filename      | isPrimary | isPublic |
       | monkey.png    | false     | false    |
@@ -127,8 +128,8 @@ Feature: The user can manage destinations
   Scenario: A user tries to add a photo to a destination with a destination that doesn't exist
     Given that user 0 logged in
     And that I have the following destination that does not exist:
-      | destinationId | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      |  99999        | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+      | destinationId | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | 99999         | The Dairy Down The Street | Auckland          | 1            | 41.2     | 174.9     | 1         |
     And the user has the following photos in the system:
       | filename      | isPrimary | isPublic |
       | monkey.png    | false     | false    |
@@ -142,8 +143,8 @@ Feature: The user can manage destinations
   Scenario: A user tries to add a photo to a destination that isn't theirs
     Given that user 0 logged in
     And that another user has the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         |
     And the user has the following photos in the system:
       | filename      | isPrimary | isPublic |
       | monkey.png    | false     | false    |
@@ -157,11 +158,11 @@ Feature: The user can manage destinations
   Scenario: A user tries to add a destination that already exists
     Given that user 0 logged in
     And that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         |
     And that I want to create a Destination with the following valid data:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         |
     When I click the Add Destination button
     Then I get a message saying that the destination already exists
 
@@ -169,13 +170,13 @@ Feature: The user can manage destinations
     Given that the user 0 is a regular user
     Given that user 0 logged in
     Given that I have the following destinations:
-      | destinationName           | destinationTypeId | districtId | latitude | longitude | countryId |
-      | The Dairy Down The Street | 1                 | 1          |  41.2    | 174.9     | 1         |
+      | destinationName           | destinationTypeId | districtName | latitude | longitude | countryId |
+      | The Dairy Down The Street | 1                 | Auckland     | 41.2     | 174.9     | 1         |
     Given the user has the following photos in the system:
       | filename      | isPrimary | isPublic |
-      | monkey.png    | false     | true    |
+      | monkey.png    | false     | true     |
       | dog.jpg       | false     | false    |
-      | cat.jpeg      | false     | true    |
+      | cat.jpeg      | false     | true     |
       | cucumber.jpeg | false     | false    |
       | whale.png     | false     | false    |
     Given the photo "monkey.png" is linked to the destination "The Dairy Down The Street"
