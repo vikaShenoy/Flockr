@@ -35,7 +35,7 @@ GET           /api/users/photos/:photoId/thumbnail                              
 PUT           /api/users/photos/:photoId/undodelete                                   controllers.PhotoController.undoDelete(photoId: Int, request: Request)
 PUT           /api/users/:userId/profilephoto/:photoId/undo                           controllers.PhotoController.undoProfilePhoto(userId: Int, photoId: Int, request: Request)
 DELETE        /api/users/:userId/photos/cover                                         controllers.PhotoController.deleteCoverPhoto(userId: Int, request: Request)
-PUT           /api/users/:userId/photos/cover/undodelete                              controllers.PhotoController.undoDeleteCoverPhoto(userId: Int, request: Request)
+PUT           /api/users/:userId/photos/:photoId/cover/undodelete                     controllers.PhotoController.undoDeleteCoverPhoto(userId: Int, photoId: Int, request: Request)
 PUT           /api/users/:userId/photos/:photoId/cover                                controllers.PhotoController.addCoverPhoto(userId: Int, photoId: Int, request: Request)
 GET           /api/photos/cover/default                                               controllers.PhotoController.getDefaultCoverPhoto
 

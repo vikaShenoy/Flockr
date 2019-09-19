@@ -136,13 +136,13 @@
       async deleteCoverPhoto() {
         try {
           await requestDeleteCoverPhoto(this.userProfile.userId);
+          const photoId = this.userProfile.coverPhoto.photoId;
           this.userProfile.coverPhoto = null;
           this.$refs["cover-photo"].closeCoverPhotoDialog();
 
           const undoCommand = async () => {
             try {
-              console.log("undo");
-              this.userProfile.coverPhoto = await requestUndoDeleteCoverPhoto(this.userProfile.userId);
+              this.userProfile.coverPhoto = await requestUndoDeleteCoverPhoto(this.userProfile.userId, photoId);
             } catch (error) {
               this.$root.$emit("show-snackbar", {
                 timeout: 4000,
@@ -151,10 +151,8 @@
               });
             }
           };
-
           let redoCommand = async () => {
             try {
-              console.log("redo");
               await requestDeleteCoverPhoto(this.userProfile.userId);
               this.userProfile.coverPhoto = null;
             } catch (error) {

@@ -481,7 +481,7 @@ public class PhotoController extends Controller {
                         return photoRepository
                             .insert(personalPhoto)
                             .thenApplyAsync(
-                                (insertedPhoto) -> {
+                                insertedPhoto -> {
                                   if (isPrimary) {
                                     // If old profile photo exists, delete thumbnail and photo of
                                     // old profile photo
@@ -699,25 +699,43 @@ public class PhotoController extends Controller {
    *     Server Error - an unexpected error occurred.
    */
   @With(LoggedIn.class)
-  public CompletionStage<Result> undoDeleteCoverPhoto(int userId, Http.Request request) {
+  public CompletionStage<Result> undoDeleteCoverPhoto(
+      int userId, int photoId, Http.Request request) {
     return userRepository
         .getUserById(userId)
         .thenComposeAsync(
             optionalUser -> {
-              if (!optionalUser.isPresent() || optionalUser.get().getCoverPhoto() == null) {
-                throw new CompletionException(
-                    new NotFoundException("User or cover photo not found"));
+              if (!optionalUser.isPresent()) {
+                throw new CompletionException(new NotFoundException("User not found"));
               }
               User user = optionalUser.get();
-              User userFromMiddleware = request.attrs().get(ActionState.USER);
-              if (userFromMiddleware.getUserId() != userId && !userFromMiddleware.isAdmin()) {
-                throw new CompletionException(
-                    new ForbiddenRequestException(
-                        "User does not have permission to perform this request"));
-              }
-              return photoRepository.undoPhotoDelete(user.getCoverPhoto());
+
+              return photoRepository
+                  .retrieveDeletedCoverPhoto(userId, photoId)
+                  .thenComposeAsync(
+                      deletedCoverPhoto -> {
+                        if (!deletedCoverPhoto.isPresent()) {
+                          throw new CompletionException(
+                              new NotFoundException("Cover photo not found"));
+                        }
+                        User userFromMiddleware = request.attrs().get(ActionState.USER);
+                        if (userFromMiddleware.getUserId() != userId
+                            && !userFromMiddleware.isAdmin()) {
+                          throw new CompletionException(
+                              new ForbiddenRequestException(
+                                  "User does not have permission to perform this request"));
+                        }
+
+                        return photoRepository
+                            .undoPhotoDelete(deletedCoverPhoto.get())
+                            .thenComposeAsync(
+                                coverPhoto -> {
+                                  user.setCoverPhoto(coverPhoto);
+                                  return userRepository.updateUser(user);
+                                });
+                      });
             })
-        .thenApplyAsync(photo -> (Result) ok())
+        .thenApplyAsync(user -> ok(Json.toJson(user.getCoverPhoto())))
         .exceptionally(this::getResult);
   }
 
@@ -749,7 +767,7 @@ public class PhotoController extends Controller {
                         "User does not have permission to perform this request"));
               }
               return photoRepository
-                  .getPhotoById(photoId)
+                  .getPhotoByIdWithSoftDelete(photoId)
                   .thenComposeAsync(
                       optionalPhoto -> {
                         if (!optionalPhoto.isPresent()) {
@@ -761,52 +779,61 @@ public class PhotoController extends Controller {
                               new ForbiddenRequestException(
                                   "User does not have permission to perform this request"));
                         }
+                        if (photo.isDeleted()) { //Case where undoing an old cover photo change.
+                          return photoRepository.undoPhotoDelete(photo)
+                              .thenComposeAsync(coverPhoto -> {
+                                photoRepository.deletePhoto(user.getCoverPhoto());
+                                user.setCoverPhoto(coverPhoto);
+                                return userRepository.updateUser(user);
+                              });
+                        } else {
 
-                        // start copying the file to file system
-                        String[] filenameArray = photo.getFilenameHash().split("\\.");
-                        String extension = "." + filenameArray[filenameArray.length - 1];
+                          // start copying the file to file system
+                          String[] filenameArray = photo.getFilenameHash().split("\\.");
+                          String extension = "." + filenameArray[filenameArray.length - 1];
 
-                        String path = System.getProperty("user.dir") + "/storage/photos";
+                          String path = System.getProperty("user.dir") + "/storage/photos";
 
-                        File currentPhoto = new File(path, photo.getFilenameHash());
-                        if (!currentPhoto.exists()) {
-                          throw new CompletionException(new NotFoundException("File Not Found"));
+                          File currentPhoto = new File(path, photo.getFilenameHash());
+                          if (!currentPhoto.exists()) {
+                            throw new CompletionException(new NotFoundException("File Not Found"));
+                          }
+
+                          Security security = new Security();
+                          String token = security.generateToken();
+                          String filename = token + extension;
+                          File fileDestination = new File(path, filename);
+
+                          // if the file path already exists, generate another token
+                          while (fileDestination.exists()) {
+                            token = security.generateToken();
+                            filename = token + extension;
+                            fileDestination = new File(path, filename);
+                          }
+
+                          try {
+                            java.nio.file.Files.copy(
+                                currentPhoto.toPath(),
+                                fileDestination.toPath(),
+                                StandardCopyOption.COPY_ATTRIBUTES);
+                          } catch (IOException e) {
+                            log.error("File Error", e);
+                            throw new CompletionException(new ServerErrorException());
+                          }
+
+                          PersonalPhoto coverPhoto =
+                              new PersonalPhoto(filename, true, user, false, null, true);
+                          return photoRepository
+                              .insert(coverPhoto)
+                              .thenComposeAsync(
+                                  savedCoverPhoto -> {
+                                    if (user.getCoverPhoto() != null) {
+                                      photoRepository.deletePhoto(user.getCoverPhoto());
+                                    }
+                                    user.setCoverPhoto(savedCoverPhoto);
+                                    return userRepository.updateUser(user);
+                                  });
                         }
-
-                        Security security = new Security();
-                        String token = security.generateToken();
-                        String filename = token + extension;
-                        File fileDestination = new File(path, filename);
-
-                        // if the file path already exists, generate another token
-                        while (fileDestination.exists()) {
-                          token = security.generateToken();
-                          filename = token + extension;
-                          fileDestination = new File(path, filename);
-                        }
-
-                        try {
-                          java.nio.file.Files.copy(
-                              currentPhoto.toPath(),
-                              fileDestination.toPath(),
-                              StandardCopyOption.COPY_ATTRIBUTES);
-                        } catch (IOException e) {
-                          log.error("File Error", e);
-                          throw new CompletionException(new ServerErrorException());
-                        }
-
-                        PersonalPhoto coverPhoto =
-                            new PersonalPhoto(filename, true, user, false, null, true);
-                        return photoRepository
-                            .insert(coverPhoto)
-                            .thenComposeAsync(
-                                savedCoverPhoto -> {
-                                  if (user.getCoverPhoto() != null) {
-                                    photoRepository.deletePhoto(user.getCoverPhoto());
-                                  }
-                                  user.setCoverPhoto(savedCoverPhoto);
-                                  return userRepository.updateUser(user);
-                                });
                       });
             })
         .thenApplyAsync(user -> ok(Json.toJson(user.getCoverPhoto())))

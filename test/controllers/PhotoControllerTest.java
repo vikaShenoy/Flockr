@@ -102,6 +102,8 @@ public class PhotoControllerTest {
 
     photo = PersonalPhoto.find.byId(destPhotoId);
     Assert.assertNotNull(photo);
+    photo.setCover(true);
+    photo.save();
     user.setCoverPhoto(photo);
     user.save();
 
@@ -222,34 +224,45 @@ public class PhotoControllerTest {
 
   @Test
   public void undoDeleteCoverPhotoGood() {
+    deleteCoverPhotoWithToken(user.getToken(), 200, user.getUserId());
     undoDeleteCoverPhotoWithToken(user.getToken(), 200, user.getUserId(), true);
   }
 
   @Test
   public void undoDeleteCoverPhotoGoodAdmin() {
+    deleteCoverPhotoWithToken(user.getToken(), 200, user.getUserId());
     undoDeleteCoverPhotoWithToken(adminUser.getToken(), 200, user.getUserId(), true);
   }
 
   @Test
   public void undoDeleteCoverPhotoNotFoundPhoto() {
+    deleteCoverPhotoWithToken(user.getToken(), 200, user.getUserId());
     undoDeleteCoverPhotoWithToken(adminUser.getToken(), 404, adminUser.getUserId(), false);
   }
 
   @Test
   public void undoDeleteCoverPhotoNotFoundUser() {
+    deleteCoverPhotoWithToken(user.getToken(), 200, user.getUserId());
+    undoDeleteCoverPhotoWithToken(user.getToken(), 404, 900000, false);
+  }
+
+  @Test
+  public void undoDeleteCoverPhotoNotFoundPhotoNotDeleted() {
     undoDeleteCoverPhotoWithToken(user.getToken(), 404, 900000, false);
   }
 
   @Test
   public void undoDeleteCoverPhotoUnauthorised() {
+    deleteCoverPhotoWithToken(user.getToken(), 200, user.getUserId());
     Result result =
         fakeClient.makeRequestWithNoToken(
-            "PUT", String.format("/api/users/%d/photos/cover/undodelete", user.getUserId()));
+            "PUT", String.format("/api/users/%d/photos/%d/cover/undodelete", user.getUserId(), photo.getPhotoId()));
     Assert.assertEquals(401, result.status());
   }
 
   @Test
   public void undoDeleteCoverPhotoForbidden() {
+    deleteCoverPhotoWithToken(user.getToken(), 200, user.getUserId());
     undoDeleteCoverPhotoWithToken(otherUser.getToken(), 403, user.getUserId(), true);
   }
 
@@ -371,7 +384,7 @@ public class PhotoControllerTest {
 
     Result result =
         fakeClient.makeRequestWithToken(
-            "PUT", String.format("/api/users/%d/photos/cover/undodelete", userId), token);
+            "PUT", String.format("/api/users/%d/photos/%d/cover/undodelete", userId, photo.getPhotoId()), token);
     Assert.assertEquals(statusCode, result.status());
 
     if (statusCode == 200) {

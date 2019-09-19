@@ -22,9 +22,9 @@ export async function requestDeleteCoverPhoto(userId) {
  * @param userId the id of the user.
  * @return {Promise<Object>} the photo object.
  */
-export async function requestUndoDeleteCoverPhoto(userId) {
+export async function requestUndoDeleteCoverPhoto(userId, photoId) {
   const response = await superagent
-  .put(endpoint(`/users/${userId}/photos/cover/undodelete`))
+  .put(endpoint(`/users/${userId}/photos/${photoId}/cover/undodelete`))
   .set("authorization", localStorage.getItem("authToken"));
 
   return response.body;

@@ -146,6 +146,31 @@ public class PhotoRepository {
   }
 
   /**
+   * Retrieves a deleted cover photo.
+   *
+   * @param userId thi id of the user that owns the cover photo.
+   * @param photoId the id of the deleted cover photo.
+   * @return the optional cover photo.
+   */
+  public CompletionStage<Optional<PersonalPhoto>> retrieveDeletedCoverPhoto(
+      int userId, int photoId) {
+    return supplyAsync(
+        () ->
+            PersonalPhoto.find
+                .query()
+                .setIncludeSoftDeletes()
+                .where()
+                .eq("user_user_id", userId)
+                .and()
+                .eq("photo_id", photoId)
+                .and()
+                .eq("deleted", true)
+                .and()
+                .eq("is_cover", true)
+                .findOneOrEmpty());
+  }
+
+  /**
    * Undoes a personal photo deletion.
    *
    * @param personalPhoto the photo to undo deletion of.
