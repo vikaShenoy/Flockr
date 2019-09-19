@@ -415,7 +415,7 @@
   .profile-pic {
     position: absolute;
     left: 30px;
-    top: 230px;
+    top: 190px;
   }
 
   #cover-photo {

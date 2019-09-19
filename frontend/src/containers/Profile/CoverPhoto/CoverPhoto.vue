@@ -93,7 +93,7 @@
   @import "../../../styles/_variables.scss";
 
   .cover-photo {
-    height: 400px;
+    height: 350px;
     min-width: 800px;
   }
 
