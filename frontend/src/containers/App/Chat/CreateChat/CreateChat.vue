@@ -9,17 +9,15 @@
         v-model="selectedChatName"
       ></v-text-field>
 
-      <v-select
-        class="padding"
-        clearable
-        label="Members"
-        :items="allUsers"
-        item-text="firstName"
-        v-model="selectedUsers"
-        multiple
-        :rules="arrayRule"
-        return-object
-      ></v-select>
+        <GenericCombobox
+                class="padding"
+                label="Users"
+                :get-function="searchUser"
+                :item-text="(user) => user.firstName + ' ' + user.lastName"
+                multiple
+                v-model="selectedUsers"
+                @items-selected="updateSelectedUsers"
+        ></GenericCombobox>
 
       <v-spacer align="center">
         <v-btn
@@ -37,10 +35,12 @@
 <script>
   import { createChat, getUsers } from "../ChatService";
   import { rules } from "../../../../utils/rules";
+  import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
 
   export default {
     name: "CreateChat",
-    props: {
+      components: {GenericCombobox},
+      props: {
       isShowing: {
         type: Boolean,
         required: false
@@ -56,6 +56,12 @@
       };
     },
     methods: {
+
+        updateSelectedUsers(newUsers) {
+            this.selectedUsers = newUsers
+        },
+
+        searchUser: async name => await getUsers(name),
       /**
        * Retrieve all users in the system.
        * Filter out the user's own id from the list so they can't add themselves to the chat.

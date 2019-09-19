@@ -2,13 +2,16 @@ import superagent from "superagent";
 import { endpoint } from "../../../utils/endpoint";
 
 /**
- * Get a list of all users.
- * @returns {Promise<*>} the JSON body containing all user objects.
+ * Gets all users that match the given search parameter
+ * @param name or partial name to search for
+ * @returns {Array} Returns a list of users
  */
-export async function getUsers() {
-  const res = await superagent.get(endpoint("/users"))
-      .set("Authorization", localStorage.getItem("authToken"));
-  return res.body;
+export async function getUsers(name) {
+    const authToken = localStorage.getItem("authToken");
+    const res = await superagent.get(endpoint(`/users/search`)).query({name: name})
+        .set("Authorization", authToken);
+
+    return res.body;
 }
 
 /**

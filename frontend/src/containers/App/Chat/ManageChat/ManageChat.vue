@@ -9,7 +9,7 @@
         >
         </v-text-field>
 
-        <v-select
+        <!--<v-select
           label="Add users"
           class="light-pad"
           :items="addUsers"
@@ -20,7 +20,17 @@
           return-object
         >
 
-        </v-select>
+        </v-select>-->
+
+          <GenericCombobox
+                  class="padding"
+                  label="Users"
+                  :get-function="searchUser"
+                  :item-text="(user) => user.firstName + ' ' + user.lastName"
+                  multiple
+                  v-model="selectedUsers"
+                  @items-selected="updateSelectedUsers"
+          ></GenericCombobox>
 
         <UserSummary
           class="light-pad"
@@ -52,21 +62,30 @@
   import UserSummary from "./UserSummary"
   import { getUsers, editChat } from "../ChatService";
   import { rules } from "../../../../utils/rules";
+  import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
   export default {
     name: "ManageChat",
     components: {
+        GenericCombobox,
       UserSummary,
     },
     data() {
       return {
         addUsers: [],
         currentName: this.chatGroup.name,
-        currentUsers: [],
+        selectedUsers: [], //todo had to change
         usersToAdd: [],
         requiredRule: [rules.required],
       }
     },
     methods: {
+
+        updateSelectedUsers(newUsers) {
+            this.selectedUsers = newUsers
+        },
+
+        searchUser: async name => await getUsers(name),
+
       /**
        * Populate the add users combobox. Fill it with all users except ones already in chat.
        * @returns {Promise<void>}
