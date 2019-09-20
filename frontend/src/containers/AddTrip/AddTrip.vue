@@ -20,6 +20,15 @@
                         :items="users" :item-text="formatName"
                         v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
 
+            <ul>
+                <li
+                  v-for="user in selectedUsers"
+                  v-bind:key="user.userId"
+                  class="selected-user"
+                >
+                    {{ formatName(user) }} <v-select v-model="user.userRole" :items="roleTypes" class="role-type" color="secondary" item-text="name" item-value="value"></v-select>
+                </li>
+            </ul>
 
             <TripTable :tripDestinations="tripDestinations"/>
 
@@ -59,6 +68,8 @@
     import TripTable from "../../components/TripTable/TripTable";
     import {createTrip, getAllUsers} from "./AddTripService.js";
     import UserStore from "../../stores/UserStore";
+    import roleType from "../../stores/roleType"
+
 
     const rules = {
         required: field => !!field || "Field required"
@@ -93,7 +104,21 @@
                 tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
                 tripNameRules: [rules.required],
                 selectedUsers: [],
-                users: null
+                users: null,
+                roleTypes: [
+                    {
+                        name: "Trip Manager",
+                        value: roleType.TRIP_MANAGER
+                    },
+                    {
+                        name: "Trip Member",
+                        value: roleType.TRIP_MEMBER
+                    },
+                    {
+                        name: "Trip Owner",
+                        value: roleType.TRIP_OWNER
+                    }
+                ]
             };
         },
         mounted() {
@@ -156,8 +181,9 @@
                 // Specifies the extra users that should be added to the trip
                 let userIds = [];
                 this.selectedUsers.forEach(function (selectedUser) {
-                    userIds.push({userId: selectedUser.userId, role: "TRIP_OWNER"});
+                    userIds.push({userId: selectedUser.userId, role: selectedUser.userRole});
                 });
+
                 const subTrip = await createTrip(this.tripName, this.tripDestinations, userIds);
 
                 // If this is happening on the sidebar, the new trip is a subtrip. This adds it to parent trip.
@@ -201,6 +227,17 @@
 
     #add-trip-btn {
         float: right;
+    }
+
+    .role-type {
+        margin-left: 10px;
+        flex: none;
+        width: 150px;
+    }
+
+    .selected-user {
+        display: flex;
+        align-items: center;
     }
 </style>
 
