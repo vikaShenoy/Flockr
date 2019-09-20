@@ -16,9 +16,20 @@
 			>
 			</v-text-field>
 
-			<v-combobox v-if="!isSidebarComponent"
-									:items="users" :item-text="formatName"
-									v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
+			<!--<v-combobox v-if="!isSidebarComponent"-->
+									<!--:items="users" :item-text="formatName"-->
+									<!--v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>-->
+
+            <GenericCombobox
+                    class="col-md-6"
+                    v-if="!isSidebarComponent"
+                    label="Users"
+                    :get-function="searchUser"
+                    :item-text="(user) => user.firstName + ' ' + user.lastName"
+                    multiple
+                    v-model="selectedUsers"
+                    @items-selected="updateSelectedUsers"
+            ></GenericCombobox>
 
 
 			<TripTable :tripDestinations="tripDestinations"/>
@@ -59,6 +70,7 @@
   import TripTable from "../../components/TripTable/TripTable";
   import {createTrip, getUsers} from "./AddTripService.js";
   import UserStore from "../../stores/UserStore";
+  import GenericCombobox from "../../components/GenericCombobox/GenericCombobox";
 
   const rules = {
     required: field => !!field || "Field required"
@@ -74,6 +86,7 @@
 
   export default {
     components: {
+        GenericCombobox,
       TripTable
     },
     props: {
@@ -100,6 +113,13 @@
       this.getUsers();
     },
     methods: {
+
+        updateSelectedUsers(newUsers) {
+            this.selectedUsers = newUsers
+        },
+
+        searchUser: async name => await getUsers(name),
+
       /**
        * Gets all users and filters out the logged in user
        */
