@@ -207,7 +207,8 @@
 <style lang="scss" scoped>
     #add-trip {
         margin-top: 30px;
-        height: 465px;
+        min-height: 467px;
+        overflow: hidden;
 
         h2 {
             text-align: center;
