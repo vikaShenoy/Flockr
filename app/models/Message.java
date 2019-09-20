@@ -6,6 +6,7 @@ import io.ebean.Model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import java.util.Date;
 
 /**
@@ -22,6 +23,7 @@ public class Message extends Model {
 
     private String contents;
 
+    @ManyToOne
     private User user;
 
     private Date timestamp;
@@ -40,5 +42,33 @@ public class Message extends Model {
         this.messageId = messageId;
     }
 
-    public static final Finder<Integer, ChatGroup> find = new Finder<>(ChatGroup.class);
+    public String getContents() {
+        return contents;
+    }
+
+    public void setContents(String contents) {
+        this.contents = contents;
+    }
+
+    public int getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(int messageId) {
+        this.messageId = messageId;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public ChatGroup getChatGroup() {
+        return chatGroup;
+    }
+
+    public static final Finder<Integer, Message> find = new Finder<>(Message.class);
 }

@@ -1,9 +1,10 @@
 <template>
   <v-card
-    id="destination-sidebar"
-    ref="destinationSidebar"
+          id="destination-sidebar"
+          ref="destinationSidebar"
     :elevation="20"
   >
+
     <div id="title">
       <h2>{{ shouldShowEditor ? "Add Destination" : "Destinations"}}</h2>
       <v-btn
@@ -40,23 +41,21 @@
 
     </div>
 
-    <div id="destinations-list">
+    <div id="destinations-list" ref="destinationsList" @scroll="handleScrolling">
       <div v-if="shouldShowEditor">
         <AddDestinationSidebar
-            v-on:addNewDestination="addNewDestination"
-            :latitude="latitude"
-            :longitude="longitude"
+          v-on:addNewDestination="addNewDestination"
+          :latitude="latitude"
+          :longitude="longitude"
         ></AddDestinationSidebar>
       </div>
 
       <div v-else-if="shouldShowSpinner" id="spinner">
         <v-progress-circular
-                indeterminate
-                color="secondary"
-                style="align-self: center;"
-        >
-        </v-progress-circular>
-
+          indeterminate
+          color="secondary"
+          style="align-self: center;"
+        />
       </div>
 
       <DestinationSummary
@@ -85,7 +84,6 @@
       </ul>
 
     </AlertDialog>
-
   </v-card>
 </template>
 
@@ -129,6 +127,17 @@
       this.getUserTrips();
     },
     methods: {
+      /**
+       * Called when the destinationsList is scrolled
+       */
+      handleScrolling() {
+        const { destinationsList } = this.$refs;
+        const { scrollHeight, scrollTop, clientHeight } = destinationsList;
+        const nearBottom = scrollHeight - scrollTop === clientHeight;
+        if (nearBottom) {
+          this.$emit('get-more-public-destinations');
+        }
+      },
       /**
        * Emitted when someone types in the input for searching destinations
        */
@@ -247,11 +256,11 @@
   }
 
   #destination-sidebar {
-    height: 100%;
     width: 315px;
     justify-self: flex-end;
     display: flex;
     flex-direction: column;
+    height: calc(100vh - 60px);
 
     #title {
       background-color: $primary;
@@ -261,6 +270,7 @@
       align-items: center;
       flex-direction: column;
       justify-content: space-between;
+      min-height: 150px;
     }
 
     .search-destinations {
@@ -323,6 +333,10 @@
       position: absolute;
       right: 25px;
       margin-top: 17px;
+    }
+
+    #destinations-list {
+      overflow: auto;
     }
   }
 </style>

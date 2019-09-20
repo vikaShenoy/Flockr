@@ -38,8 +38,8 @@ public class ConnectedUsersTest {
     @Test
     public void addUser() {
         connectedUsers.addConnectedUser(user1, actorRef1);
-        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(user1));
-        Assert.assertEquals(actorRef1, connectedUsers.getConnectedUsers().get(user1));
+        Assert.assertTrue(connectedUsers.isUserConnected(user1));
+        Assert.assertEquals(actorRef1, connectedUsers.getSocketForUser(user1));
     }
 
     /**
@@ -49,29 +49,18 @@ public class ConnectedUsersTest {
     public void addTwoUsers() {
         connectedUsers.addConnectedUser(user1, actorRef1);
         connectedUsers.addConnectedUser(user2, actorRef2);
-        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(user1));
-        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(user2));
+        Assert.assertTrue(connectedUsers.isUserConnected(user1));
+        Assert.assertTrue(connectedUsers.isUserConnected(user2));
 
-        Assert.assertEquals(actorRef1, connectedUsers.getConnectedUsers().get(user1));
-        Assert.assertEquals(actorRef2, connectedUsers.getConnectedUsers().get(user2));
-    }
-
-    /**
-     * Test that the same user somehow connects, then they only have one connection open
-     */
-    @Test
-    public void sameUserConnects() {
-        connectedUsers.addConnectedUser(user1, actorRef1);
-        connectedUsers.addConnectedUser(user1, actorRef2);
-        Assert.assertEquals(1, connectedUsers.getConnectedUsers().size());
-        Assert.assertTrue(connectedUsers.getConnectedUsers().containsKey(user1));
+        Assert.assertEquals(actorRef1, connectedUsers.getSocketForUser(user1));
+        Assert.assertEquals(actorRef2, connectedUsers.getSocketForUser(user2));
     }
 
     @Test
     public void clientCanDisconnect() {
         connectedUsers.addConnectedUser(user1, actorRef1);
         connectedUsers.removeConnectedUser(user1);
-        Assert.assertEquals(0, connectedUsers.getConnectedUsers().size());
+        Assert.assertFalse(connectedUsers.isUserConnected(user1));
     }
 
     @After

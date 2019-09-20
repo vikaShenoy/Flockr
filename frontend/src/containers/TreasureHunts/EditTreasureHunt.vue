@@ -34,11 +34,12 @@
                     </v-text-field>
                   </v-flex>
                   <v-flex xs12>
-                    <v-select v-model="editTreasureHuntDestination" required label="Destination"
-                              :items="destinations" item-text="destinationName"
-                              item-value="destinationId">
-
-                    </v-select>
+                    <GenericCombobox
+                      label="Destination"
+                      item-text="destinationName"
+                      :get-function="getPublicDestinationsFunction"
+                      @item-selected="publicDestinationSelected"
+                    />
                   </v-flex>
                   <v-flex xs12>
                     <v-textarea v-model="editTreasureHuntRiddle" label="Riddle" required>
@@ -84,12 +85,14 @@
 
 <script>
   import moment from "moment";
-  // TODO: change getPublicDestinations to DestinationService. Will require offset (optional) and search query parameters.
-  import {editTreasureHunt, getPublicDestinations} from "./TreasureHuntsService"
+  import { editTreasureHunt } from "./TreasureHuntsService"
+  import { getPublicDestinations } from "../Destinations/DestinationsService";
+  import GenericCombobox from "../../components/GenericCombobox/GenericCombobox";
   import Command from "../../components/UndoRedo/Command";
 
   export default {
     name: "EditTreasureHunt",
+    components: { GenericCombobox },
     props: {
       toggle: Boolean,
       data: Object
@@ -108,15 +111,21 @@
         visible: false,
         destinations: [],
         editTreasureHuntName: "",
-        editTreasureHuntDestination: -1,
+        editTreasureHuntDestination: null, // the id of the destination
         editTreasureHuntRiddle: "",
         startDate: null,
         endDate: null,
-        today: new Date().toISOString().split("T")[0]
+        today: new Date().toISOString().split("T")[0],
+        getPublicDestinationsFunction: search => getPublicDestinations(search, 0) // used by GenericCombobox
       }
     },
     methods: {
-
+      /**
+       * Called when a new public destination is selected in the GenericCombobox
+       */
+      publicDestinationSelected(destination) {
+        this.editTreasureHuntDestination = destination.destinationId;
+      },
       /**
        * Function that emits an event to the parent component to close the modal, and also resets all form data
        */

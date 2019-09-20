@@ -40,12 +40,13 @@ function transformTripNodes(tripNodes) {
 
 
 /**
- * Gets all users
+ * Gets all users that match the given search parameter
+ * @param name or partial name to search for
  * @returns {Array} Returns a list of users
  */
-export async function getAllUsers() {
+export async function getUsers(name) {
   const authToken = localStorage.getItem("authToken");
-  const res = await superagent.get(endpoint(`/users/search`))
+  const res = await superagent.get(endpoint(`/users/search`)).query({name: name})
     .set("Authorization", authToken);
 
   return res.body;

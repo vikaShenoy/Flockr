@@ -338,7 +338,6 @@ public class TripNodeTest {
     updatedTripJson.putArray("tripNodes").add(firstNode).add(secondNode);
     updatedTripJson.putArray("userIds").add(user.getUserId());
 
-    System.out.println(trip.getUsers());
     Result result =
         fakeClient.makeRequestWithToken(
             "PUT",

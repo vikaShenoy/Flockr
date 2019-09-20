@@ -1,6 +1,6 @@
 package tasks;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 import akka.actor.ActorSystem;
 import com.typesafe.config.Config;
@@ -39,14 +39,15 @@ public class SetupTask {
         .scheduleOnce(
             Duration.create(0, TimeUnit.SECONDS),
             () -> {
-              supplyAsync(
+              runAsync(
                   () -> {
                     String statement =
                         "ALTER TABLE trip_node_parent ADD COLUMN child_index INTEGER";
 
                     SqlUpdate sqlUpdate = Ebean.createSqlUpdate(statement);
                     sqlUpdate.execute();
-                    return null;
+
+                    System.out.println("Ended Setup tasks");
                   });
             },
             this.executionContext);

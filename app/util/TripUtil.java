@@ -175,7 +175,7 @@ public class TripUtil {
             users.add(currentUser);
         }
 
-        if (users.size() == 0) {
+        if (users.isEmpty()) {
             throw new ForbiddenRequestException("You cannot have no users in a group trip");
         }
 

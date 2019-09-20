@@ -30,7 +30,7 @@ public abstract class TripNode extends Model {
     private List<TripNode> parents;
 
 
-  @JsonIgnore
+    @JsonIgnore
     @SoftDelete
     @Column(name = "deleted", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean deleted;

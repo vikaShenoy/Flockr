@@ -7,7 +7,7 @@ import com.typesafe.config.ConfigFactory;
 /** Registers the tasks that need to be handled by the application. */
 public class TasksController extends AbstractModule {
 
-  private boolean populate = false;
+  private boolean populate = false; //NOTE: MUST HAVE INTERNET ENABLED !!!
 
   @Override
   protected void configure() {
@@ -34,8 +34,10 @@ public class TasksController extends AbstractModule {
       // you may add more tasks here
 
       if (populate) {
+        bind(ExampleUserPhotoData.class).asEagerSingleton();
         bind(ExampleUserData.class).asEagerSingleton();
         bind(ExampleDestinationDataTask.class).asEagerSingleton();
+        bind(ExampleTripsDataTask.class).asEagerSingleton();
       }
     }
   }

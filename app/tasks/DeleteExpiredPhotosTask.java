@@ -80,7 +80,7 @@ public class DeleteExpiredPhotosTask {
                                     personalPhoto.deletePermanent();
                                 }
                                 log.info(String.format("%d Photos deleted successfully", numSuccesses));
-                                System.out.println(String.format("%d Photos deleted successfully%n", numSuccesses));
+                                System.out.println(String.format("%d Photos deleted successfully", numSuccesses));
                                 return personalPhotos;
                         }),
                         this.executionContext);

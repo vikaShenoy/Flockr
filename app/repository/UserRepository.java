@@ -268,11 +268,11 @@ public class UserRepository {
             }
 
             if (name != null) {
-                query = query.where().like("concat(firstName, ' ' , lastName)", "%" + name + "%");
+                query = query.where().ilike("concat(firstName, ' ' , lastName)", "%" + name + "%");
             }
 
             if (travellerTypeId != -1) {
-                query = query.where().eq("traveller_type_id", travellerTypeId);
+                query = query.where().eq("travellerTypes.travellerTypeId", travellerTypeId);
             }
 
             if (dateMin.getTime() > 0 && dateMax.getTime() > 0)  {

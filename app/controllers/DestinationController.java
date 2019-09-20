@@ -146,8 +146,10 @@ public class DestinationController extends Controller {
   }
 
   /**
-   * Get the destinations owned by a user. If the user is viewing their own destinations, return all
-   * their destinations. If the user is viewing someone elses destinations, return just the public
+   * Get the destinations owned by a user.
+   * If the user is viewing their own destinations or is an admin, return all
+   * their destinations.
+   * If the user is viewing someone else's destinations, return just the public
    * destinations of the specified user.
    *
    * @param userId user to find destinations for.
@@ -158,31 +160,16 @@ public class DestinationController extends Controller {
   public CompletionStage<Result> getUserDestinations(int userId, Http.Request request) {
     User loggedInUser = request.attrs().get(ActionState.USER);
     return destinationRepository
-        .getDestinations()
+        .getUserDestinations(userId)
         .thenApplyAsync(
             destinations -> {
               log.info(String.format("is the logged in user an admin: %s", loggedInUser.isAdmin()));
               if (loggedInUser.getUserId() == userId || loggedInUser.isAdmin()) {
-                List<Destination> userDestinations =
-                    destinations.stream()
-                        .filter(
-                            destination -> {
-                              Integer ownerId = destination.getDestinationOwner();
-                              return ownerId != null && ownerId == userId;
-                            })
-                        .collect(Collectors.toList());
-                return ok(Json.toJson(userDestinations));
+                return ok(Json.toJson(destinations));
               } else {
                 List<Destination> userDestinations =
                     destinations.stream()
-                        .filter(
-                            destination -> {
-                              Integer ownerId = destination.getDestinationOwner();
-                              if (ownerId != null && ownerId == userId) {
-                                return loggedInUser.isAdmin() || destination.getIsPublic();
-                              }
-                              return false;
-                            })
+                        .filter(Destination::getIsPublic)
                         .collect(Collectors.toList());
                 return ok(Json.toJson(userDestinations));
               }

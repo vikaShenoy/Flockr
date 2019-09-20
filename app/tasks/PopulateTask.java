@@ -1,6 +1,6 @@
 package tasks;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 import akka.actor.ActorSystem;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class PopulateTask {
         .scheduleOnce(
             Duration.create(0, TimeUnit.SECONDS),
             () ->
-                supplyAsync(
+                runAsync(
                     () -> {
                       Country newZealand = new Country("New Zealand", "NZL", true);
                       Nationality newZealandNationality = new Nationality("New Zealand");
@@ -265,7 +265,6 @@ public class PopulateTask {
                       trip6.save();
 
                       System.out.println("Ended populating data");
-                      return null;
                     }),
             this.executionContext);
   }

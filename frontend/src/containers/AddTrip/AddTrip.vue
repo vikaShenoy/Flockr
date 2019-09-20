@@ -16,10 +16,20 @@
             >
             </v-text-field>
 
-            <v-combobox v-if="!isSidebarComponent"
-                        :items="users" :item-text="formatName"
-                        v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>
+			<!--<v-combobox v-if="!isSidebarComponent"-->
+									<!--:items="users" :item-text="formatName"-->
+									<!--v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>-->
 
+            <GenericCombobox
+                    class="col-md-6"
+                    v-if="!isSidebarComponent"
+                    label="Users"
+                    :get-function="searchUser"
+                    :item-text="(user) => user.firstName + ' ' + user.lastName"
+                    multiple
+                    v-model="selectedUsers"
+                    @items-selected="updateSelectedUsers"
+            ></GenericCombobox>
             <ul>
                 <li
                   v-for="user in selectedUsers"
@@ -30,7 +40,8 @@
                 </li>
             </ul>
 
-            <TripTable :tripDestinations="tripDestinations"/>
+
+			<TripTable :tripDestinations="tripDestinations" @updateSelectedDestination="updateSelectedDestination"/>
 
             <v-btn
                     depressed
@@ -65,10 +76,11 @@
 </template>
 
 <script>
-    import TripTable from "../../components/TripTable/TripTable";
-    import {createTrip, getAllUsers} from "./AddTripService.js";
-    import UserStore from "../../stores/UserStore";
-    import roleType from "../../stores/roleType"
+  import TripTable from "../../components/TripTable/TripTable";
+  import {createTrip, getUsers} from "./AddTripService.js";
+  import UserStore from "../../stores/UserStore";
+  import GenericCombobox from "../../components/GenericCombobox/GenericCombobox";
+  import roleType from "../../stores/roleType"
 
 
     const rules = {
@@ -83,69 +95,97 @@
         departureTime: null,
     };
 
-    export default {
-        components: {
-            TripTable
-        },
-        props: {
-            isSidebarComponent: {
-                type: Boolean,
-                required: false
-            },
-            parentTrip: {
-                type: Object,
-                required: false
-            }
+  export default {
+    components: {
+        GenericCombobox,
+      TripTable
+    },
+    props: {
+      isSidebarComponent: {
+        type: Boolean,
+        required: false
+      },
+      parentTrip: {
+        type: Object,
+        required: false
+      }
 
+    },
+    data() {
+      return {
+        tripName: "",
+        tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
+        tripNameRules: [rules.required],
+        selectedUsers: [],
+        users: null,
+				destinations: [],
+          roleTypes: [
+              {
+                  name: "Trip Manager",
+                  value: roleType.TRIP_MANAGER
+              },
+              {
+                  name: "Trip Member",
+                  value: roleType.TRIP_MEMBER
+              },
+              {
+                  name: "Trip Owner",
+                  value: roleType.TRIP_OWNER
+              }
+          ]
+      };
+    },
+    mounted() {
+      this.getUsers();
+    },
+    methods: {
+				// /**
+				//  * Updates the trip destinations  variable to the trip destinations selected by the user
+				//  */
+				// newDestinationSelected(newTripDestinations) {
+				// 	console.log(this.tripDestinations, " in the AddTrip.vue");
+				//
+				// 	this.tripDestinations = newTripDestinations;
+				// 	//console.log(this.tripDestinations, " in the AddTrip.vue");
+				// },
+
+			updateSelectedDestination(destination) {
+				this.tripDestinations = destination;
+			},
+
+				/**
+				 * Updates the selected users variable to the selected users by the user creating the trip
+				 */
+        updateSelectedUsers(newUsers) {
+            this.selectedUsers = newUsers
         },
-        data() {
-            return {
-                tripName: "",
-                tripDestinations: [{...tripDestination, id: 0}, {...tripDestination, id: 1}],
-                tripNameRules: [rules.required],
-                selectedUsers: [],
-                users: null,
-                roleTypes: [
-                    {
-                        name: "Trip Manager",
-                        value: roleType.TRIP_MANAGER
-                    },
-                    {
-                        name: "Trip Member",
-                        value: roleType.TRIP_MEMBER
-                    },
-                    {
-                        name: "Trip Owner",
-                        value: roleType.TRIP_OWNER
-                    }
-                ]
-            };
-        },
-        mounted() {
-            this.getUsers();
-        },
-        methods: {
-            /**
-             * Gets all users and filters out the logged in user
-             */
-            async getUsers() {
-                const users = (await getAllUsers())
-                    .filter(user => user.userId !== UserStore.data.userId);
-                this.users = users;
-            },
-            /**
-             * Adds an empty destination
-             */
-            addDestination() {
-                this.tripDestinations.push({...tripDestination, id: this.tripDestinations.length});
-            },
-            /**
-             * Iterates through destinations and check and renders error message
-             * if destinations are contiguous.
-             * @returns {boolean} True if contiguous destinations are found, false otherwise.
-             */
-            contiguousDestinations() {
-                let foundContiguousDestination = false;
+
+				/**
+				 * This function searches users by the given name that is written in the Combo Box
+				 */
+        searchUser: async name => await getUsers(name),
+
+      /**
+       * Gets all users and filters out the logged in user
+       */
+      async getUsers() {
+        const users = (await getUsers())
+            .filter(user => user.userId !== UserStore.data.userId);
+        this.users = users;
+      },
+      /**
+       * Adds an empty destination
+       */
+      addDestination() {
+        this.tripDestinations.push({...tripDestination, id: this.tripDestinations.length});
+      },
+      /**
+       * Iterates through destinations and check and renders error message
+       * if destinations are contiguous.
+       * @returns {boolean} True if contiguous destinations are found, false otherwise.
+       */
+      contiguousDestinations() {
+        let foundContiguousDestination = false;
 
                 this.$set(this.tripDestinations[0], "destinationErrors", []);
 
@@ -170,21 +210,27 @@
                     return false;
                 }
 
-                return true;
-            },
-            /**
-             * Validates fields before sending a request to add a trip
-             */
-            async addTrip() {
-                const validFields = this.validate();
-                if (!validFields) return;
-                // Specifies the extra users that should be added to the trip
-                let userIds = [];
-                this.selectedUsers.forEach(function (selectedUser) {
-                    userIds.push({userId: selectedUser.userId, role: selectedUser.userRole});
-                });
+        return true;
+      },
+      /**
+       * Validates fields before sending a request to add a trip
+       */
+      async addTrip() {
+        const validFields = this.validate();
+        if (!validFields) return;
+        const tripDestinations = this.tripDestinations.map(tripDestination => {
+					// eslint-disable-next-line no-mixed-spaces-and-tabs
+        	tripDestination.destinationId = tripDestination.destination.destinationId;
+					// eslint-disable-next-line no-mixed-spaces-and-tabs
+        	return tripDestination;
+				});
+          let userIds = [];
 
-                const subTrip = await createTrip(this.tripName, this.tripDestinations, userIds);
+          // Specifies the extra users that should be added to the trip
+          this.selectedUsers.forEach(function (selectedUser) {
+              userIds.push({userId: selectedUser.userId, role: selectedUser.userRole});
+          });
+        const subTrip = await createTrip(this.tripName, tripDestinations, userIds);
 
                 // If this is happening on the sidebar, the new trip is a subtrip. This adds it to parent trip.
                 if (this.isSidebarComponent) {

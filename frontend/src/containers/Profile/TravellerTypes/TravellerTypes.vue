@@ -6,11 +6,11 @@
 
       <div id="edit-btn">
         <v-btn
-                v-if="userStore.userId === userId"
-                small
-                flat
-                color="secondary"
-                @click="toggleEditSave"
+          v-if="userStore.userId === userId"
+          small
+          flat
+          color="secondary"
+          @click="toggleEditSave"
         >
           <v-icon v-if="!isEditing">edit</v-icon>
           <span v-else>Save</span>
