@@ -19,6 +19,14 @@
                   wrap
           >
             <v-flex xs12>
+
+              <GenericCombobox
+                label="Destination"
+                :get-function="searchDestination"
+                item-text="destinationName"
+                v-model="tripDestination.destination"
+              />
+              <!--
               <v-select
                       v-model="tripDestination.destination"
                       :items="filteredDestinations"
@@ -28,6 +36,7 @@
                       :rules="destinationRules"
                       color="secondary"
               />
+              -->
             </v-flex>
 
             <v-flex xs8>
@@ -219,10 +228,15 @@
   import { editTrip, getTripNodeParentById } from "../../TripService";
   import {rules} from "../../../../utils/rules";
   import {getDestinations} from "./ModifyTripDestinationDialogService";
-  import {getYourDestinations} from '../../../Destinations/DestinationsService';
-import { transformTripNode } from '../../TripService';
+  import {getYourDestinations, getPublicDestinations} from '../../../Destinations/DestinationsService';
+  import { transformTripNode } from '../../TripService';
+  import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
+
 
   export default {
+    components: {
+      GenericCombobox
+    },
     props: {
       isShowing: {
         type: Boolean,
@@ -267,6 +281,12 @@ import { transformTripNode } from '../../TripService';
       this.getDestinations();
     },
     methods: {
+
+      searchDestination: async destinationName => {
+        await getPublicDestinations(destinationName, 0);
+        this.filteredDestinations();
+      },
+
       async modifyTripDestination() {
         if (!this.$refs.form.validate()) return;
         let newTripNodes;
@@ -318,43 +338,42 @@ import { transformTripNode } from '../../TripService';
         this.destinations = allDestinations;
       }
     },
-    computed: {
-      /**
-       * Filter destinations for the user to select.
-			 * If in edit mode, filter out the destination on either side of the node being edited.
-			 * If adding a new destination, filter out the destination at the bottom of the sidebar.
-       */
-      filteredDestinations() {
-        if (this.editMode) {
-          if (this.tripDestination.destination === null) return this.destinations;
-          const tripDestinationParentNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip, null);
-          const tripDestinationIndex = tripDestinationParentNode.tripNodes.findIndex(
-              node => node.tripNodeId === this.tripDestination.tripNodeId);
+    /**
+     * Filter destinations for the user to select.
+     * If in edit mode, filter out the destination on either side of the node being edited.
+     * If adding a new destination, filter out the destination at the bottom of the sidebar.
+     */
+    filteredDestinations() {
 
-          let filterDestinationIds = [];
-          let nodes = tripDestinationParentNode.tripNodes;
+      if (this.editMode) {
+        if (this.tripDestination.destination === null) return this.destinations;
+        const tripDestinationParentNode = getTripNodeParentById(this.tripDestination.tripNodeId, this.trip, null);
+        const tripDestinationIndex = tripDestinationParentNode.tripNodes.findIndex(
+          node => node.tripNodeId === this.tripDestination.tripNodeId);
 
-          if (tripDestinationIndex > 0 &&
-              nodes[tripDestinationIndex - 1].nodeType === "TripDestinationLeaf") {
-            filterDestinationIds.push(nodes[tripDestinationIndex - 1].destination.destinationId);
-          }
+        let filterDestinationIds = [];
+        let nodes = tripDestinationParentNode.tripNodes;
 
-          if (tripDestinationIndex + 1 < nodes.length &&
-              nodes[tripDestinationIndex + 1].nodeType === "TripDestinationLeaf") {
-            filterDestinationIds.push(nodes[tripDestinationIndex + 1].destination.destinationId);
-          }
-          return this.destinations.filter(destination => !filterDestinationIds.includes(destination.destinationId));
-        } else {
-          let allDestinations = this.destinations;
-          const endNode = this.trip.tripNodes[this.trip.tripNodes.length - 1];
-          if (endNode.nodeType === "TripDestinationLeaf") {
-            const endNodeDestinationId = endNode.destination.destinationId;
-            allDestinations = this.destinations.filter(
-                destination => destination.destinationId !== endNodeDestinationId);
-          }
-          return allDestinations;
-				}
-			}
+        if (tripDestinationIndex > 0 &&
+          nodes[tripDestinationIndex - 1].nodeType === "TripDestinationLeaf") {
+          filterDestinationIds.push(nodes[tripDestinationIndex - 1].destination.destinationId);
+        }
+
+        if (tripDestinationIndex + 1 < nodes.length &&
+          nodes[tripDestinationIndex + 1].nodeType === "TripDestinationLeaf") {
+          filterDestinationIds.push(nodes[tripDestinationIndex + 1].destination.destinationId);
+        }
+        return this.destinations.filter(destination => !filterDestinationIds.includes(destination.destinationId));
+      } else {
+        let allDestinations = this.destinations;
+        const endNode = this.trip.tripNodes[this.trip.tripNodes.length - 1];
+        if (endNode.nodeType === "TripDestinationLeaf") {
+          const endNodeDestinationId = endNode.destination.destinationId;
+          allDestinations = this.destinations.filter(
+            destination => destination.destinationId !== endNodeDestinationId);
+        }
+        return allDestinations;
+      }
     },
     watch: {
       // Synchronize both isShowing state and props
