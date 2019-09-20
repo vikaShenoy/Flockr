@@ -101,6 +101,7 @@ public class TripController extends Controller {
         }
 
         JsonNode jsonBody = request.body().asJson();
+        System.out.println("JSON: " + jsonBody);
 
         String tripName = jsonBody.get("name").asText();
         JsonNode tripNodesJson = jsonBody.get("tripNodes");
