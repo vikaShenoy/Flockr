@@ -188,7 +188,7 @@ export async function editTrip(trip) {
     tripData.userIds = trip.userRoles.map(userRole => {
       return {
         userId: userRole.user.userId,
-        permission: userRole.role.roleType
+        role: userRole.role.roleType
       };
     });
   }
