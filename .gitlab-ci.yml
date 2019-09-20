@@ -57,11 +57,11 @@ staging-run:
   script:
   - "cd target/universal"
   - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-  - pm2 delete dev-server || true
+  - sudo pm2 delete dev-server || true
   - sudo rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true
   - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
   - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
-  - pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
+  - sudo pm2 start "sudo bash seng302-team-500 -Dhttp.port=8443" --name=dev-server
   only:
   - dev
   stage: deploy
