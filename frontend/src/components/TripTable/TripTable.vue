@@ -7,7 +7,15 @@
   >
     <template v-slot:items="props">
       <td>
-        <v-select
+
+        <GenericCombobox
+          label="Destination"
+          :get-function="searchDestination"
+          item-text="destinationName"
+          v-model="props.item.destination"
+          />
+
+        <!--<v-select
                 v-model="props.item.destinationId"
                 :items="destinations"
                 label="Destination"
@@ -17,6 +25,7 @@
                 :rules="fieldRules"
                 :error-messages="props.item.destinationErrors"
         ></v-select>
+        -->
       </td>
       <td>
         <v-text-field
@@ -64,10 +73,13 @@
 <script>
   import Sortable from "sortablejs";
   import moment from "moment";
-  import {getDestinations} from "./TripTableService";
-  import {getYourDestinations} from '../../containers/Destinations/DestinationsService';
+  import {getPublicDestinations} from '../../containers/Destinations/DestinationsService';
+  import GenericCombobox from "../GenericCombobox/GenericCombobox";
 
   export default {
+    components: {
+      GenericCombobox
+    },
     name: "TripTable",
     props: {
       tripDestinations: {
@@ -78,7 +90,6 @@
       }
     },
     mounted() {
-      this.getDestinations();
       this.initSorting();
     },
     data() {
@@ -110,34 +121,39 @@
             sortable: false
           }
         ],
-        destinations: [],
         fieldRules: [field => !!field || "Field is required"],
         arrivalDateMenu: false,
         arrivalTimeMenu: false,
         departureDateMenu: false,
         departureTimeMenu: false,
-        currentDate: moment().format("YYYY-MM-DD")
+        currentDate: moment().format("YYYY-MM-DD"),
+        destinationsOffset: 0,
       };
     },
     methods: {
-      /**
-       * Get all destinations, then filter to remove duplicates.
-       * */
-      async getDestinations() {
-        try {
-          const [publicDestinations, yourDestinations] = await Promise.all([getDestinations(), getYourDestinations()]);
+      //
+      // newDestinationSelected(newDestinations) {
+      //   //this.tripDestinations[index].destinationId = newDestinations.destinationId;
+      //   //this.destinations = newDestinations;
+      //   console.log("newDest", newDestinations);
+      //   console.log(this.tripDestinations);
+      //
+      //   //console.log("updateSelectedDest tripDest: ", this.tripDestinations);
+      //   //this.$emit("newDestinationSelected", this.tripDestinations)
+      // },
 
-          // Need to filter out duplicate destinations
-          const destinationsFound = new Set();
-          const allDestinations = [...publicDestinations, ...yourDestinations].filter(destination => {
-            return !destinationsFound.has(destination.destinationId) && destinationsFound.add(destination.destinationId);
-          });
-
-          this.destinations = allDestinations;
-        } catch (e) {
-          this.$emit("showErrorSnackbar", "Error getting destinations");
-        }
+      updateSelectedDestination(newDestinations) {
+        console.log(newDestinations);
+        //console.log("updateSelectedDest tripDest: ", this.tripDestinations);
+        this.$emit("updateSelectedDestination", this.tripDestinations)
       },
+
+
+      /**
+       * This function gets the public destination with the given destination name that is
+       * written in the Combo Box and sets an offset of 0 to the query.
+       */
+      searchDestination: async destinationName => await getPublicDestinations(destinationName, 0),
 
       /**
        * Allow the user to sort the trip table with drag/drop.

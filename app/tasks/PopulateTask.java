@@ -8,18 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
-import models.Country;
-import models.Destination;
-import models.DestinationType;
-import models.Nationality;
-import models.Passport;
-import models.Role;
-import models.RoleType;
-import models.TravellerType;
-import models.TripComposite;
-import models.TripDestinationLeaf;
-import models.TripNode;
-import models.User;
+
+import models.*;
 import play.Environment;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
@@ -82,6 +72,16 @@ public class PopulateTask {
 
                       Role userRole = new Role(RoleType.TRAVELLER);
                       userRole.save();
+
+                      Role tripManagerRole = new Role(RoleType.TRIP_MANAGER);
+                      tripManagerRole.save();
+
+                      Role tripOwnerRole = new Role(RoleType.TRIP_OWNER);
+                      tripOwnerRole.save();
+
+                      Role tripMember = new Role(RoleType.TRIP_MEMBER);
+                      tripMember.save();
+
                       List<Role> userRoleTypes = new ArrayList<>();
                       userRoleTypes.add(userRole);
 
@@ -229,6 +229,8 @@ public class PopulateTask {
                       tripNodes.add(tripWestMelton);
                       tripNodes.add(tripHelkett);
                       List<User> users = new ArrayList<>();
+                      List<UserRole> userRoles = new ArrayList<>();
+                      userRoles.add(new UserRole(adminUser, tripOwnerRole));
                       users.add(adminUser);
 
                       Destination morocco =
@@ -250,6 +252,7 @@ public class PopulateTask {
                       tripdestination4.save();
 
                       TripComposite trip5 = new TripComposite(tripNodes, users, "Trip 5");
+                      trip5.setUserRoles(userRoles);
                       trip5.save();
 
                       ArrayList<TripNode> trip6Nodes = new ArrayList<>();
@@ -257,6 +260,7 @@ public class PopulateTask {
                       trip6Nodes.add(tripdestination4);
                       TripComposite trip6 =
                           new TripComposite(trip6Nodes, users, "Find the family graves");
+                      trip6.setUserRoles(userRoles);
                       // trip2.setParents(tripNodes);
                       trip6.save();
 

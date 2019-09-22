@@ -1,10 +1,13 @@
 package util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
+import java.util.concurrent.CompletionStage;
 import models.*;
+import repository.UserRepository;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -13,6 +16,10 @@ import java.util.List;
 import java.util.Set;
 
 public class TripUtil {
+
+    @Inject
+    private UserRepository userRepository;
+
     /**
      * Gets trip to update from from list of trip objects based on ID
      * @param tripNodeJson JSON representation of trip node
@@ -20,7 +27,7 @@ public class TripUtil {
      * @return Object representation of trip node
      * @throws NotFoundException Gets thrown when a trip isn't found
      */
-    public TripComposite getTripToUpdate(JsonNode tripNodeJson, Set<TripComposite> trips) throws NotFoundException {
+    private TripComposite getTripToUpdate(JsonNode tripNodeJson, Set<TripComposite> trips) throws NotFoundException {
         int tripNodeId = tripNodeJson.get("tripNodeId").asInt();
         TripComposite tripComposite = null;
 
@@ -98,37 +105,37 @@ public class TripUtil {
     }
 
     /**
-     * Gets users from userIDS
-     * @param userIdsJson
-     * @throws exceptions.ForbiddenRequestException if userID is in json
+     * Given the user ids from the request, return a list of users with those ids
+     * @param userIdsJson a JSON array with user ids
+     * @throws exceptions.ForbiddenRequestException if the own user's id is in the JSON
      * @return the list of users
      */
-    public List<User> getUsersFromJson(JsonNode userIdsJson, User user, List<User> allUsers) throws ForbiddenRequestException, NotFoundException{
+    public List<User> getUsersFromJson(JsonNode userIdsJson, User user) throws ForbiddenRequestException, NotFoundException{
         List<User> users = new ArrayList<>();
+        List<Integer> userIds = new ArrayList<>();
 
-        for (JsonNode userIdJson : userIdsJson) {
-            int currentUserId = userIdJson.asInt();
-            if (currentUserId == user.getUserId()) {
+        // parse user if from JSON, add user id to the list of user id integers
+        if (userIdsJson != null) {
+            for (JsonNode userIdJson : userIdsJson) {
+                int currentUserId = userIdJson.get("userId").asInt();
+                userIds.add(currentUserId);
+            }
+            if (userIds.size() > 0) {
+                users = userRepository.getUsersWithIds(userIds);
+            }
+
+
+            if (users.contains(user)) {
                 throw new ForbiddenRequestException("You cannot add yourself to a trip");
             }
 
-            User currentUser = null;
-
-            for (User potentialUser : allUsers)  {
-                if (currentUserId == potentialUser.getUserId()) {
-                    currentUser = potentialUser;
-                    break;
-                }
-            }
-
-            if (currentUser == null) {
+            if (users.contains(null)) {
                 throw new NotFoundException("User not found");
             }
-
-            users.add(currentUser);
         }
 
-        // Add own user to user IDS
+
+        // Add own user to list of users
         users.add(user);
 
         return users;
@@ -149,7 +156,8 @@ public class TripUtil {
         List<User> users = new ArrayList<>();
 
         for (JsonNode userIdJson : userIdsJson) {
-            int currentUserId = userIdJson.asInt();
+            int currentUserId =  userIdJson.get("userId").asInt();
+
 
             User currentUser = null;
 
