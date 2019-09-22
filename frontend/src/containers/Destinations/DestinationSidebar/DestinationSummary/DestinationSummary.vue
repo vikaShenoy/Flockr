@@ -1,6 +1,8 @@
 <template>
+  <div>
   <div class="destination-summary" @click="$router.push(`/destinations/${destination.destinationId}`)">
-    <v-avatar><img
+
+    <v-avatar :size="40"><img
             :src="imageSrc"
             alt="avatar"
             class="avatar"
@@ -25,8 +27,9 @@
       delete
     </v-icon>
 
-    <v-divider></v-divider>
   </div>
+    <v-divider></v-divider>
+    </div>
 </template>
 
 <script>
@@ -71,15 +74,21 @@
 
 
   .content {
-    width: 160px;
     display: inline-block;
-    margin-top: 5px;
     margin-left: 5px;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
   }
 
   .destination-summary {
     cursor: pointer;
     transition: 0.2s background-color linear;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding-left: 5px;
+
 
     &:hover {
       background-color: #dce6ef;
@@ -88,14 +97,13 @@
 
   .destination-lock {
     opacity: 0.7;
-    float: right;
-    margin-top: 17px;
-    margin-right: 10px;
+    margin-left: auto;
+    margin-right: 15px;
+    
   }
 
   .destination-title {
     display: inline-block;
-    margin-top: 0px;
   }
 
   .destination-district {
@@ -103,15 +111,12 @@
     color: $text-dark-grey;
   }
 
-  .avatar {
-    margin-top: -10px;
-  }
 
   .delete-destination {
-    float: right;
-    margin-top: 17px;
     transition: background-color 0.1s linear;
     z-index: 100;
+    margin-left: auto;
+    margin-right: 5px;
 
     &:hover {
       color: #c53e3e !important;

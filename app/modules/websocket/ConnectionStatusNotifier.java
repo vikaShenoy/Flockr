@@ -20,11 +20,9 @@ public class ConnectionStatusNotifier {
 
 
   private ConnectedUsers connectedUsers;
-  private Map<User, ActorRef> userMap;
 
   public ConnectionStatusNotifier() {
     this.connectedUsers = ConnectedUsers.getInstance();
-    this.userMap = this.connectedUsers.getConnectedUsers();
   }
 
      /**
@@ -55,11 +53,11 @@ public class ConnectionStatusNotifier {
     }
 
 
-    ActorRef userWebsocket = userMap.get(user);
+    ActorRef userWebsocket = connectedUsers.getSocketForUser(user);
     JsonNode userJson = Json.toJson(user);
 
     for (User userToNotify : usersToNotify) {
-      ActorRef receiverWebsocket = userMap.get(userToNotify);
+      ActorRef receiverWebsocket = connectedUsers.getSocketForUser(userToNotify);
 
       if (connectionStatus == ConnectionStatus.CONNECTED) {
           JsonNode frameJson = Json.toJson(new ConnectedFrame(user));

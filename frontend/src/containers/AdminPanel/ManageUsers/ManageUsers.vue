@@ -1,110 +1,112 @@
 <template>
-  <div class=manage-users>
-    <v-card class="manage-filter-card">
-      <v-list two-line>
-        <v-subheader class="manage-users-row">
-          <div class="manage-users-text">
-            <p>Manage users</p>
-          </div>
-          <v-text-field label="Search User" color="secondary" @input="searchAdminChange"/>
+	<div class=manage-users>
+		<v-card class="manage-filter-card">
+			<v-list two-line>
+				<v-subheader class="manage-users-row">
+					<div class="manage-users-text">
+						<p>Manage users</p>
+					</div>
+					<v-text-field label="Search User" color="secondary" @input="searchAdminChange"/>
 
-          <v-btn
-                  class="action-button"
-                  :disabled="this.selectedUsers.length !== 1"
-                  @click="viewAsUserClicked"
-                  depressed
-                  color="secondary"
-          >
-            View as User
-          </v-btn>
+					<v-btn
+									class="action-button"
+									:disabled="this.selectedUsers.length !== 1"
+									@click="viewAsUserClicked"
+									depressed
+									color="secondary"
+					>
+						View as User
+					</v-btn>
 
-          <v-btn
-                  class="action-button"
-                  :disabled="this.selectedUsers.length !== 1"
-                  @click="logoutUsersButtonClicked"
-                  depressed
-                  color="secondary"
-          >
-            Log Out User
-          </v-btn>
+					<v-btn
+									class="action-button"
+									:disabled="this.selectedUsers.length !== 1"
+									@click="logoutUsersButtonClicked"
+									depressed
+									color="secondary"
+					>
+						Log Out User
+					</v-btn>
 
-          <v-btn
-                  class="action-button"
-                  @click="signupButtonClicked"
-                  depressed
-                  color="secondary"
-          >
-            Sign Up User
-          </v-btn>
+					<v-btn
+									class="action-button"
+									@click="signupButtonClicked"
+									depressed
+									color="secondary"
+					>
+						Sign Up User
+					</v-btn>
 
-          <v-btn
-                  class="action-button"
-                  :disabled="!this.canAddAdminPriviledge"
-                  @click="showPrompt('Are you sure?', addAdminPriviledge)"
-                  depressed
-                  color="secondary"
-          >
-            Make Admin
-          </v-btn>
+					<v-btn
+									class="action-button"
+									:disabled="!this.canAddAdminPriviledge"
+									@click="showPrompt('Are you sure?', addAdminPriviledge)"
+									depressed
+									color="secondary"
+					>
+						Make Admin
+					</v-btn>
 
-          <v-btn
-                  class="act../../Profile/ProfilePic/defaultProfilePicture.pngion-button"
-                  :disabled="!this.canRemoveAdminPriviledge"
-                  @click="showPrompt('Are you sure?', removeAdminPriviledge)"
-                  depressed
-                  color="secondary"
-          >
-            Remove admin
-          </v-btn>
+					<v-btn
+									class="action-button"
+									:disabled="!this.canRemoveAdminPriviledge"
+									@click="showPrompt('Are you sure?', removeAdminPriviledge)"
+									depressed
+									color="secondary"
+					>
+						Remove admin
+					</v-btn>
 
 
-          <v-btn
-                  class="action-button"
-                  :disabled="this.selectedUsers.length === 0"
-                  @click="showPrompt('Are you sure?', deleteUsersButtonClicked)"
-                  depressed
-                  color="secondary"
-          >
-            Delete users
-          </v-btn>
-        </v-subheader>
-      </v-list>
-    </v-card>
+					<v-btn
+									class="action-button"
+									:disabled="this.selectedUsers.length === 0"
+									@click="showPrompt('Are you sure?', deleteUsersButtonClicked)"
+									depressed
+									color="secondary"
+					>
+						Delete users
+					</v-btn>
+				</v-subheader>
+			</v-list>
+		</v-card>
 
-    <!-- User tile -->
-    <v-card id="users">
-      <v-list>
-        <v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
-          <v-list-tile-avatar>
-            <img :src="item.avatar">
-          </v-list-tile-avatar>
+		<!-- User tile -->
+			<v-card id="users"
+							v-on:scroll="usersScrolled"
+							ref="userCard">
+				<v-list>
+					<v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
+						<v-list-tile-avatar>
+							<img :src="item.avatar">
+						</v-list-tile-avatar>
 
-          <v-list-tile-content>
-            <v-list-tile-title>{{item.title}}</v-list-tile-title>
-            <v-list-tile-sub-title>{{item.subtitle}}</v-list-tile-sub-title>
-          </v-list-tile-content>
+						<v-list-tile-content>
+							<v-list-tile-title>{{item.title}}</v-list-tile-title>
+							<v-list-tile-sub-title>{{item.subtitle}}</v-list-tile-sub-title>
+						</v-list-tile-content>
 
-          <!-- Checkmark for when user is selected -->
-          <v-icon v-if="!item.selected">check_circle_outline</v-icon>
-          <v-icon v-else class="selected-icon">check_circle</v-icon>
-        </v-list-tile>
-      </v-list>
-    </v-card>
+						<!-- Checkmark for when user is selected -->
+						<v-icon v-if="!item.selected">check_circle_outline</v-icon>
+						<v-icon v-else class="selected-icon">check_circle</v-icon>
+					</v-list-tile>
+				</v-list>
+			</v-card>
 
-    <v-dialog v-model="showSignup" max-width="800">
-      <v-card>
-        <SignUp @exit="closeSignupModal" isSigningUpAsAdmin></SignUp>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <prompt-dialog
-            :message=prompt.message
-            :onConfirm="prompt.onConfirm"
-            :dialog="prompt.show"
-            v-on:promptEnded="prompt.show=false"></prompt-dialog>
-  </div>
+		<v-dialog v-model="showSignup" max-width="800">
+			<v-card>
+				<SignUp @exit="closeSignupModal" isSigningUpAsAdmin></SignUp>
+				<v-card-actions>
+					<v-spacer></v-spacer>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
+		<prompt-dialog
+						:message=prompt.message
+						:onConfirm="prompt.onConfirm"
+						:dialog="prompt.show"
+						v-on:promptEnded="prompt.show=false"></prompt-dialog>
+	</div>
 
 </template>
 
@@ -129,6 +131,7 @@
     data() {
       return {
         items: [],
+				scrollCalled: false,
         showSignup: false,
         prompt: {
           message: "",
@@ -182,6 +185,25 @@
 
     },
     methods: {
+			/**
+			 * Called on scroll event for the admin panel user list.
+			 * When the user scrolls down a certain amount, emit an event to fetch more users for the list.
+			 * Uses delay to prevent too many endpoint calls.
+			 */
+      usersScrolled() {
+        const userCard = this.$refs.userCard;
+        const tolerance = 0.8;
+        // Variable to prevent multiple endpoint calls when the scroll condition is satisfied.
+				// NOTE - this may have to be adjusted based on network performance.
+        const callDelay = 500;
+        const {scrollHeight, scrollTop, clientHeight} = userCard.$el;
+        const nearBottom = (scrollHeight - scrollTop) * tolerance <= clientHeight;
+        if (nearBottom && !this.scrollCalled) {
+          this.$emit("getNextUsers");
+          this.scrollCalled = true;
+          setTimeout(() => {this.scrollCalled = false}, callDelay);
+        }
+      },
 
       /**
        * Called when the view destinations button is clicked.
@@ -310,50 +332,50 @@
 
 
 <style lang="scss" scoped>
-  @import "../../../styles/_variables.scss";
+	@import "../../../styles/_variables.scss";
 
-  .manage-users {
-    width: 100%;
-  }
+	.manage-users {
+		width: 100%;
+	}
 
-  .manage-filter-card {
-    height: 10%;
-    width: 100%;
-  }
+	.manage-filter-card {
+		height: 10%;
+		width: 100%;
+	}
 
-  .selected-icon {
-    color: $success;
-  }
+	.selected-icon {
+		color: $success;
+	}
 
-  .manage-users-row {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    height: auto;
+	.manage-users-row {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		height: auto;
 
-    .manage-users-text {
-      p {
-        text-align: left;
-      }
+		.manage-users-text {
+			p {
+				text-align: left;
+			}
 
-      flex-grow: 1;
-      justify-self: start;
-    }
+			flex-grow: 1;
+			justify-self: start;
+		}
 
-    .action-button {
-      justify-self: end;
-      width: fit-content;
-    }
+		.action-button {
+			justify-self: end;
+			width: fit-content;
+		}
 
-  }
+	}
 
-  p {
-    margin: 0;
-  }
+	p {
+		margin: 0;
+	}
 
-  #users {
-    max-height: 400px;
-    overflow: auto;
-  }
+	#users {
+		max-height: 400px;
+		overflow: auto;
+	}
 </style>

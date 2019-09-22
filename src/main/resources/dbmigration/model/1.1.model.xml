@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="message">
+            <column name="user_user_id" type="integer" uniqueOneToOne="uq_message_user_user_id" references="user.user_id" foreignKeyName="fk_message_user_user_id"/>
+        </addColumn>
+        <createTable name="user_chat_group" pkName="pk_user_chat_group">
+            <column name="user_user_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="chat_group_chat_group_id" type="integer" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_user_chat_group_user" columnNames="user_user_id" refColumnNames="user_id" refTableName="user" indexName="ix_user_chat_group_user"/>
+            <foreignKey name="fk_user_chat_group_chat_group" columnNames="chat_group_chat_group_id" refColumnNames="chat_group_id" refTableName="chat_group" indexName="ix_user_chat_group_chat_group"/>
+        </createTable>
+    </changeSet>
+    <changeSet type="pendingDrops">
+        <dropColumn columnName="child_index" tableName="trip_node_parent"/>
+    </changeSet>
+</migration>

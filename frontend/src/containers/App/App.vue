@@ -7,6 +7,7 @@
         <v-layout>
           <v-flex>
             <GlobalSnackbar />
+            <Chat v-if="UserStore.methods.loggedIn()"/>
             <router-view/>
           </v-flex>
         </v-layout>
@@ -19,16 +20,21 @@
 import Sidebar from "./Sidebar/Sidebar";
 import Navbar from "./Navbar/Navbar";
 import GlobalSnackbar from "../../components/Snackbars/GlobalSnackbar";
+import Chat from "./Chat/Chat";
+import UserStore from "../../stores/UserStore";
 
 export default {
   components: {
     Sidebar,
     Navbar,
-    GlobalSnackbar
+    GlobalSnackbar,
+    Chat
   },
   name: "App",
   data() {
-    return {}
+    return {
+      UserStore: UserStore
+    }
   }
 }
 </script>

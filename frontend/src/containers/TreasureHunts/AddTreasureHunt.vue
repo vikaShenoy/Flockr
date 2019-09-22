@@ -33,10 +33,13 @@
                     <v-text-field v-model="createTreasureHuntName" label="Name" required></v-text-field>
                   </v-flex>
                   <v-flex xs12>
-                    <v-select v-model="createTreasureHuntDestination" required label="Destination" :items="destinations"
-                              item-text="destinationName" item-value="destinationId">
-
-                    </v-select>
+                    <GenericCombobox
+                      label="Destination"
+                      :required="true"
+                      item-text="destinationName"
+                      :get-function="getPublicDestinationsFunction"
+                      @item-selected="destinationSelected"
+                    />
                   </v-flex>
                   <v-flex xs12>
                     <v-textarea v-model="createTreasureHuntRiddle" label="Riddle" required></v-textarea>
@@ -82,13 +85,15 @@
   import {
     createTreasureHunt,
     deleteTreasureHuntData,
-    getPublicDestinations,
     undoDeleteTreasureHuntData
   } from "./TreasureHuntsService"
+  import { getPublicDestinations } from "../Destinations/DestinationsService";
   import Command from "../../components/UndoRedo/Command";
+  import GenericCombobox from "../../components/GenericCombobox/GenericCombobox";
 
   export default {
     name: "AddTreasureHunt",
+    components: { GenericCombobox },
     props: {
       toggle: Boolean
     },
@@ -100,15 +105,23 @@
         visible: false,
         destinations: [],
         createTreasureHuntName: "",
-        createTreasureHuntDestination: -1,
+        createTreasureHuntDestination: null,
         createTreasureHuntRiddle: "",
         startDate: null,
         endDate: null,
         today: new Date().toISOString().split("T")[0],
-        treasure: null
+        treasure: null,
+        getPublicDestinationsFunction: search => getPublicDestinations(search, 0) // used by GenericCombobox component
       }
     },
     methods: {
+      /**
+       * Called when a destination is selected from the GenericCombobox.
+       * @param {Object} destination the selected destination
+       */
+      destinationSelected(destination) {
+        this.createTreasureHuntDestination = destination.destinationId;
+      },
       /**
        * Function called by the close button in the dialog,
        *  emits an event to the parent to close the modal,
@@ -127,7 +140,11 @@
        * Calls the treasure hunt service to update the list of public destinations displayed in the dropdown box
        */
       async getDestinations() {
-        this.destinations = await getPublicDestinations()
+        try {
+          this.destinations = await getPublicDestinations();
+        } catch (err) {
+          this.$root.$emit("show-error-snackbar", "Could not get public destinations", 3000);
+        }
       },
 
       /**

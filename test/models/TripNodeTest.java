@@ -72,7 +72,7 @@ public class TripNodeTest {
     // Add some destinations
     DestinationType destinationType = new DestinationType("city");
     Country country = new Country("Peru", "PE", true);
-    District district = new District("Test District", country);
+    String district = "Test District";
     destination1 =
         new Destination(
             "Test City 1",
@@ -98,7 +98,6 @@ public class TripNodeTest {
 
     destinationType.save();
     country.save();
-    district.save();
     destination1.save();
     destination2.save();
 
@@ -326,7 +325,6 @@ public class TripNodeTest {
     updatedTripJson.putArray("tripNodes").add(firstNode).add(secondNode);
     updatedTripJson.putArray("userIds").add(user.getUserId());
 
-    System.out.println(trip.getUsers());
     Result result =
         fakeClient.makeRequestWithToken(
             "PUT",
