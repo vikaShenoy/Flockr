@@ -17,6 +17,7 @@
 
 <script>
   import { endpoint } from "../../../../utils/endpoint";
+  import defaultPic from "../../../Profile/ProfilePic/defaultProfilePicture.png";
   export default {
     name: "UserSummary",
     data() {
@@ -40,14 +41,14 @@
        */
       getUserPhoto(user) {
         if (!user.profilePhoto) {
-          return  "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
+          return  defaultPic;
         }
         try {
           return endpoint(
               `/users/photos/${user.profilePhoto.photoId}/thumbnail?Authorization=${
                 localStorage.getItem("authToken")}`);
         } catch (e) {
-          return  "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
+          return  defaultPic;
         }
       },
     }
