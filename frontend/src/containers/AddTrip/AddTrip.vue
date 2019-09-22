@@ -30,6 +30,7 @@
           {{ formatName(user) }}
           <v-select
             v-model="user.userRole"
+            label="Permission"
             :items="roleTypes"
             class="role-type"
             color="secondary"
