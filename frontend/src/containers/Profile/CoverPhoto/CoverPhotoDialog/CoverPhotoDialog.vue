@@ -12,7 +12,6 @@
           <v-img
               :src="coverPhotoEndpoint"
               class="grey darken-3"
-              :contain="true"
               aspect-ratio="2.75"/>
         </v-layout>
         <profile-photos-selection
