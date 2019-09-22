@@ -30,8 +30,9 @@
               <v-icon v-if="!isEditingTrip">edit</v-icon>
             </v-btn>
 
-            <v-btn class="delete-btn" flat @click="$emit('deleteTripNode', tripNode)">
-              <v-icon>delete</v-icon>
+            <v-btn class="delete-btn" flat @click="$emit('deleteTripNode', tripNode)" v-if="hasPermissionToUnlink">
+              <v-icon v-if="isTripDestinationLeaf">delete</v-icon>
+              <v-icon v-else>link_off</v-icon>
             </v-btn>
           </v-spacer>
         </v-card-title>
@@ -110,6 +111,9 @@ export default {
     };
   },
   computed: {
+    isTripDestinationLeaf() {
+      return this.tripNode.nodeType === "TripDestinationLeaf";
+    },
     getArrivalDate() {
       const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
       return isLeaf
@@ -145,6 +149,16 @@ export default {
           userRole => userRole.user.userId === UserStore.data.userId
         );
       }
+
+      const isTripManager = userRole && userRole.role.roleType === roleType.TRIP_MANAGER;
+      const isTripOwner = userRole && userRole.role.roleType === roleType.TRIP_OWNER;
+
+      return isTripManager || isTripOwner;
+    },
+    hasPermissionToUnlink() {
+      const userRole = this.parentTrip.userRoles.find(
+        userRole => userRole.user.userId === UserStore.data.userId
+      );
 
       const isTripManager = userRole && userRole.role.roleType === roleType.TRIP_MANAGER;
       const isTripOwner = userRole && userRole.role.roleType === roleType.TRIP_OWNER;
