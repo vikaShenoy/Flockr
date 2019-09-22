@@ -29,7 +29,6 @@
                     :items="travellerTypes"
                     item-text="travellerTypeName"
                     item-value="travellerTypeId"
-                    :rules="[rules.requiredArray]"
                     label="Traveller Types"
                     chips
                     clearable
