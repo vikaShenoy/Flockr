@@ -1,8 +1,13 @@
+# --- Created by Ebean DDL
+# To stop Ebean DDL generation, remove this comment and start using Evolutions
+
 # --- !Ups
 
 create table chat_group (
   chat_group_id                 integer auto_increment not null,
   name                          varchar(255),
+  voice_room_id                 bigint default null,
+  room_token                    varchar(255) default null,
   constraint pk_chat_group primary key (chat_group_id)
 );
 
@@ -24,7 +29,7 @@ create table destination (
   destination_id                integer auto_increment not null,
   destination_name              varchar(255),
   destination_type_destination_type_id integer,
-  destination_district_district_id integer,
+  destination_district          varchar(255),
   destination_lat               double,
   destination_lon               double,
   destination_country_country_id integer,
@@ -32,6 +37,7 @@ create table destination (
   is_public                     boolean default false not null,
   deleted_expiry                timestamp,
   deleted                       BOOLEAN DEFAULT FALSE not null,
+  constraint uq_destination_destination_name_destination_country_count_1 unique (destination_name,destination_country_country_id,destination_type_destination_type_id,is_public,destination_owner),
   constraint pk_destination primary key (destination_id)
 );
 
@@ -76,6 +82,7 @@ create table message (
   message_id                    integer auto_increment not null,
   chat_group_chat_group_id      integer,
   contents                      varchar(255),
+  user_user_id                  integer,
   timestamp                     timestamp,
   constraint pk_message primary key (message_id)
 );
@@ -208,8 +215,14 @@ create table user (
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint uq_user_email unique (email),
   constraint uq_user_profile_photo_photo_id unique (profile_photo_photo_id),
-  constraint uq_user_cover_photo_photo_id unique (profile_photo_photo_id),
+  constraint uq_user_cover_photo_photo_id unique (cover_photo_photo_id),
   constraint pk_user primary key (user_id)
+);
+
+create table user_chat_group (
+  user_user_id                  integer not null,
+  chat_group_chat_group_id      integer not null,
+  constraint pk_user_chat_group primary key (user_user_id,chat_group_chat_group_id)
 );
 
 create table user_role (
@@ -227,9 +240,6 @@ alter table chat_group_user add constraint fk_chat_group_user_user foreign key (
 
 create index ix_destination_destination_type_destination_type_id on destination (destination_type_destination_type_id);
 alter table destination add constraint fk_destination_destination_type_destination_type_id foreign key (destination_type_destination_type_id) references destination_type (destination_type_id) on delete restrict on update restrict;
-
-create index ix_destination_destination_district_district_id on destination (destination_district_district_id);
-alter table destination add constraint fk_destination_destination_district_district_id foreign key (destination_district_district_id) references district (district_id) on delete restrict on update restrict;
 
 create index ix_destination_destination_country_country_id on destination (destination_country_country_id);
 alter table destination add constraint fk_destination_destination_country_country_id foreign key (destination_country_country_id) references country (country_id) on delete restrict on update restrict;
@@ -257,6 +267,9 @@ alter table district add constraint fk_district_country_country_id foreign key (
 
 create index ix_message_chat_group_chat_group_id on message (chat_group_chat_group_id);
 alter table message add constraint fk_message_chat_group_chat_group_id foreign key (chat_group_chat_group_id) references chat_group (chat_group_id) on delete restrict on update restrict;
+
+create index ix_message_user_user_id on message (user_user_id);
+alter table message add constraint fk_message_user_user_id foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
 alter table nationality add constraint fk_nationality_nationality_country_country_id foreign key (nationality_country_country_id) references country (country_id) on delete restrict on update restrict;
 
@@ -317,7 +330,14 @@ create index ix_trip_node_user_user on trip_node_user (user_user_id);
 alter table trip_node_user add constraint fk_trip_node_user_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
 
 alter table user add constraint fk_user_profile_photo_photo_id foreign key (profile_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
+
 alter table user add constraint fk_user_cover_photo_photo_id foreign key (cover_photo_photo_id) references personal_photo (photo_id) on delete restrict on update restrict;
+
+create index ix_user_chat_group_user on user_chat_group (user_user_id);
+alter table user_chat_group add constraint fk_user_chat_group_user foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
+create index ix_user_chat_group_chat_group on user_chat_group (chat_group_chat_group_id);
+alter table user_chat_group add constraint fk_user_chat_group_chat_group foreign key (chat_group_chat_group_id) references chat_group (chat_group_id) on delete restrict on update restrict;
 
 
 # --- !Downs
@@ -330,9 +350,6 @@ drop index if exists ix_chat_group_user_user;
 
 alter table destination drop constraint if exists fk_destination_destination_type_destination_type_id;
 drop index if exists ix_destination_destination_type_destination_type_id;
-
-alter table destination drop constraint if exists fk_destination_destination_district_district_id;
-drop index if exists ix_destination_destination_district_district_id;
 
 alter table destination drop constraint if exists fk_destination_destination_country_country_id;
 drop index if exists ix_destination_destination_country_country_id;
@@ -360,6 +377,9 @@ drop index if exists ix_district_country_country_id;
 
 alter table message drop constraint if exists fk_message_chat_group_chat_group_id;
 drop index if exists ix_message_chat_group_chat_group_id;
+
+alter table message drop constraint if exists fk_message_user_user_id;
+drop index if exists ix_message_user_user_id;
 
 alter table nationality drop constraint if exists fk_nationality_nationality_country_country_id;
 
@@ -420,7 +440,14 @@ alter table trip_node_user drop constraint if exists fk_trip_node_user_user;
 drop index if exists ix_trip_node_user_user;
 
 alter table user drop constraint if exists fk_user_profile_photo_photo_id;
+
 alter table user drop constraint if exists fk_user_cover_photo_photo_id;
+
+alter table user_chat_group drop constraint if exists fk_user_chat_group_user;
+drop index if exists ix_user_chat_group_user;
+
+alter table user_chat_group drop constraint if exists fk_user_chat_group_chat_group;
+drop index if exists ix_user_chat_group_chat_group;
 
 drop table if exists chat_group;
 
@@ -471,6 +498,8 @@ drop table if exists trip_node_parent;
 drop table if exists trip_node_user;
 
 drop table if exists user;
+
+drop table if exists user_chat_group;
 
 drop table if exists user_role;
 
