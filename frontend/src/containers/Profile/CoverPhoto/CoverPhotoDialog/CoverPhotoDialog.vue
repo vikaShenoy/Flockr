@@ -71,7 +71,7 @@
                   "authToken")}`);
         } else {
           return this.photo ? endpoint(
-              `/users/photos/${this.userId}?Authorization=${localStorage.getItem(
+              `/users/photos/${this.photo.photoId}?Authorization=${localStorage.getItem(
                   "authToken")}`) : endpoint(
               `/photos/cover/default?Authorization=${localStorage.getItem(
                   "authToken")}`);
