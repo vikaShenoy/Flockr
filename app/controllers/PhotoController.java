@@ -857,7 +857,6 @@ public class PhotoController extends Controller {
       message.put("message", exception.getMessage());
       return badRequest(message);
     } catch (ForbiddenRequestException exception) {
-      exception.printStackTrace();
       ObjectNode message = Json.newObject();
       message.put("message", exception.getMessage());
       return forbidden(message);
