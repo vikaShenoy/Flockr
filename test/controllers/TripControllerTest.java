@@ -14,7 +14,6 @@ import java.util.Optional;
 import models.Country;
 import models.Destination;
 import models.DestinationType;
-import models.District;
 import models.Role;
 import models.RoleType;
 import models.TripComposite;
@@ -95,8 +94,7 @@ public class TripControllerTest {
     destinationType.save();
     Country country = new Country("New Zealand", "NZ", true);
     country.save();
-    District district = new District("Canterbury", country);
-    district.save();
+    String district = "Canterbury";
 
     christchurch =
         new Destination(
@@ -236,7 +234,6 @@ public class TripControllerTest {
     Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
     Assert.assertEquals(201, result.status());
     int tripId = PlayResultToJson.convertResultToJson(result).get("tripNodeId").asInt();
-    System.out.println("Trip id: " + tripId);
     TripComposite receivedTrip = TripComposite.find.byId(tripId);
     Assert.assertNotNull(receivedTrip);
     Assert.assertEquals(2, receivedTrip.getUsers().size());

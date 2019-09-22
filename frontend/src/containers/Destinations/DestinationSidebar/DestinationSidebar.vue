@@ -1,15 +1,16 @@
 <template>
   <v-card
-          id="destination-sidebar"
-          :elevation="20"
+    id="destination-sidebar"
+    ref="destinationSidebar"
+    :elevation="20"
   >
     <div id="title">
       <h2>{{ shouldShowEditor ? "Add Destination" : "Destinations"}}</h2>
       <v-btn
-              flat
-              color="secondary"
-              id="add-destination-btn"
-              @click="toggleEditor"
+        flat
+        color="secondary"
+        id="add-destination-btn"
+        @click="toggleEditor"
       >
         <v-icon>{{ shouldShowEditor ? "close" : "add" }}</v-icon>
       </v-btn>
@@ -17,6 +18,16 @@
       <div id="undo-redo">
         <UndoRedo ref="undoRedo"/>
       </div>
+
+      <v-text-field
+        label="Search destinations"
+        append-icon="search"
+        dark
+        @input="searchCriterionUpdated"
+        class="search-destinations"
+        single-line
+        :loading="destinationsLoading"
+      />
 
       <v-btn-toggle v-if="!shouldShowEditor" v-model="viewOption" flat id="view-option" mandatory>
         <v-btn class="option" value="your" v-bind:class="{'not-selected': viewOption !== 'your'}">
@@ -29,34 +40,29 @@
 
     </div>
 
-    <div id="destinations-list">
+    <div id="destinations-list" ref="destinationsList" @scroll="handleScrolling">
       <div v-if="shouldShowEditor">
         <AddDestinationSidebar
-            v-on:addNewDestination="addNewDestination"
-            :latitude="latitude"
-            :longitude="longitude"
+          v-on:addNewDestination="addNewDestination"
+          :latitude="latitude"
+          :longitude="longitude"
         ></AddDestinationSidebar>
       </div>
 
       <div v-else-if="shouldShowSpinner" id="spinner">
         <v-progress-circular
-                indeterminate
-                color="secondary"
-                style="align-self: center;"
-        >
-        </v-progress-circular>
-
-      </div>
-
-      <div v-else>
-        <DestinationSummary
-                v-for="destination in getDestinationsList"
-                v-bind:key="destination.destinationId"
-                :destination="destination"
-                @showDeleteDestination="showDeleteDestination"
+          indeterminate
+          color="secondary"
+          style="align-self: center;"
         />
       </div>
 
+      <DestinationSummary
+        v-for="destination in getDestinationsList"
+        v-bind:key="destination.destinationId"
+        :destination="destination"
+        @showDeleteDestination="showDeleteDestination"
+      />
     </div>
 
     <PromptDialog
@@ -95,7 +101,8 @@
       yourDestinations: null,
       publicDestinations: null,
       latitude: null,
-      longitude: null
+      longitude: null,
+      destinationsLoading: Boolean // used to show if there is a pending API call to load destinations
     },
     components: {
       AddDestinationSidebar,
@@ -112,13 +119,32 @@
         trips: [],
         cannotDeleteDestDialog: false,
         currentDeletingDestinationId: null,
-        usedTrips: []
+        usedTrips: [],
+        destinationSearchWatchdog: null // used for debouncing
       };
     },
     mounted() {
       this.getUserTrips();
     },
     methods: {
+      /**
+       * Called when the destinationsList is scrolled
+       */
+      handleScrolling() {
+        const { destinationsList } = this.$refs;
+        const { scrollHeight, scrollTop, clientHeight } = destinationsList;
+        const nearBottom = scrollHeight - scrollTop === clientHeight;
+        if (nearBottom) {
+          this.$emit('get-more-public-destinations');
+        }
+      },
+      /**
+       * Emitted when someone types in the input for searching destinations
+       */
+      searchCriterionUpdated(newValue) {
+        clearTimeout(this.destinationSearchWatchdog);
+        this.destinationSearchWatchdog = setTimeout(() => this.$emit('search-criterion-updated', newValue), 400);
+      },
       /**
        * Resets the coordinates to nothing
        */
@@ -222,15 +248,21 @@
 
   @import "../../../styles/_variables.scss";
 
+  .v-progress-linear {
+    .primary {
+      background-color: $secondary !important;
+      border-color: $secondary !important;
+    }
+  }
+
   #destination-sidebar {
-    height: 100%;
     width: 315px;
     justify-self: flex-end;
     display: flex;
     flex-direction: column;
+    height: calc(100vh - 60px);
 
     #title {
-      height: auto;
       background-color: $primary;
       color: $darker-white;
       text-align: center;
@@ -240,8 +272,24 @@
       justify-content: space-between;
     }
 
-    #destinations-list {
-      flex-grow: 1;
+    .search-destinations {
+      color: $text-light-grey;
+      padding-top: 0;
+
+
+      .v-text-field.v-input--is-loading > div > .v-input__slot > .v-progress-linear > .v-progress-linear__bar > div > .v-progress-linear__bar__indeterminate.long.primary {
+        background-color: $secondary;
+      }
+
+      &.v-input--is-loading {
+        color: $text-light-grey !important;
+        caret-color: $text-light-grey !important;
+      }
+
+      &.primary--text {
+        color: $text-light-grey !important;
+        caret-color: $text-light-grey !important;
+      }
     }
 
     h2 {
@@ -284,6 +332,10 @@
       position: absolute;
       right: 25px;
       margin-top: 17px;
+    }
+
+    #destinations-list {
+      overflow: auto;
     }
   }
 </style>

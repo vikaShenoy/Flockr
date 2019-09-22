@@ -7,7 +7,7 @@
       </v-flex>
 
       <v-flex class="destination-value" xs9>
-        {{ destination.destinationDistrict.districtName }},&nbsp;<CountryDisplay
+        {{ destination.destinationDistrict }},&nbsp;<CountryDisplay
               v-bind:country="destination.destinationCountry"/>
       </v-flex>
 
@@ -27,7 +27,7 @@
       </v-flex>
 
       <v-flex class="destination-value" xs9>
-        {{ destination.destinationLat }}
+        {{ destination.destinationLat.toFixed(2) }}
       </v-flex>
 
       <v-flex class="destination-item" xs3>
@@ -36,7 +36,7 @@
       </v-flex>
 
       <v-flex class="destination-value" xs9>
-        {{ destination.destinationLon }}
+        {{ destination.destinationLon.toFixed(2) }}
       </v-flex>
 
       <v-flex class="destination-item" xs3>
@@ -83,6 +83,7 @@
     components: {CountryDisplay},
     props: ["destination"]
   }
+
 </script>
 
 <style lang="scss" scoped>

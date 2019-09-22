@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="chat_group">
+            <column name="voice_room_id" type="integer" defaultValue="null"/>
+            <column name="room_token" type="varchar" defaultValue="null"/>
+        </addColumn>
+        <alterColumn columnName="user_user_id" tableName="message" dropUnique="uq_message_user_user_id"/>
+    </changeSet>
+</migration>

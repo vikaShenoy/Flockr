@@ -110,7 +110,7 @@ public class PhotoControllerTest {
     // Add some destinations
     DestinationType destinationType = new DestinationType("city");
     Country country = new Country("Peru", "PE", true);
-    District district = new District("Test District", country);
+    String district = "Test District";
     destination =
         new Destination(
             "Test City",
@@ -125,7 +125,6 @@ public class PhotoControllerTest {
 
     destinationType.save();
     country.save();
-    district.save();
     destination.save();
 
     destPhoto = new DestinationPhoto(destination, photo);

@@ -48,7 +48,6 @@
                   @update-basic-info="this.updateBasicInfo"
               />
             </div>
-
             <div class="col-lg-7">
               <Nationalities
                   :userNationalities="userProfile.nationalities"
@@ -78,10 +77,17 @@
             </v-flex>
 
             <v-flex sm12>
-              <Trips
-                  :trips.sync="userProfile.trips"
-                  viewOnly
-              />
+              <div>
+
+                <h3 class="trips-header headline">Trips</h3>
+                <v-card class="trips-card">
+
+                  <Trips
+                      :trips.sync="userProfile.trips"
+                      viewOnly
+                  />
+                </v-card>
+              </div>
             </v-flex>
 
           </v-card-title>
@@ -347,7 +353,8 @@
        * Called when a deletePhoto event is emitted from the photos component.
        * Removes the photo at the given index.
        *
-       * @param index {Number} the index of the photo to be removed.
+       * @param {Number} index the index of the photo to be removed.
+       * @param {Boolean} shouldShowSnackbar true if the snackbar should be shown.
        */
       deletePhoto(index, shouldShowSnackbar) {
         this.userProfile.personalPhotos.splice(index, 1);
@@ -359,8 +366,8 @@
        * Called when a undoDeletePhoto event is emitted from the photos component.
        * Adds the photo back to the list at the given index.
        *
-       * @param index {number} the index where the photo should be added.
-       * @param photo {} the photo to add.
+       * @param {Number} index the index where the photo should be added.
+       * @param {Object} photo the photo to add.
        */
       undoDeletePhoto(index, photo) {
         this.userProfile.personalPhotos.splice(index, 0, photo);
@@ -499,6 +506,17 @@
       justify-content: flex-start;
       align-items: center;
     }
+  }
+
+  .trips-header {
+    text-align: left;
+    margin-bottom: 7px;
+    margin-top: 30px;
+  }
+
+  .trips-card {
+    max-height: 350px;
+    overflow-y: auto;
   }
 
   .top-panel {

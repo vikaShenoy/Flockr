@@ -16,8 +16,21 @@
       <v-container grid-list-md text-center>
       <v-layout wrap>
         <v-flex xs10 offset-xs1>
-          <h4 id="selected-users-title">Selected users</h4>
+          <div v-if="trip.users.length > 1">
+          <h4>Chat</h4>
+          <v-layout row >
+            <v-text-field v-if="!chatExists" v-model="chatNameToCreate" placeholder="Chat name" />
+            <v-btn v-if="!chatExists" color="info" @click="chatButtonClicked" :loading="isChatButtonLoading">
+              <v-icon left>chat</v-icon>
+              Create chat
+            </v-btn>
 
+            <p v-if="chatExists">To access your chat, please open the chat window</p>
+          </v-layout>
+          </div>
+
+
+          <h4>Selected users</h4>
           <ul>
             <li
               v-for="user in selectedUsers"
@@ -28,7 +41,16 @@
           </ul>
 
           <div id="selected-users">
-            <v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>
+
+            <GenericCombobox
+              label="Users"
+              :get-function="searchUser"
+              :item-text="(user) => user.firstName + ' ' + user.lastName"
+              multiple
+              v-model="selectedUsers"
+              @items-selected="updateSelectedUsers"
+            ></GenericCombobox>
+            <!--<v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>-->
           </div>
         </v-flex>
       </v-layout>
@@ -96,12 +118,15 @@
 </template>
 
 <script>
-import { getAllUsers } from '../../../AddTrip/AddTripService';
+import { getUsers } from '../../../AddTrip/AddTripService';
 import UserStore from "../../../../stores/UserStore";
 import { editTrip } from '../../TripService';
 import { deleteTripFromList } from '../../../Trips/OldTripsService';
+import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
+import { getChatWithUsers, createChat } from '../../../App/Chat/ChatService';
 
 export default {
+  components: {GenericCombobox},
   props: {
     isShowing: Boolean,
     trip: Object
@@ -112,20 +137,63 @@ export default {
       selectedUsers: [],
       users: [],
       isLoading: false,
-      showAlertCard: false
+      showAlertCard: false,
+      chat: null,
+      chatNameToCreate: '',
+      isChatButtonLoading: false
     };
   },
   methods: {
+
+    updateSelectedUsers(newUsers) {
+      this.selectedUsers = newUsers
+    },
+
+    searchUser: async name => await getUsers(name),
+
+    /**
+     * Attempt to get the chat with the users of the trip.
+     */
+    async tryToGetChat() {
+      try {
+        const userIds = this.trip.users.map(user => user.userId);
+        this.chat = await getChatWithUsers(userIds);
+      } catch (err) {
+        // could not find a chat with those users ¯\_(ツ)_/¯
+      }
+    },
+    /**
+     * Called when the user clicks in the chat button
+     */
+    async chatButtonClicked() {
+      this.isChatButtonLoading = true;
+      await this.tryToGetChat(); // refresh the chat to confirm it doesn't exist
+      this.isChatButtonLoading = false;
+      if (!this.chatExists) {
+        const creatingUserId = UserStore.data.userId;
+        const userIds = this.trip.users.map(user => user.userId).filter(id => id !== creatingUserId);
+        try {
+          this.isChatButtonLoading = true;
+          this.chat = await createChat(userIds, this.chatNameToCreate);
+          this.isChatButtonLoading = false;
+          this.$root.$emit("show-success-snackbar", "Created the chat", 3000);
+          this.$root.$emit("add-chat");
+        } catch (err) {
+          // could not create the chat
+          this.$root.$emit("show-error-snackbar", "Could not create the chat", 3000);
+          this.isChatButtonLoading = false;
+        }
+      }
+    },
     /**
      * Gets all users and filters out own user ID
      */
-    async getAllUsers() {
+    async getAllUsers(name) {
       // Filter out user's own ID
-      const users = (await getAllUsers())
+      const users = (await getUsers(name))
         .filter(user => user.userId !== UserStore.data.userId);
-
-
       this.users = users;
+      return users;
     },
     /**
      * Formats full name for combobox input
@@ -158,7 +226,7 @@ export default {
      * Saves the current selected users that are in the trip
      */
     async saveUsersInTrip() {
-      const users = [...this.selectedUsers, UserStore.data]
+      const users = [...this.selectedUsers, UserStore.data];
       this.isLoading = true;
       this.trip.users = users;
       await editTrip(this.trip);
@@ -168,7 +236,8 @@ export default {
     }
   },
   mounted() {
-    this.getAllUsers(); 
+    this.getAllUsers();
+    this.tryToGetChat();
   },
   watch: {
     /**
@@ -189,6 +258,13 @@ export default {
   computed: {
     onlyUser() {
       return this.trip.users.length === 1;
+    },
+    /**
+     * Return whether a chat for the trip exists
+     * @returns {Boolean} true if chat exists, false otherwise
+     */
+    chatExists() {
+      return !!this.chat;
     }
   }
 }
@@ -216,7 +292,7 @@ export default {
   top: 7px;
 }
 
-#selected-users-title {
+h4 {
   text-align: left;
   color: $secondary;
 }

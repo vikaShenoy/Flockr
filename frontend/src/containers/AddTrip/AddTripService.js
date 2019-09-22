@@ -1,12 +1,11 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 import moment from "moment";
-import {editTrip} from "../EditTrip/EditTripService";
 
 /**
  * Sends a request to add a trip.
  * @param {string} name name of the trip to add.
- * @param {object[]} tripDestinations list of trip destinations to add as part of the trip.
+ * @param {Array<Object>} tripNodes list of trip destinations to add as part of the trip.
  * @param {Array<number>} userIds The userID's to add to the trip
  * @return response from backend.
  */
@@ -40,12 +39,13 @@ function transformTripNodes(tripNodes) {
 
 
 /**
- * Gets all users
+ * Gets all users that match the given search parameter
+ * @param name or partial name to search for
  * @returns {Array} Returns a list of users
  */
-export async function getAllUsers() {
+export async function getUsers(name) {
   const authToken = localStorage.getItem("authToken");
-  const res = await superagent.get(endpoint(`/users`))
+  const res = await superagent.get(endpoint(`/users/search`)).query({name: name})
     .set("Authorization", authToken);
 
   return res.body;

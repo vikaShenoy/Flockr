@@ -41,7 +41,7 @@ GET           /api/photos/cover/default                                         
 
 
 # Destination Proposal endpoints
-GET           /api/destinations/proposals                                             controllers.DestinationController.getProposals
+GET           /api/destinations/proposals                                             controllers.DestinationController.getProposals(request: Request)
 GET           /api/destinations/proposals/:destinationProposalId                      controllers.DestinationController.getProposalById(destinationProposalId: Int)
 POST          /api/users/:userId/destinations/:destinationId/proposals                controllers.DestinationController.addProposal(userId: Int, request: Request, destinationId: Int)
 PATCH         /api/destinations/proposals/:destinationProposalId                      controllers.DestinationController.acceptProposal(destinationProposalId: Int)
@@ -53,7 +53,6 @@ PUT           /api/destinations/proposals/:destinationProposalId/undoReject     
 GET           /api/destinations                                                       controllers.DestinationController.getDestinations(request: Request)
 GET           /api/users/:userId/destinations                                         controllers.DestinationController.getUserDestinations(userId: Int, request: Request)
 GET           /api/destinations/countries                                             controllers.DestinationController.getCountries
-GET           /api/destinations/countries/:countryId/districts                        controllers.DestinationController.getDistricts(countryId: Int)
 GET           /api/destinations/types                                                 controllers.DestinationController.getDestinationTypes
 GET           /api/destinations/:destinationId                                        controllers.DestinationController.getDestination(destinationId: Int, request: Request)
 DELETE        /api/destinations/:destinationId                                        controllers.DestinationController.deleteDestination(destinationId: Int, request: Request)
@@ -86,6 +85,17 @@ GET           /api/users/:userId/treasurehunts                                  
 GET           /api/treasurehunts                                                      controllers.TreasureHuntController.getAllTreasureHunts(request: Request)
 PUT           /api/treasurehunts/:treasureHuntId/undodelete                           controllers.TreasureHuntController.undoDeleteTreasureHunt(treasureHuntId: Int, request: Request)
 
+# Chat Routes
+
+POST          /api/chats                                                              controllers.ChatController.createChat(request: Request)
+GET           /api/chats                                                              controllers.ChatController.getChats(request: Request)
+DELETE        /api/chats/message/:messageId                                           controllers.ChatController.deleteMessage(request: Request, messageId: Int)
+PUT           /api/chats/:chatGroupId                                                 controllers.ChatController.editChat(request: Request, chatGroupId: Int)
+DELETE        /api/chats/:chatGroupId                                                 controllers.ChatController.deleteChat(request: Request, chatGroupId: Int)
+GET           /api/chats/:chatGroupId/messages                                        controllers.ChatController.getMessages(request: Request, chatGroupId: Int)
+POST          /api/chats/:chatGroupId/message                                         controllers.ChatController.createMessage(request: Request, chatGroupId: Int)
+POST          /api/chats/:chatGroupId/join                                            controllers.ChatController.joinRoom(request: Request, chatGroupId: Int)
+GET           /api/chats/:chatGroupId/onlineUsers                                     controllers.ChatController.getOnlineUsers(request: Request, chatGroupId: Int)
 
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                                           controllers.Assets.at(path="/public", file)

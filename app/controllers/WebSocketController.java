@@ -11,6 +11,7 @@ import play.libs.streams.ActorFlow;
 import play.mvc.Controller;
 import play.mvc.Result;
 import repository.AuthRepository;
+import repository.ChatRepository;
 import repository.TripRepository;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -26,6 +27,7 @@ public class WebSocketController extends Controller {
     private final Materializer materializer;
     private final AuthRepository authRepository;
     private final TripRepository tripRepository;
+    private final ChatRepository chatRepository;
 
 
     /**
@@ -33,13 +35,15 @@ public class WebSocketController extends Controller {
      * @param actorSystem The system to use when creating websockets
      * @param materializer Executes the actors
      * @param authRepository authentication repository
+     * @param chatRepository the chat repository
      */
     @Inject
-    public WebSocketController(ActorSystem actorSystem, Materializer materializer, AuthRepository authRepository, TripNotifier tripNotifier, TripRepository tripRepository) {
+    public WebSocketController(ActorSystem actorSystem, Materializer materializer, AuthRepository authRepository, TripNotifier tripNotifier, TripRepository tripRepository, ChatRepository chatRepository) {
         this.actorSystem = actorSystem;
         this.materializer = materializer;
         this.authRepository = authRepository;
         this.tripRepository = tripRepository;
+        this.chatRepository = chatRepository;
     }
 
     /**
@@ -53,11 +57,9 @@ public class WebSocketController extends Controller {
              return authRepository.getByToken(authToken)
                      .thenApplyAsync(user -> {
                          if (!user.isPresent()) {
-                             System.out.println("I have rejected the socket");
                              return F.Either.<Result, Flow<String, String, ?>>Left(unauthorized());
                          }
-
-                         return F.Either.Right(ActorFlow.actorRef((actorRef) -> Props.create(WebSocket.class, actorRef, user.get(), tripRepository), actorSystem, materializer));
+                         return F.Either.Right(ActorFlow.actorRef(actorRef -> Props.create(WebSocket.class, actorRef, user.get(), tripRepository, chatRepository), actorSystem, materializer));
                      });
         });
     }

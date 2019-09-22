@@ -57,7 +57,7 @@
 
 <script>
   import TripTable from "../../components/TripTable/TripTable";
-  import {createTrip, getAllUsers} from "./AddTripService.js";
+  import {createTrip, getUsers} from "./AddTripService.js";
   import UserStore from "../../stores/UserStore";
 
   const rules = {
@@ -104,9 +104,8 @@
        * Gets all users and filters out the logged in user
        */
       async getUsers() {
-        const users = (await getAllUsers())
-            .filter(user => user.userId !== UserStore.data.userId);
-        this.users = users;
+				this.users = (await getUsers())
+				.filter(user => user.userId !== UserStore.data.userId);
       },
       /**
        * Adds an empty destination
@@ -141,11 +140,9 @@
       validate() {
         const validFields = this.$refs.addTripForm.validate();
         const contiguousDestinations = this.contiguousDestinations();
-        if (!validFields || contiguousDestinations) {
-          return false;
-        }
+        return !(!validFields || contiguousDestinations);
 
-        return true;
+
       },
       /**
        * Validates fields before sending a request to add a trip
@@ -187,9 +184,9 @@
 	}
 
 	#add-destination {
+		margin: 0 auto;
 		margin-top: 10px !important;
 		display: block;
-		margin: 0 auto;
 	}
 
 	#cancel-trip-creation-btn {

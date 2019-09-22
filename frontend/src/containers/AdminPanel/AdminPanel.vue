@@ -13,6 +13,7 @@
             @addAdminPriviledge="addAdminPriviledge"
             @removeAdminPriviledge="removeAdminPriviledge"
             @userSignedUp="userSignedUp"
+						@getNextUsers="getNextUsers"
     />
     <DestinationProposals
             v-on:showError="showErrorSnackbar"
@@ -28,7 +29,6 @@
   import {
     deleteUser,
     deleteUsers,
-    getAllUsers,
     undoDeleteUser,
     undoDeleteUsers,
     updateRoles
@@ -39,6 +39,7 @@
   import UndoRedo from "../../components/UndoRedo/UndoRedo";
   import Command from "../../components/UndoRedo/Command";
   import roleType from '../../stores/roleType';
+  import {getMoreUsers} from "./AdminPanelService";
 
   export default {
     components: {
@@ -48,7 +49,7 @@
     },
 
     mounted() {
-      this.getAllUsers();
+      this.getNextUsers();
     },
 
     data() {
@@ -56,6 +57,8 @@
         adminSearch: '',
         showEditUserForm: false,
         userBeingEdited: null,
+				userOffset: 0,
+				userLimit: 15,
         users: [] // single source of truth for children components relying on users so that info stays up to date
       }
     },
@@ -68,20 +71,31 @@
       }
     },
     methods: {
+			/**
+			 * Call the search user endpoint to get the next set of users.
+			 * Add the search term in search box if provided.
+			 */
+			async getNextUsers() {
+        let queries = `offset=${this.userOffset}&limit=${this.userLimit}`;
+        if (this.adminSearch) {
+          queries += `&name=${this.adminSearch}`;
+				}
+        try {
+          this.users = this.users.concat(await getMoreUsers(queries));
+          this.userOffset += this.userLimit;
+        } catch (e) {
+          this.$root.$emit("show-snackbar", {
+            timeout: 2000,
+						message: "Could not get more users.",
+						color: "error"
+					});
+				}
+      },
       /**
        * Adds an undo command to the undo element.
        */
       addUndoCommand(acceptProposalCommand) {
         this.$refs.undoRedo.addUndo(acceptProposalCommand);
-      },
-      /**
-       * Call admin panel service method to retrieve
-       * all users, including those with incomplete profiles.
-       * Set the users so they display on the panel.
-       */
-      async getAllUsers() {
-        const allUsers = await getAllUsers();
-        this.users = allUsers;
       },
       showSuccessSnackbar(message) {
         this.$root.$emit("show-snackbar", {
@@ -230,6 +244,18 @@
         this.$refs.undoRedo.addUndo(signupCommand);
       }
     },
+		watch: {
+      /**
+			 * Called when the user types in the search bar.
+			 * Clear existing users.
+			 * Call the search user endpoint to retrieve users matching the search term.
+       */
+      adminSearch() {
+        this.userOffset = 0;
+        this.users = [];
+        this.getNextUsers();
+			}
+		},
 
   };
 </script>
