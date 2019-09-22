@@ -18,6 +18,10 @@ public class Admin extends Action.Simple {
 
     private final Security security;
 
+    /**
+     * Inject the utility security class on initialisation.
+     * @param security security helper class object.
+     */
     @Inject
     public Admin(Security security) {
         this.security = security;
@@ -35,11 +39,9 @@ public class Admin extends Action.Simple {
 
         if (this.security.checkRoleExists(user, RoleType.ADMIN) || this.security.checkRoleExists(user, RoleType.SUPER_ADMIN)) {
             return delegate.call(request);
-            //return delegate.call(request.addAttr(ActionState.IS_ADMIN, true));
         }
 
         JsonNode response = Json.newObject().put("error", "Unauthorized");
         return supplyAsync(() -> forbidden(response));
-        //return delegate.call(request.addAttr(ActionState.IS_ADMIN, false));
     }
 }

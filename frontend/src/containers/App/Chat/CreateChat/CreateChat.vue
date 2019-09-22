@@ -34,7 +34,7 @@
 </template>
 
 <script>
-  import { createChat, getUsers } from "../ChatService";
+  import { getUsers } from "../ChatService";
   import { rules } from "../../../../utils/rules";
   import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
 import UserStore from '../../../../stores/UserStore';
@@ -62,7 +62,7 @@ import UserStore from '../../../../stores/UserStore';
           this.selectedUsers = newUsers
       },
       searchUser: async name => {
-        const allUsers = await getUsers(name)
+        const allUsers = await getUsers(name);
         return allUsers.filter(user => {
           return user.userId !== UserStore.data.userId;
         });
@@ -100,7 +100,7 @@ import UserStore from '../../../../stores/UserStore';
       /**
        * @param {String} message the message to show in the snackbar
        * @param {String} color the colour for the snackbar
-       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       * @param {Number} timeout the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
         this.$root.$emit("show-snackbar", {

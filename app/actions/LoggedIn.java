@@ -17,6 +17,10 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 public class LoggedIn extends Action.Simple {
     private final AuthRepository authRepository;
 
+    /**
+     * Inject an auth repository for checking tokens etc.
+     * @param authRepository repository for authentication related calls.
+     */
     @Inject
     public LoggedIn(AuthRepository authRepository) {
         this.authRepository = authRepository;

@@ -244,6 +244,7 @@ export default {
         if (this.isSidebarComponent) {
           subTrip.isShowing = false;
           this.$emit("close-dialog");
+
         }
 
         this.$emit("newTripAdded", subTrip);

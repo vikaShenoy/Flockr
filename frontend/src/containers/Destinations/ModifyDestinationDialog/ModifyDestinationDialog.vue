@@ -254,7 +254,6 @@ export default {
         }
         return [destination];
       }
-      editMode ? [destinationToEdit] : []
     }
   },
   methods: {
@@ -298,8 +297,7 @@ export default {
      */
     async getCountries() {
       try {
-        const countries = await requestCountries();
-        this.countries = countries;
+        this.countries = await requestCountries();
       } catch (e) {
         this.showError("Could not get countries");
       }
@@ -308,8 +306,7 @@ export default {
      * Gets destination types to populate destination types with and sets it as state
      */
     async getDestinationTypes() {
-      const destinationTypes = await requestDestinationTypes();
-      this.destinationTypes = destinationTypes;
+      this.destinationTypes = await requestDestinationTypes();
     },
     // /**
     //  * Gets districts in a specific country and sets it as state
@@ -328,8 +325,7 @@ export default {
      */
     async getTravellerTypes() {
       try {
-        const travellerTypes = await requestTravellerTypes();
-        this.travellerTypes = travellerTypes;
+        this.travellerTypes = await requestTravellerTypes();
       } catch (e) {
         this.showError("Could not get traveller types");
       }

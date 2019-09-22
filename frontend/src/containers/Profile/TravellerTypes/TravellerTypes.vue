@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <div class="header">
       <h3>Traveller Types</h3>
 
@@ -95,8 +94,7 @@
        */
       async getAllTravellerTypes() {
         try {
-          const travellerTypes = await getAllTravellerTypes();
-          this.allTravellerTypes = travellerTypes;
+          this.allTravellerTypes = await getAllTravellerTypes();
         } catch (err) {
           // Add error handling later
         }

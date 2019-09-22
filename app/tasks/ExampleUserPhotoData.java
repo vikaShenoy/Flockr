@@ -88,7 +88,7 @@ public class ExampleUserPhotoData {
                                       }
                                       PersonalPhoto personalPhoto =
                                           new PersonalPhoto(
-                                              photoFile.getName(), true, user, true, thumbFileName);
+                                              photoFile.getName(), true, user, true, thumbFileName, false);
                                       personalPhoto.save();
                                       user.setProfilePhoto(personalPhoto);
                                       user.save();

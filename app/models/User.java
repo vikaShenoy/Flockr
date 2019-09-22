@@ -66,6 +66,9 @@ public class User extends Model {
   @OneToOne(cascade = CascadeType.ALL)
   private PersonalPhoto profilePhoto;
 
+  @OneToOne(cascade = CascadeType.ALL)
+  private PersonalPhoto coverPhoto;
+
   @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
   private List<TreasureHunt> treasureHunt;
 
@@ -361,6 +364,14 @@ public class User extends Model {
 
   public void setProfilePhoto(PersonalPhoto profilePhoto) {
     this.profilePhoto = profilePhoto;
+  }
+
+  public PersonalPhoto getCoverPhoto() {
+    return coverPhoto;
+  }
+
+  public void setCoverPhoto(PersonalPhoto coverPhoto) {
+    this.coverPhoto = coverPhoto;
   }
 
   public String getPasswordHash() {

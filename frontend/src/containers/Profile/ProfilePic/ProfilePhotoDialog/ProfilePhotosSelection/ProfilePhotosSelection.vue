@@ -6,7 +6,6 @@
     <div v-if="photos.length">
       <img
               class="profile-photo"
-
               v-bind:class="{'selected-photo': selectedPhoto && photo.photoId == selectedPhoto.photoId}"
               v-for="(photo, index) in photos"
               v-bind:key="photo.photoId"

@@ -91,6 +91,7 @@ import moment from "moment";
 import { rules } from "../../../../../utils/rules";
 import UserStore from "../../../../../stores/UserStore";
 import roleType from "../../../../../stores/roleType";
+import {getTimezoneOffset} from "../TimelineService";
 
 export default {
   components: {
@@ -228,18 +229,23 @@ export default {
      * Formats a date based on an optional date and time
      */
     formatDateTime(date, time) {
+      console.log(date);
+      console.log(time);
+      console.log("here")
+
       if (!date && !time) {
         return "No Date";
       }
 
-      const momentDate = moment(date);
+      const momentDate = moment(`${date} ${time}`);
+
+      let offset = this.getTimezoneOffset(this.tripNode.destination.destinationLat, this.tripNode.destination.destinationLon);
+      console.log(offset)
+
       const formattedDate = momentDate.isSame(moment(), "year")
-        ? momentDate.format("DD MMM")
+        ? momentDate.format("DD MMM hh:mm A")
         : momentDate.format("DD MMM YYYY");
 
-      if (date && time) {
-        return `${formattedDate} at ${time}`;
-      }
 
       return formattedDate;
     },
@@ -275,6 +281,10 @@ export default {
       } else {
         this.$emit("showEditTripDestination", this.tripNode);
       }
+    },
+    async getTimezoneOffset(lat, long) {
+
+      return await getTimezoneOffset(lat, long)
     }
   }
 };

@@ -39,7 +39,6 @@
   import ConnectedUsers from "./ConnectedUsers/ConnectedUsers";
 
   import {
-    contiguousDestinations,
     contiguousReorderedDestinations,
     editTrip,
     getTrip,

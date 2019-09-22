@@ -37,7 +37,6 @@ export default {
     
     // Event gets emitted when a new user connects
     this.voiceChat.on("remoteUserConnected", stream => {
-        console.log("I found a remote stream");
         Janus.attachMediaStream(this.$refs.roomAudio , stream)
     });
 
@@ -45,12 +44,16 @@ export default {
 
     this.voiceChat.on("participants", this.handleParticipants);
 
-    this.voiceChat.on("participantLeft", this.handleParticipantLeft)
+    this.voiceChat.on("participantLeft", this.handleParticipantLeft);
 
     this.voiceChat.on("left", this.handleLeave);
 
     this.voiceChat.on("error", error => {
-        console.log(error);
+        this.$root.$emit("show-snackbar", {
+          timeout: 3000,
+          color: "error",
+          message: error.message
+        });
     });
   },
   methods: {

@@ -84,12 +84,12 @@ export async function getMoreUsers(queries) {
  */
 export async function patchUser(userId, body) {
   const authToken = localStorage.getItem("authToken");
-  const res = await superagent
+  await superagent
     .patch(endpoint(`/users/${userId}`))
     .set("Authorization", authToken)
     .send(body);
   if (body.roles) {
-    const res2 = await superagent
+    await superagent
       .patch(endpoint(`/users/${userId}/roles`))
       .set("Authorization", authToken)
       .send(body);
