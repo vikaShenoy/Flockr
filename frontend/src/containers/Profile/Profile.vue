@@ -15,11 +15,13 @@
         <v-card>
           <cover-photo
               :userProfile="userProfile"
+              :photos="userProfile.personalPhotos"
               v-on:updateProfilePic="updateProfilePic"
               v-on:showError="showError"
               id="cover-photo"
               @deleteCoverPhoto="deleteCoverPhoto"
-              ref="cover-photo"/>
+              ref="cover-photo"
+              @coverPhotoUpdated="coverPhotoUpdated"/>
 
           <ProfilePic
               :profilePhoto="userProfile.profilePhoto"
@@ -101,7 +103,12 @@
   import Command from "../../components/UndoRedo/Command";
   import UserStore from "../../stores/UserStore";
   import moment from "moment";
-  import {getUser, requestDeleteCoverPhoto, requestUndoDeleteCoverPhoto} from "./ProfileService";
+  import {
+    getUser,
+    requestChangeCoverPhoto,
+    requestDeleteCoverPhoto,
+    requestUndoDeleteCoverPhoto
+  } from "./ProfileService";
   import {updateBasicInfo} from "./BasicInfo/BasicInfoService";
   import {updateNationalities} from "./Nationalities/NationalityService";
   import {updatePassports} from "./Passports/PassportService";
@@ -133,6 +140,59 @@
       this.getUserInfo();
     },
     methods: {
+      /**
+       * Changes a cover photo and sets the undo and redo commands.
+       *
+       * @param {Object} newCoverPhoto the new cover photo to update.
+       */
+      coverPhotoUpdated(newCoverPhoto) {
+        const oldCoverPhoto = {...this.userProfile.coverPhoto};
+
+        this.userProfile.coverPhoto = newCoverPhoto;
+
+        const undoCommand = async () => {
+          let message = "Cover photo successfully reverted";
+          let color = "success";
+          try {
+            if (oldCoverPhoto) {
+              this.userProfile.coverPhoto = await requestChangeCoverPhoto(this.userProfile.userId,
+                  oldCoverPhoto.photoId);
+            } else {
+              await requestDeleteCoverPhoto(this.userProfile.userId);
+            }
+          } catch (e) {
+            message = "Cover photo could not be reverted";
+            color = "error";
+          }
+          this.$root.$emit("show-snackbar", {
+            timeout: 3000,
+            color: color,
+            message: message
+          });
+        };
+
+        const redoCommand = async () => {
+          let message = "Cover photo changed successfully";
+          let color = "success";
+          try {
+            this.userProfile.coverPhoto = await requestChangeCoverPhoto(this.userProfile.userId, newCoverPhoto.photoId);
+          } catch (e) {
+            message = "Could not change cover photo";
+            color = "error";
+          }
+          this.$root.$emit("show-snackbar", {
+            timeout: 3000,
+            color: color,
+            message: message
+          });
+        };
+
+        const changeCoverPhotoCommand = new Command(undoCommand, redoCommand);
+        this.$refs.undoRedo.addUndo(changeCoverPhotoCommand);
+      },
+      /**
+       * Deletes a cover photo and sets the undo and redo commands.
+       */
       async deleteCoverPhoto() {
         try {
           await requestDeleteCoverPhoto(this.userProfile.userId);
@@ -176,10 +236,18 @@
       },
       /**
        * Add an undo/redo command to the stack.
+       *
+       * @param {Command} command the command to add to the undo/redo panel.
        * */
       addPhotoCommand(command) {
         this.$refs.undoRedo.addUndo(command);
       },
+      /**
+       * Updates a users traveller types and sets undo/redo commands.
+       *
+       * @param oldTravellerTypes the old traveller types of the user.
+       * @param newTravellerTypes the new traveller types to set.
+       */
       updateUserTravellerTypes(oldTravellerTypes, newTravellerTypes) {
         const userId = localStorage.getItem("userId");
 
@@ -196,6 +264,12 @@
         this.$refs.undoRedo.addUndo(updateTravellerTypesCommand);
         redoCommand(); // perform update
       },
+      /**
+       * Updates a users passports and sets undo/redo commands.
+       *
+       * @param oldPassports the old passports of the user.
+       * @param newPassports the new passport to update.
+       */
       updateUserPassports(oldPassports, newPassports) {
         const userId = localStorage.getItem("userId");
 
@@ -212,6 +286,12 @@
         this.$refs.undoRedo.addUndo(updatePassportsCommand);
         redoCommand(); // actually perform the update
       },
+      /**
+       * Updates a users nationalities and sets undo/redo commands.
+       *
+       * @param oldNationalities the old nationalities of the user.
+       * @param newNationalities the new nationalities to set.
+       */
       updateUserNationalities(oldNationalities, newNationalities) {
         const userId = localStorage.getItem("userId");
 
@@ -228,6 +308,12 @@
         this.$refs.undoRedo.addUndo(updateNationalitiesCommand);
         redoCommand(); // perform the update
       },
+      /**
+       * Updates the basic info of a user and sets undo/redo commands.
+       *
+       * @param oldBasicInfo the old basic info of the user.
+       * @param newBasicInfo the new basic info of the user.
+       */
       updateBasicInfo(oldBasicInfo, newBasicInfo) {
         const userId = localStorage.getItem("userId");
         const {userProfile} = this;
@@ -248,7 +334,7 @@
       /**
        * @param {String} message the message to show in the snackbar
        * @param {String} color the colour for the snackbar
-       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       * @param {Number} timeout the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
         this.$root.$emit({
@@ -288,14 +374,15 @@
         const user = await getUser(userId);
 
         // Change date format so that it displays on the basic info component.
-        const formattedDate = user.dateOfBirth
+        user.dateOfBirth = user.dateOfBirth
             ? moment(user.dateOfBirth).format("YYYY-MM-DD")
             : "";
 
-        user.dateOfBirth = formattedDate;
-
         this.userProfile = user;
       },
+      /**
+       * Decides when the incomplete user banner should display.
+       */
       shouldShowBanner() {
         return !(
             this.userProfile.firstName &&
@@ -340,6 +427,8 @@
       /**
        * Update an image in the front end and create and store undo/redo commands
        * for it.
+       *
+       * @param image the image to update.
        */
       addImage(image) {
         image.endpoint = endpoint(
@@ -371,6 +460,11 @@
         const undoUploadCommand = new Command(undoCommand, redoCommand);
         this.$refs.undoRedo.addUndo(undoUploadCommand);
       },
+      /**
+       * Undo function for adding an image.
+       *
+       * @param image the image to undo.
+       */
       undoAddPhoto(image) {
         this.userProfile.personalPhotos = this.userProfile.personalPhotos.filter(
             e => e.photoId !== image.photoId);

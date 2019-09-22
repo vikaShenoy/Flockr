@@ -779,13 +779,15 @@ public class PhotoController extends Controller {
                               new ForbiddenRequestException(
                                   "User does not have permission to perform this request"));
                         }
-                        if (photo.isDeleted()) { //Case where undoing an old cover photo change.
-                          return photoRepository.undoPhotoDelete(photo)
-                              .thenComposeAsync(coverPhoto -> {
-                                photoRepository.deletePhoto(user.getCoverPhoto());
-                                user.setCoverPhoto(coverPhoto);
-                                return userRepository.updateUser(user);
-                              });
+                        if (photo.isDeleted()) { // Case where undoing an old cover photo change.
+                          return photoRepository
+                              .undoPhotoDelete(photo)
+                              .thenComposeAsync(
+                                  coverPhoto -> {
+                                    photoRepository.deletePhoto(user.getCoverPhoto());
+                                    user.setCoverPhoto(coverPhoto);
+                                    return userRepository.updateUser(user);
+                                  });
                         } else {
 
                           // start copying the file to file system
@@ -854,6 +856,7 @@ public class PhotoController extends Controller {
       message.put("message", exception.getMessage());
       return badRequest(message);
     } catch (ForbiddenRequestException exception) {
+      exception.printStackTrace();
       ObjectNode message = Json.newObject();
       message.put("message", exception.getMessage());
       return forbidden(message);

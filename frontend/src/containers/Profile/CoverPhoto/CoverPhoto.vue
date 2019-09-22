@@ -11,8 +11,11 @@
     <cover-photo-dialog
       :dialog="displayCoverPhotoDialog"
       :photo="userProfile.coverPhoto"
+      :photos="photos"
+      :userId="userProfile.userId"
       @closeDialog="displayCoverPhotoDialog = false"
-      @deleteCoverPhoto="$emit('deleteCoverPhoto')"/>
+      @deleteCoverPhoto="$emit('deleteCoverPhoto')"
+      @photoSelected="coverPhotoSelected"/>
   </div>
 </template>
 
@@ -20,6 +23,7 @@
   import {endpoint} from "../../../utils/endpoint";
   import UserStore from "../../../stores/UserStore";
   import CoverPhotoDialog from "./CoverPhotoDialog/CoverPhotoDialog";
+  import {requestChangeCoverPhoto} from "../ProfileService";
 
   export default {
     name: "cover-photo",
@@ -33,6 +37,7 @@
     },
     props: {
       userProfile: Object,
+      photos: Array
     },
     computed: {
       /**
@@ -56,6 +61,20 @@
       }
     },
     methods: {
+      async coverPhotoSelected(newCoverPhoto) {
+        try {
+          const coverPhoto = await requestChangeCoverPhoto(this.userProfile.userId,
+              newCoverPhoto.photoId);
+          this.closeCoverPhotoDialog();
+          this.$emit("coverPhotoUpdated", coverPhoto)
+        } catch (e) {
+          this.$emit("show-snackbar", {
+            timeout: 5000,
+            message: "Cannot update cover photo",
+            color: "error"
+          })
+        }
+      },
       /**
        * Closes the cover photo dialog.
        */
