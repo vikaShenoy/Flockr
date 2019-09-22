@@ -72,10 +72,11 @@ export default {
       const userRole = trip.userRoles.find(
         userRole => userRole.user.userId === UserStore.data.userId
       );
-      return (
-        userRole.role.roleType === roleType.TRIP_MANAGER ||
-        userRole.role.roleType === roleType.TRIP_OWNER
-      );
+
+      const isTripManager = userRole && userRole.role.roleType === roleType.TRIP_MANAGER;
+      const isTripOwner = userRole && userRole.role.roleType === roleType.TRIP_OWNER;
+
+      return isTripManager || isTripOwner;
     }
   },
   mounted() {
