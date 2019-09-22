@@ -97,9 +97,13 @@
         >
           <template v-slot:items="props">
             <td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
-              <img v-if="props.item.profilePhoto" class="profile-pic" alt="Profile Photo"
-                   :src="photoUrl(props.item.profilePhoto.photoId)">
-              <img v-else class="profile-pic" alt="Profile Photo" src="../Profile/ProfilePic/defaultProfilePicture.png">
+              <v-avatar v-if="props.item.profilePhoto" class="profile-pic">
+                <img alt="Profile Photo"
+                     :src="photoUrl(props.item.profilePhoto.photoId)">
+              </v-avatar>
+              <v-avatar  v-else class="profile-pic">
+                <img alt="Profile Photo" src="../Profile/ProfilePic/defaultProfilePicture.png">
+              </v-avatar>
             </td>
             <td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">{{ props.item.firstName
               }}
@@ -289,8 +293,9 @@
         this.nationality = "";
         this.travellerType = "";
         this.gender = "";
+        this.name = "";
         // Call the search function to get unfiltered results
-        this.search();
+        this.search(this.pageIndex);
       },
 
       /**
