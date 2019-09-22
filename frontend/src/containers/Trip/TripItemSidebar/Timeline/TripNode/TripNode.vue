@@ -7,7 +7,6 @@
       :right="alignRight"
       :hide-dot="tripNode.nodeType === 'TripComposite'"
     >
-
       <v-card v-bind:class="(tripNode.arrivalDate && tripNode.departureDate) ? '' : 'no-date'">
         <v-card-title class="secondary trip-destination-title">
           <v-text-field
@@ -27,19 +26,11 @@
           >{{ tripNode.name }}</h3>
 
           <v-spacer align="right" v-if="hasPermissionToEdit">
-            <v-btn
-              class="edit-btn"
-              flat
-              @click="editTripNode"
-            >
+            <v-btn class="edit-btn" flat @click="editTripNode">
               <v-icon v-if="!isEditingTrip">edit</v-icon>
             </v-btn>
 
-            <v-btn
-              class="delete-btn"
-              flat
-              @click="$emit('deleteTripNode', tripNode)"
-            >
+            <v-btn class="delete-btn" flat @click="$emit('deleteTripNode', tripNode)">
               <v-icon>delete</v-icon>
             </v-btn>
           </v-spacer>
@@ -49,10 +40,7 @@
             <v-flex xs2>
               <v-icon size="30">flight_takeoff</v-icon>
             </v-flex>
-            <v-flex
-              xs10
-              class="date-info"
-            >
+            <v-flex xs10 class="date-info">
               <p>{{ formatDateTime(getArrivalDate, getArrivalTime) }}</p>
             </v-flex>
           </v-layout>
@@ -60,17 +48,11 @@
             <v-flex xs2>
               <v-icon size="30">flight_landing</v-icon>
             </v-flex>
-            <v-flex
-              xs10
-              class="date-info"
-            >
+            <v-flex xs10 class="date-info">
               <p>{{ formatDateTime(getDepartureDate, getDepartureTime) }}</p>
             </v-flex>
           </v-layout>
-          <v-spacer
-            align="center"
-            v-if="tripNode.nodeType === 'TripComposite'"
-          >
+          <v-spacer align="center" v-if="tripNode.nodeType === 'TripComposite'">
             <v-icon
               class="expand-trip"
               color="secondary"
@@ -98,7 +80,6 @@
           />
         </div>
       </div>
-
     </v-timeline-item>
   </div>
 </template>
@@ -108,7 +89,7 @@
 import moment from "moment";
 import { rules } from "../../../../../utils/rules";
 import UserStore from "../../../../../stores/UserStore";
-import roleType from '../../../../../stores/roleType';
+import roleType from "../../../../../stores/roleType";
 
 export default {
   components: {
@@ -118,7 +99,8 @@ export default {
   props: {
     tripNode: Object,
     alignRight: Boolean,
-    rootTrip: Object
+    rootTrip: Object,
+    parentTrip: Object
   },
   data() {
     return {
@@ -127,43 +109,63 @@ export default {
       tripNameRules: [rules.required]
     };
   },
-	computed: {
+  computed: {
     getArrivalDate() {
       const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
-      return isLeaf ? this.tripNode.arrivalDate : this.getTripNodeArrivalDate(this.tripNode);
-		},
-		getArrivalTime() {
+      return isLeaf
+        ? this.tripNode.arrivalDate
+        : this.getTripNodeArrivalDate(this.tripNode);
+    },
+    getArrivalTime() {
       const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
-      return isLeaf ? this.tripNode.arrivalTime : this.getTripNodeArrivalTime(this.tripNode);
-		},
-		getDepartureDate() {
+      return isLeaf
+        ? this.tripNode.arrivalTime
+        : this.getTripNodeArrivalTime(this.tripNode);
+    },
+    getDepartureDate() {
       const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
-      return isLeaf ? this.tripNode.departureDate : this.getTripNodeDepartureDate(this.tripNode);
-		},
-		getDepartureTime() {
+      return isLeaf
+        ? this.tripNode.departureDate
+        : this.getTripNodeDepartureDate(this.tripNode);
+    },
+    getDepartureTime() {
       const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
-      return isLeaf ? this.tripNode.departureTime : this.getTripNodeDepartureTime(this.tripNode);
+      return isLeaf
+        ? this.tripNode.departureTime
+        : this.getTripNodeDepartureTime(this.tripNode);
     },
     hasPermissionToEdit() {
-      const userRole = this.rootTrip.userRoles.find(userRole => userRole.user.userId === UserStore.data.userId);
-      return userRole.role.roleType === roleType.TRIP_MANAGER || userRole.role.roleType === roleType.TRIP_OWNER;
+      let userRole;
+      if (this.tripNode.nodeType === "TripDestinationLeaf") {
+        userRole = this.parentTrip.userRoles.find(
+          userRole => userRole.user.userId === UserStore.data.userId
+        );
+      } else {
+        userRole = this.tripNode.userRoles.find(
+          userRole => userRole.user.userId === UserStore.data.userId
+        );
+      }
+      return (
+        userRole.role.roleType === roleType.TRIP_MANAGER ||
+        userRole.role.roleType === roleType.TRIP_OWNER
+      );
     }
-	},
+  },
   methods: {
     getTripNodeArrivalDate(tripNode) {
       if (tripNode.nodeType === "TripDestinationLeaf") {
         if (tripNode.arrivalDate) {
           return tripNode.arrivalDate;
-				}
+        }
         if (tripNode.departureDate) {
           return tripNode.departureDate;
-				}
-			} else {
+        }
+      } else {
         for (const currentTripNode of tripNode.tripNodes) {
-       		return this.getTripNodeArrivalDate(currentTripNode);
-				}
-			}
-		},
+          return this.getTripNodeArrivalDate(currentTripNode);
+        }
+      }
+    },
     getTripNodeArrivalTime(tripNode) {
       if (tripNode.nodeType === "TripDestinationLeaf") {
         if (tripNode.arrivalDate) {
