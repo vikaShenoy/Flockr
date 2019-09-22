@@ -130,6 +130,7 @@
   export default {
     data() {
       return {
+        UserStore: UserStore,
         colors: ['#eb4d4b', '#7ed6df', '#f9ca24'],
         markerOptions: {
           url: pingIcon,

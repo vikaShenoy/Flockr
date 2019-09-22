@@ -73,7 +73,6 @@
     mounted() {
       this.getTrip();
       this.listenOnMessage();
-
     },
     methods: {
       /**

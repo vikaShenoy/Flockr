@@ -248,13 +248,18 @@ export default {
       const users = [...this.selectedUsers, UserStore.data];
       this.isLoading = true;
       this.trip.users = users;
+      const ownUserRole = this.trip.userRoles.find(role => role.user.userId === UserStore.data.userId);
+
+      // NOTE: this is mutating a prop and is not good practice, but it does get changed in the parent
+      // add new user roles for other users
       this.trip.userRoles = this.userRoles.map(userRole => ({
         user: userRole.user,
         role: {
           roleType: userRole.role
         }
       }));
-
+      // add the own user's role too
+      this.trip.userRoles.push(ownUserRole);
 
       await editTrip(this.trip);
       this.isLoading = false;
