@@ -84,7 +84,6 @@
           </v-spacer>
 
         </v-layout>
-        <v-btn @click="leaveOrDelete" class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
       </v-card-title>
 
       <div id="manage-trip-alert-contents">
@@ -105,11 +104,11 @@
             >Cancel</v-btn>
 
             <v-btn
-                    color="success"
-                    flat
-                    :loading="isLoading"
-                    @click="leaveOrDelete"
-            >Continue</v-btn>
+              color="red"
+              flat
+              :loading="isLoading"
+              @click="leaveOrDelete"
+            >{{ onlyUser ? 'Delete' : 'Leave' }}</v-btn>
           </v-spacer>
         </v-card-actions>
       </div>
