@@ -293,8 +293,9 @@
         this.nationality = "";
         this.travellerType = "";
         this.gender = "";
+        this.name = "";
         // Call the search function to get unfiltered results
-        this.search();
+        this.search(this.pageIndex);
       },
 
       /**
