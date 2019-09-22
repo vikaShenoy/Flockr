@@ -9,7 +9,7 @@ export async function getAllTreasureHunts() {
     let token = localStorage.getItem("authToken");
 
     const res = await superagent.get(endpoint("/treasurehunts"))
-        .set("Authorization", token)
+        .set("Authorization", token);
 
     return res.body;
 

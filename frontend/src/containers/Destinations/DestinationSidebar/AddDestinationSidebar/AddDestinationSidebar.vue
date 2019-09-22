@@ -298,7 +298,6 @@
           try {
             this.destination.destinationLat = this.latitude;
             this.destination.destinationLon = this.longitude;
-            console.log(this.destination);
             const insertedDestination = await sendAddDestination(this.destination);
             this.$emit("addNewDestination", insertedDestination);
             this.closeDialog();

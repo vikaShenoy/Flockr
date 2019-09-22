@@ -1,9 +1,9 @@
 <template>
   <div id="profile-pic-box">
-    <img v-if="profilePhoto" id="profile-pic" :src="photoUrl(profilePhoto.photoId)" alt="Profile Picture"/>
-    <img v-else src="./defaultProfilePicture.png" id="profile-pic" alt="Default Profile Picture"/>
-    <v-btn @click="showProfilePhotoDialog" id="edit-btn" v-if="hasPermissionToView()" outline color="secondary">Edit
-    </v-btn>
+    <img v-if="profilePhoto" class="profile-pic" :src="photoUrl(profilePhoto.photoId)" alt="Profile Picture"/>
+    <img v-else src="./defaultProfilePicture.png" class="profile-pic" alt="Default Profile Picture"/>
+    <v-btn @click="showProfilePhotoDialog" id="edit-btn" v-if="hasPermissionToView()" color="secondary" fab><v-icon>edit</v-icon></v-btn>
+    <h1 class="mb-0 name">{{ fullname }}</h1>
     <ProfilePhotoDialog :dialog="dialog" :photos="photos" v-on:closeDialog="hideProfilePhotoDialog"
                         v-on:showError="showError"/>
   </div>
@@ -21,7 +21,8 @@
     props: {
       userId: Number,
       photos: Array,
-      profilePhoto: Object
+      profilePhoto: Object,
+      fullname: String
     },
     data() {
       return {
@@ -74,25 +75,49 @@
 </script>
 
 <style lang="scss" scoped>
+  @import "../../../styles/_variables.scss";
+
   #profile-pic-box {
     margin-top: 10px;
   }
 
-  #profile-pic {
-    max-width: 200px;
+  #profile-pic-box:hover #edit-btn {
+    visibility: visible;
+  }
+
+  #profile-pic-box:hover .v-icon {
+    visibility: visible;
+  }
+
+  .profile-pic {
+    max-width: 250px;
     margin: 0 auto;
     display: block;
+    border-radius: 12em;
   }
 
   #edit-btn {
-    margin: 0 auto;
-    display: block;
-    margin-top: 10px;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    visibility: hidden;
+    .v-icon {
+      visibility: hidden;
+    }
   }
 
   #undo-redo {
     margin: 0 auto;
     width: 60px;
+  }
+
+  .name {
+    position: absolute;
+    left: 250px;
+    bottom: 125px;
+    width: 100%;
+    -webkit-text-fill-color: white;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
   }
 </style>
 

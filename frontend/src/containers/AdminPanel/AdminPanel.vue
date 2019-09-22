@@ -29,7 +29,6 @@
   import {
     deleteUser,
     deleteUsers,
-    getAllUsers,
     undoDeleteUser,
     undoDeleteUsers,
     updateRoles

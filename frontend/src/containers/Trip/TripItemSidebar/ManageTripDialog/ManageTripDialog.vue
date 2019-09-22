@@ -16,7 +16,7 @@
       <v-container grid-list-md text-center>
       <v-layout wrap>
         <v-flex xs10 offset-xs1>
-          <div v-if="trip.users.length >= 2">
+          <div v-if="trip.users.length > 1">
           <h4>Chat</h4>
           <v-layout row >
             <v-text-field v-if="!chatExists" v-model="chatNameToCreate" placeholder="Chat name" />

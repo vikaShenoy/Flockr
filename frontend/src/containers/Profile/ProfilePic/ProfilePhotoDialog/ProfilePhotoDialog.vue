@@ -82,7 +82,6 @@
   import VueCropper from "vue-cropperjs";
   import {sendProfilePicture} from "./ProfilePhotoDialogService";
 
-
   export default {
     components: {
       ProfilePhotosSelection,

@@ -3,7 +3,7 @@
     :size="size"
     :class="avatarClass"
   >
-    <img :src="getPhotoUrl(user)" />
+    <img alt="User Image" :src="getPhotoUrl(user)" />
   </v-avatar>    
 </template>
 

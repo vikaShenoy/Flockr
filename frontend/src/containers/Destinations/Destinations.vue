@@ -107,8 +107,7 @@
       async getYourDestinations() {
         try {
           this.destinationsLoading = true;
-          const yourDestinations = await getYourDestinations();
-          this.yourDestinations = yourDestinations;
+          this.yourDestinations = await getYourDestinations();
           this.destinationsLoading = false;
         } catch (e) {
           this.showSnackbar("Could not get your destinations", "error", 3000);
@@ -143,7 +142,7 @@
       /**
        * @param {String} message the message to show in the snackbar
        * @param {String} color the colour for the snackbar
-       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       * @param {Number} timeout the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
         this.$root.$emit("show-snackbar", {

@@ -3,7 +3,9 @@ import { endpoint } from "../../../../utils/endpoint";
 
 /**
  * Sends a message to a group chat
- * @param {string} message The message to send
+ *
+ * @param {Number} chatGroupId the id of the chat group.
+ * @param {string} message The message to send.
  * @return {Object}
  */
 export async function sendMessage(chatGroupId, message) {
@@ -17,7 +19,10 @@ export async function sendMessage(chatGroupId, message) {
 
 /**
  * Gets messages in a chat
+ *
  * @param {Number} chatGroupId The chat group to get the messages from
+ * @param {Number} offset the index to start results from.
+ * @param {Number} limit the max number of messages to get.
  * @returns {Array<Object>} The array of chat messages
  */
 export async function getChatMessages(chatGroupId, offset, limit) {

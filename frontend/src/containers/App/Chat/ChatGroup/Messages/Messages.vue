@@ -10,7 +10,6 @@
 </template>
 
 <script>
-import UserStore from "../../../../../stores/UserStore";
 import Message from "./Message";
 
 export default {
@@ -22,7 +21,7 @@ export default {
   methods: {
     /**
      * Return true if the user is connected, false otherwise
-     * @param the user that we want to know if it's connected
+     * @param {Object} user the user that we want to know if it's connected
      * @returns {Boolean} true if the user is connected, false otherwise
      */
     isUserConnected(user) {

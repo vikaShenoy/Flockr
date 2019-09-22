@@ -170,7 +170,7 @@
       /**
        * @param {String} message the message to show in the snackbar
        * @param {String} color the colour for the snackbar
-       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       * @param {Number} timeout the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
         this.$root.$emit("show-snackbar", {
@@ -191,7 +191,8 @@
        * Called after a photo is successfully deleted.
        * Displays a success message, removes the photo from the photo list and closes the photo dialog.
        *
-       * @param index {Number} the index of the photo to be removed.
+       * @param {Number} index the index of the photo to be removed.
+       * @param {Boolean} displaySnackbar whether or not to show the snackbar.
        */
       afterDelete(index, displaySnackbar) {
         this.photos.splice(index, 1);

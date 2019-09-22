@@ -1,12 +1,11 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 import moment from "moment";
-import {editTrip} from "../EditTrip/EditTripService";
 
 /**
  * Sends a request to add a trip.
  * @param {string} name name of the trip to add.
- * @param {object[]} tripDestinations list of trip destinations to add as part of the trip.
+ * @param {Array<Object>} tripNodes list of trip destinations to add as part of the trip.
  * @param {Array<number>} userIds The userID's to add to the trip
  * @return response from backend.
  */

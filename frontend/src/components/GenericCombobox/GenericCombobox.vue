@@ -66,7 +66,6 @@ export default {
          * @param input the new text.
          */
         handleTyping(input) {
-            console.log("I am typing");
             this.searchString = input;
             const timeNeededSinceLastKeyPress = 400; // in milliseconds, how long to wait between keypresses until sending a request
             clearTimeout(this.watchdog);

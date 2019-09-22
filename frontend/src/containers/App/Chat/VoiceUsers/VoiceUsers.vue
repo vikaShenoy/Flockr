@@ -16,7 +16,6 @@
 
 
 <script>
-import { endpoint } from '../../../../utils/endpoint';
 import UserAvatar from "../ChatGroup/Messages/UserAvatar";
 
   export default {

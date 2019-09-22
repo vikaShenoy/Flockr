@@ -99,7 +99,7 @@ export default {
           endpoint(`/users/${userId}/photos`)
         ).set("Authorization", authToken);
         let userPhotos = response.body;
-        let photosToShow = userPhotos.filter(userPhoto => {
+        this.userPhotos = userPhotos.filter(userPhoto => {
           for (const destinationPhoto of this.destinationPhotos) {
             if (userPhoto.photoId === destinationPhoto.personalPhoto.photoId) {
               return false;
@@ -107,7 +107,6 @@ export default {
           }
           return true;
         });
-        this.userPhotos = photosToShow;
       } catch (e) {
         this.$emit("displayError", e.message);
       }
