@@ -4,6 +4,7 @@ import models.User;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.Results;
 
 import java.util.concurrent.CompletionStage;
 
@@ -18,7 +19,7 @@ public class ProfileCompleted extends Action.Simple {
     @Override
     public CompletionStage<Result> call(Http.Request request) {
         if (!request.attrs().containsKey(ActionState.USER)) {
-            return supplyAsync(() -> forbidden());
+            return supplyAsync(Results::forbidden);
         }
 
         User user = request.attrs().get(ActionState.USER);
@@ -26,7 +27,7 @@ public class ProfileCompleted extends Action.Simple {
         if (user.profileCompleted()) {
             return delegate.call(request);
         } else {
-            return supplyAsync(() -> forbidden());
+            return supplyAsync(Results::forbidden);
         }
     }
 

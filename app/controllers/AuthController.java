@@ -35,19 +35,17 @@ import static util.AuthUtil.isValidEmailAddress;
 public class AuthController {
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final Security security;
-    private final Responses responses;
 
     @Inject
-    public AuthController(AuthRepository authRepository, UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses, RoleRepository roleRepository) {
+    public AuthController(AuthRepository authRepository, UserRepository userRepository,
+                          HttpExecutionContext httpExecutionContext, Security security, Responses responses,
+                          RoleRepository roleRepository) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
-        this.responses = responses;
-        this.roleRepository = roleRepository;
     }
 
     /**
