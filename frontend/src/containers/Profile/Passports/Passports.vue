@@ -32,6 +32,7 @@
               :items="this.validPassports"
               :item-text="getPassportText"
               label="Your passports"
+              @change="updateSelectedPassports"
               chips
               clearable
               solo
@@ -116,6 +117,15 @@
       async filterPassports() {
         const passports = await getPassports();
         this.validPassports = passports.filter(passport => passport.country.isValid === true);
+      },
+      /**
+       * Updates the selected passports of the user to all valid ones so if there is an
+       * invalid passport i.e. the user typed a string in the combo box, it is removed
+       * automatically.
+       * @param passports the chosen passport values
+       */
+      updateSelectedPassports(passports) {
+        this.userPass = passports.filter(passport => typeof passport !== 'string');
       }
 
     }
