@@ -517,8 +517,8 @@ public class PhotoController extends Controller {
   public boolean checkForAndCreatePhotosDirectory() {
       String path = System.getProperty("user.dir") + "/storage";
       System.out.println(System.getenv().toString());
-      System.out.println(path);
       File file = new File(path);
+      System.out.println(file.exists());
       if (!file.exists() && file.mkdir()) {
           file = new File(path + "/photos");
           if (!file.exists()) {
