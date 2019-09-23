@@ -516,7 +516,8 @@ public class PhotoController extends Controller {
    */
   public boolean checkForAndCreatePhotosDirectory() {
       String path = System.getProperty("user.dir") + "/storage";
-      System.out.println(System.getenv("VUE_APP_GOOGLE_MAP_API"));
+      System.out.println(System.getenv().toString());
+      System.out.println(path);
       File file = new File(path);
       if (!file.exists() && file.mkdir()) {
           file = new File(path + "/photos");
