@@ -228,24 +228,23 @@ export default {
     /**
      * Formats a date based on an optional date and time
      */
-    formatDateTime(date, time) {
-      console.log(date);
-      console.log(time);
-      console.log("here")
-
+    async formatDateTime(date, time) {
       if (!date && !time) {
         return "No Date";
       }
 
       const momentDate = moment(`${date} ${time}`);
-
-      let offset = this.getTimezoneOffset(this.tripNode.destination.destinationLat, this.tripNode.destination.destinationLon);
-      console.log(offset)
+      try {
+        let offset = await getTimezoneOffset(this.tripNode.destination.destinationLat,
+            this.tripNode.destination.destinationLon);
+        console.log(offset);
+      } catch (error) {
+        console.log(e);
+      }
 
       const formattedDate = momentDate.isSame(moment(), "year")
-        ? momentDate.format("DD MMM hh:mm A")
-        : momentDate.format("DD MMM YYYY");
-
+          ? momentDate.format("DD MMM hh:mm A")
+          : momentDate.format("DD MMM YYYY");
 
       return formattedDate;
     },
@@ -281,10 +280,6 @@ export default {
       } else {
         this.$emit("showEditTripDestination", this.tripNode);
       }
-    },
-    async getTimezoneOffset(lat, long) {
-
-      return await getTimezoneOffset(lat, long)
     }
   }
 };
