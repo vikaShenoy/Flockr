@@ -515,15 +515,11 @@ public class PhotoController extends Controller {
    * @return returns true only if both the storage and storage/photos are created, false otherwise.
    */
   public boolean checkForAndCreatePhotosDirectory() {
-      String path = System.getProperty("user.dir") + "/storage";
-      System.out.println(System.getenv().toString());
+      String path = System.getProperty("user.dir") + "/storage/photos";
       File file = new File(path);
-      System.out.println(file.exists());
-      if (!file.exists() && file.mkdir()) {
-          file = new File(path + "/photos");
-          if (!file.exists()) {
-              return file.mkdir();
-          }
+      
+      if (!file.exists()) {
+        return file.mkdir();
       }
       return false;
   }
