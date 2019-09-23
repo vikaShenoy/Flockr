@@ -42,7 +42,7 @@
               <v-icon size="30">flight_takeoff</v-icon>
             </v-flex>
             <v-flex xs10 class="date-info">
-              <p>{{ formatDateTime(getArrivalDate, getArrivalTime) }}</p>
+              <p>{{ tripNode.formattedArrivalDateTime }}</p>
             </v-flex>
           </v-layout>
           <v-layout>
@@ -50,7 +50,7 @@
               <v-icon size="30">flight_landing</v-icon>
             </v-flex>
             <v-flex xs10 class="date-info">
-              <p>{{ formatDateTime(getDepartureDate, getDepartureTime) }}</p>
+              <p>{{ tripNode.formattedDepartureDateTime }}</p>
             </v-flex>
           </v-layout>
           <v-spacer align="center" v-if="tripNode.nodeType === 'TripComposite'">
@@ -168,6 +168,11 @@ export default {
     }
   },
   methods: {
+    formatTimes() {
+      this.tripNode.formattedArrivalDateTime = this.formatDateTime(this.getArrivalDate, this.getArrivalTime);
+
+      this.tripNode.formattedDepartureDateTime = this.formatDateTime(this.getDepartureDate, this.getDepartureTime);
+    },
     getTripNodeArrivalDate(tripNode) {
       if (tripNode.nodeType === "TripDestinationLeaf") {
         if (tripNode.arrivalDate) {
@@ -237,9 +242,10 @@ export default {
       try {
         let offset = await getTimezoneOffset(this.tripNode.destination.destinationLat,
             this.tripNode.destination.destinationLon);
+        momentDate.add(offset);
         console.log(offset);
       } catch (error) {
-        console.log(e);
+        console.log(error);
       }
 
       const formattedDate = momentDate.isSame(moment(), "year")
@@ -281,6 +287,12 @@ export default {
         this.$emit("showEditTripDestination", this.tripNode);
       }
     }
+  },
+  watch: {
+     tripNode: {
+       handler: "formatTimes",
+       immediate: true
+     }
   }
 };
 </script>
