@@ -74,8 +74,6 @@
 
 
   .content {
-    display: inline-block;
-    margin-left: 5px;
     display: flex;
     align-items: center;
     margin-left: 10px;

@@ -1,5 +1,15 @@
-import Sortable from "sortablejs"
+import Sortable from "sortablejs";
+import superagent from "superagent";
+import moment from "moment";
+import config from "../../../../config"
 
+
+/**
+ * Sorts the timeline of a trip.
+ *
+ * @param timeline {Object} the timeline.
+ * @param updateOrder {Object} the update order.
+ */
 export function sortTimeline(timeline, updateOrder) {
   new Sortable(timeline, {
     group: 'nested',
@@ -24,4 +34,19 @@ export function sortTimeline(timeline, updateOrder) {
   });
 
   timeline.setAttribute("has-been-sorted", true);
+}
+
+/**
+ * Gets the timezone offset from UTC given a latitude and longitude.
+ *
+ * @param lat {Number} the latitude.
+ * @param long {Number} the longitude.
+ * @return {Promise<Object>} the timezone details.
+ */
+export async function getTimezoneOffset(lat, long) {
+  const timestamp = moment().utc();
+  const endpoint = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${long}&timestamp=${timestamp}&key=${config.GOOGLE_MAPS_KEY}`;
+  const res = await superagent.get(endpoint);
+
+  return res.body;
 }

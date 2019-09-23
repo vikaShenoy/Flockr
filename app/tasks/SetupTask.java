@@ -29,8 +29,8 @@ public class SetupTask {
   }
 
   private void initialise() {
-    Config conf = ConfigFactory.load();
-    if (!conf.getString("db.default.url").equals("jdbc:h2:mem:play")) {
+
+    if (environment.isDev()) {
       return;
     }
 

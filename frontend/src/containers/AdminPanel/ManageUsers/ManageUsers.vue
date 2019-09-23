@@ -78,7 +78,7 @@
 				<v-list>
 					<v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
 						<v-list-tile-avatar>
-							<img :src="item.avatar">
+							<img alt="User Image" :src="item.avatar">
 						</v-list-tile-avatar>
 
 						<v-list-tile-content>
@@ -285,8 +285,9 @@
             }));
       },
       /**
-       * Gets the URL of a photo for a user
-       * @param {number} photoId the ID of the photo to get
+       * Gets the URL of a photo for a user.
+			 *
+       * @param {Object} profilePhoto the the photo to get url for.
        * @returns {string} the url of the photo
        */
       photoUrl(profilePhoto) {

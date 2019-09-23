@@ -39,7 +39,6 @@
   import ConnectedUsers from "./ConnectedUsers/ConnectedUsers";
 
   import {
-    contiguousDestinations,
     contiguousReorderedDestinations,
     editTrip,
     getTrip,
@@ -73,7 +72,6 @@
     mounted() {
       this.getTrip();
       this.listenOnMessage();
-
     },
     methods: {
       /**
@@ -93,10 +91,12 @@
 
           this.addEditTripCommand(oldTrip, tripNode);
         },
-        newTripAdded(subTrip) {
+        async newTripAdded(subTrip) {
           const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
-          this.trip.tripNodes.push(subTrip)
-          editTrip(this.trip);
+          this.trip.tripNodes.push(subTrip);
+          await editTrip(this.trip);
+          this.getTrip();
+
 
           const undoCommand = async (subTrip, oldParentTrip) => {
             await deleteTripFromList(subTrip.tripNodeId);
@@ -110,10 +110,10 @@
             this.getTrip();
           };
 
-        const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldTrip),
-            redoCommand.bind(null, subTrip, this.trip));
-        this.$refs.undoRedo.addUndo(addTripCommand);
-      },
+          const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldTrip),
+              redoCommand.bind(null, subTrip, this.trip));
+          this.$refs.undoRedo.addUndo(addTripCommand);
+        },
 
       /**
        * Open and close a trip composite to show its tripNodes.
@@ -380,7 +380,6 @@
             this.showSuccessMessage("Successfully changed order");
           }
         } catch (e) {
-          console.log(e);
           this.showError("Could not change order");
         }
       },
@@ -409,6 +408,7 @@
         const oldTrip = {...parentTripNode, tripNodes: [...parentTripNode.tripNodes]};
         parentTripNode.tripNodes = tripNodes;
         this.addEditTripCommand(oldTrip, parentTripNode);
+        this.getTrip();
       },
       /**
        * Delete a trip node from a trip and update view
@@ -455,8 +455,8 @@
         } catch (e) {
           this.showError("Could not remove destination from trip");
         }
-      }
-    },
+      },
+   },
     watch: {
       /**
        * Watch for rerouting to the same page, if so, get new trip contents

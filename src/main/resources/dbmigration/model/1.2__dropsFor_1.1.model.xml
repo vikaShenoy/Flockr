@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply" dropsFor="1.1">
+        <dropColumn columnName="destination_district_district_id" tableName="destination"/>
+        <dropColumn columnName="child_index" tableName="trip_node_parent"/>
+        <dropColumn columnName="role_id" tableName="user_role"/>
+        <dropColumn columnName="user_id" tableName="user_role"/>
+        <dropTable name="district" sequenceCol="district_id"/>
+    </changeSet>
+</migration>

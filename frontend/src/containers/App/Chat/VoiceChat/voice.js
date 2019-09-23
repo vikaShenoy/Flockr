@@ -56,7 +56,6 @@ export class VoiceChat extends EventEmitter {
                 this.emit("youConnected", stream);
               },
               onremotestream: stream => {
-                console.log("Remote stream found");
                 this.emit("remoteUserConnected", stream);
               },
               oncleanup: () => (this.webrtcUp = false),
@@ -100,16 +99,15 @@ export class VoiceChat extends EventEmitter {
       return res.body;
 
     } catch (e) {
-      console.log(e);
       this.handleError(e);
     }
-  }
+  };
 
   /**
    * Handles when a message has been received. This can either be if you have joined
    * the room or if another user has
-   * @param {Object} msg The incoming message
-   * @param {} jsep Incoming session establishment message
+   * @param {Object} message The incoming message
+   * @param {Object} sessionMessage Incoming session establishment message
    */
   messageReceived = (message, sessionMessage) => {
     const event = message.audiobridge;
@@ -187,7 +185,7 @@ export class VoiceChat extends EventEmitter {
   leaveRoom = () => {
     const message = {
       request: "leave"
-    }
+    };
 
     this.channel.send({ message });
   }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
 import io.ebean.annotation.CreatedTimestamp;
+import io.ebean.annotation.Index;
 import io.ebean.annotation.SoftDelete;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -40,6 +41,7 @@ public class User extends Model {
   @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
   public List<Role> roles;
 
+  @Index(unique = true)
   @Id
   @Constraints.Required
   private int userId;
@@ -63,6 +65,9 @@ public class User extends Model {
 
   @OneToOne(cascade = CascadeType.ALL)
   private PersonalPhoto profilePhoto;
+
+  @OneToOne(cascade = CascadeType.ALL)
+  private PersonalPhoto coverPhoto;
 
   @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
   private List<TreasureHunt> treasureHunt;
@@ -359,6 +364,14 @@ public class User extends Model {
 
   public void setProfilePhoto(PersonalPhoto profilePhoto) {
     this.profilePhoto = profilePhoto;
+  }
+
+  public PersonalPhoto getCoverPhoto() {
+    return coverPhoto;
+  }
+
+  public void setCoverPhoto(PersonalPhoto coverPhoto) {
+    this.coverPhoto = coverPhoto;
   }
 
   public String getPasswordHash() {

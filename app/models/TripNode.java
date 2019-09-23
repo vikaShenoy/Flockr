@@ -8,20 +8,16 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 
 @Entity
 @Inheritance
 public abstract class TripNode extends Model {
     @Id
     protected int tripNodeId;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    protected List<UserRole> userRoles = new ArrayList<>();
 
 
     @ManyToMany(mappedBy = "parents", cascade=CascadeType.PERSIST)
@@ -122,6 +118,18 @@ public abstract class TripNode extends Model {
     public abstract Destination getDestination();
 
     public abstract List<User> getUsers();
+
+    public void addUserRole(UserRole userRole) {
+        this.userRoles.add(userRole);
+    }
+
+    public List<UserRole> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(List<UserRole> userRoles) {
+        this.userRoles = userRoles;
+    }
 
     /**
      * This is required by EBean to make queries on the database.

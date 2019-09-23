@@ -57,8 +57,7 @@
 
 <script>
 	import AddTrip from "../../../AddTrip/AddTrip";
-	import { getTrips, editTrip, tripNodeContains } from "../../TripService";
-	import { sortTimeline } from "../Timeline/TimelineService";
+	import { getTrips, tripNodeContains } from "../../TripService";
   export default {
     components: {AddTrip},
     props: {

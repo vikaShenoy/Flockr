@@ -1,25 +1,14 @@
-package controllers;
+package controllers.TripControllerTests;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import models.Country;
-import models.Destination;
-import models.DestinationType;
-import models.Role;
-import models.RoleType;
-import models.TripComposite;
-import models.TripDestinationLeaf;
-import models.TripNode;
-import models.User;
+import java.util.*;
+
+import models.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,11 +17,14 @@ import play.Application;
 import play.libs.Json;
 import play.mvc.Result;
 import play.test.Helpers;
+import repository.UserRepository;
 import util.TripUtil;
 import utils.FakeClient;
 import utils.FakePlayClient;
 import utils.PlayResultToJson;
 import utils.TestState;
+
+import javax.inject.Inject;
 
 public class TripControllerTest {
 
@@ -41,6 +33,7 @@ public class TripControllerTest {
   private User user;
   private User otherUser;
   private User adminUser;
+  private User anotherUser;
   private Destination christchurch;
   private Destination westMelton;
   private Destination helkett;
@@ -77,6 +70,7 @@ public class TripControllerTest {
     user = fakeClient.signUpUser("Tommy", "Tester", "tommy@tester.com", "testing");
     otherUser = fakeClient.signUpUser("Indy", "Inspector", "indy@inspector.com", "testing");
     adminUser = fakeClient.signUpUser("Sam", "Admin", "sam@admin.com", "testing");
+    anotherUser = fakeClient.signUpUser("Another", "User", "user@test.com", "testing");
 
     // Making an admin
     // TODO - investigate why this code causes duplicate key exception. Must be to do with
@@ -88,6 +82,14 @@ public class TripControllerTest {
     adminUser = User.find.byId(adminUser.getUserId());
     adminUser.setRoles(roles);
     adminUser.save();
+
+    // Insert all trip roles into the db.
+    Role tripOwner = new Role(RoleType.TRIP_OWNER);
+    Role tripManager = new Role(RoleType.TRIP_MANAGER);
+    Role tripMember = new Role(RoleType.TRIP_MEMBER);
+    tripOwner.save();
+    tripManager.save();
+    tripMember.save();
 
     // Creating some initial destinations
     DestinationType destinationType = new DestinationType("city");
@@ -230,7 +232,10 @@ public class TripControllerTest {
     tripDestinations.add(tripDestination2);
     tripBody.put("name", "Pirate Trip");
     tripBody.putArray("tripNodes").addAll(tripDestinations);
-    tripBody.set("userIds", Json.toJson(userIds));
+    tripBody.putArray("userIds").add(Json.newObject().put("userId", otherUser.getUserId()).put("role", "TRIP_MEMBER"));
+    // tripBody.set("userIds", Json.toJson(userIds));
+
+    System.out.println(tripBody.toString());
     Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
     Assert.assertEquals(201, result.status());
     int tripId = PlayResultToJson.convertResultToJson(result).get("tripNodeId").asInt();
@@ -254,24 +259,30 @@ public class TripControllerTest {
     tripDestinations.add(tripDestination2);
     tripBody.put("name", "Pirate trip");
     tripBody.putArray("tripNodes").addAll(tripDestinations);
-    tripBody.set("userIds", Json.toJson(userIds));
+    tripBody.putArray("userIds").add(Json.newObject().put("userId", user.getUserId()).put("role", "TRIP_MEMBER"));
+    //tripBody.set("userIds", Json.toJson(userIds));
     Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
     Assert.assertEquals(403, result.status());
   }
 
   @Test
   public void editTripWithUsers() {
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
     String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId();
     ObjectNode tripBody = Json.newObject();
     ArrayNode tripDestinations = Json.newArray();
+    ArrayNode tripUsers = Json.newArray();
+    ObjectNode otherUserObject = Json.newObject();
+    otherUserObject.put("userId", otherUser.getUserId());
+    otherUserObject.put("role", RoleType.TRIP_MEMBER.toString());
+    tripUsers.add(otherUserObject);
+
     tripDestinations.add(tripDestination1);
     tripDestinations.add(tripDestination2);
 
     tripBody.put("name", "Some trip");
     tripBody.putArray("tripNodes").addAll(tripDestinations);
-    List<Integer> userIds = new ArrayList<>();
-    userIds.add(otherUser.getUserId());
-    tripBody.set("userIds", Json.toJson(userIds));
+    tripBody.putArray("userIds").addAll(tripUsers);
     Result result = fakeClient.makeRequestWithToken("PUT", tripBody, endpoint, user.getToken());
     Assert.assertEquals(200, result.status());
   }
@@ -466,6 +477,7 @@ public class TripControllerTest {
     getHighLevelTrips(otherUser.getToken(), user.getUserId(), 403);
   }
 
+
   /**
    * The Test suite for updating a trip with the PUT endpoint.
    *
@@ -474,31 +486,38 @@ public class TripControllerTest {
    * @param statusCode the status code to test
    * @param authorised true if an authorised user
    */
-  public void updateTrip(String token, int userId, int statusCode, boolean authorised) {
+  private void updateTrip(String token, int userId, int statusCode, boolean authorised) {
     List<Integer> userIds = new ArrayList<>();
     userIds.add(userId);
     ObjectNode body = Json.newObject();
     ArrayNode tripDestinations = Json.newArray();
+    ArrayNode userArray = Json.newArray();
+    ObjectNode userObject = Json.newObject();
+    userObject.put("userId", userId);
+    userObject.put("role", RoleType.TRIP_OWNER.toString());
+    userArray.add(userObject);
     tripDestinations.add(tripDestination1);
     tripDestinations.add(tripDestination2);
     body.put("name", "PutTest");
     body.putArray("tripNodes").addAll(tripDestinations);
-    body.set("userIds", Json.toJson(userIds));
+    body.putArray("userIds").addAll(userArray);
     Result result;
     if (authorised) {
       result =
-          fakeClient.makeRequestWithToken(
-              "PUT", body, "/api/users/" + userId + "/trips/" + trip.getTripNodeId(), token);
+              fakeClient.makeRequestWithToken(
+                      "PUT", body, "/api/users/" + userId + "/trips/" + trip.getTripNodeId(), token);
     } else {
       result =
-          fakeClient.makeRequestWithNoToken(
-              "PUT", body, "/api/users/" + userId + "/trips/" + trip.getTripNodeId());
+              fakeClient.makeRequestWithNoToken(
+                      "PUT", body, "/api/users/" + userId + "/trips/" + trip.getTripNodeId());
     }
     Assert.assertEquals(statusCode, result.status());
   }
 
+
   @Test
   public void updateTripOk() {
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
     updateTrip(user.getToken(), user.getUserId(), 200, true);
     Optional<TripComposite> optionalTrip =
         TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
@@ -518,6 +537,7 @@ public class TripControllerTest {
 
   @Test
   public void updateTripAdmin() {
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
     updateTrip(adminUser.getToken(), user.getUserId(), 200, true);
     Optional<TripComposite> optionalTrip =
         TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
@@ -525,9 +545,270 @@ public class TripControllerTest {
         tripComposite -> Assert.assertEquals("PutTest", tripComposite.getName()));
   }
 
+  /**
+   * Send a PUT request to edit a trip.
+   * @param token auth token for the user.
+   * @param userId id of the user who owns the trip.
+   * @param statusCode expected status code from the endpoint.
+   * @param authorised whether the request should be sent with token or not.
+   * @param body JSON body for the put request specifying the edits to be made.
+   */
+  private void updateTripWithBody(String token, int userId, int tripId, int statusCode, boolean authorised,
+                                  ObjectNode body) {
+    Result result;
+    if (authorised) {
+      result =
+              fakeClient.makeRequestWithToken(
+                      "PUT", body, "/api/users/" + userId + "/trips/" + tripId, token);
+    } else {
+      result =
+              fakeClient.makeRequestWithNoToken(
+                      "PUT", body, "/api/users/" + userId + "/trips/" + tripId);
+    }
+    Assert.assertEquals(statusCode, result.status());
+  }
+
+  @Test
+  public void updateTripAsTripMemberForbidden() {
+    String originalName = trip.getName();
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_MEMBER);
+
+    Map<User, String> userJson = new HashMap<>();
+    List<ObjectNode> tripNodes = new ArrayList<>();
+    tripNodes.add(tripDestination1);
+    tripNodes.add(tripDestination2);
+    userJson.put(user, RoleType.TRIP_MEMBER.toString());
+
+    ObjectNode tripRequestBody = TripControllerTestUtil.createTripJsonBody("Edited Trip", tripNodes, userJson);
+
+    updateTripWithBody(user.getToken(), user.getUserId(), trip.getTripNodeId(),403, true,
+            tripRequestBody);
+    Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+    optionalTrip.ifPresent(
+            tripComposite -> Assert.assertEquals(originalName, tripComposite.getName()));
+  }
+
+  /**
+   * Test that a trip manager editing trip name works fine.
+   */
+  @Test
+  public void updateTripAsTripManagerOk() {
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_MANAGER);
+    Map<User, String> userJson = new HashMap<>();
+    List<ObjectNode> tripNodes = new ArrayList<>();
+
+    tripNodes.add(tripDestination1);
+    tripNodes.add(tripDestination2);
+    userJson.put(user, RoleType.TRIP_MEMBER.toString());
+
+    ObjectNode tripRequestBody = TripControllerTestUtil.createTripJsonBody("Edited Trip", tripNodes, userJson);
+
+    updateTripWithBody(user.getToken(), user.getUserId(), trip.getTripNodeId(),200, true, tripRequestBody);
+    Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+    optionalTrip.ifPresent(
+            tripComposite -> Assert.assertEquals("Edited Trip", tripComposite.getName()));
+  }
+
+  /**
+   * Test that a manager can't edit trip users.
+   */
+  @Test
+  public void updateTripAsTripManagerForbidden() {
+    int numTripUsers = trip.getUsers().size();
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_MANAGER);
+    Map<User, String> userJson = new HashMap<>();
+    List<ObjectNode> tripNodes = new ArrayList<>();
+
+    tripNodes.add(tripDestination1);
+    tripNodes.add(tripDestination2);
+    tripNodes.add(tripDestination3);
+    userJson.put(user, RoleType.TRIP_MEMBER.toString());
+    userJson.put(otherUser, RoleType.TRIP_MEMBER.toString());
+
+    ObjectNode tripRequestBody = TripControllerTestUtil.createTripJsonBody("Edited Trip", tripNodes, userJson);
+
+    updateTripWithBody(user.getToken(), user.getUserId(), trip.getTripNodeId(),200, true,
+            tripRequestBody);
+    Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+    optionalTrip.ifPresent(
+            tripComposite -> Assert.assertEquals(numTripUsers, tripComposite.getUsers().size()));
+  }
+
+  /**
+   * Trip owner is allowed to edit a trip's users.
+   */
+  @Test
+  public void updateTripUserAsTripOwnerOk() {
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
+
+    Map<User, String> userJson = new HashMap<>();
+    List<ObjectNode> tripNodes = new ArrayList<>();
+    tripNodes.add(tripDestination1);
+    tripNodes.add(tripDestination2);
+    tripNodes.add(tripDestination3);
+    userJson.put(user, RoleType.TRIP_MEMBER.toString());
+    userJson.put(otherUser, RoleType.TRIP_MEMBER.toString());
+    ObjectNode tripRequestBody = TripControllerTestUtil.createTripJsonBody("Edited Trip", tripNodes, userJson);
+
+    updateTripWithBody(user.getToken(), user.getUserId(), trip.getTripNodeId(),200, true,
+            tripRequestBody);
+    Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+    optionalTrip.ifPresent(
+            tripComposite -> Assert.assertEquals("Edited Trip", tripComposite.getName()));
+    optionalTrip.ifPresent(
+            tripComposite -> Assert.assertEquals(3, tripComposite.getTripNodes().size()));
+  }
+
+  /**
+   * Give the 'other user' the trip manager role.
+   */
+  @Test
+  public void updateTripUserPermissionsAsOwner() {
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
+
+    Map<User, String> userJson = new HashMap<>();
+    List<ObjectNode> tripNodes = new ArrayList<>();
+    tripNodes.add(tripDestination1);
+    tripNodes.add(tripDestination2);
+    tripNodes.add(tripDestination3);
+    userJson.put(user, RoleType.TRIP_MEMBER.toString());
+    userJson.put(otherUser, RoleType.TRIP_MANAGER.toString());
+    ObjectNode tripRequestBody = TripControllerTestUtil.createTripJsonBody("Edited Trip", tripNodes, userJson);
+
+    updateTripWithBody(user.getToken(), user.getUserId(), trip.getTripNodeId(),200, true,
+            tripRequestBody);
+    Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+    optionalTrip.ifPresent(
+            tripComposite -> Assert.assertEquals("Edited Trip", tripComposite.getName()));
+    optionalTrip.ifPresent(
+            tripComposite -> Assert.assertEquals(3, tripComposite.getTripNodes().size()));
+    optionalTrip.ifPresent(
+            tripComposite -> {
+              Assert.assertEquals(2, tripComposite.getUserRoles().size());
+              boolean containsUpdatedRole = false;
+              for (UserRole tripUserRole : tripComposite.getUserRoles()) {
+                if (tripUserRole.getUser().getUserId() == otherUser.getUserId() &&
+                        tripUserRole.getRole().getRoleType().equals(RoleType.TRIP_MANAGER.toString())) {
+                  containsUpdatedRole = true;
+                }
+              }
+              Assert.assertTrue(containsUpdatedRole);
+            });
+  }
+
+  /**
+   * Check that a trip owner for higher level trip can't edit the trip details for a lower level trip.
+   */
+  @Test
+  public void updateLowerLevelTripBad() {
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
+    // Add trip2 as a sub trip of trip.
+    List<TripNode> newTripNodes = trip.getTripNodes();
+    newTripNodes.add(trip2);
+    trip.setTripNodes(newTripNodes);
+    String trip2OriginalName = trip2.getName();
+
+    Map<User, String> userJson = new HashMap<>();
+    List<ObjectNode> tripNodes = new ArrayList<>();
+    tripNodes.add(tripDestination1);
+    tripNodes.add(tripDestination2);
+    userJson.put(user, RoleType.TRIP_MEMBER.toString());
+    ObjectNode tripRequestBody = TripControllerTestUtil.createTripJsonBody("Edited Trip", tripNodes, userJson);
+
+    updateTripWithBody(user.getToken(), user.getUserId(), trip2.getTripNodeId(),
+            403, true, tripRequestBody);
+    Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip2.getTripNodeId()).findOneOrEmpty();
+    optionalTrip.ifPresent(
+            tripComposite -> Assert.assertEquals(trip2OriginalName, tripComposite.getName()));
+  }
+
+  /**
+   * Trip owner of trip 2 can't edit the higher level trip (trip).
+   */
+  @Test
+  public void updateHigherLevelTripBad() {
+    List<TripNode> newTripNodes = trip.getTripNodes();
+    newTripNodes.add(trip2);
+    trip.setTripNodes(newTripNodes);
+    String tripOriginalName = trip.getName();
+    TripControllerTestUtil.setUserTripRole(user, trip2, RoleType.TRIP_OWNER);
+
+    Map<User, String> userJson = new HashMap<>();
+    List<ObjectNode> tripNodes = new ArrayList<>();
+    tripNodes.add(tripDestination1);
+    tripNodes.add(tripDestination2);
+    userJson.put(user, RoleType.TRIP_MEMBER.toString());
+    ObjectNode tripRequestBody = TripControllerTestUtil.createTripJsonBody("Edited Trip", tripNodes, userJson);
+
+    updateTripWithBody(user.getToken(), user.getUserId(), trip.getTripNodeId(),403, true,
+            tripRequestBody);
+    Optional<TripComposite> optionalTrip =
+            TripComposite.find.query().where().eq("tripNodeId", trip.getTripNodeId()).findOneOrEmpty();
+    optionalTrip.ifPresent(
+            tripComposite -> Assert.assertEquals(tripOriginalName, tripComposite.getName()));
+  }
+
+
+  @Test
+  public void createSoloTripOwner() throws IOException {
+
+      String endpoint = "/api/users/" + user.getUserId() + "/trips";
+      ObjectNode tripBody = Json.newObject();
+      ArrayNode tripDestinations = Json.newArray();
+      tripDestinations.add(tripDestination1);
+      tripDestinations.add(tripDestination2);
+      tripBody.put("name", "Solo Trip");
+      tripBody.putArray("tripNodes").addAll(tripDestinations);
+      tripBody.putArray("userIds");
+      Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
+      Assert.assertEquals(201, result.status());
+      JsonNode jsonResult = PlayResultToJson.convertResultToJson(result);
+      int tripId = jsonResult.get("tripNodeId").asInt();
+      Optional<TripComposite> receivedTrip = TripComposite.find.query().where().eq("tripNodeId", tripId).findOneOrEmpty();
+      Assert.assertTrue(receivedTrip.isPresent());
+      Assert.assertEquals(1, jsonResult.get("userRoles").size());
+      Assert.assertEquals(user.getUserId(), jsonResult.get("userRoles").get(0).get("user").get("userId").asInt());
+      Assert.assertEquals("TRIP_OWNER", jsonResult.get("userRoles").get(0).get("role").get("roleType").asText());
+  }
+
+  @Test
+  public void createGroupTripOwnerManagerMember() throws IOException {
+    String endpoint = "/api/users/" + user.getUserId() + "/trips";
+    ObjectNode tripBody = Json.newObject();
+    ArrayNode tripDestinations = Json.newArray();
+    tripDestinations.add(tripDestination1);
+    tripDestinations.add(tripDestination2);
+    tripBody.put("name", "Solo Trip");
+    tripBody.putArray("tripNodes").addAll(tripDestinations);
+    JsonNode manager = Json.newObject().put("userId", otherUser.getUserId()).put("role", "TRIP_MANAGER");
+    JsonNode member = Json.newObject().put("userId", anotherUser.getUserId()).put("role", "TRIP_MEMBER");
+    tripBody.putArray("userIds").add(manager).add(member);
+    Result result = fakeClient.makeRequestWithToken("POST", tripBody, endpoint, user.getToken());
+    JsonNode jsonResult = PlayResultToJson.convertResultToJson(result);
+    System.out.println(jsonResult.get("userRoles").toString());
+    Assert.assertEquals(3, jsonResult.get("userRoles").size());
+
+    Assert.assertEquals(otherUser.getUserId(), jsonResult.get("userRoles").get(0).get("user").get("userId").asInt());
+    Assert.assertEquals("TRIP_MANAGER", jsonResult.get("userRoles").get(0).get("role").get("roleType").asText());
+
+    Assert.assertEquals(anotherUser.getUserId(), jsonResult.get("userRoles").get(1).get("user").get("userId").asInt());
+    Assert.assertEquals("TRIP_MEMBER", jsonResult.get("userRoles").get(1).get("role").get("roleType").asText());
+
+    Assert.assertEquals(user.getUserId(), jsonResult.get("userRoles").get(2).get("user").get("userId").asInt());
+    Assert.assertEquals("TRIP_OWNER", jsonResult.get("userRoles").get(2).get("role").get("roleType").asText());
+  }
+
+
   @After
   public void tearDown() {
     Helpers.stop(application);
     TestState.clear();
   }
+
 }

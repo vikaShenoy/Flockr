@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
+import javax.validation.Constraint;
 import play.data.validation.Constraints;
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -31,6 +32,10 @@ public class PersonalPhoto extends Model {
     @Constraints.Required
     private boolean isPrimary;
 
+    @JsonProperty("isCover")
+    @Constraints.Required
+    private boolean isCover;
+
     @Constraints.Required
     private String filenameHash;
 
@@ -55,12 +60,13 @@ public class PersonalPhoto extends Model {
      * @param isPrimary true if the photo is the primary photo of the user, otherwise false
      * @param thumbnailName the filename of the thumbnail
      */
-    public PersonalPhoto(String filenameHash, boolean isPublic, User user, boolean isPrimary, String thumbnailName) {
+    public PersonalPhoto(String filenameHash, boolean isPublic, User user, boolean isPrimary, String thumbnailName, boolean isCover) {
         this.filenameHash = filenameHash;
         this.isPublic = isPublic;
         this.user = user;
         this.isPrimary = isPrimary;
         this.thumbnailName = thumbnailName;
+        this.isCover = isCover;
     }
 
     public Timestamp getDeletedExpiry() {
@@ -111,6 +117,14 @@ public class PersonalPhoto extends Model {
 
     public void setPrimary(boolean primary) {
         isPrimary = primary;
+    }
+
+    public boolean isCover() {
+        return isCover;
+    }
+
+    public void setCover(boolean cover) {
+        isCover = cover;
     }
 
     public void setFilenameHash(String filenameHash) {
