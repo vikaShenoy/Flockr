@@ -42,7 +42,7 @@
               <v-icon size="30">flight_takeoff</v-icon>
             </v-flex>
             <v-flex xs10 class="date-info">
-              <p>{{ tripNode.formattedArrivalDateTime }}</p>
+              <p>{{ tripNode.arrivalTotal }}</p>
             </v-flex>
           </v-layout>
           <v-layout>
@@ -50,7 +50,7 @@
               <v-icon size="30">flight_landing</v-icon>
             </v-flex>
             <v-flex xs10 class="date-info">
-              <p>{{ tripNode.formattedDepartureDateTime }}</p>
+              <p>{{ tripNode.departureTotal }}</p>
             </v-flex>
           </v-layout>
           <v-spacer align="center" v-if="tripNode.nodeType === 'TripComposite'">
@@ -91,7 +91,6 @@ import moment from "moment";
 import { rules } from "../../../../../utils/rules";
 import UserStore from "../../../../../stores/UserStore";
 import roleType from "../../../../../stores/roleType";
-import {getTimezoneOffset} from "../TimelineService";
 
 export default {
   components: {
@@ -168,11 +167,6 @@ export default {
     }
   },
   methods: {
-    formatTimes() {
-      this.tripNode.formattedArrivalDateTime = this.formatDateTime(this.getArrivalDate, this.getArrivalTime);
-
-      this.tripNode.formattedDepartureDateTime = this.formatDateTime(this.getDepartureDate, this.getDepartureTime);
-    },
     getTripNodeArrivalDate(tripNode) {
       if (tripNode.nodeType === "TripDestinationLeaf") {
         if (tripNode.arrivalDate) {
@@ -233,26 +227,16 @@ export default {
     /**
      * Formats a date based on an optional date and time
      */
-    async formatDateTime(date, time) {
+    formatDateTime(date, time) {
       if (!date && !time) {
         return "No Date";
       }
 
       const momentDate = moment(`${date} ${time}`);
-      try {
-        let offset = await getTimezoneOffset(this.tripNode.destination.destinationLat,
-            this.tripNode.destination.destinationLon);
-        momentDate.add(offset);
-        console.log(offset);
-      } catch (error) {
-        console.log(error);
-      }
 
-      const formattedDate = momentDate.isSame(moment(), "year")
+      return momentDate.isSame(moment(), "year")
           ? momentDate.format("DD MMM hh:mm A")
-          : momentDate.format("DD MMM YYYY");
-
-      return formattedDate;
+          : momentDate.format("DD MMM YYYY hh:mm A");
     },
     toggleShowTripNodes(tripNode) {
       this.$emit("toggleExpanded", tripNode.tripNodeId);
@@ -287,12 +271,6 @@ export default {
         this.$emit("showEditTripDestination", this.tripNode);
       }
     }
-  },
-  watch: {
-     tripNode: {
-       handler: "formatTimes",
-       immediate: true
-     }
   }
 };
 </script>

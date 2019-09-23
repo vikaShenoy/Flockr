@@ -11,7 +11,7 @@
         :alignRight="false"
         @toggleExpanded="tripNodeId => $emit('toggleExpanded', tripNodeId)"
         @showEditTripDestination="tripDestination => $emit('showEditTripDestination', tripDestination)"
-        @deleteTripNode="tripNode => $emit('deleteTripNode', tripNode)"
+        @deleteTripNode="$emit('deleteTripNode', tripNode)"
         @tripNameUpdated="(tripNode, newName) => $emit('tripNameUpdated', tripNode, newName)"
       />
     </v-timeline>
@@ -20,13 +20,11 @@
 
 
 <script>
-import Sortable from "sortablejs";
 import TripNode from "./TripNode/TripNode";
 import { sortTimeline } from "./TimelineService";
 import roleType from "../../../../stores/roleType";
 import UserStore from "../../../../stores/UserStore";
 import { getTripNodeById } from "../../TripService";
-import { log } from "util";
 
 export default {
   props: {

@@ -62,6 +62,7 @@
                   ></v-text-field>
                 </template>
                 <v-date-picker
+                    locale="en-nz"
                   color="secondary"
                   ref="picker"
                   v-model="tripDestination.arrivalDate"
@@ -225,7 +226,10 @@
 </template>
 
 <script>
-import { editTrip, getTripNodeParentById } from "../../TripService";
+  import {
+    editTrip,
+    getTripNodeParentById
+  } from "../../TripService";
 import { rules } from "../../../../utils/rules";
 import { getDestinations } from "./ModifyTripDestinationDialogService";
 import {
@@ -290,6 +294,7 @@ export default {
     },
 
     async modifyTripDestination() {
+
       if (!this.$refs.form.validate()) return;
       let newTripNodes;
 
@@ -315,14 +320,15 @@ export default {
       } else {
         newTripNodes = [...parentTripNode.tripNodes, this.tripDestination];
       }
-      const unformattedTrip = transformTripNode({
+      let unformattedTrip = {
         ...parentTripNode,
         tripNodes: newTripNodes
-      });
+      };
 
-      const tripId = this.$route.params.tripId;
+      const formattedTrip = transformTripNode(unformattedTrip);
+
       this.isLoading = true;
-      await editTrip(unformattedTrip);
+      await editTrip(formattedTrip);
       this.isLoading = false;
       this.isShowingDialog = false;
       this.$emit("updatedTripNodes", parentTripNode, newTripNodes);
