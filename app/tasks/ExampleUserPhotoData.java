@@ -60,47 +60,23 @@ public class ExampleUserPhotoData {
                                 if (user.getProfilePhoto() == null) {
                                   boolean success = false;
                                   while (!success) {
-                                    try {
-                                      File photoFile = listOfFiles[fileIndex[0]];
-                                      String thumbFileName = "thumb_" + photoFile.getName();
-                                      File thumbFile =
-                                          new File(photoFile.getParent(), thumbFileName);
-                                      if (!thumbFile.exists()) {
-                                        fileIndex[0] = (fileIndex[0] + 1) % listOfFiles.length;
-                                        String[] fileName = photoFile.getName().split("\\.");
-                                        String fileType = fileName[fileName.length - 1];
-
-                                        switch (fileType) {
-                                          case "jpeg":
-                                          case "jpg":
-                                            fileType = "image/jpeg";
-                                            break;
-                                          case "png":
-                                            fileType = "image/png";
-                                            break;
-                                          default:
-                                            System.out.println(
-                                                "File type error for file " + photoFile.getName());
-                                        }
-
-                                        photoController.saveThumbnail(
-                                            photoFile, thumbFile, fileType);
-                                      }
-                                      PersonalPhoto personalPhoto =
-                                          new PersonalPhoto(
-                                              photoFile.getName(), true, user, true, thumbFileName, false);
-                                      personalPhoto.save();
-                                      user.setProfilePhoto(personalPhoto);
-                                      user.save();
-                                      System.out.println(
-                                          String.format(
-                                              "Added photo for user %s %s%n",
-                                              user.getFirstName(), user.getLastName()));
-                                      success = true;
-                                    } catch (IOException e) {
-                                      log.error(e.getMessage());
-                                      System.out.println(e.getMessage());
-                                    }
+                                    File photoFile = listOfFiles[fileIndex[0]];
+                                    PersonalPhoto personalPhoto =
+                                        new PersonalPhoto(
+                                            photoFile.getName(),
+                                            true,
+                                            user,
+                                            true,
+                                            null,
+                                            false);
+                                    personalPhoto.save();
+                                    user.setProfilePhoto(personalPhoto);
+                                    user.save();
+                                    System.out.println(
+                                        String.format(
+                                            "Added photo for user %s %s%n",
+                                            user.getFirstName(), user.getLastName()));
+                                    success = true;
                                   }
                                 }
                               });
