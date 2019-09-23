@@ -57,7 +57,7 @@ export function updateBasicInfo(userId, basicInfo) {
 export async function getUser(userId) {
   const authToken = localStorage.getItem("authToken");
   const res = await superagent.get(endpoint(`/users/${userId}`))
-    .set("Authorization", authToken)
+    .set("Authorization", authToken);
 
   return res.body;
 }
