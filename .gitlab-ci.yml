@@ -55,7 +55,6 @@ staging-run:
   dependencies:
   - staging-artifacts-backend
   script:
-  - sudo su
   - "cd target/universal"
   - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
   - pm2 delete dev-server || true
@@ -71,7 +70,6 @@ production-run:
   dependencies:
   - release-artifacts-backend
   script:
-  - sudo su
   - "cd target/universal"
   - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
   - pm2 delete prod-server || true
