@@ -81,7 +81,7 @@ public class ExampleDestinationDataTask {
               try {
                 throw e.getCause();
               } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                log.error(throwable.getMessage());
                 return cities;
               }
             });
