@@ -338,16 +338,7 @@ public class UserController extends Controller {
                             CompletionStage<Result> completionStage = userRepository.deleteUserById(
                                     userId).thenApply((ignored) -> ok(message));
                             CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
-                            try {
-                                return completableFuture.get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                System.err.println(String.format(
-                                        "Async execution interrupted when user %s was deleting user %s",
-                                        userDoingDeletion, userBeingDeleted));
-                                message.put(
-                                        "message", "Something went wrong deleting that user, try again");
-                                return internalServerError(message);
-                            }
+                            return getResult(userDoingDeletion, message, userBeingDeleted, completableFuture);
                         } else {
                             message.put(
                                     "message", "Only admins or the default admin can delete other admins");
@@ -360,33 +351,32 @@ public class UserController extends Controller {
                             CompletionStage<Result> completionStage = userRepository.deleteUserById(
                                     userId).thenApply((ignored) -> ok(message));
                             CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
-                            try {
-                                return completableFuture.get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                System.err.println(String.format(
-                                        "Async execution interrupted when user %s was deleting user %s",
-                                        userDoingDeletion, userBeingDeleted));
-                                message.put(
-                                        "message", "Something went wrong deleting that user, try again");
-                                return internalServerError(message);
-                            }
+                            return getResult(userDoingDeletion, message, userBeingDeleted, completableFuture);
                         } else if ((userDoingDeletion.isAdmin() && !userBeingDeleted.isDefaultAdmin()) || userDoingDeletion.isDefaultAdmin()) {
                             message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
                             CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
                             CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
-                            try {
-                                return completableFuture.get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
-                                message.put("message", "Something went wrong deleting that user, try again");
-                                return internalServerError(message);
-                            }
+                            return getResult(userDoingDeletion, message, userBeingDeleted, completableFuture);
                         } else {
                             message.put("message", "Regular users can not delete other regular users");
                             return unauthorized(message);
                         }
                     }
                 }, httpExecutionContext.current());
+    }
+
+    private Result getResult(User userDoingDeletion, ObjectNode message, User userBeingDeleted,
+                             CompletableFuture<Result> completableFuture) {
+        try {
+            return completableFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println(String.format(
+                    "Async execution interrupted when user %s was deleting user %s",
+                    userDoingDeletion, userBeingDeleted));
+            message.put(
+                    "message", "Something went wrong deleting that user, try again");
+            return internalServerError(message);
+        }
     }
 
     /**
