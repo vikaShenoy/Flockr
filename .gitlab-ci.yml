@@ -58,9 +58,10 @@ staging-run:
   - cd target/universal
   - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
   - pm2 delete dev-server || true
+  - cp -r /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage /var/www/dev/storage
   - rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true
   - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
-  - mkdir /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage || true
+  - cp -r /var/www/dev/storage /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || mkdir /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage
   - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
   - pm2 start "bash seng302-team-500 -Dhttp.port=9443" --name=dev-server
   only:
