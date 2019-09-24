@@ -43,7 +43,8 @@ public class DestinationTestingSteps {
 
   @Given("users with the following information exist:")
   public void usersWithTheFollowingInformationExists(DataTable dataTable) {
-    TestAuthenticationHelper.theFollowingUsersExists(dataTable);
+    Application application = TestState.getInstance().getApplication();
+    TestAuthenticationHelper.theFollowingUsersExists(dataTable, application);
   }
 
   @Given("^that user (\\d+) logged in$")
