@@ -117,9 +117,9 @@
        */
       async getPublicDestinations() {
         try {
-          const { searchCriterion, publicDestinations } = this;
+          const { searchCriterion } = this;
           this.destinationsLoading = true;
-          this.publicDestinations = await getPublicDestinations(searchCriterion, publicDestinations.length);
+          this.publicDestinations  = await getPublicDestinations(searchCriterion, 0);
           this.destinationsLoading = false;
         } catch (e) {
           this.showSnackbar("Could not get public destinations", "error", 3000);
