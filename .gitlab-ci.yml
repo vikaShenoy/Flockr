@@ -23,7 +23,7 @@ release-artifacts-backend:
   only:
   - master
   script:
-  - "sbt dist"
+  - "NODE_ENV=production sbt dist"
   stage: build
 
 staging-artifacts-backend:
@@ -61,34 +61,26 @@ staging-run:
   - sudo rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true
   - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
   - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
-  - sudo su
   - pm2 start "sudo bash seng302-team-500 -Dhttp.port=9443" --name=dev-server
   only:
   - dev
   stage: deploy
 
-#production-run:
-#  dependencies:
-#  - release-artifacts-backend
-#  script:
-#  - "cd target/universal"
-#  - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-#  - pm2 delete prod-server || true
-#  - sudo rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT
-#  - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
-#  - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/conf
-#  - sudo mv application.prod.conf application.conf
-#  - cd ../bin
-#  - pm2 start "sudo bash seng302-team-500 -Dhttp.port=443" --name=prod-server
-#
-#  only:
-#  - master
-#  stage: deploy
-#
-##  Add sudo back to the start of this command when using VM
-#
-#after_script:
-#- "chown -R gitlab-runner:gitlab-runner ."
+production-run:
+  dependencies:
+  - release-artifacts-backend
+  script:
+  - "cd target/universal"
+  - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+  - sudo pm2 delete prod-server || true
+  - sudo rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT || true
+  - sudo cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
+  - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/bin
+  - pm2 start "sudo bash seng302-team-500 -Dhttp.port=7443" --name=prod-server
+  only:
+  - master 
+  stage: deploy
+
 
 update-sonar:
   stage: test
