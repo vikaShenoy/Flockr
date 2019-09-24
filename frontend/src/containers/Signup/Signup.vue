@@ -88,7 +88,8 @@
 </template>
 
 <script>
-  import {emailTaken, getUser, rules, signup, updateBasicInfo} from "./SignupService.js";
+  import {emailTaken, rules, signup, updateBasicInfo} from "./SignupService.js";
+  import {login} from "../Login/LoginService";
   import {getNationalities} from "../Profile/Nationalities/NationalityService.js";
   import {getPassports} from "../Profile/Passports/PassportService.js";
   import {getAllTravellerTypes} from "../Profile/TravellerTypes/TravellerTypesService.js";
@@ -348,8 +349,11 @@
           if (this.isSigningUpAsAdmin) {
             this.$emit("exit", this.signedUpUserId);
           } else {
-              const user = await getUser(this.signedUpUserId);
+              const user =  await login(this.email, this.password);
               UserStore.methods.setData(user);
+              localStorage.setItem("authToken", user.token);
+              localStorage.setItem("userId", user.userId);
+              localStorage.setItem("ownUserId", user.userId);
               const socket = new WebSocket(`${config.websocketUrl}?Authorization=${localStorage.getItem("authToken")}`);
               UserStore.data.socket = socket;
               this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
