@@ -100,9 +100,7 @@ public class Destination extends Model {
       }
       Destination destinationToCompare = (Destination) obj;
       boolean sameName =
-          this.destinationName
-              .toLowerCase()
-              .equals(destinationToCompare.getDestinationName().toLowerCase());
+          this.destinationName.equalsIgnoreCase(destinationToCompare.getDestinationName().toLowerCase());
       boolean sameType = this.destinationType.equals(destinationToCompare.getDestinationType());
       boolean sameCountry =
           this.destinationCountry.equals(destinationToCompare.getDestinationCountry());

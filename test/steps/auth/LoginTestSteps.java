@@ -12,15 +12,18 @@ import models.User;
 import org.junit.Assert;
 import play.libs.Json;
 import play.mvc.Result;
-import utils.TestState;
-import utils.FakeClient;
-import utils.PlayResultToJson;
+import testingUtilities.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.PlayResultToJson;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Test that the log in feature works as expected.
+ */
 public class LoginTestSteps {
 
     private JsonNode userData;

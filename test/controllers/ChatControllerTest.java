@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import models.*;
-import modules.websocket.ConnectedUsers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,13 +13,16 @@ import play.Application;
 import play.libs.Json;
 import play.mvc.Result;
 import play.test.Helpers;
-import utils.FakeClient;
-import utils.FakePlayClient;
-import utils.PlayResultToJson;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.FakePlayClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Test the ChatController.
+ */
 public class ChatControllerTest {
   private Application application;
   private User user;

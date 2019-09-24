@@ -1,26 +1,22 @@
 package steps;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
-import com.google.inject.Module;
 import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import models.*;
 import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.test.Helpers;
-import utils.FakePlayClient;
-import utils.TestState;
+import testingUtilities.FakePlayClient;
+import testingUtilities.TestState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Used to share common test steps across Cucumber tests.
+ */
 public class CommonTestSteps {
 
     @Inject

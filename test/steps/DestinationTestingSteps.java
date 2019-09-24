@@ -16,14 +16,17 @@ import org.junit.Assert;
 import play.Application;
 import play.libs.Json;
 import play.mvc.Result;
-import utils.FakeClient;
-import utils.PlayResultToJson;
-import utils.TestAuthenticationHelper;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestAuthenticationHelper;
+import testingUtilities.TestState;
 
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Test that destination features work as expected.
+ */
 public class DestinationTestingSteps {
 
   private JsonNode destinationData;
@@ -426,7 +429,7 @@ public class DestinationTestingSteps {
   @Then("the Destination information is updated")
   public void theDestinationInformationIsUpdated() throws IOException {
     Assert.assertEquals(200, this.result.status());
-    JsonNode originalDestination = utils.PlayResultToJson.convertResultToJson(existingDestination);
+    JsonNode originalDestination = testingUtilities.PlayResultToJson.convertResultToJson(existingDestination);
 
     Assert.assertEquals(
         destinationNode.get("destinationName").asText(),
@@ -523,7 +526,7 @@ public class DestinationTestingSteps {
     List<Map<String, String>> destinationList = dataTable.asMaps();
     List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
     Map<String, String> firstRow = list.get(0);
-    this.destinationData = utils.PlayResultToJson.convertResultToJson(existingDestination);
+    this.destinationData = testingUtilities.PlayResultToJson.convertResultToJson(existingDestination);
 
     this.destinationNode = Json.newObject();
     this.destinationNode.put("destinationName", firstRow.get("destinationName"));
@@ -571,7 +574,7 @@ public class DestinationTestingSteps {
     Result destinationResult =
         fakeClient.makeRequestWithToken(
             "GET", "/api/users/" + user.getUserId() + "/destinations", user.getToken());
-    destinations = utils.PlayResultToJson.convertResultToJson(destinationResult);
+    destinations = testingUtilities.PlayResultToJson.convertResultToJson(destinationResult);
   }
 
   @When("another user gets the user's destinations")
@@ -583,7 +586,7 @@ public class DestinationTestingSteps {
     Result destinationResult =
         fakeClient.makeRequestWithToken(
             "GET", "/api/users/" + user.getUserId() + "/destinations", anotherUser.getToken());
-    destinations = utils.PlayResultToJson.convertResultToJson(destinationResult);
+    destinations = testingUtilities.PlayResultToJson.convertResultToJson(destinationResult);
   }
 
   @Then("{int} destinations should be returned")

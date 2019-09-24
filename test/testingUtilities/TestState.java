@@ -1,4 +1,4 @@
-package utils;
+package testingUtilities;
 
 
 import models.Destination;
@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Used to reuse common Cucumber steps between different Cucumber scenarios. Allows to hold common state between
+ * scenarios.
+ */
 public class TestState {
 
     private Application application;
