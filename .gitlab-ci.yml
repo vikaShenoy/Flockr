@@ -55,12 +55,13 @@ staging-run:
   dependencies:
   - staging-artifacts-backend
   script:
-  - sudo su
-  - "cd target/universal"
+  - cd target/universal
   - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
   - pm2 delete dev-server || true
+  - cp -r /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage /var/www/dev/storage
   - rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true
-  -  cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
+  - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
+  - cp -r /var/www/dev/storage /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || mkdir /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage
   - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
   - pm2 start "bash seng302-team-500 -Dhttp.port=9443" --name=dev-server
   only:
@@ -71,12 +72,12 @@ production-run:
   dependencies:
   - release-artifacts-backend
   script:
-  - sudo su
-  - "cd target/universal"
+  - cd target/universal
   - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
   - pm2 delete prod-server || true
   - rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT || true
   - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
+  - mkdir /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage || true
   - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/bin
   - pm2 start "bash seng302-team-500 -Dhttp.port=7443" --name=prod-server
   only:

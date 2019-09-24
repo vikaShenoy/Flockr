@@ -3,8 +3,6 @@
     <div id="map">
       <DestinationMap
         :destinations="getDestinationsCurrentlyViewing()"
-        :latitude="latitude"
-        :longitude="longitude"
         @coordinates-selected="addCoordinates"
       />
     </div>
