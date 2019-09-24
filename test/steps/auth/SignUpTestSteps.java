@@ -9,8 +9,8 @@ import io.cucumber.datatable.DataTable;
 import models.User;
 import org.junit.Assert;
 import play.libs.Json;
-import utils.TestState;
-import utils.FakeClient;
+import testingUtilities.TestState;
+import testingUtilities.FakeClient;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,6 +19,9 @@ import java.util.Map;
 import static play.test.Helpers.route;
 import static play.test.Helpers.testServer;
 
+/**
+ * Test that the sign up feature works as expected.
+ */
 public class SignUpTestSteps {
 
     private Exception signUpException;

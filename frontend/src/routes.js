@@ -12,7 +12,8 @@ import Trips from "./containers/Trips/Trips.vue";
 import AddTrip from "./containers/AddTrip/AddTrip.vue";
 import EditTrip from "./containers/EditTrip/EditTrip.vue";
 import AdminPanel from "./containers/AdminPanel/AdminPanel.vue";
-import TreasureHunts from "./containers/TreasureHunts/TreasureHunts.vue"
+import TreasureHunts from "./containers/TreasureHunts/TreasureHunts.vue";
+import PageNotFound from "./containers/PageNotFound/PageNotFound";
 
 import { loggedIn, loggedInOrOut, isAdmin, loggedOut } from "./utils/auth";
 import UserGallery from "./containers/UserGallery/UserGallery";
@@ -110,6 +111,11 @@ const routes = [
     path: "/destinations/:destinationId",
     component: Destination,
     beforeEnter: loggedIn
+  },
+  { path: "*",
+    component: PageNotFound,
+    beforeEnter: loggedInOrOut
+
   }
 ];
 

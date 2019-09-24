@@ -74,4 +74,9 @@ public class Country extends Model {
         boolean sameCountryId = this.getCountryId() == countryToCompare.getCountryId();
         return sameCountryId;
     }
+
+    @Override
+    public int hashCode() {
+        return this.countryId;
+    }
 }

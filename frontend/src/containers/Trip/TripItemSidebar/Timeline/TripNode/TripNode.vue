@@ -54,12 +54,15 @@
             </v-flex>
           </v-layout>
           <v-spacer align="center" v-if="tripNode.nodeType === 'TripComposite'">
-            <v-icon
-              class="expand-trip"
+            <v-btn
+              @click="toggleShowTripNodes(tripNode)"
+              tile
+              outlined
               color="secondary"
-              @click="
-          toggleShowTripNodes(tripNode)"
-            >{{ tripNode.isShowing ? "keyboard_arrow_up" : "keyboard_arrow_down"}}</v-icon>
+            >
+              <v-icon left>{{ tripNode.isShowing ? "keyboard_arrow_up" : "keyboard_arrow_down"}}</v-icon>
+              {{ tripNode.isShowing ? 'Collapse' : 'Expand' }}
+            </v-btn>
           </v-spacer>
         </div>
       </v-card>

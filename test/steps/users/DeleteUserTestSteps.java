@@ -8,16 +8,19 @@ import exceptions.FailedToLoginException;
 import models.*;
 import org.junit.Assert;
 import play.mvc.Result;
-import utils.TestState;
+import testingUtilities.TestState;
 import util.Security;
-import utils.FakeClient;
-import utils.PlayResultToJson;
+import testingUtilities.FakeClient;
+import testingUtilities.PlayResultToJson;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Test that deleting users works as expected.
+ */
 public class DeleteUserTestSteps {
 
     private String sharedPassword = "IAmASecurePassword"; // made up password for tests

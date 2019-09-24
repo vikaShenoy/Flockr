@@ -3,7 +3,6 @@ package steps;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.cucumber.datatable.DataTable;
@@ -14,15 +13,18 @@ import models.User;
 import org.junit.Assert;
 import play.libs.Json;
 import play.mvc.Result;
-import utils.FakeClient;
-import utils.PlayResultToJson;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Test that the destination proposals feature works as expected.
+ */
 public class DestinationProposalTestSteps {
     List<Integer> travellerTypeIds;
     Result result;

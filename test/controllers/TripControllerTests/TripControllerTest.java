@@ -17,14 +17,11 @@ import play.Application;
 import play.libs.Json;
 import play.mvc.Result;
 import play.test.Helpers;
-import repository.UserRepository;
 import util.TripUtil;
-import utils.FakeClient;
-import utils.FakePlayClient;
-import utils.PlayResultToJson;
-import utils.TestState;
-
-import javax.inject.Inject;
+import testingUtilities.FakeClient;
+import testingUtilities.FakePlayClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 
 public class TripControllerTest {
 

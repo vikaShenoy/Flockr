@@ -69,4 +69,9 @@ public class Passport extends Model {
         boolean samePassportId = this.getPassportId() == passportToCompare.getPassportId();
         return samePassportId;
     }
+
+    @Override
+    public int hashCode() {
+        return this.passportId;
+    }
 }

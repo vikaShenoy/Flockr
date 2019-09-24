@@ -64,6 +64,7 @@ export default {
     if (!this.chatGroup.messages) {
       this.getChatMessages();
     } else {
+      const { contents } = this;
       contents.scrollTop = contents.scrollHeight;
     }
     this.getConnectedUsersForChat();

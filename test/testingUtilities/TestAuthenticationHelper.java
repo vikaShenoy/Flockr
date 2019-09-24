@@ -1,4 +1,4 @@
-package utils;
+package testingUtilities;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -24,6 +24,9 @@ import java.util.Map;
 
 import static play.test.Helpers.route;
 
+/**
+ * Used to help with authentication when testing.
+ */
 public class TestAuthenticationHelper {
 
 
@@ -32,9 +35,8 @@ public class TestAuthenticationHelper {
      * The user object is placed in the TestState for retrieval by multiple test classes.
      *
      * @param dataTable a DataTable with the users details
-     * @param application a play Application
      */
-    public static void theFollowingUsersExists(DataTable dataTable, Application application) {
+    public static void theFollowingUsersExists(DataTable dataTable) {
         TestState testState = TestState.getInstance();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         for (int i = 0; i < list.size(); i++) {
@@ -63,36 +65,5 @@ public class TestAuthenticationHelper {
                 Assert.fail(Arrays.toString(e.getStackTrace()));
             }
         }
-    }
-
-    /**
-     * Method to log in with given user credentials and return an auth token
-     *
-     * @param email String the email of the user
-     * @param password String the password of the user
-     * @param application play Application instance
-     * @return String the auth token returned by the server
-     * @throws IOException when the server returns an error
-     */
-    public static String login(String email, String password, Application application) throws IOException {
-
-        ObjectNode reqJsonBody = Json.newObject();
-        reqJsonBody.put("email", email);
-        reqJsonBody.put("password", password);
-
-        Http.RequestBuilder loginRequest = Helpers.fakeRequest()
-                .method("POST")
-                .bodyJson(reqJsonBody)
-                .uri("/api/auth/users/login");
-        Result loginResult = route(application, loginRequest);
-        JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
-
-        Assert.assertEquals(200, loginResult.status());
-
-        String authToken = authenticationResponseAsJson.get("token").asText();
-
-        Assert.assertNotNull(authToken);
-
-        return authToken;
     }
 }
