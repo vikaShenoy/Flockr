@@ -73,14 +73,6 @@
         userStore: UserStore.data,
         items: [
           {
-            title: "Home",
-            url: "/",
-            icon: "dashboard",
-            loggedIn: true,
-            loggedOut: true,
-            requiresAdminRole: false
-          },
-          {
             title: "Search Travellers",
             icon: "search",
             url: "/search",
