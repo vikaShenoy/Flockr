@@ -18,6 +18,7 @@ import org.junit.Test;
 import play.Application;
 import play.libs.Json;
 import play.test.Helpers;
+import repository.UserRepository;
 import utils.FakeClient;
 import utils.TestState;
 

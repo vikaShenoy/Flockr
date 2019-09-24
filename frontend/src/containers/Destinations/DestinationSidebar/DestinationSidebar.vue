@@ -1,9 +1,10 @@
 <template>
   <v-card
-    id="destination-sidebar"
-    ref="destinationSidebar"
+          id="destination-sidebar"
+          ref="destinationSidebar"
     :elevation="20"
   >
+
     <div id="title">
       <h2>{{ shouldShowEditor ? "Add Destination" : "Destinations"}}</h2>
       <v-btn
@@ -83,7 +84,6 @@
       </ul>
 
     </AlertDialog>
-
   </v-card>
 </template>
 
@@ -125,6 +125,7 @@
     },
     mounted() {
       this.getUserTrips();
+      this.resetCoordinates();
     },
     methods: {
       /**
@@ -270,6 +271,7 @@
       align-items: center;
       flex-direction: column;
       justify-content: space-between;
+      min-height: 150px;
     }
 
     .search-destinations {

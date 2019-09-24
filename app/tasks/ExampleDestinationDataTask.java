@@ -53,7 +53,7 @@ public class ExampleDestinationDataTask {
    */
   private CompletionStage<List<JsonNode>> fetchCitiesFromCountry(Country country) {
     String countryUrl =
-        "https://public.opendatasoft.com/api/records/1.0/search/?dataset=worldcitiespop&rows=10000&facet=country&refine.country="
+        "https://public.opendatasoft.com/api/records/1.0/search/?dataset=worldcitiespop&rows=3000&facet=country&refine.country="
             + country.getISOCode().toLowerCase()
             + "&sort=population";
     List<JsonNode> cities = new ArrayList<>();
@@ -69,8 +69,8 @@ public class ExampleDestinationDataTask {
                 JsonNode cityDetails = cityJson.get("fields");
                 ObjectNode city = Json.newObject();
                 city.put("name", cityDetails.get("accentcity").asText());
-                city.put("latitude", cityDetails.get("latitude").asText());
-                city.put("longitude", cityDetails.get("longitude").asText());
+                city.put("lat", cityDetails.get("latitude").asText());
+                city.put("long", cityDetails.get("longitude").asText());
                 city.put("countryId", country.getCountryId());
                 cities.add(city);
               }
@@ -198,8 +198,8 @@ public class ExampleDestinationDataTask {
                           cities -> {
                             for (JsonNode city : cities) {
                               String cityName = city.get("name").asText();
-                              Double cityLatitude = city.get("latitude").asDouble();
-                              Double cityLongitude = city.get("longitude").asDouble();
+                              Double cityLatitude = city.get("lat").asDouble();
+                              Double cityLongitude = city.get("long").asDouble();
                               Destination destination =
                                   new Destination(
                                       cityName,

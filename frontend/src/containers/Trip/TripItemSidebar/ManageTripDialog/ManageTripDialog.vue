@@ -33,10 +33,11 @@
           <h4>Selected users</h4>
           <ul>
             <li
-              v-for="user in selectedUsers"
-              v-bind:key="user.userId"
+              v-for="userRole in userRoles"
+              v-bind:key="userRole.user.userId"
+              class="selected-user"
             >
-            {{ formatName(user) }}
+            {{ formatName(userRole.user) }} <v-select v-model="userRole.role" :items="roleTypes" class="role-type" color="secondary" item-text="name" item-value="value"></v-select>
             </li>
           </ul>
 
@@ -83,7 +84,6 @@
           </v-spacer>
 
         </v-layout>
-        <v-btn @click="leaveOrDelete" class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
       </v-card-title>
 
       <div id="manage-trip-alert-contents">
@@ -104,11 +104,11 @@
             >Cancel</v-btn>
 
             <v-btn
-                    color="success"
-                    flat
-                    :loading="isLoading"
-                    @click="leaveOrDelete"
-            >Continue</v-btn>
+              color="red"
+              flat
+              :loading="isLoading"
+              @click="leaveOrDelete"
+            >{{ onlyUser ? 'Delete' : 'Leave' }}</v-btn>
           </v-spacer>
         </v-card-actions>
       </div>
@@ -124,6 +124,7 @@ import { editTrip } from '../../TripService';
 import { deleteTripFromList } from '../../../Trips/OldTripsService';
 import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
 import { getChatWithUsers, createChat } from '../../../App/Chat/ChatService';
+import roleType from '../../../../stores/roleType';
 
 export default {
   components: {GenericCombobox},
@@ -134,13 +135,28 @@ export default {
   data() {
     return {
       isShowingDialog: false,
+      userRoles: [],
       selectedUsers: [],
       users: [],
       isLoading: false,
       showAlertCard: false,
-      chat: null,
-      chatNameToCreate: '',
-      isChatButtonLoading: false
+        chat: null,
+        chatNameToCreate: '',
+        isChatButtonLoading: false,
+      roleTypes: [
+        {
+          name: "Trip Manager",
+          value: roleType.TRIP_MANAGER
+        },
+        {
+          name: "Trip Member",
+          value: roleType.TRIP_MEMBER
+        },
+        {
+          name: "Trip Owner",
+          value: roleType.TRIP_OWNER
+        }
+      ]
     };
   },
   methods: {
@@ -192,6 +208,8 @@ export default {
       // Filter out user's own ID
       const users = (await getUsers(name))
         .filter(user => user.userId !== UserStore.data.userId);
+
+
       this.users = users;
       return users;
     },
@@ -229,10 +247,27 @@ export default {
       const users = [...this.selectedUsers, UserStore.data];
       this.isLoading = true;
       this.trip.users = users;
+      const ownUserRole = this.trip.userRoles.find(role => role.user.userId === UserStore.data.userId);
+
+      // NOTE: this is mutating a prop and is not good practice, but it does get changed in the parent
+      // add new user roles for other users
+      this.trip.userRoles = this.userRoles.map(userRole => ({
+        user: userRole.user,
+        role: {
+          roleType: userRole.role
+        }
+      }));
+      // add the own user's role too
+      this.trip.userRoles.push(ownUserRole);
+
       await editTrip(this.trip);
       this.isLoading = false;
       this.isShowingDialog = false;
       this.$emit("newUsers", users);
+    },
+    getUserPermission(user) {
+      const userRole = this.trip.userRoles.find(userRole => userRole.user === user.userId);
+      return userRole.role.roleType;
     }
   },
   mounted() {
@@ -241,15 +276,36 @@ export default {
   },
   watch: {
     /**
-     * Refreshes selectedUsers when opening up modal
+     * Refreshes userRoles when opening up modal
      */
     isShowingDialog(value) {
       if (value) {
+        this.userRoles = [...this.trip.userRoles]
+          .filter(userRole => userRole.user.userId !== UserStore.data.userId)
+          .map(userRole => ({user: userRole.user, role: userRole.role.roleType}));
+
         this.selectedUsers = [...this.trip.users]
           .filter(user => user.userId !== UserStore.data.userId);
+
       }
       
       this.$emit("update:isShowing", value);
+    },
+    selectedUsers: {
+      handler() {
+        this.userRoles = this.selectedUsers.map(user => {
+          const userRole = this.userRoles.find(userRole => userRole.user.userId === user.userId);
+          if (userRole) {
+            return userRole;
+          } else {
+            return {
+              user,
+              role: "TRIP_MEMBER"
+            };
+          }
+        });
+      },
+      deep: true
     },
     isShowing(value) {
       this.isShowingDialog = value;
@@ -292,9 +348,21 @@ export default {
   top: 7px;
 }
 
-h4 {
+#selected-users-title {
   text-align: left;
   color: $secondary;
+}
+
+.role-type {
+  margin-left: 10px;
+  flex: none;
+  width: 150px;
+}
+
+
+.selected-user {
+  display: flex;
+  align-items: center;
 }
 
 </style>

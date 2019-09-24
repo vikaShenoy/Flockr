@@ -37,7 +37,7 @@
           <v-card-title primary-title>
 
             <div class="col-lg-5">
-              <v-card id="undo-redo-card">
+              <v-card v-if="shouldSeeUndoRedo" id="undo-redo-card">
                 <p>You can undo and redo your changes.</p>
 
                 <UndoRedo ref="undoRedo"/>
@@ -486,6 +486,13 @@
       fullname() {
         return `${this.userProfile.firstName} ${this.userProfile.lastName}`;
       },
+        /**
+         * Return whether to see the undo / redo component
+         * @returns {boolean} true if should see the undo/redo component, false otherwise
+         */
+      shouldSeeUndoRedo() {
+        return this.userProfile.userId === UserStore.data.userId;
+      }
     }
   };
 </script>

@@ -23,7 +23,7 @@
           <!-- default photos -->
           <v-layout v-else row wrap>
             <v-spacer align="center">
-              <h3 class="font-weight-regular">This user has no photos.</h3>
+              <h3 class="font-weight-regular">No photos to show.</h3>
             </v-spacer>
           </v-layout>
 

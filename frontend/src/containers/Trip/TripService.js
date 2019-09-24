@@ -1,6 +1,6 @@
 import superagent from "superagent";
 import {endpoint} from "../../utils/endpoint";
-import moment from "moment";
+import moment, {Duration} from "moment";
 
 /**
  * Sends a request to get a trip
@@ -15,8 +15,16 @@ export async function getTrip(tripId) {
   return res.body;
 }
 
+/**
+ *
+ * @param {Duration} time
+ * @param date
+ * @return {string}
+ */
 function formatTime(time) {
-  return moment.utc(time.as("milliseconds")).format("HH:mm");
+  const milliseconds = time.as("milliseconds");
+  return moment.utc(milliseconds).format("HH:mm");
+
 }
 
 export async function getTrips() {
@@ -29,27 +37,35 @@ export async function getTrips() {
 /**
  * Transform/format a trip response object.
  *
- * @param {Object} tripNode The trip to transform
+ * @param {Object} tripNode The trip to transform.
  * @return {Object} The transformed trip
  */
-
 export function transformTripNode(tripNode) {
+  const totals = getTimeDateTotals(tripNode);
+
   const transformedTripNode = {
     tripNodeId: tripNode.tripNodeId,
     name: tripNode.name,
     nodeType: tripNode.nodeType,
     connectedUsers: tripNode.connectedUsers,
-    arrivalDate: !tripNode.arrivalDate ? null : moment(tripNode.arrivalDate).format("YYYY-MM-DD"),
-    arrivalTime: !tripNode.arrivalTime ? null : formatTime(moment.duration(tripNode.arrivalTime, "minutes")),
-    departureDate: !tripNode.departureDate ? null : moment(tripNode.departureDate).format("YYYY-MM-DD"),
-    departureTime: !tripNode.departureTime ? null : formatTime(moment.duration(tripNode.departureTime, "minutes")),
+    arrivalDate: !tripNode.arrivalDate ? null : moment(
+        tripNode.arrivalDate).format("YYYY-MM-DD"),
+    arrivalTime: !tripNode.arrivalTime ? null : formatTime(
+        moment.duration(tripNode.arrivalTime, "minutes")),
+    arrivalTotal: totals.arrivalTotal,
+    departureDate: !tripNode.departureDate ? null : moment(
+        tripNode.departureDate).format("YYYY-MM-DD"),
+    departureTime: !tripNode.departureTime ? null : formatTime(
+        moment.duration(tripNode.departureTime, "minutes")),
+    departureTotal: totals.departureTotal,
   };
-
   if (tripNode.nodeType === "TripComposite") {
-    transformedTripNode.tripNodes = tripNode.tripNodes.map(currentTripNode => transformTripNode(currentTripNode));
+    transformedTripNode.tripNodes = tripNode.tripNodes.map(
+        currentTripNode => transformTripNode(currentTripNode));
     transformedTripNode.users = tripNode.users;
     transformedTripNode.isShowing = false;
     transformedTripNode.isSubTrip = true;
+    transformedTripNode.userRoles = tripNode.userRoles;
   } else {
     transformedTripNode.destination = tripNode.destination;
     // For consistency reasons, set tripNodes to empty list
@@ -60,9 +76,50 @@ export function transformTripNode(tripNode) {
 }
 
 /**
- * Checks if destinations are contiguious
+ * Gets the time date totals for arrival and departure in the correct format.
+ *
+ * @param {Object} tripNode the trip to get the dates and times from.
+ * @return {{arrivalTotal: string, departureTotal: string}}
+ */
+export function getTimeDateTotals(tripNode) {
+  let departureTotal = 0;
+  let departureFormat = "";
+  if (tripNode.departureDate) {
+    departureTotal += tripNode.departureDate;
+    departureFormat = "YYYY-MM-DD";
+  }
+  if (tripNode.departureTime) {
+    departureTotal += moment.duration(tripNode.departureTime,
+        "minutes").asMilliseconds();
+    departureFormat += tripNode.departureDate ? " hh:mm A" : "HH:mm A";
+  }
+  let arrivalTotal = 0;
+  let arrivalFormat = "";
+  if (tripNode.arrivalDate) {
+    arrivalTotal += tripNode.arrivalDate;
+    arrivalFormat = "YYYY-MM-DD";
+  }
+  if (tripNode.arrivalTime) {
+    arrivalTotal += moment.duration(tripNode.arrivalTime,
+        "minutes").asMilliseconds();
+    arrivalFormat += tripNode.arrivalDate ? " hh:mm A" : "HH:mm A";
+  }
+  return {
+    arrivalTotal: !arrivalTotal ? "No Date" : tripNode.arrivalDate
+        ? moment(
+            arrivalTotal).format(arrivalFormat) : moment.utc(
+            arrivalTotal).format(arrivalFormat),
+    departureTotal: !departureTotal ? "No Date" : tripNode.departureDate
+        ? moment(
+            departureTotal).format(departureFormat) : moment.utc(
+            departureTotal).format(departureFormat)
+  };
+}
+
+/**
+ * Checks if destinations are contiguous
  * @param {Array} tripDestinations The list of destinations to swap
- * @returns {boolean} True if the destinations are contigious, false otherwise
+ * @returns {boolean} True if the destinations are contiguous, false otherwise
  */
 export function contiguousDestinations(tripDestinations) {
   let oldDestinationId = tripDestinations[0].destination.destinationId;
@@ -163,6 +220,7 @@ export async function editTrip(trip) {
         tripNodeId: tripNode.tripNodeId,
       };
     } else {
+
       return {
         destinationId: tripNode.destination.destinationId,
         arrivalDate: tripNode.arrivalDate ? moment(
@@ -183,9 +241,15 @@ export async function editTrip(trip) {
     tripNodes: transformedTripNodes,
   };
 
-  if (trip.users) {
-    tripData.userIds = trip.users.map(user => user.userId);
+  if (trip.userRoles) {
+    tripData.userIds = trip.userRoles.map(userRole => {
+      return {
+        userId: userRole.user.userId,
+        role: userRole.role.roleType
+      };
+    });
   }
+
   await superagent
   .put(endpoint(`/users/${userId}/trips/${trip.tripNodeId}`))
   .set("Authorization", authToken)
@@ -246,7 +310,8 @@ export function getTripNodeById(tripNodeId, tripNode) {
  * @param {object} parentTripNode The parent of the current trip node being searched. Initially null.
  * @return {Object} The parent trip node.
  */
-export function getTripNodeParentById(tripNodeId, currentTripNode, parentTripNode) {
+export function getTripNodeParentById(tripNodeId, currentTripNode,
+    parentTripNode) {
   // base case
   if (currentTripNode.tripNodeId === tripNodeId) {
     return parentTripNode;

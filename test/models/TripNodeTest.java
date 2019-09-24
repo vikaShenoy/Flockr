@@ -2,6 +2,7 @@ package models;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers.TripControllerTests.TripControllerTestUtil;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import java.io.IOException;
@@ -68,6 +69,10 @@ public class TripNodeTest {
     Assert.assertNotNull(adminUser);
     adminUser.setRoles(roles);
     adminUser.save();
+
+    // Add Trip roles
+    Role tripOwnerRole = new Role(RoleType.TRIP_OWNER);
+    tripOwnerRole.save();
 
     // Add some destinations
     DestinationType destinationType = new DestinationType("city");
@@ -231,7 +236,8 @@ public class TripNodeTest {
 
   @Test
   public void userUpdatesTrip() throws IOException {
-
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
+    ObjectNode userNode = Json.newObject();
     String date = null;
     ObjectNode updatedTripJson = Json.newObject();
     updatedTripJson.put("name", "Updated Trip");
@@ -249,7 +255,10 @@ public class TripNodeTest {
     secondNode.put("nodeType", "TripComposite");
 
     updatedTripJson.putArray("tripNodes").add(firstNode).add(secondNode);
-    updatedTripJson.putArray("userIds").add(user.getUserId());
+
+    userNode.put("userId", user.getUserId());
+    userNode.put("role", RoleType.TRIP_MEMBER.toString());
+    updatedTripJson.putArray("userIds").add(userNode);
 
     Result result =
         fakeClient.makeRequestWithToken(
@@ -272,6 +281,10 @@ public class TripNodeTest {
     ObjectNode updatedTripJson = Json.newObject();
     updatedTripJson.put("name", "Updated Trip");
 
+    ObjectNode userNode = Json.newObject();
+    userNode.put("userId", user.getUserId());
+    userNode.put("role", RoleType.TRIP_OWNER.toString());
+
     ObjectNode firstNode = Json.newObject();
     firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
     firstNode.put("nodeType", "TripDestinationLeaf");
@@ -285,7 +298,7 @@ public class TripNodeTest {
     secondNode.put("nodeType", "TripComposite");
 
     updatedTripJson.putArray("tripNodes").add(firstNode).add(secondNode);
-    updatedTripJson.putArray("userIds").add(user.getUserId());
+    updatedTripJson.putArray("userIds").add(userNode);
 
     Result result =
         fakeClient.makeRequestWithToken(

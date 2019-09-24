@@ -3,55 +3,6 @@
 
 # --- !Ups
 
--- init script create procs
--- Inital script to create stored procedures etc for mysql platform
-DROP PROCEDURE IF EXISTS usp_ebean_drop_foreign_keys;
-
-delimiter $$
---
--- PROCEDURE: usp_ebean_drop_foreign_keys TABLE, COLUMN
--- deletes all constraints and foreign keys referring to TABLE.COLUMN
---
-CREATE PROCEDURE usp_ebean_drop_foreign_keys(IN p_table_name VARCHAR(255), IN p_column_name VARCHAR(255))
-BEGIN
-  DECLARE done INT DEFAULT FALSE;
-  DECLARE c_fk_name CHAR(255);
-  DECLARE curs CURSOR FOR SELECT CONSTRAINT_NAME from information_schema.KEY_COLUMN_USAGE
-    WHERE TABLE_SCHEMA = DATABASE() and TABLE_NAME = p_table_name and COLUMN_NAME = p_column_name
-      AND REFERENCED_TABLE_NAME IS NOT NULL;
-  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-
-  OPEN curs;
-
-  read_loop: LOOP
-    FETCH curs INTO c_fk_name;
-    IF done THEN
-      LEAVE read_loop;
-    END IF;
-    SET @sql = CONCAT('ALTER TABLE ', p_table_name, ' DROP FOREIGN KEY ', c_fk_name);
-    PREPARE stmt FROM @sql;
-    EXECUTE stmt;
-  END LOOP;
-
-  CLOSE curs;
-END
-$$
-
-DROP PROCEDURE IF EXISTS usp_ebean_drop_column;
-
-delimiter $$
---
--- PROCEDURE: usp_ebean_drop_column TABLE, COLUMN
--- deletes the column and ensures that all indices and constraints are dropped first
---
-CREATE PROCEDURE usp_ebean_drop_column(IN p_table_name VARCHAR(255), IN p_column_name VARCHAR(255))
-BEGIN
-  CALL usp_ebean_drop_foreign_keys(p_table_name, p_column_name);
-  SET @sql = CONCAT('ALTER TABLE ', p_table_name, ' DROP COLUMN ', p_column_name);
-  PREPARE stmt FROM @sql;
-  EXECUTE stmt;
-END
-$$
 create table chat_group (
   chat_group_id                 integer auto_increment not null,
   name                          varchar(255),
@@ -70,7 +21,7 @@ create table country (
   country_id                    integer auto_increment not null,
   country_name                  varchar(255),
   isocode                       varchar(255),
-  is_valid                      tinyint(1) default 0 not null,
+  is_valid                      boolean default false not null,
   constraint pk_country primary key (country_id)
 );
 
@@ -83,8 +34,8 @@ create table destination (
   destination_lon               double,
   destination_country_country_id integer,
   destination_owner             integer,
-  is_public                     tinyint(1) default 0 not null,
-  deleted_expiry                datetime(6),
+  is_public                     boolean default false not null,
+  deleted_expiry                timestamp,
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint uq_destination_destination_name_destination_country_count_1 unique (destination_name,destination_country_country_id,destination_type_destination_type_id,is_public,destination_owner),
   constraint pk_destination primary key (destination_id)
@@ -94,7 +45,7 @@ create table destination_photo (
   destination_photo_id          integer auto_increment not null,
   destination_destination_id    integer,
   personal_photo_photo_id       integer,
-  deleted_expiry                datetime(6),
+  deleted_expiry                timestamp,
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_destination_photo primary key (destination_photo_id)
 );
@@ -102,7 +53,7 @@ create table destination_photo (
 create table destination_proposal (
   destination_proposal_id       integer auto_increment not null,
   destination_destination_id    integer,
-  deleted_expiry                datetime(6),
+  deleted_expiry                timestamp,
   user_user_id                  integer,
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_destination_proposal primary key (destination_proposal_id)
@@ -125,7 +76,7 @@ create table message (
   chat_group_chat_group_id      integer,
   contents                      varchar(255),
   user_user_id                  integer,
-  timestamp                     datetime(6),
+  timestamp                     timestamp,
   constraint pk_message primary key (message_id)
 );
 
@@ -160,12 +111,12 @@ create table passport_user (
 create table personal_photo (
   photo_id                      integer auto_increment not null,
   user_user_id                  integer,
-  is_public                     tinyint(1) default 0 not null,
-  is_primary                    tinyint(1) default 0 not null,
-  is_cover                      tinyint(1) default 0 not null,
+  is_public                     boolean default false not null,
+  is_primary                    boolean default false not null,
+  is_cover                      boolean default false not null,
   filename_hash                 varchar(255),
   thumbnail_name                varchar(255),
-  deleted_expiry                datetime(6),
+  deleted_expiry                timestamp,
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_personal_photo primary key (photo_id)
 );
@@ -207,9 +158,9 @@ create table treasure_hunt (
   treasure_hunt_destination_destination_id integer,
   owner_user_id                 integer,
   riddle                        varchar(255),
-  start_date                    datetime(6),
-  end_date                      datetime(6),
-  deleted_expiry                datetime(6),
+  start_date                    timestamp,
+  end_date                      timestamp,
+  deleted_expiry                timestamp,
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint pk_treasure_hunt primary key (treasure_hunt_id)
 );
@@ -217,15 +168,21 @@ create table treasure_hunt (
 create table trip_node (
   dtype                         varchar(31) not null,
   trip_node_id                  integer auto_increment not null,
-  deleted_expiry                datetime(6),
+  deleted_expiry                timestamp,
   deleted                       BOOLEAN DEFAULT FALSE not null,
   name                          varchar(255),
   destination_destination_id    integer,
-  arrival_date                  datetime(6),
+  arrival_date                  timestamp,
   arrival_time                  integer,
-  departure_date                datetime(6),
+  departure_date                timestamp,
   departure_time                integer,
   constraint pk_trip_node primary key (trip_node_id)
+);
+
+create table trip_node_user_role (
+  trip_node_trip_node_id        integer not null,
+  user_role_user_role_id        integer not null,
+  constraint pk_trip_node_user_role primary key (trip_node_trip_node_id,user_role_user_role_id)
 );
 
 create table trip_node_parent (
@@ -245,19 +202,20 @@ create table user (
   first_name                    varchar(255),
   middle_name                   varchar(255),
   last_name                     varchar(255),
-  date_of_birth                 datetime(6),
+  date_of_birth                 timestamp,
   gender                        varchar(255),
   email                         varchar(255),
   profile_photo_photo_id        integer,
   cover_photo_photo_id          integer,
   password_hash                 varchar(255),
   token                         varchar(255),
-  deleted_expiry                datetime(6),
-  timestamp                     datetime(6) not null,
+  deleted_expiry                timestamp,
+  timestamp                     timestamp not null,
   deleted                       BOOLEAN DEFAULT FALSE not null,
   constraint uq_user_email unique (email),
   constraint uq_user_profile_photo_photo_id unique (profile_photo_photo_id),
   constraint uq_user_cover_photo_photo_id unique (cover_photo_photo_id),
+  constraint uq_user_user_id unique (user_id),
   constraint pk_user primary key (user_id)
 );
 
@@ -269,11 +227,12 @@ create table user_chat_group (
 
 create table user_role (
   user_role_id                  integer auto_increment not null,
-  role_id                       integer not null,
-  user_id                       integer not null,
+  user_user_id                  integer,
+  role_role_id                  integer,
   constraint pk_user_role primary key (user_role_id)
 );
 
+create index ix_destination_destination_name on destination (destination_name);
 create index ix_chat_group_user_chat_group on chat_group_user (chat_group_chat_group_id);
 alter table chat_group_user add constraint fk_chat_group_user_chat_group foreign key (chat_group_chat_group_id) references chat_group (chat_group_id) on delete restrict on update restrict;
 
@@ -356,6 +315,12 @@ alter table treasure_hunt add constraint fk_treasure_hunt_owner_user_id foreign 
 create index ix_trip_node_destination_destination_id on trip_node (destination_destination_id);
 alter table trip_node add constraint fk_trip_node_destination_destination_id foreign key (destination_destination_id) references destination (destination_id) on delete restrict on update restrict;
 
+create index ix_trip_node_user_role_trip_node on trip_node_user_role (trip_node_trip_node_id);
+alter table trip_node_user_role add constraint fk_trip_node_user_role_trip_node foreign key (trip_node_trip_node_id) references trip_node (trip_node_id) on delete restrict on update restrict;
+
+create index ix_trip_node_user_role_user_role on trip_node_user_role (user_role_user_role_id);
+alter table trip_node_user_role add constraint fk_trip_node_user_role_user_role foreign key (user_role_user_role_id) references user_role (user_role_id) on delete restrict on update restrict;
+
 create index ix_trip_node_parent_trip_node_1 on trip_node_parent (trip_node_child_id);
 alter table trip_node_parent add constraint fk_trip_node_parent_trip_node_1 foreign key (trip_node_child_id) references trip_node (trip_node_id) on delete restrict on update restrict;
 
@@ -378,112 +343,130 @@ alter table user_chat_group add constraint fk_user_chat_group_user foreign key (
 create index ix_user_chat_group_chat_group on user_chat_group (chat_group_chat_group_id);
 alter table user_chat_group add constraint fk_user_chat_group_chat_group foreign key (chat_group_chat_group_id) references chat_group (chat_group_id) on delete restrict on update restrict;
 
+create index ix_user_role_user_user_id on user_role (user_user_id);
+alter table user_role add constraint fk_user_role_user_user_id foreign key (user_user_id) references user (user_id) on delete restrict on update restrict;
+
+create index ix_user_role_role_role_id on user_role (role_role_id);
+alter table user_role add constraint fk_user_role_role_role_id foreign key (role_role_id) references role (role_id) on delete restrict on update restrict;
+
 
 # --- !Downs
 
-alter table chat_group_user drop foreign key fk_chat_group_user_chat_group;
-drop index ix_chat_group_user_chat_group on chat_group_user;
+alter table chat_group_user drop constraint if exists fk_chat_group_user_chat_group;
+drop index if exists ix_chat_group_user_chat_group;
 
-alter table chat_group_user drop foreign key fk_chat_group_user_user;
-drop index ix_chat_group_user_user on chat_group_user;
+alter table chat_group_user drop constraint if exists fk_chat_group_user_user;
+drop index if exists ix_chat_group_user_user;
 
-alter table destination drop foreign key fk_destination_destination_type_destination_type_id;
-drop index ix_destination_destination_type_destination_type_id on destination;
+alter table destination drop constraint if exists fk_destination_destination_type_destination_type_id;
+drop index if exists ix_destination_destination_type_destination_type_id;
 
-alter table destination drop foreign key fk_destination_destination_country_country_id;
-drop index ix_destination_destination_country_country_id on destination;
+alter table destination drop constraint if exists fk_destination_destination_country_country_id;
+drop index if exists ix_destination_destination_country_country_id;
 
-alter table destination_photo drop foreign key fk_destination_photo_destination_destination_id;
-drop index ix_destination_photo_destination_destination_id on destination_photo;
+alter table destination_photo drop constraint if exists fk_destination_photo_destination_destination_id;
+drop index if exists ix_destination_photo_destination_destination_id;
 
-alter table destination_photo drop foreign key fk_destination_photo_personal_photo_photo_id;
-drop index ix_destination_photo_personal_photo_photo_id on destination_photo;
+alter table destination_photo drop constraint if exists fk_destination_photo_personal_photo_photo_id;
+drop index if exists ix_destination_photo_personal_photo_photo_id;
 
-alter table destination_proposal drop foreign key fk_destination_proposal_destination_destination_id;
-drop index ix_destination_proposal_destination_destination_id on destination_proposal;
+alter table destination_proposal drop constraint if exists fk_destination_proposal_destination_destination_id;
+drop index if exists ix_destination_proposal_destination_destination_id;
 
-alter table destination_proposal drop foreign key fk_destination_proposal_user_user_id;
-drop index ix_destination_proposal_user_user_id on destination_proposal;
+alter table destination_proposal drop constraint if exists fk_destination_proposal_user_user_id;
+drop index if exists ix_destination_proposal_user_user_id;
 
-alter table destination_proposal_traveller_type drop foreign key fk_destination_proposal_traveller_type_destination_proposal;
-drop index ix_destination_proposal_traveller_type_destination_proposal on destination_proposal_traveller_type;
+alter table destination_proposal_traveller_type drop constraint if exists fk_destination_proposal_traveller_type_destination_proposal;
+drop index if exists ix_destination_proposal_traveller_type_destination_proposal;
 
-alter table destination_proposal_traveller_type drop foreign key fk_destination_proposal_traveller_type_traveller_type;
-drop index ix_destination_proposal_traveller_type_traveller_type on destination_proposal_traveller_type;
+alter table destination_proposal_traveller_type drop constraint if exists fk_destination_proposal_traveller_type_traveller_type;
+drop index if exists ix_destination_proposal_traveller_type_traveller_type;
 
-alter table message drop foreign key fk_message_chat_group_chat_group_id;
-drop index ix_message_chat_group_chat_group_id on message;
+alter table message drop constraint if exists fk_message_chat_group_chat_group_id;
+drop index if exists ix_message_chat_group_chat_group_id;
 
-alter table message drop foreign key fk_message_user_user_id;
-drop index ix_message_user_user_id on message;
+alter table message drop constraint if exists fk_message_user_user_id;
+drop index if exists ix_message_user_user_id;
 
-alter table nationality drop foreign key fk_nationality_nationality_country_country_id;
+alter table nationality drop constraint if exists fk_nationality_nationality_country_country_id;
 
-alter table nationality_user drop foreign key fk_nationality_user_nationality;
-drop index ix_nationality_user_nationality on nationality_user;
+alter table nationality_user drop constraint if exists fk_nationality_user_nationality;
+drop index if exists ix_nationality_user_nationality;
 
-alter table nationality_user drop foreign key fk_nationality_user_user;
-drop index ix_nationality_user_user on nationality_user;
+alter table nationality_user drop constraint if exists fk_nationality_user_user;
+drop index if exists ix_nationality_user_user;
 
-alter table passport drop foreign key fk_passport_country_country_id;
+alter table passport drop constraint if exists fk_passport_country_country_id;
 
-alter table passport_user drop foreign key fk_passport_user_passport;
-drop index ix_passport_user_passport on passport_user;
+alter table passport_user drop constraint if exists fk_passport_user_passport;
+drop index if exists ix_passport_user_passport;
 
-alter table passport_user drop foreign key fk_passport_user_user;
-drop index ix_passport_user_user on passport_user;
+alter table passport_user drop constraint if exists fk_passport_user_user;
+drop index if exists ix_passport_user_user;
 
-alter table personal_photo drop foreign key fk_personal_photo_user_user_id;
-drop index ix_personal_photo_user_user_id on personal_photo;
+alter table personal_photo drop constraint if exists fk_personal_photo_user_user_id;
+drop index if exists ix_personal_photo_user_user_id;
 
-alter table role_user drop foreign key fk_role_user_role;
-drop index ix_role_user_role on role_user;
+alter table role_user drop constraint if exists fk_role_user_role;
+drop index if exists ix_role_user_role;
 
-alter table role_user drop foreign key fk_role_user_user;
-drop index ix_role_user_user on role_user;
+alter table role_user drop constraint if exists fk_role_user_user;
+drop index if exists ix_role_user_user;
 
-alter table traveller_type_user drop foreign key fk_traveller_type_user_traveller_type;
-drop index ix_traveller_type_user_traveller_type on traveller_type_user;
+alter table traveller_type_user drop constraint if exists fk_traveller_type_user_traveller_type;
+drop index if exists ix_traveller_type_user_traveller_type;
 
-alter table traveller_type_user drop foreign key fk_traveller_type_user_user;
-drop index ix_traveller_type_user_user on traveller_type_user;
+alter table traveller_type_user drop constraint if exists fk_traveller_type_user_user;
+drop index if exists ix_traveller_type_user_user;
 
-alter table traveller_type_destination drop foreign key fk_traveller_type_destination_traveller_type;
-drop index ix_traveller_type_destination_traveller_type on traveller_type_destination;
+alter table traveller_type_destination drop constraint if exists fk_traveller_type_destination_traveller_type;
+drop index if exists ix_traveller_type_destination_traveller_type;
 
-alter table traveller_type_destination drop foreign key fk_traveller_type_destination_destination;
-drop index ix_traveller_type_destination_destination on traveller_type_destination;
+alter table traveller_type_destination drop constraint if exists fk_traveller_type_destination_destination;
+drop index if exists ix_traveller_type_destination_destination;
 
-alter table treasure_hunt drop foreign key fk_treasure_hunt_treasure_hunt_destination_destination_id;
-drop index ix_treasure_hunt_treasure_hunt_destination_destination_id on treasure_hunt;
+alter table treasure_hunt drop constraint if exists fk_treasure_hunt_treasure_hunt_destination_destination_id;
+drop index if exists ix_treasure_hunt_treasure_hunt_destination_destination_id;
 
-alter table treasure_hunt drop foreign key fk_treasure_hunt_owner_user_id;
-drop index ix_treasure_hunt_owner_user_id on treasure_hunt;
+alter table treasure_hunt drop constraint if exists fk_treasure_hunt_owner_user_id;
+drop index if exists ix_treasure_hunt_owner_user_id;
 
-alter table trip_node drop foreign key fk_trip_node_destination_destination_id;
-drop index ix_trip_node_destination_destination_id on trip_node;
+alter table trip_node drop constraint if exists fk_trip_node_destination_destination_id;
+drop index if exists ix_trip_node_destination_destination_id;
 
-alter table trip_node_parent drop foreign key fk_trip_node_parent_trip_node_1;
-drop index ix_trip_node_parent_trip_node_1 on trip_node_parent;
+alter table trip_node_user_role drop constraint if exists fk_trip_node_user_role_trip_node;
+drop index if exists ix_trip_node_user_role_trip_node;
 
-alter table trip_node_parent drop foreign key fk_trip_node_parent_trip_node_2;
-drop index ix_trip_node_parent_trip_node_2 on trip_node_parent;
+alter table trip_node_user_role drop constraint if exists fk_trip_node_user_role_user_role;
+drop index if exists ix_trip_node_user_role_user_role;
 
-alter table trip_node_user drop foreign key fk_trip_node_user_trip_node;
-drop index ix_trip_node_user_trip_node on trip_node_user;
+alter table trip_node_parent drop constraint if exists fk_trip_node_parent_trip_node_1;
+drop index if exists ix_trip_node_parent_trip_node_1;
 
-alter table trip_node_user drop foreign key fk_trip_node_user_user;
-drop index ix_trip_node_user_user on trip_node_user;
+alter table trip_node_parent drop constraint if exists fk_trip_node_parent_trip_node_2;
+drop index if exists ix_trip_node_parent_trip_node_2;
 
-alter table user drop foreign key fk_user_profile_photo_photo_id;
+alter table trip_node_user drop constraint if exists fk_trip_node_user_trip_node;
+drop index if exists ix_trip_node_user_trip_node;
 
-alter table user drop foreign key fk_user_cover_photo_photo_id;
+alter table trip_node_user drop constraint if exists fk_trip_node_user_user;
+drop index if exists ix_trip_node_user_user;
 
-alter table user_chat_group drop foreign key fk_user_chat_group_user;
-drop index ix_user_chat_group_user on user_chat_group;
+alter table user drop constraint if exists fk_user_profile_photo_photo_id;
 
-alter table user_chat_group drop foreign key fk_user_chat_group_chat_group;
-drop index ix_user_chat_group_chat_group on user_chat_group;
+alter table user drop constraint if exists fk_user_cover_photo_photo_id;
+
+alter table user_chat_group drop constraint if exists fk_user_chat_group_user;
+drop index if exists ix_user_chat_group_user;
+
+alter table user_chat_group drop constraint if exists fk_user_chat_group_chat_group;
+drop index if exists ix_user_chat_group_chat_group;
+
+alter table user_role drop constraint if exists fk_user_role_user_user_id;
+drop index if exists ix_user_role_user_user_id;
+
+alter table user_role drop constraint if exists fk_user_role_role_role_id;
+drop index if exists ix_user_role_role_role_id;
 
 drop table if exists chat_group;
 
@@ -527,6 +510,8 @@ drop table if exists treasure_hunt;
 
 drop table if exists trip_node;
 
+drop table if exists trip_node_user_role;
+
 drop table if exists trip_node_parent;
 
 drop table if exists trip_node_user;
@@ -537,3 +522,4 @@ drop table if exists user_chat_group;
 
 drop table if exists user_role;
 
+drop index if exists ix_destination_destination_name;
