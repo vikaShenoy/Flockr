@@ -34,7 +34,7 @@ export default {
   },
   name: "App",
   data() {
-    return {}
+    return {UserStore: UserStore}
   },
   computed: {
     /**
