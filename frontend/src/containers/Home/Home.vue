@@ -6,12 +6,14 @@
 
         <v-spacer row>
           <v-btn
+            v-if="!isLoggedIn"
             color="secondary"
             depressed
             @click="homeSignup()"
             >Sign Up
           </v-btn>
           <v-btn
+            v-if="!isLoggedIn"
             color="secondary"
             depressed
             @click="homeLogin()"
@@ -24,6 +26,7 @@
 </template>
 
 <script>
+  import UserStore from "../../stores/UserStore";
   export default {
     data() {
       return {
@@ -36,6 +39,11 @@
       },
       async homeSignup() {
         this.$router.push("/signup");
+      }
+    },
+    computed: {
+      isLoggedIn() {
+        return UserStore.methods.loggedIn();
       }
     }
 
