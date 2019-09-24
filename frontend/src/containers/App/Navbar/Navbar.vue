@@ -1,6 +1,6 @@
 <template>
   <v-toolbar id="navbar" >
-    <v-toolbar-side-icon>
+    <v-toolbar-side-icon class="side-icon">
       <v-img :src="flockrLogo" contain />
     </v-toolbar-side-icon>
     <v-toolbar-title id="flockr-title">Flockr</v-toolbar-title>
@@ -40,6 +40,10 @@
 
   #flockr-title {
     font-family: 'Comfortaa', cursive;
+  }
+
+  .side-icon{
+    cursor: default;
   }
 </style>
 

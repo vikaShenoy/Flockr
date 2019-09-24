@@ -119,7 +119,6 @@
       },
 
       addButtonClicked() {
-        console.log("Add button clicked")
         this.isAddingATrip = true;
       }
     }
@@ -151,6 +150,6 @@
   }
 
   .padding-container {
-    padding-top: 0px;
+    padding-top: 0;
   }
 </style>

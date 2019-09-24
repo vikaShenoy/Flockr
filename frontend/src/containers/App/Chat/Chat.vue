@@ -93,8 +93,6 @@ import ChatGroup from "./ChatGroup/ChatGroup";
 import UserStore from "../../../stores/UserStore";
 import VoiceChat from "./VoiceChat/VoiceChat";
 import ManageChat from "./ManageChat/ManageChat";
-import UndoRedo from "../../../components/UndoRedo/UndoRedo";
-import Command from "../../../components/UndoRedo/Command";
 import VoiceUsers from "./VoiceUsers/VoiceUsers";
 
 export default {
@@ -147,9 +145,9 @@ export default {
         const ownId = Number(localStorage.getItem("ownUserId"));
         let userIds = users.map(user => user.userId);
         userIds.push(ownId);
-        const res = await editChat(chatGroupId, chatName, userIds);
+        await editChat(chatGroupId, chatName, userIds);
         this.goBackToChats();
-        
+
         this.showSnackbar("Changes saved", "success", 2000);
       } catch (e) {
         this.showSnackbar(e, "error", 2000);
@@ -162,7 +160,7 @@ export default {
      */
     async deleteGroupChat(chatGroupId) {
       try {
-        const res = await deleteChat(chatGroupId);
+        await deleteChat(chatGroupId);
         this.chats = this.chats.filter(chat => chat.chatGroupId !== chatGroupId);
         this.isShowingManageChat = false;
         this.currentChatId = null;
@@ -173,9 +171,9 @@ export default {
     },
     /**
      * Emits to the global snackbar component to show a snackbar.
-     * @param message message to be shown in the snackbar.
-     * @param color color of the snackbar.
-     * @time length of time to show the snackbar for, in milliseconds.
+     * @param {String} message message to be shown in the snackbar.
+     * @param {String} color color of the snackbar.
+     * @param {Number} time length of time to show the snackbar for, in milliseconds.
      */
     showSnackbar(message, color, time) {
       this.$root.$emit("show-snackbar", {
@@ -192,7 +190,7 @@ export default {
      */
     async createChat(userIds, chatName) {
       try {
-        const res = await createChat(userIds, chatName);
+        await createChat(userIds, chatName);
         this.showSnackbar("Chat created", "success", 2000);
         this.isShowingCreateChat = false;
         this.getChats();
@@ -218,7 +216,6 @@ export default {
     async getChats() {
       try {
         const chats = await getChats();
-        console.log(chats);
         this.chats = chats;
       } catch (e) {
         this.showErrorSnackbar("Error getting chats");
@@ -254,8 +251,7 @@ export default {
      */
     newMessage(message) {
       const currentChat = this.getCurrentChat();
-      const newMessages = [...currentChat.messages, message];
-      currentChat.messages = newMessages;
+      currentChat.messages = [...currentChat.messages, message];
     },
     /**
      * Gets the current chat that the user is viewing
@@ -265,7 +261,7 @@ export default {
     },
     /**
      * Gets emitted when a messages is retrieved
-     * @param {string} message 
+     * @param {Array} messages the retrieved messages.
      */
     messagesRetrieved(messages) {
       this.$set(this.getCurrentChat(), "messages", messages);
@@ -276,8 +272,7 @@ export default {
      */
     async newMessages(messages) {
       const currentChat = this.getCurrentChat();
-      const newMessages = messages.concat(currentChat.messages);
-      currentChat.messages = newMessages;
+      currentChat.messages = messages.concat(currentChat.messages);
     },
     /**
      * Listens on any incoming messages and adds it to the corresponding chat
@@ -346,7 +341,7 @@ export default {
 #title {
   color: $secondary;
   width: 100%;
-  padding-bottom:0px;
+  padding-bottom:0;
 }
 
 #chats {

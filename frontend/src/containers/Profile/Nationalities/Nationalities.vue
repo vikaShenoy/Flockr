@@ -36,6 +36,7 @@
               :item-text="getNationalityText"
               label="Your nationality"
               :error-messages="nationalityErrors"
+              @change="updateSelectedNationalities"
               chips
               clearable
               solo
@@ -108,8 +109,12 @@
           }
 
           this.nationalityErrors = [];
+          this.userNationalities.filter(nationality => typeof nationality !== 'string');
+          this.userNat.filter(nationality => typeof nationality !== 'string');
+
           const oldNationalities = this.userNationalities;
           const newNationalities = this.userNat;
+
           this.$emit("update-user-nationalities", oldNationalities, newNationalities);
         }
         this.isEditing = !this.isEditing;
@@ -129,7 +134,16 @@
       async filterNationalities() {
         const nationalities = await getNationalities();
         this.validNationalities = nationalities.filter(nationality => nationality.nationalityCountry.isValid === true);
-      }
+      },
+      /**
+       * Updates the selected nationalities of the user to all valid ones so if there is an
+       * invalid nationality i.e. the user typed a string in the combo box, it is removed
+       * automatically.
+       * @param nationalities the chosen nationality values
+       */
+      updateSelectedNationalities(nationalities) {
+        this.userNat = nationalities.filter(nationality => typeof nationality !== 'string');
+      },
     }
   };
 </script>

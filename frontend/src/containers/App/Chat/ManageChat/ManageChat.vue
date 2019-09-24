@@ -54,7 +54,7 @@
 
 <script>
   import UserSummary from "./UserSummary"
-  import { getUsers, editChat } from "../ChatService";
+  import { getUsers } from "../ChatService";
   import { rules } from "../../../../utils/rules";
   import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
   export default {
@@ -156,11 +156,6 @@
 .padding {
   padding-left: 20px;
   padding-right: 20px;
-}
-
-.light-pad {
-  padding: 5px;
-  margin: 5px;
 }
 
 </style>

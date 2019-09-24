@@ -80,7 +80,7 @@ public class UserPhotoSteps {
         Assert.assertNotNull(user);
         List<PersonalPhoto> photos = new ArrayList<>();
         for (Map<String, String> row : list) {
-            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")), null);
+            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")), null, false);
             photo.save();
             photo = PersonalPhoto.find.byId(photo.getPhotoId());
             photos.add(photo);
@@ -103,7 +103,7 @@ public class UserPhotoSteps {
         Assert.assertNotNull(user);
         List<PersonalPhoto> photos = new ArrayList<>();
         for (Map<String, String> row : list) {
-            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")), null);
+            PersonalPhoto photo = new PersonalPhoto(row.get("filename"), Boolean.valueOf(row.get("isPublic")), user, Boolean.valueOf(row.get("isPrimary")), null, false);
             photo.save();
             photo = PersonalPhoto.find.byId(photo.getPhotoId());
             photos.add(photo);

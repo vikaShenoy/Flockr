@@ -64,6 +64,7 @@ export default {
     if (!this.chatGroup.messages) {
       this.getChatMessages();
     } else {
+      const { contents } = this;
       contents.scrollTop = contents.scrollHeight;
     }
     this.getConnectedUsersForChat();
@@ -123,7 +124,6 @@ export default {
         const messages = await getChatMessages(this.chatGroup.chatGroupId, null, null);
         this.$emit("messagesRetrieved", messages);
       } catch (e) {
-        console.log(e);
         this.$root.$emit("show-snackbar", {
           message: "Could not get chat messages",
           color: "error",
@@ -152,7 +152,7 @@ export default {
   },
   watch: {
     chatGroup: {
-      handler(newValue) {
+      handler() {
         const contents = this.$refs.contents;
         const isAtBottom = contents.scrollTop + contents.clientHeight > contents.scrollHeight - 50;
 
@@ -175,7 +175,7 @@ export default {
     }
 
     #new-message .v-input__slot {
-        margin-bottom: 0px;
+        margin-bottom: 0;
     }
 
 </style>
@@ -195,7 +195,7 @@ export default {
   width: 90%;
   height: 57px;
     padding-left: 7px;
-    padding-bottom: 0px;
+    padding-bottom: 0;
 }
 
 #send-btn {

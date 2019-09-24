@@ -1,7 +1,7 @@
 <template>
   <div>
     <div style="display: flex">
-      <h3 style="margin-bottom: 0px;margin-top: 9px;text-align:left; width: 50%">Photos</h3>
+      <h3 class="headline">Photos</h3>
       <v-spacer align="right">
         <v-btn v-if="photos.length" color="secondary" small flat v-on:click="openGallery">View Gallery</v-btn>
       </v-spacer>
@@ -12,7 +12,7 @@
         <v-container grid-list-sm fluid id="grid-container">
           <!-- users photos -->
           <v-layout v-if="photos && photos.length" row wrap>
-            <v-flex sm12 md6 lg4 v-for="(photo, index) in photos" v-bind:key="photo.photoId">
+            <v-flex xs6 sm4 md4 lg2 xl2 v-for="(photo, index) in photos" v-bind:key="photo.photoId">
               <v-img v-if="index < 6" class="photo clickable"
                      :src="thumbnailUrl(photo.photoId)"
                      @click="openViewPhotoDialog(photo, index)"
