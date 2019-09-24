@@ -254,7 +254,8 @@ public class UserRepository {
      * @param name            user's name
      * @return List of users or empty list
      */
-    public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax, int travellerTypeId, String name, int offset, int limit) {
+    public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax,
+                                                  int travellerTypeId, String name, int offset, int limit) {
 
 
         return supplyAsync(() -> {
@@ -275,7 +276,9 @@ public class UserRepository {
                 query = query.where().eq("travellerTypes.travellerTypeId", travellerTypeId);
             }
 
-            if (dateMin.getTime() > 0 && dateMax.getTime() > 0)  {
+            System.out.println(dateMin.getTime());
+
+            if (dateMin.getTime() != -1 && dateMax.getTime() != -1) {
                 query = query.where().between("dateOfBirth", dateMax, dateMin);
             }
 

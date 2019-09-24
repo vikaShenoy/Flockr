@@ -1,29 +1,30 @@
 <template>
-  <div id="home">
+  <div id="container">
     <div>
-      <h2>Welcome to </h2>
-      <h1>Flockrr</h1>
-
-        <v-spacer row>
-          <v-btn
-            v-if="!isLoggedIn"
-            color="secondary"
-            depressed
-            @click="homeSignup()"
-            >Sign Up
-          </v-btn>
-          <v-btn
-            v-if="!isLoggedIn"
-            color="secondary"
-            depressed
-            @click="homeLogin()"
-            >Log in
-          </v-btn>
-        </v-spacer>
+      <h2>You Flocked Up....</h2>
+      <h1>Page Not Found</h1>
+      <v-flex row id="button-row">
+        <v-btn
+          v-if="!isLoggedIn"
+          color="secondary"
+          depressed
+          @click="homeSignup()"
+        >Sign Up
+        </v-btn>
+        <v-btn
+          v-if="!isLoggedIn"
+          color="secondary"
+          depressed
+          @click="homeLogin()"
+        >Log in
+        </v-btn>
+      </v-flex>
 
     </div>
+
   </div>
 </template>
+
 
 <script>
   import UserStore from "../../stores/UserStore";
@@ -35,7 +36,7 @@
     },
     methods: {
       async homeLogin() {
-          this.$router.push("/login");
+        this.$router.push("/login");
       },
       async homeSignup() {
         this.$router.push("/signup");
@@ -50,11 +51,10 @@
   }
 </script>
 
-
 <style lang="scss" scoped>
   @import "../../styles/_variables.scss";
 
-  #home {
+  #container {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -63,6 +63,7 @@
     box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, .5);
     width: 100%;
     height: 100%;
+    margin-top:0;
 
     h1 {
       font-size: 5rem;
@@ -76,6 +77,10 @@
       text-align: center;
       color: #FFF;
     }
+
+  }
+  #button-row {
+    align-items: center;
+    justify-content: center;
   }
 </style>
-
