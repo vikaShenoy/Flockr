@@ -38,6 +38,8 @@
               :item-text="getTravellerTypeName"
               :error-messages="travellerTypeErrors"
               label="Your traveller types"
+              @change="updateSelectedTravellerType"
+
               chips
               clearable
               solo
@@ -128,6 +130,15 @@
       removeTravellerType(item) {
         this.editingTravellerTypes.splice(this.editingTravellerTypes.indexOf(item), 1);
         this.editingTravellerTypes = [...this.editingTravellerTypes];
+      },
+      /**
+       * Updates the selected traveller types of the user to all valid ones so if there is an
+       * invalid traveller type i.e. the user typed a string in the combo box, it is removed
+       * automatically.
+       * @param travellerTypes the chosen traveller types values
+       */
+      updateSelectedTravellerType(travellerTypes) {
+        this.editingTravellerTypes = travellerTypes.filter(type => typeof type !== 'string');
       }
     }
   }

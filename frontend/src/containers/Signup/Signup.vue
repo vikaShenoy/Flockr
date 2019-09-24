@@ -54,15 +54,19 @@
           <v-card class="mb-5" flat>
             <v-combobox v-model="selectedNationalities" :items="this.allNationalities"
                         :item-text="n => n.nationalityName"
-                        label="Nationalities" :rules="[rules.nonEmptyArray]" clearable multiple/>
+                        label="Nationalities" :rules="[rules.nonEmptyArray]" clearable multiple
+                        @change="updateSelectedNationalities"/>
 
             <v-combobox v-model="selectedPassports" :items="this.allPassports" :item-text="p => p.passportCountry"
                         label="Passports"
-                        clearable multiple/>
+                        clearable multiple
+                        @change="updateSelectedPassports"/>
 
             <v-combobox v-model="selectedTravellerTypes" :items="this.allTravellerTypes"
                         :item-text="t => t.travellerTypeName"
-                        label="Traveller types" :rules="[rules.nonEmptyArray]" clearable multiple/>
+                        label="Traveller types" :rules="[rules.nonEmptyArray]" clearable multiple
+                        @change="updateSelectedTravellerType"
+            />
           </v-card>
 
           <v-btn :loading="loading" :disabled="!isTravellingInfoStepperCompleted" color="primary"
@@ -162,7 +166,7 @@
       isTravellingInfoStepperCompleted: function () {
         const {selectedNationalities, selectedTravellerTypes} = this;
         return [selectedNationalities, selectedTravellerTypes].every(array => array.length > 0);
-      }
+      },
     },
     methods: {
       /**
@@ -347,6 +351,33 @@
         } catch (err) {
           console.error(`Could not add traveller info for user with id ${signedUpUserId}: ${err}`);
         }
+      },
+      /**
+       * Updates the selected nationalities of the user to all valid ones so if there is an
+       * invalid nationality i.e. the user typed a string in the combo box, it is removed
+       * automatically.
+       * @param nationalities the chosen nationality values
+       */
+      updateSelectedNationalities(nationalities) {
+        this.selectedNationalities = nationalities.filter(item => typeof item !== 'string');
+      },
+      /**
+       * Updates the selected passports of the user to all valid ones so if there is an
+       * invalid passport i.e. the user typed a string in the combo box, it is removed
+       * automatically.
+       * @param passports the chosen passport values
+       */
+      updateSelectedPassports(passports) {
+        this.selectedPassports = passports.filter(passport => typeof passport !== 'string');
+      },
+      /**
+       * Updates the selected traveller types of the user to all valid ones so if there is an
+       * invalid traveller type i.e. the user typed a string in the combo box, it is removed
+       * automatically.
+       * @param travellerTypes the chosen traveller types values
+       */
+      updateSelectedTravellerType(travellerTypes) {
+        this.selectedTravellerTypes = travellerTypes.filter(type => typeof type !== 'string');
       }
     }
   };
