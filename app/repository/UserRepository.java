@@ -276,8 +276,12 @@ public class UserRepository {
                 query = query.where().eq("travellerTypes.travellerTypeId", travellerTypeId);
             }
 
-            query = query.where().between("dateOfBirth", dateMax, dateMin);
-            
+            System.out.println(dateMin.getTime());
+
+            if (dateMin.getTime() != -1 && dateMax.getTime() != -1) {
+                query = query.where().between("dateOfBirth", dateMax, dateMin);
+            }
+
             List<User> users  = query.where()
                     .setFirstRow(offset)
                     .setMaxRows(limit).findList();
