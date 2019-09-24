@@ -2,9 +2,7 @@ package controllers;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import actions.ActionState;
-import actions.Admin;
 import actions.LoggedIn;
-import akka.actor.ActorRef;
 import models.*;
 import modules.websocket.ConnectedUsers;
 import modules.websocket.TripNotifier;
@@ -36,7 +34,6 @@ import repository.TripRepository;
 import repository.UserRepository;
 import util.Security;
 import util.TripUtil;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +41,8 @@ import java.util.stream.Collectors;
  */
 public class TripController extends Controller {
 
+    private static final String TRIP_OWNER = "TRIP_OWNER";
+    private static final String MESSAGE_KEY = "message";
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
     private final HttpExecutionContext httpExecutionContext;
@@ -85,10 +84,7 @@ public class TripController extends Controller {
         if (!security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
-
         JsonNode jsonBody = request.body().asJson();
-        System.out.println("JSON: " + jsonBody);
-
         String tripName = jsonBody.get("name").asText();
         JsonNode tripNodesJson = jsonBody.get("tripNodes");
         JsonNode userIdsJson = jsonBody.get("userIds");
@@ -140,12 +136,10 @@ public class TripController extends Controller {
                           }
                         }
 
-                        Role role = userRepository.getSingleRoleByType("TRIP_OWNER");
+                        Role role = userRepository.getSingleRoleByType(TRIP_OWNER);
                         UserRole userRole = new UserRole(users.get(users.size() - 1), role);
                         userRole.save();
                         userRoles.add(userRole);
-                        System.out.println("userRole is: " + userRoles);
-                        System.out.println("users is: " + users);
                         trip.setUserRoles(userRoles);
                         trip.save();
 
@@ -291,16 +285,16 @@ public class TripController extends Controller {
                             try {
                                 throw error.getCause();
                             } catch (BadRequestException e) {
-                                message.put("message", e.getMessage());
+                                message.put(MESSAGE_KEY, e.getMessage());
                                 return badRequest(message);
                             } catch (UnauthorizedException e) {
-                                message.put("message", e.getMessage());
+                                message.put(MESSAGE_KEY, e.getMessage());
                                 return unauthorized(message);
                             } catch (ForbiddenRequestException e) {
-                                message.put("message", e.getMessage());
+                                message.put(MESSAGE_KEY, e.getMessage());
                                 return forbidden(message);
                             } catch (NotFoundException e) {
-                                message.put("message", e.getMessage());
+                                message.put(MESSAGE_KEY, e.getMessage());
                                 return notFound(message);
                             } catch (Throwable e) {
                                 e.printStackTrace();
@@ -385,7 +379,7 @@ public class TripController extends Controller {
 
                                                 // Set users/permissions. Only trip owners have permission.
                                                 List<UserRole> tripUserRoles = new ArrayList<>();
-                                                if (userPermissionLevel.equals("TRIP_OWNER")) {
+                                                if (userPermissionLevel.equals(TRIP_OWNER)) {
                                                     if (tripNodesJson != null) {
                                                         trip.setUsers(users);
                                                     }
@@ -404,10 +398,8 @@ public class TripController extends Controller {
                                                 }
                                                 return tripRepository.update(trip);
                                             })
-                                    .thenComposeAsync(trip -> {
-                                        //return ok(Json.toJson(trip));
-                                        return tripRepository.getTripByIds(tripId, userId);
-                                    }).thenApplyAsync(optionalUpdatedTrip -> {
+                                    .thenComposeAsync(trip -> tripRepository.getTripByIds(tripId, userId))
+                                    .thenApplyAsync(optionalUpdatedTrip -> {
                                         // If user removes themselves from trip, then a trip won't be present
                                         if (!optionalUpdatedTrip.isPresent()) {
                                             return ok();
@@ -446,8 +438,8 @@ public class TripController extends Controller {
                 filter(tripUserRole -> tripUserRole.getUser().getUserId() == user.getUserId()).
                 map(userRole -> userRole.getRole().getRoleType()).collect(
                 Collectors.toList());
-        if (tripUserRoles.contains("TRIP_OWNER") || user.isAdmin()) {
-            return "TRIP_OWNER";
+        if (tripUserRoles.contains(TRIP_OWNER) || user.isAdmin()) {
+            return TRIP_OWNER;
         } else if (tripUserRoles.contains("TRIP_MANAGER")) {
             return "TRIP_MANAGER";
         }
@@ -489,9 +481,6 @@ public class TripController extends Controller {
             }
         }
         return updateDestinations;
-/*    updateDestinations.add(
-        supplyAsync(() -> new Destination(null, null, null, null, null, null, null, null, true)));
-    return updateDestinations;*/
     }
 
     /**
@@ -540,7 +529,7 @@ public class TripController extends Controller {
                         trips -> {
                             List<TripComposite> tripComposites = new ArrayList<>();
                             for (TripComposite tripComposite : trips) {
-                                if (tripComposite.getParents().size() == 0) {
+                                if (tripComposite.getParents().isEmpty()) {
                                     tripComposites.add(tripComposite);
                                 } else {
                                     List<TripNode> parents = tripComposite.getParents();
