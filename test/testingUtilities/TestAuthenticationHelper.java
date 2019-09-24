@@ -35,8 +35,9 @@ public class TestAuthenticationHelper {
      * The user object is placed in the TestState for retrieval by multiple test classes.
      *
      * @param dataTable a DataTable with the users details
+     * @param application a Play application instance
      */
-    public static void theFollowingUsersExists(DataTable dataTable) {
+    public static void theFollowingUsersExists(DataTable dataTable, Application application) {
         TestState testState = TestState.getInstance();
         List<Map<String, String>> list = dataTable.asMaps(String.class, String.class);
         for (int i = 0; i < list.size(); i++) {

@@ -106,7 +106,7 @@ public class AuthController {
         String userToken = this.security.generateToken();
 
         // Middle name is optional and checks if the middle name is a valid name
-        if ((jsonRequest.has(MIDDLE_NAME_KEY) && (!isAlpha(middleName)) || middleName.length() < 2)) {
+        if (jsonRequest.has(MIDDLE_NAME_KEY) && (!isAlpha(middleName) || middleName.length() < 2)) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
                 message.put(MESSAGE_KEY, "Please provide a valid middle name that contains only letters and has at least 2 characters");
