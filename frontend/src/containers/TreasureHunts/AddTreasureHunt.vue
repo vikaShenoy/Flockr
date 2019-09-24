@@ -38,7 +38,7 @@
                       :required="true"
                       item-text="destinationName"
                       :get-function="getPublicDestinationsFunction"
-                      @item-selected="destinationSelected"
+                      v-model="createTreasureHuntDestination"
                     />
                   </v-flex>
                   <v-flex xs12>
@@ -116,13 +116,6 @@
     },
     methods: {
       /**
-       * Called when a destination is selected from the GenericCombobox.
-       * @param {Object} destination the selected destination
-       */
-      destinationSelected(destination) {
-        this.createTreasureHuntDestination = destination.destinationId;
-      },
-      /**
        * Function called by the close button in the dialog,
        *  emits an event to the parent to close the modal,
        *  and also resets the local data
@@ -155,7 +148,7 @@
         let treasureHunt = {
 
           treasureHuntName: this.createTreasureHuntName,
-          treasureHuntDestinationId: this.createTreasureHuntDestination,
+          treasureHuntDestinationId: this.createTreasureHuntDestination.destinationId,
           riddle: this.createTreasureHuntRiddle,
           startDate: this.startDate,
           endDate: this.endDate + " 23:59:59"
@@ -192,7 +185,7 @@
        * @returns {boolean}
        */
       validTreasureHunt() {
-        return !(this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
+          return !(this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
       }
     },
     watch: {
