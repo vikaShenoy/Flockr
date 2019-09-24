@@ -2,7 +2,7 @@
   <div id="home">
     <div>
       <h2>Welcome to </h2>
-      <h1>Flockrr</h1>
+      <h1>Flockr</h1>
 
         <v-spacer row>
           <v-btn
