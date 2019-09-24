@@ -55,6 +55,7 @@
                 clearable
                 solo
                 multiple
+                @change="updateSelectedTravellerType"
             >
 
               <template v-slot:selection="data">
@@ -318,6 +319,9 @@
       },
       updateCountry(newValue) {
         this.destination.destinationCountry = newValue;
+      },
+      updateSelectedTravellerType(travellerTypes) {
+        this.destination.travellerTypes = travellerTypes.filter(type => typeof type !== 'string');
       }
     },
     watch: {
