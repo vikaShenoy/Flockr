@@ -11,13 +11,10 @@ import util.Security;
 
 import javax.inject.Inject;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -144,7 +141,7 @@ public class ExampleUserData {
                           }
                         }
                       } catch (Exception e) {
-                        e.printStackTrace();
+                        log.info(e.getMessage());
                       }
 
                       log.info(

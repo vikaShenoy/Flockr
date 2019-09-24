@@ -12,6 +12,8 @@ import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import models.User;
 import modules.websocket.frames.PingMapFrame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import repository.ChatRepository;
 import repository.TripRepository;
@@ -23,6 +25,7 @@ public class WebSocket extends AbstractActor {
   private final ActorRef out;
   private ConnectionStatusNotifier connectionStatusNotifier = new ConnectionStatusNotifier();
   private User user;
+  final Logger log = LoggerFactory.getLogger(this.getClass());
 
   /**
    * Creates a new websocket and adds user to connected users

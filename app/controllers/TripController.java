@@ -148,7 +148,7 @@ public class TripController extends Controller {
                   .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
                   .exceptionally(
                       e -> {
-                        e.printStackTrace();
+                        log.error(e.getMessage());
                         return internalServerError();
                       });
             },
@@ -297,7 +297,7 @@ public class TripController extends Controller {
                                 message.put(MESSAGE_KEY, e.getMessage());
                                 return notFound(message);
                             } catch (Throwable e) {
-                                e.printStackTrace();
+                                log.error(e.getMessage());
                                 log.error("An unexpected error has occurred", e);
                                 return internalServerError();
                             }
@@ -420,7 +420,7 @@ public class TripController extends Controller {
                             } catch (ForbiddenRequestException forbiddenRequestError) {
                                 return forbidden();
                             } catch (Throwable serverError) {
-                                serverError.printStackTrace();
+                                log.error(serverError.getMessage());
                                 return internalServerError();
                             }
                         });

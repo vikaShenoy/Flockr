@@ -53,12 +53,11 @@ public class DeleteExpiredDestinationPhotos {
                         () -> getDeletedDestinationPhotos()
                                 .thenApplyAsync(destinationPhotos -> {
                                     log.info("-----------Cleaning up deleted destination photos-------------");
-                                    System.out.println("-----------Cleaning up deleted destination photos-------------");
+
                                     for (DestinationPhoto destinationPhoto : destinationPhotos) {
                                         destinationPhoto.deletePermanent();
                                     }
                                     log.info(String.format("%d Destination Proposals deleted successfully", destinationPhotos.size()));
-                                    System.out.println(String.format("%d Destination Proposals deleted successfully", destinationPhotos.size()));
                                     return destinationPhotos;
                                 }),
                         this.executionContext);

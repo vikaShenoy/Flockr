@@ -59,12 +59,10 @@ public class DeleteExpiredDestinationProposal {
                         () -> getDeletedDestinationProposals()
                                     .thenApplyAsync(destinationProposals -> {
                                         log.info("-----------Cleaning up deleted destination proposals-------------");
-                                        System.out.println("-----------Cleaning up deleted destination proposals-------------");
                                         for (DestinationProposal destinationProposal : destinationProposals) {
                                             destinationProposal.deletePermanent();
                                         }
                                         log.info(String.format("%d Destination Proposals deleted successfully", destinationProposals.size()));
-                                        System.out.println(String.format("%d Destination Proposals deleted successfully", destinationProposals.size()));
                                         return destinationProposals;
                                     }),
                         this.executionContext);
