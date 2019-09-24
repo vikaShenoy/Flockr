@@ -169,7 +169,7 @@ public class TreasureHuntController extends Controller {
                 message.put(MESSAGE_KEY, forbiddenRequestException.getMessage());
                 return forbidden(message);
               } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                log.error(throwable.getMessage());
                 return internalServerError();
               }
             });

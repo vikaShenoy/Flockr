@@ -271,7 +271,7 @@ public class DestinationController extends Controller {
                 } catch (ConflictingRequestException conflictingException) {
                   return status(409, conflictingException.getMessage());
                 } catch (Throwable generalException) {
-                  generalException.printStackTrace();
+                    log.error(generalException.getMessage());
                   return internalServerError("Error creating destinations");
                 }
               });
@@ -405,8 +405,8 @@ public class DestinationController extends Controller {
                 response.put(MESSAGE_KEY, badRequestE.getMessage());
                 return badRequest(response);
               } catch (Throwable ee) {
-                ee.printStackTrace();
-                return internalServerError(response);
+                    log.error(ee.getMessage());
+                    return internalServerError(response);
               }
             });
   }
@@ -460,7 +460,7 @@ public class DestinationController extends Controller {
                 message.put(MESSAGE_KEY, forbiddenReqE.getMessage());
                 return forbidden(message);
               } catch (Throwable serverError) {
-                serverError.printStackTrace();
+                log.error(serverError.getMessage());
                 return internalServerError();
               }
             });
@@ -650,7 +650,7 @@ public class DestinationController extends Controller {
               } catch (NotFoundException badReqException) {
                 return notFound(badReqException.getMessage());
               } catch (Throwable throwableException) {
-                throwableException.printStackTrace();
+                log.error(throwableException.getMessage());
                 return internalServerError();
               }
             });
@@ -863,7 +863,7 @@ public class DestinationController extends Controller {
               } catch (ForbiddenRequestException forbiddenException) {
                 return forbidden(forbiddenException.getMessage());
               } catch (Throwable throwableException) {
-                throwableException.printStackTrace();
+                log.error(throwableException.getMessage());
                 return internalServerError(throwableException.getMessage());
               }
             });
@@ -915,7 +915,7 @@ public class DestinationController extends Controller {
                 message.put(MESSAGE_KEY, forbiddenRequestException.getMessage());
                 return forbidden(message);
               } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                log.error(throwable.getMessage());
                 return internalServerError();
               }
             });
@@ -1025,7 +1025,7 @@ public class DestinationController extends Controller {
                 message.put(MESSAGE_KEY, notFoundE.getMessage());
                 return notFound(message);
               } catch (Throwable serverError) {
-                serverError.printStackTrace();
+                log.info(serverError.getMessage());
                 return internalServerError();
               }
             });
@@ -1044,7 +1044,7 @@ public class DestinationController extends Controller {
       String pageString = request.getQueryString("page");
       page = Integer.parseInt(pageString);
     } catch (Exception e) {
-      System.out.println("No page provided, using default of 1");
+      log.info("No page provided, using default of 1");
     }
     return destinationRepository
         .getDestinationProposals(page)

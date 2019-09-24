@@ -14,6 +14,8 @@ import models.User;
 import modules.voice.VoiceServerApi;
 import modules.websocket.ChatEvents;
 import modules.websocket.ConnectedUsers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
@@ -36,6 +38,7 @@ public class ChatController extends Controller {
   private final ChatRepository chatRepository;
   private HttpExecutionContext httpExecutionContext;
   private VoiceServerApi voiceServerApi;
+  private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   private static final String CHAT_NOT_FOUND_MESSAGE = "Chat not found";
   private static final String USER_NOT_IN_GROUP_MESSAGE = "User not in group";
@@ -273,14 +276,14 @@ public class ChatController extends Controller {
                 String offsetString = request.getQueryString("offset");
                 offset = Integer.parseInt(offsetString);
               } catch (Exception e) {
-                System.out.println("No offset or invalid offset provided, using default of 0");
+                log.error("No offset or invalid offset provided, using default of 0");
               }
 
               try {
                 String limitString = request.getQueryString("limit");
                 limit = Integer.parseInt(limitString);
               } catch (Exception e) {
-                System.out.println("No limit or invalid limit provided, using default of 20");
+                log.error("No limit or invalid limit provided, using default of 20");
               }
 
               return chatRepository.getMessages(chatGroupId, offset, limit);
@@ -453,7 +456,7 @@ public class ChatController extends Controller {
               } catch (ForbiddenRequestException forbiddenRequestException) {
                 return forbidden(forbiddenRequestException.getMessage());
               } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                log.error(throwable.getMessage());
                 return internalServerError();
               }
             });

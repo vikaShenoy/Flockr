@@ -866,7 +866,7 @@ public class PhotoController extends Controller {
     } catch (Throwable throwable) {
       ObjectNode message = Json.newObject();
       message.put(MESSAGE_KEY, throwable.getMessage());
-      throwable.printStackTrace();
+      log.error(throwable.getMessage());
       log.error("500 - Internal Server Error", throwable);
       return internalServerError(message);
     }

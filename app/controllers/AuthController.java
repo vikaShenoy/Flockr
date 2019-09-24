@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.ConflictingRequestException;
 import exceptions.UnauthorizedException;
 import models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Http.Request;
@@ -42,6 +44,7 @@ public class AuthController {
     private static final String MESSAGE_KEY = "message";
     private static final String PASSWORD_KEY = "password";
     private static final String EMAIL_KEY = "email";
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
     public AuthController(AuthRepository authRepository, UserRepository userRepository,
@@ -159,7 +162,7 @@ public class AuthController {
                 message.put(MESSAGE_KEY, e.getMessage());
                 return Results.status(Http.Status.CONFLICT, message);
             } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                log.error(throwable.getMessage());
                 ObjectNode message = Json.newObject();
                 message.put(MESSAGE_KEY, "Something went wrong trying to sign up");
                 return internalServerError(message);
@@ -208,7 +211,7 @@ public class AuthController {
                     } catch (UnauthorizedException noAuthError) {
                         return unauthorized();
                     } catch (Throwable genericError) {
-                        genericError.printStackTrace();
+                        log.error(genericError.getMessage());
                         return internalServerError();
                     }
                 });
