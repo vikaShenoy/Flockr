@@ -49,12 +49,12 @@ public class TripDestinationLeaf extends TripNode {
 
   @Override
   public void addTripNode(TripNode tripNode) {
-    return;
+    // Leaves do not add nodes within them
   }
 
   @Override
   public void removeTripNode(TripNode tripNode) {
-    return;
+    // Leaves do not have leaves within them
   }
 
   @Override

@@ -71,9 +71,7 @@ public class WebSocket extends AbstractActor {
             tripRepository
                 .getTripsByUserId(user.getUserId())
                 .thenAcceptAsync(
-                    trips -> {
-                      connectionStatusNotifier.notifyConnectedUser(user, trips);
-                    }));
+                    trips -> connectionStatusNotifier.notifyConnectedUser(user, trips)));
   }
 
 

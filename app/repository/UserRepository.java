@@ -3,7 +3,6 @@ package repository;
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
-import io.ebean.OrderBy;
 import models.*;
 import play.db.ebean.EbeanConfig;
 
@@ -59,7 +58,6 @@ public class UserRepository {
      * @return Nothing
      */
     public CompletionStage<User> updateUser(User user) {
-    System.out.println("I am updating" + user.getFirstName() + user.getLastName() + "and there role is " + user.getRoles().toString());
         return supplyAsync(() -> {
             user.save();
             return user;
@@ -98,11 +96,7 @@ public class UserRepository {
      * @return the user object
      */
     public CompletionStage<Optional<User>> getUserById(int userId) {
-        return supplyAsync(() -> {
-            Optional<User> user = User.find.query().
-                    where().eq("user_id", userId).findOneOrEmpty();
-            return user;
-        }, executionContext);
+        return supplyAsync(() -> User.find.query().where().eq("user_id", userId).findOneOrEmpty(), executionContext);
     }
 
     /**
@@ -124,11 +118,9 @@ public class UserRepository {
      * @return The list of passports
      */
     public CompletionStage<Optional<Passport>> getPassportById(int passportId) {
-        return supplyAsync(() -> {
-            Optional<Passport> passport = Passport.find.query().
-                    where().eq("passport_id", passportId).findOneOrEmpty();
-            return passport;
-        }, executionContext);
+        return supplyAsync(() -> Passport.find.query().
+            where().eq("passport_id", passportId).findOneOrEmpty()
+            , executionContext);
     }
 
     /**
@@ -256,8 +248,6 @@ public class UserRepository {
      */
     public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax,
                                                   int travellerTypeId, String name, int offset, int limit) {
-
-
         return supplyAsync(() -> {
             boolean found;
             ExpressionList<User> query = User.find.query()
@@ -276,7 +266,6 @@ public class UserRepository {
                 query = query.where().eq("travellerTypes.travellerTypeId", travellerTypeId);
             }
 
-            System.out.println(dateMin.getTime());
 
             if (dateMin.getTime() != -1 && dateMax.getTime() != -1) {
                 query = query.where().between("dateOfBirth", dateMax, dateMin);
@@ -287,28 +276,21 @@ public class UserRepository {
                     .setMaxRows(limit).findList();
 
             if (nationality != -1) {
-                List<User> filteredUsers = new ArrayList<User>();
-                for (int i = 0; i < users.size(); i++) {
+                List<User> filteredUsers = new ArrayList<>();
+                for (User user : users) {
                     found = false;
-                    List<Nationality> natsToCheck = users.get(i).getNationalities();
-                    for (int j = 0; j < natsToCheck.size(); j++) {
-                        if (natsToCheck.get(j).getNationalityId() == nationality) {
+                    List<Nationality> natsToCheck = user.getNationalities();
+                    for (Nationality aNatsToCheck : natsToCheck) {
+                        if (aNatsToCheck.getNationalityId() == nationality) {
                             found = true;
                         }
                     }
                     if (found) {
-                        filteredUsers.add(users.get(i));
+                        filteredUsers.add(user);
                     }
                 }
                 return filteredUsers;
             } else return users;
         }, executionContext);
     }
-
-    public List<User> getAllUsers() {
-        return User.find.all();
-    }
-
-
-
 }

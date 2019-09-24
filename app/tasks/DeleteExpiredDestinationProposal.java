@@ -4,11 +4,8 @@ import akka.actor.ActorSystem;
 import models.DestinationProposal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Predef;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
-
-import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Instant;

@@ -71,8 +71,7 @@ public class Country extends Model {
             return false;
         }
         Country countryToCompare = (Country) obj;
-        boolean sameCountryId = this.getCountryId() == countryToCompare.getCountryId();
-        return sameCountryId;
+        return this.getCountryId() == countryToCompare.getCountryId();
     }
 
     @Override
