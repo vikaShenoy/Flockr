@@ -125,6 +125,7 @@
     },
     mounted() {
       this.getUserTrips();
+      this.resetCoordinates();
     },
     methods: {
       /**
