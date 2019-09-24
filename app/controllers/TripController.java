@@ -144,6 +144,8 @@ public class TripController extends Controller {
                         UserRole userRole = new UserRole(users.get(users.size() - 1), role);
                         userRole.save();
                         userRoles.add(userRole);
+                        System.out.println("userRole is: " + userRoles);
+                        System.out.println("users is: " + users);
                         trip.setUserRoles(userRoles);
                         trip.save();
 
