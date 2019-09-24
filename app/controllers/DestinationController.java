@@ -37,7 +37,9 @@ import repository.PhotoRepository;
 import util.DestinationUtil;
 import util.Security;
 
-/** Controller to manage endpoints related to destinations. */
+/**
+ * Controller to manage endpoints related to destinations.
+ */
 public class DestinationController extends Controller {
   private final DestinationRepository destinationRepository;
   private final PhotoRepository photoRepository;

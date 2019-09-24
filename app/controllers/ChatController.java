@@ -225,15 +225,15 @@ public class ChatController extends Controller {
                 throw error.getCause();
               } catch (ForbiddenRequestException e) {
                 ObjectNode message = Json.newObject();
-                message.put(MESSAGE, e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return forbidden(Json.toJson(message));
               } catch (NotFoundException e) {
                 ObjectNode message = Json.newObject();
-                message.put(MESSAGE, e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return notFound(Json.toJson(message));
               } catch (Throwable e) {
                 ObjectNode message = Json.newObject();
-                message.put(MESSAGE, e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return internalServerError(message);
               }
             });
