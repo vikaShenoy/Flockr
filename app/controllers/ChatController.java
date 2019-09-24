@@ -5,14 +5,12 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.AbstractModule;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.ChatGroup;
 import models.Message;
 import models.User;
-import modules.voice.JanusServerApi;
 import modules.voice.VoiceServerApi;
 import modules.websocket.ChatEvents;
 import modules.websocket.ConnectedUsers;
@@ -25,14 +23,11 @@ import play.mvc.With;
 import repository.ChatRepository;
 import util.ChatUtil;
 import util.Security;
-
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class ChatController extends Controller {
@@ -41,6 +36,12 @@ public class ChatController extends Controller {
   private final ChatRepository chatRepository;
   private HttpExecutionContext httpExecutionContext;
   private VoiceServerApi voiceServerApi;
+
+  private static final String CHAT_NOT_FOUND_MESSAGE = "Chat not found";
+  private static final String USER_NOT_IN_GROUP_MESSAGE = "User not in group";
+  private static final String TOKEN_KEY = "token";
+  private static final String ROOM_KEY = "room";
+  private static final String MESSAGE_KEY = "message";
 
   @Inject
   public ChatController(
@@ -121,12 +122,12 @@ public class ChatController extends Controller {
         .thenComposeAsync(
             chatGroup -> {
               if (chatGroup == null) {
-                throw new CompletionException(new NotFoundException("Chat not found"));
+                throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
                   && !userFromMiddleware.isAdmin()) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
               String chatName;
@@ -201,7 +202,7 @@ public class ChatController extends Controller {
         .thenApplyAsync(
             chat -> {
               if (chat == null) {
-                throw new CompletionException(new NotFoundException("Chat not found"));
+                throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
               List<User> chatUsers = chat.getUsers();
               if (!userFromMiddleware.isAdmin() && !chatUsers.contains(userFromMiddleware)) {
@@ -224,15 +225,15 @@ public class ChatController extends Controller {
                 throw error.getCause();
               } catch (ForbiddenRequestException e) {
                 ObjectNode message = Json.newObject();
-                message.put("message", e.getMessage());
+                message.put(MESSAGE, e.getMessage());
                 return forbidden(Json.toJson(message));
               } catch (NotFoundException e) {
                 ObjectNode message = Json.newObject();
-                message.put("message", e.getMessage());
+                message.put(MESSAGE, e.getMessage());
                 return notFound(Json.toJson(message));
               } catch (Throwable e) {
                 ObjectNode message = Json.newObject();
-                message.put("message", e.getMessage());
+                message.put(MESSAGE, e.getMessage());
                 return internalServerError(message);
               }
             });
@@ -257,12 +258,12 @@ public class ChatController extends Controller {
         .thenComposeAsync(
             (chatGroup -> {
               if (chatGroup == null) {
-                throw new CompletionException(new NotFoundException("Chat not found"));
+                throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
                   && !userFromMiddleware.isAdmin()) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
               int offset = 0;
@@ -322,11 +323,11 @@ public class ChatController extends Controller {
             chatGroup -> {
               if (chatGroup == null) {
                 // Chat doesn't exist so 404 it
-                throw new CompletionException(new NotFoundException("Chat not found"));
+                throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
               return chatRepository.deleteChatGroupById(chatGroup);
@@ -371,14 +372,14 @@ public class ChatController extends Controller {
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
-              if (!jsonBody.has("message")) {
+              if (!jsonBody.has(MESSAGE_KEY)) {
                 throw new CompletionException(new BadRequestException("Message does not exist"));
               }
 
-              String messageContents = jsonBody.get("message").asText();
+              String messageContents = jsonBody.get(MESSAGE_KEY).asText();
               Message message = new Message(chatGroup, messageContents, userFromMiddleware);
 
               return chatRepository.createMessage(message);
@@ -479,7 +480,7 @@ public class ChatController extends Controller {
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
               String roomToken = Security.generateToken();
@@ -492,8 +493,8 @@ public class ChatController extends Controller {
                     .thenComposeAsync(
                         exists -> {
                           if (exists) {
-                            jsonResponse.put("token", chatGroup.getRoomToken());
-                            jsonResponse.put("room", roomId);
+                            jsonResponse.put(TOKEN_KEY, chatGroup.getRoomToken());
+                            jsonResponse.put(ROOM_KEY, roomId);
                             return supplyAsync(() -> ok(jsonResponse));
                           } else {
                             return voiceServerApi
@@ -507,8 +508,8 @@ public class ChatController extends Controller {
                                     httpExecutionContext.current())
                                 .thenApplyAsync(
                                     modifiedRoom -> {
-                                      jsonResponse.put("token", roomToken);
-                                      jsonResponse.put("room", modifiedRoom.getVoiceRoomId());
+                                      jsonResponse.put(TOKEN_KEY, roomToken);
+                                      jsonResponse.put(ROOM_KEY, modifiedRoom.getVoiceRoomId());
                                       return ok(jsonResponse);
                                     });
                           }
@@ -525,8 +526,8 @@ public class ChatController extends Controller {
                         httpExecutionContext.current())
                     .thenApplyAsync(
                         modifiedChatGroup -> {
-                          jsonResponse.put("token", roomToken);
-                          jsonResponse.put("room", modifiedChatGroup.getVoiceRoomId());
+                          jsonResponse.put(TOKEN_KEY, roomToken);
+                          jsonResponse.put(ROOM_KEY, modifiedChatGroup.getVoiceRoomId());
                           return ok(jsonResponse);
                         });
               }
