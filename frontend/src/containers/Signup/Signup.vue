@@ -19,6 +19,8 @@
 
             <v-text-field v-model="lastName" color="secondary" label="Last name" @blur="validateLastName()"
                           :error-messages="lastNameErrors" :maxlength="50"/>
+            <v-text-field v-model="email" color="secondary" label="Email" @blur="validateEmail()"
+                          :error-messages="emailErrors" autocomplete="off" :maxlength="320"/>
 
             <v-text-field v-model="dateOfBirth" mask="date" label="Birthday" hint="DD/MM/YYYY" persistent-hint
                           return-masked-value placeholder="12/04/2003" :rules="[rules.dateBeforeToday, rules.required]"
@@ -27,14 +29,19 @@
             <v-select :rules="[rules.required]" v-model="gender" :items="genderOptions" color="secondary"
                       label="Gender"/>
           </v-card>
-
+          <v-spacer row>
           <v-btn color="primary" @click="currStepperStep = 2" :disabled="!isBasicInfoStepperCompleted">Continue</v-btn>
+
+          <v-btn class="sign_in" color="primary"
+                 @click="signIn()">
+            Sign in
+          </v-btn>
+          </v-spacer>
         </v-stepper-content>
 
         <v-stepper-content step="2">
           <v-card class="mb-5" flat>
-            <v-text-field v-model="email" color="secondary" label="Email" @blur="validateEmail()"
-                          :error-messages="emailErrors" autocomplete="off" :maxlength="320"/>
+
 
             <v-text-field v-model="password" type="password" color="secondary" label="Password"
                           @blur="validatePassword()" :error-messages="passwordErrors" :maxlength="50"/>
@@ -73,6 +80,7 @@
                  @click="sendTravellerInfo()">
             Continue
           </v-btn>
+
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -149,16 +157,16 @@
        * Return true if all the required fields in the basic info stepper are completed
        */
       isBasicInfoStepperCompleted: function () {
-        const {firstName, lastName, gender, dateOfBirth} = this;
-        const fieldsAreNotEmpty = [firstName, lastName, gender, dateOfBirth].every(field => field.length > 0);
-        return fieldsAreNotEmpty;
+        const {firstName, lastName, gender, dateOfBirth, email,  isEmailTaken} = this;
+        const fieldsAreNotEmpty = [firstName, lastName, gender, email, dateOfBirth].every(field => field.length > 0);
+        return fieldsAreNotEmpty && !isEmailTaken;
       },
       /**
        * Return true if all the required fields in the login info stepper are completed
        */
       isLoginInfoStepperCompleted: function () {
-        const {email, password, confirmPassword, isEmailTaken} = this;
-        return [email, password].every(s => s.length > 0) && password === confirmPassword && !isEmailTaken;
+        const {password, confirmPassword} = this;
+        return password.length > 0 && password === confirmPassword;
       },
       /**
        * Return true if all the required fields in the travelling info stepper are completed
@@ -166,7 +174,7 @@
       isTravellingInfoStepperCompleted: function () {
         const {selectedNationalities, selectedTravellerTypes} = this;
         return [selectedNationalities, selectedTravellerTypes].every(array => array.length > 0);
-      },
+      }
     },
     methods: {
       /**
@@ -378,8 +386,12 @@
        */
       updateSelectedTravellerType(travellerTypes) {
         this.selectedTravellerTypes = travellerTypes.filter(type => typeof type !== 'string');
+      },
+      async signIn() {
+        this.$router.push("/login");
       }
     }
+
   };
 </script>
 
@@ -402,6 +414,10 @@
     height: 100%;
     align-items: center;
     justify-content: center;
+  }
+
+  .sign_in {
+    float:right;
   }
 </style>
 

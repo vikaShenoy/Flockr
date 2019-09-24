@@ -3,6 +3,22 @@
     <div>
       <h2>Welcome to </h2>
       <h1>Flockr</h1>
+
+        <v-spacer row>
+          <v-btn
+            color="secondary"
+            depressed
+            @click="homeSignup()"
+            >Sign Up
+          </v-btn>
+          <v-btn
+            color="secondary"
+            depressed
+            @click="homeLogin()"
+            >Log in
+          </v-btn>
+        </v-spacer>
+
     </div>
   </div>
 </template>
@@ -13,7 +29,16 @@
       return {
         e1: 0
       }
+    },
+    methods: {
+      async homeLogin() {
+          this.$router.push("/login");
+      },
+      async homeSignup() {
+        this.$router.push("/signup");
+      }
     }
+
   }
 </script>
 

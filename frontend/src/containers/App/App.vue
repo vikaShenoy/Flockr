@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <Navbar/>
-    <Sidebar/>
+    <Sidebar v-if="isLoggedIn"/>
     <v-content>
       <v-container fluid fill-height id="container">
         <v-layout>
@@ -23,6 +23,8 @@ import GlobalSnackbar from "../../components/Snackbars/GlobalSnackbar";
 import Chat from "./Chat/Chat";
 import UserStore from "../../stores/UserStore";
 
+
+
 export default {
   components: {
     Sidebar,
@@ -32,8 +34,15 @@ export default {
   },
   name: "App",
   data() {
-    return {
-      UserStore: UserStore
+    return {}
+  },
+  computed: {
+    /**
+     * Checks if the user is currently logged in
+     * @returns {The user ID}
+     */
+    isLoggedIn() {
+      return UserStore.methods.loggedIn();
     }
   }
 }
