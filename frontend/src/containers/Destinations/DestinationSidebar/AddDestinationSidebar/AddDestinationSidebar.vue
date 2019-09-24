@@ -152,8 +152,8 @@
             districtName: null
           },
           travellerTypes: [],
-          destinationLat: "",
-          destinationLon: "",
+          destinationLat: null,
+          destinationLon: null,
           destinationCountry: {
             countryId: null,
             countryName: null
@@ -177,7 +177,9 @@
         travellerTypes: [],
         locationDisabled: false,
         isValidForm: false,
-        formIsLoading: false
+        formIsLoading: false,
+        destinationLat: null,
+        destinationLon: null
       };
     },
     mounted() {
@@ -198,8 +200,8 @@
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
               position => {
-                this.destination.destinationLat = position.coords.latitude;
-                this.destination.destinationLon = position.coords.longitude;
+                this.destinationLat = position.coords.latitude;
+                this.destinationLon = position.coords.longitude;
               },
               error => {
                 this.$emit("displayMessage", {
@@ -261,6 +263,8 @@
        * Closes the dialog window and resets all fields to default values.
        */
       closeDialog() {
+        this.latitude = null;
+        this.longitude = null;
         this.destination = {
           destinationName: "",
           destinationType: {
@@ -271,8 +275,8 @@
             districtName: null
           },
           travellerTypes: [],
-          destinationLat: "",
-          destinationLon: "",
+          destinationLat: null,
+          destinationLon: null,
           destinationCountry: {
             countryId: null,
             countryName: null
@@ -314,6 +318,14 @@
       },
       updateCountry(newValue) {
         this.destination.destinationCountry = newValue;
+      }
+    },
+    watch: {
+      destinationLat(latitude) {
+        this.latitude = latitude;
+      },
+      destinationLon(longitude) {
+        this.longitude = longitude;
       }
     }
   }
