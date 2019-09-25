@@ -185,8 +185,8 @@ export default {
       return foundContiguousDestination;
     },
     /**
-     * Validates and renders errors if there are any
-     * @returns {boolean} True if fields are valid, false otherwise
+     * Validates and renders errors if there are any.
+     * @returns {boolean} True if fields are valid, false otherwise.
      */
     validate() {
       const validFields = this.$refs.addTripForm.validate();
@@ -198,26 +198,17 @@ export default {
     },
 
     /**
-     * Validates fields before sending a request to add a trip
+     * Validates fields before sending a request to add a trip.
      */
     async addTrip() {
       const validFields = this.validate();
       if (!validFields) return;
 
-      try {
-        const tripDestinations = this.tripDestinations.map(tripDestination => {
-          tripDestination.destinationId =
-            tripDestination.destination.destinationId;
-          return tripDestination;
-        });
-      } catch (e) {
-        this.$root.$emit("show-snackbar", {
-          color: "error",
-          time: 1500,
-          message: "Select at least 2 trip destinations"
-        });
-        return;
-      }
+      const tripDestinations = this.tripDestinations.map(tripDestination => {
+        tripDestination.destinationId =
+          tripDestination.destination.destinationId;
+        return tripDestination;
+      }); 
 
       let userIds = [];
 
@@ -244,6 +235,7 @@ export default {
 
         this.$emit("newTripAdded", subTrip);
       } catch (e) {
+        console.log(e);
         this.$root.$emit("show-snackbar", {
           color: "error",
           message: "Error creating trip",
