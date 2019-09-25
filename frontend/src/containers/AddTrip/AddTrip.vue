@@ -202,7 +202,9 @@ export default {
      */
     async addTrip() {
       const validFields = this.validate();
-      if (!validFields) return;
+      if (!validFields) {
+        this.$root.$emit('show-error-snackbar', 'Select at least 2 destinations and a trip name', 5000);
+      }
 
       const tripDestinations = this.tripDestinations.map(tripDestination => {
         tripDestination.destinationId =
