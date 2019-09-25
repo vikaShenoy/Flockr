@@ -33,7 +33,6 @@
         minZoom: 2
       }"
       @click="processClick"
-      @dblclick="dblClickFunc"
     >
 
       <GmapMarker
@@ -187,7 +186,7 @@
     },
     methods: {
       /**
-       * Gets the latitude and longitude of the clicked location
+       * Gets the latitude and longitude of the clicked location and pings that location
        */
       pingMap(event) {
         this.latitude = event.latLng.lat();
@@ -202,6 +201,7 @@
           opacity: 1,
           animation: google.maps.Animation.BOUNCE
         });
+        // If pan on, the map pans to where the user pinged
         if (this.panOn) {
           this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
           this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
@@ -215,8 +215,9 @@
 
         UserStore.data.socket.send(JSON.stringify(data));
       },
+
       /**
-       * Listens websockets events to for map pings
+       * The websocket listens for the events for the map pings made by a user
        */
       listenOnMessage() {
         UserStore.data.socket.addEventListener("message", (event) => {
@@ -227,7 +228,8 @@
         })
         },
       /**
-       * When the websocket receives a message, this function is called to display the ping
+       * When the websocket receives a message, this function is called to display the ping to the
+       * other users in the Trip
        */
       showPing(message) {
         this.latitude = message.latitude;
@@ -242,7 +244,7 @@
           opacity: 1,
           animation: google.maps.Animation.BOUNCE,
         });
-
+        // If pan on, the map pans to where the user pinged
         if (this.panOn) {
           this.$refs.map.panTo({lat: this.latitude, lng: this.longitude});
         }
@@ -262,7 +264,8 @@
         }));
       },
       /**
-       * Gets called when map marker has been clicked on
+       * Gets called when map marker has been clicked on, shows the information of the
+       * clicked marker
        */
       toggleInfoWindow(marker, index) {
         this.infoWindowPos = marker.position;
@@ -276,10 +279,15 @@
           this.currentOpenedIndex = index;
         }
       },
+      /**
+       * Gets the destination photos of that specific destination
+       */
       getPhotoUrl(photoId) {
         return endpoint(`/users/photos/${photoId}?Authorization=${localStorage.getItem("authToken")}`);
       },
       /**
+       * This function figures out the latitude and longitude of the location the user clicked
+       * in the map.
        * @param event the event emitted by the map
        */
       processClick(event) {
@@ -291,11 +299,6 @@
             longitude: lng()
           });
         }, 200);
-      },
-
-      dblClickFunc() {
-        clearTimeout(this.clickTimeout);
-        // INSERT DOUBLE CLICK CODE HERE
       }
     },
     watch: {
