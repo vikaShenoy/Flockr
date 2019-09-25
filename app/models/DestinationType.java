@@ -9,7 +9,6 @@ import javax.persistence.Id;
 /**
  * A type of destination that is linked to the destination object.
  */
-
 @Entity
 public class DestinationType extends Model {
 
@@ -18,6 +17,10 @@ public class DestinationType extends Model {
 
     private String destinationTypeName;
 
+    /**
+     * Creates a new destination type
+     * @param destinationTypeName The name of the destination type name
+     */
     public DestinationType(String destinationTypeName) {
         this.destinationTypeName = destinationTypeName;
     }
@@ -32,10 +35,6 @@ public class DestinationType extends Model {
 
     public String getDestinationTypeName() {
         return destinationTypeName;
-    }
-
-    public void setDestinationTypeName(String destinationTypeName) {
-        this.destinationTypeName = destinationTypeName;
     }
 
     public static final Finder<Integer, DestinationType> find = new Finder<>(DestinationType.class);

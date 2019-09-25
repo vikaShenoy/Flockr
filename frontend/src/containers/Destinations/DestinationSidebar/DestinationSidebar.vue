@@ -41,7 +41,7 @@
 
     </div>
 
-    <div id="destinations-list" ref="destinationsList" @scroll="handleScrolling">
+    <div id="destinations-list" ref="destinationsList" @scroll.passive="handleScrolling">
       <div v-if="shouldShowEditor">
         <AddDestinationSidebar
           v-on:addNewDestination="addNewDestination"
@@ -77,10 +77,10 @@
             title="Cannot delete destination"
             :dialog.sync="cannotDeleteDestDialog"
     >
-      The destination that you are trying to delete is in the following trips
+      The destination that you are trying to delete is in the following trips:
 
       <ul>
-        <li v-for="usedTrip in usedTrips" v-bind:key="usedTrip.tripId">{{ usedTrip.tripName }}</li>
+        <li v-for="usedTrip in usedTrips" v-bind:key="usedTrip.tripId">{{ usedTrip.name }}</li>
       </ul>
 
     </AlertDialog>
@@ -90,7 +90,12 @@
 <script>
   import DestinationSummary from "./DestinationSummary/DestinationSummary";
   import PromptDialog from "../../../components/PromptDialog/PromptDialog";
-  import {deleteDestination, getUserTrips, undoDeleteDestination} from "./DestinationSidebarService";
+  import {
+    checkDestinationUsed,
+    deleteDestination,
+    getUserTrips,
+    undoDeleteDestination
+  } from "./DestinationSidebarService";
   import AlertDialog from "../../../components/AlertDialog/AlertDialog";
   import UndoRedo from "../../../components/UndoRedo/UndoRedo";
   import Command from '../../../components/UndoRedo/Command';
@@ -159,12 +164,16 @@
       async getUserTrips() {
         this.trips = await getUserTrips();
       },
-
+      /**
+       * Toggles the editor and resets the latitude and longitude coordinates
+       */
       toggleEditor() {
         this.resetCoordinates();
         this.shouldShowEditor = !this.shouldShowEditor;
       },
-
+      /**
+       * Emits an add new destination function
+       */
       addNewDestination(destination) {
         this.$emit('addNewDestination', destination);
         this.toggleEditor();
@@ -192,19 +201,28 @@
       /**
        * Gets trips that are using a specific destination
        */
-      getTripsUsingDestination(destinationId) {
-        return this.trips.filter(trip => {
-          const usedTripDestinations = trip.tripDestinations.filter(tripDestination => {
-            return tripDestination.destination.destinationId === destinationId;
-          });
+      getTripsUsingDestination(trips) {
 
-          return usedTripDestinations.length;
+        const toReturn = this.trips.filter(trip => {
+          let ids = trips.map(trip => trip.tripNodeId);
+          return ids.includes(trip.tripNodeId)
         });
+        return toReturn
+        // return this.trips.filter(trip => {
+        //   const usedTripDestinations = trip.tripNodes.filter(tripNode => {
+        //     return tripNode.destination.destinationId === destinationId;
+        //   });
+        //
+        //   return usedTripDestinations.length;
+        // });
       },
-
-      showDeleteDestination(destinationId) {
-        const usedTrips = this.getTripsUsingDestination(destinationId);
-        if (usedTrips.length) {
+      /**
+       * Shows the trips that the destination is being used on when destination
+       * is trying to be deleted
+       */
+      async showDeleteDestination(destinationId) {
+        const usedTrips = this.getTripsUsingDestination(await checkDestinationUsed(destinationId));
+        if (usedTrips.length > 0) {
           this.usedTrips = usedTrips;
           this.cannotDeleteDestDialog = true;
         } else {
@@ -220,6 +238,9 @@
       }
     },
     computed: {
+      /**
+       * Sets which destinations should be shown: either your destinations or the public destinations
+       */
       shouldShowSpinner() {
         return this.viewOption === "your" && !this.yourDestinations || this.viewOption === "public" && !this.publicDestinations;
       },

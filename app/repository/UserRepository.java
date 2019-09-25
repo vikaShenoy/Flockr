@@ -1,10 +1,8 @@
 package repository;
 
-import io.ebean.Ebean;
-import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
+import java.util.Objects;
 import models.*;
-import play.db.ebean.EbeanConfig;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -19,23 +17,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
+
 /**
- * Contains database calls for all things traveller related
+ * Class that performs operations on the database regarding users.
  */
 public class UserRepository {
 
-    private final EbeanServer ebeanServer;
     private final DatabaseExecutionContext executionContext;
 
     /**
      * Dependency injection
      *
-     * @param ebeanConfig      ebean config to use
      * @param executionContext Context to run completion stages on
      */
     @Inject
-    public UserRepository(EbeanConfig ebeanConfig, DatabaseExecutionContext executionContext) {
-        this.ebeanServer = Ebean.getServer(ebeanConfig.defaultServer());
+    public UserRepository(DatabaseExecutionContext executionContext) {
         this.executionContext = executionContext;
     }
 
@@ -105,22 +101,7 @@ public class UserRepository {
      * @return the list of all the Passports
      */
     public CompletionStage<List<Passport>> getAllPassports() {
-        return supplyAsync(() -> {
-            List<Passport> passports = Passport.find.query().orderBy().asc("passport_country").findList();
-            return passports;
-        }, executionContext);
-    }
-
-    /**
-     * Gets a passport by it's ID
-     *
-     * @param passportId The passport to get
-     * @return The list of passports
-     */
-    public CompletionStage<Optional<Passport>> getPassportById(int passportId) {
-        return supplyAsync(() -> Passport.find.query().
-            where().eq("passport_id", passportId).findOneOrEmpty()
-            , executionContext);
+        return supplyAsync(() -> Passport.find.query().orderBy().asc("passport_country").findList(), executionContext);
     }
 
     /**
@@ -132,18 +113,6 @@ public class UserRepository {
         return supplyAsync(() -> Nationality.find.query().orderBy().asc("nationality_name").findList(), executionContext);
     }
 
-    /**
-     * Gets a nationality by it's ID.
-
-     *
-     * @param nationalityId The nationality to get
-     * @return The list of nationalities
-     */
-    public CompletionStage<Optional<Nationality>> getNationalityById(int nationalityId) {
-        return supplyAsync(() -> Nationality.find.query().
-                where().eq("nationality_id", nationalityId).findOneOrEmpty(), executionContext);
-    }
-
 
     /**
      * Funtion that gets all of the valid traveller types in the database
@@ -151,10 +120,7 @@ public class UserRepository {
      * @return the list of traveller types
      */
     public CompletionStage<List<TravellerType>> getAllTravellerTypes() {
-        return supplyAsync(() -> {
-            List<TravellerType> types = TravellerType.find.query().findList();
-            return types;
-        }, executionContext);
+        return supplyAsync(() -> TravellerType.find.query().findList(), executionContext);
     }
 
     /**
@@ -162,14 +128,11 @@ public class UserRepository {
      * @return a list of travellers.
      */
     public CompletionStage<List<User>> getAllTravellers() {
-        return supplyAsync(() -> {
-            List<User> user = User.find.query()
-                    .fetch("passports")              // contacts is a OneToMany path
-                    .fetch("travellerTypes")
-                    .fetch("nationalities")
-                    .findList();
-            return user;
-        }, executionContext);
+        return supplyAsync(() -> User.find.query()
+                .fetch("passports")              // contacts is a OneToMany path
+                .fetch("travellerTypes")
+                .fetch("nationalities")
+                .findList(), executionContext);
     }
 
 
@@ -178,20 +141,17 @@ public class UserRepository {
      * @return a list of travellers.
      */
     public CompletionStage<List<User>> getTravellers() {
-        return supplyAsync(() -> {
-            List<User> user = User.find.query()
-                    .fetch("passports")              // contacts is a OneToMany path
-                    .fetch("travellerTypes")
-                    .fetch("nationalities")
-                    .where()
-                    .isNotNull("middle_name")
-                    .isNotNull("gender")
-                    .isNotNull("date_of_birth")
-                    .isNotEmpty("nationalities")
-                    .isNotEmpty("travellerTypes")
-                    .findList();
-            return user;
-        }, executionContext);
+        return supplyAsync(() -> User.find.query()
+                .fetch("passports")              // contacts is a OneToMany path
+                .fetch("travellerTypes")
+                .fetch("nationalities")
+                .where()
+                .isNotNull("middle_name")
+                .isNotNull("gender")
+                .isNotNull("date_of_birth")
+                .isNotEmpty("nationalities")
+                .isNotEmpty("travellerTypes")
+                .findList(), executionContext);
     }
 
     /**
@@ -203,7 +163,7 @@ public class UserRepository {
     public CompletionStage<Void> deleteUserById(Integer userId) {
         return runAsync(() -> {
             User userToDelete = User.find.byId(userId);
-            userToDelete.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+            Objects.requireNonNull(userToDelete).setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
             userToDelete.save();
             userToDelete.delete();
         }, executionContext);

@@ -3,7 +3,6 @@
           v-model="visible"
           width="500"
   >
-
     <v-tabs
             centered
             color="secondary"
@@ -11,12 +10,10 @@
             icons-and-text
             hide-slider
     >
-
       <v-tab href="#tab-1">
         Create Treasure Hunt
         <v-icon>zoom_out_map</v-icon>
       </v-tab>
-
       <v-tab-item
               key="1"
               value="tab-1"
@@ -34,34 +31,71 @@
                   </v-flex>
                   <v-flex xs12>
                     <GenericCombobox
+                      v-model="createTreasureHuntDestination"
                       label="Destination"
                       :required="true"
                       item-text="destinationName"
                       :get-function="getPublicDestinationsFunction"
-                      v-model="createTreasureHuntDestination"
                     />
                   </v-flex>
                   <v-flex xs12>
                     <v-textarea v-model="createTreasureHuntRiddle" label="Riddle" required></v-textarea>
                   </v-flex>
-                  <v-flex xs12>
-                    <v-text-field
-                            v-model="startDate"
-                            label="Start Date"
-                            prepend-icon="event"
-                            type="date"
-                            :max="today"
-                    ></v-text-field>
-                  </v-flex>
-                  <v-flex xs12>
-                    <v-text-field
-                            v-model="endDate"
-                            label="End Date"
-                            prepend-icon="event"
-                            type="date"
-                            :min="today"
-                    ></v-text-field>
-                  </v-flex>
+                  <div class="start-date-time-field">
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="startDate"
+                          label="Start Date"
+                          prepend-icon="event"
+                          type="date"
+                          :max="today"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+
+                    <div>
+                        <v-flex xs12>
+                        <v-text-field
+                          v-model="startTime"
+                          label="Start Time"
+                          prepend-icon="timer"
+                          type="time"
+                          :min="startTime"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+                  </div>
+
+                  <div class="end-date-time-field">
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="endDate"
+                          label="End Date"
+                          prepend-icon="event"
+                          type="date"
+                          :min="startDate"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="endTime"
+                          label="End Time"
+                          prepend-icon="timer"
+                          type="time"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+
+                  </div>
+
+
+
+
                 </v-layout>
               </v-container>
             </v-form>
@@ -109,7 +143,9 @@
         createTreasureHuntRiddle: "",
         startDate: null,
         endDate: null,
+        endTime: null,
         today: new Date().toISOString().split("T")[0],
+        startTime: new Date().getHours() + ":" + new Date().getMinutes(),
         treasure: null,
         getPublicDestinationsFunction: search => getPublicDestinations(search, 0) // used by GenericCombobox component
       }
@@ -127,6 +163,8 @@
         this.createTreasureHuntDestination = null;
         this.startDate = null;
         this.endDate = null;
+        this.startTime = null;
+        this.endTime = null;
       },
 
       /**
@@ -146,17 +184,16 @@
       async createTreasureHunt() {
 
         let treasureHunt = {
-
           treasureHuntName: this.createTreasureHuntName,
           treasureHuntDestinationId: this.createTreasureHuntDestination.destinationId,
           riddle: this.createTreasureHuntRiddle,
           startDate: this.startDate,
-          endDate: this.endDate + " 23:59:59"
-
+          endDate: this.endDate,
+          startTime: this.startTime,
+          endTime: this.endTime
         };
 
         try {
-
           this.treasure = await createTreasureHunt(treasureHunt);
 
           const undoCommand = async () => {
@@ -185,7 +222,9 @@
        * @returns {boolean}
        */
       validTreasureHunt() {
-          return !(this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
+        return !(this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null && this.startTime != null && this.endTime != null)
+
+
       }
     },
     watch: {
@@ -200,5 +239,23 @@
 </script>
 
 <style scoped>
+
+  .start-date-time-field {
+    float: left;
+    width: 100%
+  }
+
+  .start-date-time-field div{
+    float: left;
+  }
+
+  .end-date-time-field {
+    float: left;
+    width: 100%
+  }
+
+  .end-date-time-field div{
+    float: left;
+  }
 
 </style>

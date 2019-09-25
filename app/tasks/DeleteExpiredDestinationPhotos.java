@@ -17,7 +17,10 @@ import scala.concurrent.duration.Duration;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
-
+/**
+ * Task to delete all destination photos in the database that have been soft deleted if their
+ * expiry has passed.
+ */
 public class DeleteExpiredDestinationPhotos {
     private final ActorSystem actorSystem;
     private final ExecutionContext executionContext;

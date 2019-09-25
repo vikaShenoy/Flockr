@@ -75,7 +75,6 @@
         this.isAddingATrip = false;
         this.refreshTrips();
 
-
         let undoCommand = async (tripId) => {
           await deleteTripFromList(tripId);
           this.refreshTrips();
@@ -117,7 +116,9 @@
       refreshTrips() {
         this.tripListKey += 1;
       },
-
+      /**
+       * Sets the adding a trip variable to true if the add button is clicked.
+       */
       addButtonClicked() {
         this.isAddingATrip = true;
       }

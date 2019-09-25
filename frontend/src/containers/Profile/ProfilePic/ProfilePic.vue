@@ -48,6 +48,9 @@ export default {
     };
   },
   methods: {
+    /**
+     * Shows the profile photo dialog
+     */
     showProfilePhotoDialog() {
       this.dialog = true;
     },

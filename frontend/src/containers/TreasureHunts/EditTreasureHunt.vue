@@ -3,7 +3,6 @@
           v-model="visible"
           width="500"
   >
-
     <v-tabs
             centered
             color="secondary"
@@ -11,12 +10,10 @@
             icons-and-text
             hide-slider
     >
-
       <v-tab href="#tab-1">
         Edit Treasure Hunt
         <v-icon>zoom_out_map</v-icon>
       </v-tab>
-
       <v-tab-item
               key="1"
               value="tab-1"
@@ -39,30 +36,65 @@
                       item-text="destinationName"
                       :get-function="getPublicDestinationsFunction"
                       @item-selected="publicDestinationSelected"
+                      v-model="editTreasureHuntDestination"
                     />
                   </v-flex>
                   <v-flex xs12>
                     <v-textarea v-model="editTreasureHuntRiddle" label="Riddle" required>
                     </v-textarea>
                   </v-flex>
-                  <v-flex xs12>
-                    <v-text-field
-                            v-model="startDate"
-                            label="Start Date"
-                            prepend-icon="event"
-                            type="date"
-                            :max="today"
-                    ></v-text-field>
-                  </v-flex>
-                  <v-flex xs12>
-                    <v-text-field
-                            v-model="endDate"
-                            label="End Date"
-                            prepend-icon="event"
-                            type="date"
-                            :min="today"
-                    ></v-text-field>
-                  </v-flex>
+
+                  <div class="start-date-time-field">
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="startDate"
+                          label="Start Date"
+                          prepend-icon="event"
+                          type="date"
+                          :min="today"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="startTime"
+                          label="Start Time"
+                          prepend-icon="timer"
+                          type="time"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+                  </div>
+
+
+                  <div class="end-date-time-field">
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="endDate"
+                          label="End Date"
+                          prepend-icon="event"
+                          type="date"
+                          :min="startDate"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="endTime"
+                          label="End Time"
+                          prepend-icon="timer"
+                          type="time"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+                  </div>
+
                 </v-layout>
               </v-container>
             </v-form>
@@ -101,9 +133,11 @@
       this.getDestinations();
       this.editTreasureHuntName = this.data.treasureHuntName;
       this.editTreasureHuntRiddle = this.data.riddle;
-      this.editTreasureHuntDestination = this.data.treasureHuntDestinationId;
+      this.editTreasureHuntDestinationId = this.data.treasureHuntDestinationId;
       this.startDate = moment(this.data.startDate).format("YYYY-MM-DD");
+      this.startTime = moment(this.data.startDate).format("HH:mm");
       this.endDate = moment(this.data.endDate).format("YYYY-MM-DD");
+      this.endTime = moment(this.data.endDate).format("HH:mm");
       this.visible = this.toggle;
     },
     data() {
@@ -111,10 +145,15 @@
         visible: false,
         destinations: [],
         editTreasureHuntName: "",
-        editTreasureHuntDestination: null, // the id of the destination
+        editTreasureHuntDestination: this.data.destination, // the id of the destination
+        editTreasureHuntDestinationId: null,
         editTreasureHuntRiddle: "",
+        startDateAndTime: null,
+        endDateAndTime: null,
         startDate: null,
+        startTime: null,
         endDate: null,
+        endTime: null,
         today: new Date().toISOString().split("T")[0],
         getPublicDestinationsFunction: search => getPublicDestinations(search, 0) // used by GenericCombobox
       }
@@ -124,7 +163,7 @@
        * Called when a new public destination is selected in the GenericCombobox
        */
       publicDestinationSelected(destination) {
-        this.editTreasureHuntDestination = destination.destinationId;
+        this.editTreasureHuntDestinationId = destination.destinationId;
       },
       /**
        * Function that emits an event to the parent component to close the modal, and also resets all form data
@@ -133,6 +172,7 @@
         this.$emit("closeEditDialog");
         this.editTreasureHuntName = "";
         this.editTreasureHuntRiddle = "";
+        this.editTreasureHuntDestinationId = null;
         this.editTreasureHuntDestination = null;
         this.startDate = null;
         this.endDate = null;
@@ -161,16 +201,20 @@
           treasureHuntDestinationId: this.data.treasureHuntDestinationId,
           riddle: this.data.riddle,
           startDate: moment(this.data.startDate).format("YYYY-MM-DD"),
-          endDate: moment(this.data.endDate).format("YYYY-MM-DD HH:mm:ss")
+          startTime: moment(this.data.startDate).format("HH:mm"),
+          endDate: moment(this.data.endDate).format("YYYY-MM-DD"),
+          endTime: moment(this.data.endDate).format("HH:mm")
         };
 
         let newTreasureHuntData = {
           treasureHuntId: this.data.treasureHuntId,
           treasureHuntName: this.editTreasureHuntName,
-          treasureHuntDestinationId: this.editTreasureHuntDestination,
+          treasureHuntDestinationId: this.editTreasureHuntDestinationId,
           riddle: this.editTreasureHuntRiddle,
-          startDate: this.startDate,
-          endDate: this.endDate + " 23:59:59"
+          startDate: moment(this.startDate).format("YYYY-MM-DD"),
+          startTime: this.startTime,
+          endDate: moment(this.endDate).format("YYYY-MM-DD"),
+          endTime: this.endTime
         };
 
         const undoCommand = async (oldTreasureHuntData) => {
@@ -207,6 +251,16 @@
       },
       visible(newVal) {
         this.$emit("updateToggle", newVal)
+      },
+      /**
+       * Changes the treasure hunt destination value to the newly chosen destination value
+       * @param newDestination
+       */
+      editTreasureHuntDestination(newDestination) {
+        this.editTreasureHuntDestination = newDestination;
+        if (newDestination !== null) {
+          this.editTreasureHuntDestinationId = this.editTreasureHuntDestination.destinationId;
+        }
       }
     }
   }
@@ -214,4 +268,21 @@
 
 <style scoped>
 
+  .start-date-time-field {
+    float: left;
+    width: 100%
+  }
+
+  .start-date-time-field div{
+    float: left;
+  }
+
+  .end-date-time-field {
+    float: left;
+    width: 100%
+  }
+
+  .end-date-time-field div{
+    float: left;
+  }
 </style>

@@ -103,8 +103,7 @@ public class AdminSteps {
 
         Date date = new Date();
 
-        Security security = new Security();
-        String password = security.hashPassword("password");
+        String password = Security.hashPassword("password");
 
         User user;
 

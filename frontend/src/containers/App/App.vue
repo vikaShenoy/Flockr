@@ -23,8 +23,6 @@ import GlobalSnackbar from "../../components/Snackbars/GlobalSnackbar";
 import Chat from "./Chat/Chat";
 import UserStore from "../../stores/UserStore";
 
-
-
 export default {
   components: {
     Sidebar,

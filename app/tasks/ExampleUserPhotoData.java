@@ -16,7 +16,9 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 
-/** Task to create profile photos for all the users in the database. */
+/**
+ * Task to create profile photos for all the users in the database.
+ */
 public class ExampleUserPhotoData {
 
   private ActorSystem actorSystem;

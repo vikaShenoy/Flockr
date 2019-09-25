@@ -160,13 +160,16 @@ export default {
     };
   },
   methods: {
-
+    /**
+     * Updates the users in the trip with the chosen users
+     */
     updateSelectedUsers(newUsers) {
       this.selectedUsers = newUsers
     },
-
+    /**
+     * Searches the users with the given name search string
+     */
     searchUser: async name => await getUsers(name),
-
     /**
      * Attempt to get the chat with the users of the trip.
      */
@@ -208,8 +211,6 @@ export default {
       // Filter out user's own ID
       const users = (await getUsers(name))
         .filter(user => user.userId !== UserStore.data.userId);
-
-
       this.users = users;
       return users;
     },
@@ -244,6 +245,8 @@ export default {
      * Saves the current selected users that are in the trip
      */
     async saveUsersInTrip() {
+        const oldUsers = this.trip.users;
+        const oldRoles = this.trip.userRoles;
       const users = [...this.selectedUsers, UserStore.data];
       this.isLoading = true;
       this.trip.users = users;
@@ -259,16 +262,13 @@ export default {
       }));
       // add the own user's role too
       this.trip.userRoles.push(ownUserRole);
+      const newRoles = this.trip.userRoles;
 
       await editTrip(this.trip);
       this.isLoading = false;
       this.isShowingDialog = false;
-      this.$emit("newUsers", users);
+      this.$emit("newUsers", users, oldUsers, newRoles, oldRoles);
     },
-    getUserPermission(user) {
-      const userRole = this.trip.userRoles.find(userRole => userRole.user === user.userId);
-      return userRole.role.roleType;
-    }
   },
   mounted() {
     this.getAllUsers();
@@ -288,7 +288,6 @@ export default {
           .filter(user => user.userId !== UserStore.data.userId);
 
       }
-      
       this.$emit("update:isShowing", value);
     },
     selectedUsers: {
@@ -307,11 +306,17 @@ export default {
       },
       deep: true
     },
+    /**
+     * The function changes the value of the showing dialog
+     */
     isShowing(value) {
       this.isShowingDialog = value;
     }
   },
   computed: {
+    /**
+     * Checks if the user is the only one in the Trip
+     */
     onlyUser() {
       return this.trip.users.length === 1;
     },

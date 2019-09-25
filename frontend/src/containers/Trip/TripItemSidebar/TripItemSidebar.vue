@@ -244,8 +244,8 @@ export default {
     tripNodesUpdated(parentTripNode, tripNodes) {
       this.$emit("tripNodesUpdated", parentTripNode, tripNodes);
     },
-    newUsers(newUsers) {
-      this.$emit("newUsers", newUsers);
+    newUsers(newUsers, oldUsers, newRoles, oldRoles) {
+      this.$emit("newUsers", newUsers, oldUsers, newRoles, oldRoles);
     },
     /**
      * Finds the deepest level of a trip tree
@@ -268,15 +268,24 @@ export default {
     }
   },
   computed: {
+    /**
+     * Computes the width of the node levels
+     */
     computeWidth() {
       const width = 300 + (this.findDeepestNodeLevel(this.trip) * 50);
       return `${width}px`;
     },
+    /**
+     * Returns true if the user is an owner and returns false if not.
+     */
     isUserOwner() {
       const user = this.trip.users.find(user => user.userId === UserStore.data.userId);
       const userRole = this.trip.userRoles.find(userRole => userRole.user.userId === user.userId && userRole.role.roleType === roleType.TRIP_OWNER);
       return userRole ? true : false; 
     },
+    /**
+     * Returns true of user is a trip manager or trip owner
+     */
     hasPermissionToEdit() {
       const userRole = this.trip.userRoles.find(userRole => userRole.user.userId === UserStore.data.userId);
       return userRole.role.roleType === roleType.TRIP_MANAGER || userRole.role.roleType === roleType.TRIP_OWNER;

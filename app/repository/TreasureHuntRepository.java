@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
+
 /**
- * Contains all database interaction associated with treasure hunts.
+ * Class that performs operations on the database regarding treasure hunts.
  */
 public class TreasureHuntRepository {
 
-    final Logger log = LoggerFactory.getLogger(this.getClass());
     private final DatabaseExecutionContext executionContext;
 
     /**
@@ -99,11 +99,8 @@ public class TreasureHuntRepository {
      * @return the treasure hunt
      */
     public CompletionStage<Optional<TreasureHunt>> getTreasureHuntByIdWithSoftDelete(int treasureHuntId) {
-        return supplyAsync(() -> {
-            Optional<TreasureHunt> treasureHunt = TreasureHunt.find.query().setIncludeSoftDeletes()
-                    .where().eq("treasure_hunt_id", treasureHuntId).findOneOrEmpty();
-            return treasureHunt;
-        }, executionContext);
+        return supplyAsync(() -> TreasureHunt.find.query().setIncludeSoftDeletes()
+                .where().eq("treasure_hunt_id", treasureHuntId).findOneOrEmpty(), executionContext);
     }
 
     /**

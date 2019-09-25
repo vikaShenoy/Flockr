@@ -55,7 +55,6 @@
     },
 
     methods: {
-
       /**
        * Called when the dataDialog variable is modified.
        * Emits an event called dialogChangedEvent with a parameter of the dataDialog variable
@@ -63,7 +62,6 @@
       closeDialog: function () {
         this.$emit("dialogChanged", this.dataDialog);
       },
-
       /**
        * Called when the dialog prop is changed.
        * Updates the dataDialog variable to match the dialog prop.
@@ -71,7 +69,6 @@
       onDialogChanged: function () {
         this.dataDialog = this.dialog;
       },
-
       /**
        * Gets the photo endpoint to query for the given photo filename
        *

@@ -156,7 +156,7 @@ public class DestinationTestingSteps {
   }
 
   @Given("^that the user (\\d+) is an admin$")
-  public void thatTheUserIsAnAdmin(int userIndex) throws Throwable {
+  public void thatTheUserIsAnAdmin(int userIndex) {
     User user = TestState.getInstance().getUser(userIndex);
     List<Role> roles = new ArrayList<>();
     roles.add(new Role(RoleType.ADMIN));
@@ -165,8 +165,7 @@ public class DestinationTestingSteps {
   }
 
   @When("I click the Add Destination button")
-  public void IClickTheAddDestination()
-      throws IOException, UnauthorizedException, ServerErrorException {
+  public void IClickTheAddDestination() {
     User user = TestState.getInstance().getUser(0);
     Application application = TestState.getInstance().getApplication();
     Result createDestinationResult =

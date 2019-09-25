@@ -68,10 +68,6 @@ public class PersonalPhoto extends Model {
         this.isCover = isCover;
     }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
-
     public void setDeletedExpiry(Timestamp deletedExpiry) {
         this.deletedExpiry = deletedExpiry;
     }
@@ -126,16 +122,8 @@ public class PersonalPhoto extends Model {
         isCover = cover;
     }
 
-    public void setFilenameHash(String filenameHash) {
-        this.filenameHash = filenameHash;
-    }
-
     public String getThumbnailName() {
         return thumbnailName;
-    }
-
-    public void setThumbnailName(String thumbnailName) {
-        this.thumbnailName = thumbnailName;
     }
 
     /**

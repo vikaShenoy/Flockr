@@ -11,10 +11,6 @@
         :rules="tripNameRules"
       ></v-text-field>
 
-      <!--<v-combobox v-if="!isSidebarComponent"-->
-      <!--:items="users" :item-text="formatName"-->
-      <!--v-model="selectedUsers" label="Users" multiple class="col-md-6"></v-combobox>-->
-
       <GenericCombobox
         class="col-md-6"
         v-if="!isSidebarComponent"
@@ -128,27 +124,18 @@ export default {
     this.getUsers();
   },
   methods: {
-    // /**
-    //  * Updates the trip destinations  variable to the trip destinations selected by the user
-    //  */
-    // newDestinationSelected(newTripDestinations) {
-    // 	console.log(this.tripDestinations, " in the AddTrip.vue");
-    //
-    // 	this.tripDestinations = newTripDestinations;
-    // 	//console.log(this.tripDestinations, " in the AddTrip.vue");
-    // },
-
+    /**
+     * Updates the trip destinations variable to the trip destinations selected by the user
+     */
     updateSelectedDestination(destination) {
       this.tripDestinations = destination;
     },
-
     /**
      * Updates the selected users variable to the selected users by the user creating the trip
      */
     updateSelectedUsers(newUsers) {
       this.selectedUsers = newUsers;
     },
-
     /**
      * This function searches users by the given name that is written in the Combo Box
      */
@@ -158,10 +145,9 @@ export default {
      * Gets all users and filters out the logged in user
      */
     async getUsers() {
-      const users = (await getUsers()).filter(
+      this.users = (await getUsers()).filter(
         user => user.userId !== UserStore.data.userId
       );
-      this.users = users;
     },
     /**
      * Adds an empty destination
@@ -208,7 +194,6 @@ export default {
       if (!validFields || contiguousDestinations) {
         return false;
       }
-
       return true;
     },
 
@@ -219,11 +204,21 @@ export default {
       const validFields = this.validate();
       if (!validFields) return;
 
-      const tripDestinations = this.tripDestinations.map(tripDestination => {
-        tripDestination.destinationId =
-          tripDestination.destination.destinationId;
-        return tripDestination;
-      });
+      try {
+        const tripDestinations = this.tripDestinations.map(tripDestination => {
+          tripDestination.destinationId =
+            tripDestination.destination.destinationId;
+          return tripDestination;
+        });
+      } catch (e) {
+        this.$root.$emit("show-snackbar", {
+          color: "error",
+          time: 1500,
+          message: "Select at least 2 trip destinations"
+        });
+        return;
+      }
+
       let userIds = [];
 
       // Specifies the extra users that should be added to the trip
@@ -233,6 +228,7 @@ export default {
           role: selectedUser.userRole
         });
       });
+
       try {
         const subTrip = await createTrip(
           this.tripName,
@@ -240,11 +236,10 @@ export default {
           userIds
         );
 
-        // If this is happening on the sidebar, the new trip is a subtrip. This adds it to parent trip.
+        // If this is happening on the sidebar, the new trip is a sub-trip. This adds it to parent trip.
         if (this.isSidebarComponent) {
           subTrip.isShowing = false;
           this.$emit("close-dialog");
-
         }
 
         this.$emit("newTripAdded", subTrip);

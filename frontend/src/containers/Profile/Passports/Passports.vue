@@ -27,6 +27,7 @@
       </div>
 
       <v-combobox
+              ref="combobox"
               v-else
               v-model="userPass"
               :items="this.validPassports"
@@ -114,6 +115,9 @@
         this.userPass.splice(this.userPass.indexOf(item), 1);
         this.userPass = [...this.userPass];
       },
+      /**
+       * Filters the passports list to only contain all the valid countries
+       */
       async filterPassports() {
         const passports = await getPassports();
         this.validPassports = passports.filter(passport => passport.country.isValid === true);
@@ -126,8 +130,8 @@
        */
       updateSelectedPassports(passports) {
         this.userPass = passports.filter(passport => typeof passport !== 'string');
+        this.$refs.combobox.lazySearch = "";
       }
-
     }
   }
 </script>

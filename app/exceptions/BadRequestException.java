@@ -1,7 +1,7 @@
 package exceptions;
 
 /**
- * Thrown when a destination could not be found
+ * Thrown when a request contains invalid parameters.
  */
 public class BadRequestException extends Exception {
 
@@ -13,7 +13,10 @@ public class BadRequestException extends Exception {
         super(message);
     }
 
-   public BadRequestException() {
+    /**
+     * Initialises a bad request exception without an error
+      */
+    public BadRequestException() {
         super();
     }
 }

@@ -187,6 +187,16 @@
     },
     methods: {
       /**
+       * Shows an error snackbar
+       */
+      showErrorSnackbar(text) {
+        this.$root.$emit("show-snackbar", {
+          message: text,
+          color: "error",
+          timeout: 5000
+        });
+      },
+      /**
        * Stop the form from displaying by emitting call to parent.
        */
       dismissForm: function () {
@@ -216,39 +226,50 @@
         }
         this.changes[fieldKey] = fieldValue; // store the change
       },
+      /**
+       * Gets all the nationalities
+       */
       getAllNationalities: async function () {
         try {
           const res = await superagent.get(endpoint('/users/nationalities'));
           this.allNationalities = res.body;
         } catch (err) {
-          console.error(`Could not get all valid nationalities: ${err}`);
+          this.showErrorSnackbar("Could not get all valid nationalities.");
         }
       },
+      /**
+       * Gets all the passports
+       */
       getAllPassports: async function () {
         try {
           const res = await superagent.get(endpoint('/users/passports'));
           this.allPassports = res.body;
         } catch (err) {
-          console.error(`Could not get all valid passports: ${err}`);
+          this.showErrorSnackbar("Could not get all valid passports.");
         }
       },
+      /**
+       * Gets all the traveller types
+       */
       getAllTravellerTypes: async function () {
         try {
           const res = await superagent.get(endpoint('/users/types')).set("Authorization", localStorage.getItem("authToken"));
           this.allTravellerTypes = res.body;
         } catch (err) {
-          console.error(`Could not get all valid traveller types: ${err}`);
+          this.showErrorSnackbar("Could not get all valid traveller types.");
         }
       },
+      /**
+       * Gets all the user roles
+       */
       getAllUserRoles: async function () {
         try {
           const res = await superagent.get(endpoint('/users/roles')).set("Authorization", localStorage.getItem("authToken"));
           this.allUserRoles = res.body.filter(role => role.roleType !== "SUPER_ADMIN");
         } catch (err) {
-          console.error(`Could not get all user roles: ${err}`);
+          this.showErrorSnackbar("Could not get all user roles.");
         }
       },
-
       /**
        * Transform an array of traveller type names into their corresponding ids.
        * @param travellerTypeNames array of traveller type names.
@@ -259,7 +280,6 @@
         return this.allTravellerTypes.filter((travellerType) => travellerTypeNames.includes(travellerType.travellerTypeName))
             .map((travellerType) => travellerType.travellerTypeId);
       },
-
       /**
        * Transform an array of passport names into their corresponding ids.
        * @param passportNames array of passport names.
@@ -271,7 +291,6 @@
         return this.allPassports.filter((passport) => passportNames.includes(passport.passportCountry))
             .map((passport) => passport.passportId);
       },
-
       /**
        * Transform an array of nationality names into their corresponding ids.
        * @param nationaltyNames array of nationality names.
@@ -281,35 +300,66 @@
         return this.allNationalities.filter((nationality) => nationaltyNames.includes(nationality.nationalityName))
             .map((nationality) => nationality.nationalityId);
       },
+      /**
+       * Saves the date
+       * @param date the new date to be saved
+       */
       saveDate(date) {
         this.$refs.dateMenu.save(date);
       }
     },
     computed: {
+      /**
+       * Formats the name of the user to be first name followed by middle name then last name
+       */
       fullUserName: function () {
         return `${this.initialUserData.firstName} ${this.initialUserData.middleName ? this.initialUserData.middleName : ''} ${this.initialUserData.lastName}`;
       },
+      /**
+       * Formats the user's traveller type list to be traveller type names
+       */
       initialUserTravellerTypeNames: function () {
         return this.initialUserData.travellerTypes.map((travellerType) => travellerType.travellerTypeName);
       },
+      /**
+       * Formats the user's nationality list to be nationality names
+       */
       initialUserNationalityNames: function () {
         return this.initialUserData.nationalities.map((nationality) => nationality.nationalityName);
       },
+      /**
+       * Formats the user's passport countries list to be country names
+       */
       initialUserPassportCountries: function () {
         return this.initialUserData.passports.map((passport) => passport.passportCountry);
       },
+      /**
+       * Formats the user's role list to be role names
+       */
       initialUserRoleTypes: function () {
         return this.initialUserData.roles.map((role) => role.roleType);
       },
+      /**
+       * Formats all the nationality list to be nationality names
+       */
       allNationalityNames: function () {
         return this.allNationalities.map((nationality) => nationality.nationalityName);
       },
+      /**
+       * Formats all the passport countries list to be country names
+       */
       allPassportCountries: function () {
         return this.allPassports.map((passport) => passport.passportCountry);
       },
+      /**
+       * Formats all the role list to be role names
+       */
       allUserRoleTypes: function () {
         return this.allUserRoles.map((role) => role.roleType);
       },
+      /**
+       * Formats all the traveller type list to be traveller type names
+       */
       allTravellerTypeNames: function () {
         return this.allTravellerTypes.map((travellerType) => travellerType.travellerTypeName);
       }
@@ -325,6 +375,10 @@
       dateMenu(date) {
         date && setTimeout(() => (this.$refs.picker.activePicker = "YEAR"));
       },
+      /**
+       * Changes the date of birth to the new DoB value chosen by the user
+       * @param val
+       */
       dateOfBirth(val) {
         this.addChange('dateOfBirth', val);
       }

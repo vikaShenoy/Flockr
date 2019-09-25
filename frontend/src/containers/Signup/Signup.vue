@@ -30,12 +30,18 @@
                       label="Gender"/>
           </v-card>
           <v-spacer row>
-          <v-btn color="primary" @click="currStepperStep = 2" :disabled="!isBasicInfoStepperCompleted">Continue</v-btn>
 
-          <v-btn class="sign_in" color="primary"
-                 @click="signIn()">
-            Sign in
-          </v-btn>
+              <div class="button-row">
+                <v-btn color="secondary"
+                      @click="signIn()"
+                      flat
+                      >
+                  Sign in
+                </v-btn>
+
+                <v-btn color="primary" class="continue-btn" @click="currStepperStep = 2" :disabled="!isBasicInfoStepperCompleted">Continue</v-btn>
+              </div> 
+
           </v-spacer>
         </v-stepper-content>
 
@@ -51,10 +57,14 @@
                           v-on:keyup.enter="signup"/>
           </v-card>
 
-          <v-btn :loading="loading" :disabled="!isLoginInfoStepperCompleted" color="primary" @click="signup()">
-            Continue
-          </v-btn>
-          <v-btn flat @click="currStepperStep = 1">Go back</v-btn>
+          <div class="button-row">
+            <v-btn flat @click="currStepperStep = 1">Go back</v-btn>
+
+            <v-btn :loading="loading" :disabled="!isLoginInfoStepperCompleted" color="primary" @click="signup()">
+              Continue
+            </v-btn>
+          </div>
+
         </v-stepper-content>
 
         <v-stepper-content step="3">
@@ -112,7 +122,7 @@
         this.allPassports = await getPassports();
         this.allTravellerTypes = await getAllTravellerTypes();
       } catch (err) {
-        console.error(`Could not get info from server needed to sign up: ${err}`);
+        this.$root.$emit('show-error-snackbar', 'Could not get info from server', 3000);
       }
     },
     data() {
@@ -145,19 +155,10 @@
       };
     },
     computed: {
-      selectedNationalityIds: function () {
-        return this.selectedNationalities.map(n => n.nationalityId)
-      },
-      selectedPassportIds: function () {
-        return this.selectedPassports.map(p => p.passportId)
-      },
-      selectedTravellerTypeIds: function () {
-        return this.selectedTravellerTypes.map(t => t.travellerTypeId)
-      },
       /**
        * Return true if all the required fields in the basic info stepper are completed
        */
-      isBasicInfoStepperCompleted: function () {
+      isBasicInfoStepperCompleted() {
         const {firstName, lastName, gender, dateOfBirth, email,  isEmailTaken} = this;
         const fieldsAreNotEmpty = [firstName, lastName, gender, email, dateOfBirth].every(field => field.length > 0);
         return fieldsAreNotEmpty && !isEmailTaken;
@@ -165,16 +166,34 @@
       /**
        * Return true if all the required fields in the login info stepper are completed
        */
-      isLoginInfoStepperCompleted: function () {
+      isLoginInfoStepperCompleted() {
         const {password, confirmPassword} = this;
         return password.length > 0 && password === confirmPassword;
       },
       /**
        * Return true if all the required fields in the travelling info stepper are completed
        */
-      isTravellingInfoStepperCompleted: function () {
+      isTravellingInfoStepperCompleted() {
         const {selectedNationalities, selectedTravellerTypes} = this;
         return [selectedNationalities, selectedTravellerTypes].every(array => array.length > 0);
+      },
+      /**
+       * @returns {Number[]} the selected nationality ids
+       */
+      selectedNationalityIds() {
+        return this.selectedNationalities.map(nationality => nationality.nationalityId);
+      },
+      /**
+       * @returns {Number[]} the selected passport ids
+       */
+      selectedPassportIds() {
+        return this.selectedPassports.map(passport => passport.passportId);
+      },
+      /**
+       * @returns {Number[]} the selected traveller type ids
+       */
+      selectedTravellerTypeIds() {
+        return this.selectedTravellerTypes.map(travellerType => travellerType.travellerTypeId);
       }
     },
     methods: {
@@ -323,9 +342,12 @@
           this.loading = false;
           this.currStepperStep = 3; // go to next stepper in sign up sequence
         } catch (e) {
-          console.log(e);
+          this.$root.$emit('show-error-snackbar', 'Could not sign up', 3000);
         }
       },
+      /**
+       * Updates the traveller information
+       */
       async sendTravellerInfo() {
         this.loading = true;
         const {
@@ -361,8 +383,18 @@
 
           this.loading = false;
         } catch (err) {
-          console.error(`Could not add traveller info for user with id ${signedUpUserId}: ${err}`);
+          this.showErrorSnackbar(`Could not add traveller info for user with id ${signedUpUserId}`);
         }
+      },
+      /**
+       * Shows an error snackbar
+       */
+      showErrorSnackbar(text) {
+        this.$root.$emit("show-snackbar", {
+          message: text,
+          color: "error",
+          timeout: 5000
+        });
       },
       /**
        * Updates the selected nationalities of the user to all valid ones so if there is an
@@ -391,6 +423,10 @@
       updateSelectedTravellerType(travellerTypes) {
         this.selectedTravellerTypes = travellerTypes.filter(type => typeof type !== 'string');
       },
+      /**
+       * Login the user
+       * @returns {Promise<void>}
+       */
       async signIn() {
         this.$router.push("/login");
       }
@@ -419,9 +455,15 @@
     justify-content: center;
   }
 
-  .sign_in {
-    float:right;
+  .button-row {
+    display: flex;
+    justify-content: space-between;
   }
+
+  .continue-btn {
+    float: right;
+  }
+
 </style>
 
 

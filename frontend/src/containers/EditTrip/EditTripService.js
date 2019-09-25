@@ -2,6 +2,11 @@ import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 import moment from "moment";
 
+/**
+ * Formats the time like the specified format
+ * @param time
+ * @returns {string}
+ */
 function formatTime(time) {
   return moment.utc(time.as("milliseconds")).format("HH:mm");
 }

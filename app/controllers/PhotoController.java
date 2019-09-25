@@ -19,6 +19,7 @@ import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.*;
 import repository.PhotoRepository;
 import repository.UserRepository;
+import util.ExceptionUtil;
 import util.Security;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -49,23 +50,23 @@ public class PhotoController extends Controller {
   private static final String THUMB = "_thumb";
   private static final String USER_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_REQUEST = "User does not have permission to perform this request";
 
-  private final Security security;
   private final PhotoRepository photoRepository;
   private final UserRepository userRepository;
   private final HttpExecutionContext httpExecutionContext;
+  private final ExceptionUtil exceptionUtil;
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   @Inject
   public PhotoController(
-      Security security,
       PhotoRepository photoRepository,
       UserRepository userRepository,
-      HttpExecutionContext httpExecutionContext) {
-    this.security = security;
+      HttpExecutionContext httpExecutionContext,
+      ExceptionUtil exceptionUtil) {
     this.photoRepository = photoRepository;
     this.httpExecutionContext = httpExecutionContext;
     this.userRepository = userRepository;
+    this.exceptionUtil = exceptionUtil;
   }
 
   /**
@@ -146,7 +147,7 @@ public class PhotoController extends Controller {
               return photoRepository.updatePhoto(photo);
             })
         .thenApplyAsync(personalPhoto -> ok("Successfully updated permission groups"))
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -182,7 +183,7 @@ public class PhotoController extends Controller {
               return photoRepository.undoPhotoDelete(photo);
             })
         .thenApplyAsync(photo -> ok(Json.toJson(photo)))
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -211,7 +212,7 @@ public class PhotoController extends Controller {
               return this.photoRepository.deletePhoto(photo);
             })
         .thenApplyAsync(photo -> (Result) ok())
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -287,20 +288,18 @@ public class PhotoController extends Controller {
                 return forbidden();
               } else {
                 String path = System.getProperty(USER_DIR) + STORAGE_PHOTOS;
-                photo.get().getFilenameHash();
                 File photoToBeSent = new File(path, photo.get().getFilenameHash());
                 if (!photoToBeSent.exists()) {
                   // here for the last of sprint 4 where we can't seem to access photos
                   // but we can access the thumbnails
                   ObjectNode res = Json.newObject();
-                  String messageKey = MESSAGE_KEY;
-                  res.put(messageKey, "Did not find the photo..." + photoToBeSent);
+                  res.put(MESSAGE_KEY, "Did not find the photo..." + photoToBeSent);
                   return internalServerError(res);
                 }
                 return ok().sendFile(photoToBeSent);
               }
             })
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -423,7 +422,7 @@ public class PhotoController extends Controller {
 
               // start copying the file to file system
               String path = System.getProperty(USER_DIR) + STORAGE_PHOTOS;
-              String token = security.generateToken();
+              String token = Security.generateToken();
               String extension = photoContentType.equals("image/png") ? ".png" : ".jpg";
               String filename = token + extension;
               String thumbFilename = token + THUMB + extension;
@@ -432,7 +431,7 @@ public class PhotoController extends Controller {
 
               // if the file path already exists, generate another token
               while (fileDestination.exists()) {
-                token = security.generateToken();
+                token = Security.generateToken();
                 filename = token + extension;
                 thumbFilename = token + THUMB + extension;
                 fileDestination = new File(path, filename);
@@ -510,22 +509,19 @@ public class PhotoController extends Controller {
                       });
             },
             httpExecutionContext.current())
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
    * Checks if the photo directories are created and creates them if not.
-   *
-   * @return returns true only if the storage/photos directory is created, false otherwise.
    */
-  public boolean checkForAndCreatePhotosDirectory() {
+  public void checkForAndCreatePhotosDirectory() {
       String path = System.getProperty(USER_DIR) + STORAGE_PHOTOS;
       File file = new File(path);
 
       if (!file.exists()) {
-        return file.mkdir();
+        file.mkdir();
       }
-      return false;
   }
 
   /**
@@ -561,14 +557,27 @@ public class PhotoController extends Controller {
                 return ok().sendFile(new File(path, filename));
               }
             })
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
+  /**
+   * Undoes a photo deletion.
+   * Http Status codes:
+   *    200 - OK - the photo is retrieved successfully.
+   *    401 - Unauthorized - the requesting user is not logged in.
+   *    403 - Forbidden - the requesting user does not have permission.
+   *    404 - Not Found - the photo or user is missing.
+   *
+   * @param userId the id of the user owning the photo.
+   * @param photoId the id of the photo.
+   * @param request the HTTP request.
+   * @return the HTTP response.
+   */
   @With(LoggedIn.class)
   public CompletionStage<Result> undoProfilePhoto(int userId, int photoId, Http.Request request) {
     User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-    if (!security.userHasPermission(userFromMiddleware, userId)) {
+    if (Security.userHasPermission(userFromMiddleware, userId)) {
       return supplyAsync(Controller::forbidden);
     }
     User user = User.find.byId(userId);
@@ -607,7 +616,7 @@ public class PhotoController extends Controller {
               }
               return (Result) ok();
             })
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -618,7 +627,7 @@ public class PhotoController extends Controller {
    * @param photoContentType     the type of image.
    * @throws IOException thrown when the thumbnail cannot be written to disk.
    */
-  public void saveThumbnail(File originalImage, File thumbFileDestination, String photoContentType) throws IOException {
+  private void saveThumbnail(File originalImage, File thumbFileDestination, String photoContentType) throws IOException {
     BufferedImage bufferedImage = ImageIO.read(originalImage);
     ImageIO.write(bufferedImage, photoContentType, originalImage);
 
@@ -686,7 +695,7 @@ public class PhotoController extends Controller {
             })
         .thenApplyAsync(photo -> (Result) ok())
         .exceptionally(
-                this::getResult);
+                exceptionUtil::getResultFromError);
   }
 
   /**
@@ -737,7 +746,7 @@ public class PhotoController extends Controller {
                       });
             })
         .thenApplyAsync(user -> ok(Json.toJson(user.getCoverPhoto())))
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -802,13 +811,13 @@ public class PhotoController extends Controller {
                             throw new CompletionException(new NotFoundException("File Not Found"));
                           }
 
-                          String token = security.generateToken();
+                          String token = Security.generateToken();
                           String filename = token + extension;
                           File fileDestination = new File(path, filename);
 
                           // if the file path already exists, generate another token
                           while (fileDestination.exists()) {
-                            token = security.generateToken();
+                            token = Security.generateToken();
                             filename = token + extension;
                             fileDestination = new File(path, filename);
                           }
@@ -839,36 +848,6 @@ public class PhotoController extends Controller {
                       });
             })
         .thenApplyAsync(user -> ok(Json.toJson(user.getCoverPhoto())))
-        .exceptionally(this::getResult);
-  }
-
-  /**
-   * Gets a result based on an error that has been thrown.
-   *
-   * @param error the error that has been thrown.
-   * @return the result to reply in the http response.
-   */
-  private Result getResult(Throwable error) {
-    try {
-      throw error.getCause();
-    } catch (BadRequestException exception) {
-      ObjectNode message = Json.newObject();
-      message.put(MESSAGE_KEY, exception.getMessage());
-      return badRequest(message);
-    } catch (ForbiddenRequestException exception) {
-      ObjectNode message = Json.newObject();
-      message.put(MESSAGE_KEY, exception.getMessage());
-      return forbidden(message);
-    } catch (NotFoundException exception) {
-      ObjectNode message = Json.newObject();
-      message.put(MESSAGE_KEY, exception.getMessage());
-      return notFound(message);
-    } catch (Throwable throwable) {
-      ObjectNode message = Json.newObject();
-      message.put(MESSAGE_KEY, throwable.getMessage());
-      log.error(throwable.getMessage());
-      log.error("500 - Internal Server Error", throwable);
-      return internalServerError(message);
-    }
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 }

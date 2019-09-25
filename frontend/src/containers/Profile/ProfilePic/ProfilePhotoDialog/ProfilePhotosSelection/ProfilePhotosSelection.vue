@@ -42,6 +42,11 @@
       selectPhoto(photoIndex) {
         this.$emit("photoSelected", this.photos[photoIndex]);
       },
+      /**
+       * Gets the thumbnail url based on the given photo id
+       * @param photoId the photo id
+       * @returns {string}
+       */
       thumbnailPhotoUrl(photoId) {
         const authToken = localStorage.getItem("authToken");
         const queryAuthorization = `?Authorization=${authToken}`;

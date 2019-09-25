@@ -1,54 +1,50 @@
 <template>
   <div>
-      <v-carousel
-        class="carousel"
-        :cycle="false"
-      >
-        <v-carousel-item
-          v-for="(photo, index) in destinationPhotos"
-          :key="photo.photoId"
-          lazy
-        >
-          <v-img
-            :src="photo.endpoint"
-            class="dest-image"
-            alt="Some Image"
-            @click="openPhotoDialog(photo, index)"
-          />
-        </v-carousel-item>
-      </v-carousel>
+    <v-carousel class="carousel" :cycle="false">
+      <v-carousel-item v-if="destinationPhotos.length === 0">
+        <v-img
+          class="dest-image"
+          :src="defaultDestinationPhoto"
+        />
+      </v-carousel-item>
 
-  <destination-photo-panel
-    :photo="currentPhoto"
-    :showDialog="showPhotoDialog"
-    :hasOwnerRights="hasOwnerRights"
-    @closeDialog="closePhotoPanel"
-    @displayError="displayError"
-    @permissionUpdated="permissionUpdated"
-    @displayRemovePrompt="displayRemovePrompt"
-  />
-  <AddPhotoDialog
-    :destinationPhotos="destinationPhotos"
-    :destinationId="destinationId"
-    :showDialog="showAddPhotoDialog"
-    :userPhotos="userPhotos"
-    @closeAddPhotoDialog="closeAddPhotoDialogHandler"
-    @addPhoto="addPhoto"
-  />
-  <v-img
-    v-if="destinationPhotos.length === 0"
-    class="dest-image"
-    :src="defaultDestinationPhoto"
-  />
-  <v-btn
-    class="carousel"
-    id="add-button"
-    color="blue-grey darken-3"
-    fab
-    @click="openAddPhotoDialog()"
-  >
-    <v-icon>add</v-icon>
-  </v-btn>
+      <v-carousel-item v-for="(photo, index) in destinationPhotos" :key="photo.photoId" lazy>
+        <v-img
+          :src="photo.endpoint"
+          class="dest-image"
+          alt="Some Image"
+          @click="openPhotoDialog(photo, index)"
+        />
+      </v-carousel-item>
+
+      <v-btn
+        class="carousel"
+        id="add-button"
+        color="blue-grey darken-3"
+        fab
+        @click="openAddPhotoDialog()"
+      >
+        <v-icon>add</v-icon>
+      </v-btn>
+    </v-carousel>
+
+    <destination-photo-panel
+      :photo="currentPhoto"
+      :showDialog="showPhotoDialog"
+      :hasOwnerRights="hasOwnerRights"
+      @closeDialog="closePhotoPanel"
+      @displayError="displayError"
+      @permissionUpdated="permissionUpdated"
+      @displayRemovePrompt="displayRemovePrompt"
+    />
+    <AddPhotoDialog
+      :destinationPhotos="destinationPhotos"
+      :destinationId="destinationId"
+      :showDialog="showAddPhotoDialog"
+      :userPhotos="userPhotos"
+      @closeAddPhotoDialog="closeAddPhotoDialogHandler"
+      @addPhoto="addPhoto"
+    />
   </div>
 </template>
 
@@ -179,9 +175,16 @@ export default {
     permissionUpdated(newValue) {
       this.$emit("permissionUpdated", newValue, this.currentPhotoIndex);
     },
+    /**
+     * Opens the Add Photo Dialog
+     */
     openAddPhotoDialog: function() {
       this.showAddPhotoDialog = true;
     },
+    /**
+     * Closes the Add Photo Dialog
+     * @param newVal 
+     */
     closeAddPhotoDialogHandler(newVal) {
       this.showAddPhotoDialog = newVal;
     }
@@ -194,7 +197,6 @@ export default {
   max-height: 300px;
 
   .dest-image {
-    height: 50%;
   }
 }
 

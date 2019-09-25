@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
-import exceptions.UnauthorizedException;
 import io.ebean.Ebean;
 import io.ebean.text.PathProperties;
 import java.util.ArrayList;
@@ -21,8 +20,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
@@ -32,6 +29,7 @@ import play.mvc.With;
 import repository.DestinationRepository;
 import repository.TripRepository;
 import repository.UserRepository;
+import util.ExceptionUtil;
 import util.Security;
 import util.TripUtil;
 import java.util.stream.Collectors;
@@ -42,27 +40,30 @@ import java.util.stream.Collectors;
 public class TripController extends Controller {
 
     private static final String TRIP_OWNER = "TRIP_OWNER";
-    private static final String MESSAGE_KEY = "message";
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final TripUtil tripUtil;
-    private final Security security;
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final DestinationRepository destinationRepository;
     private final TripNotifier tripNotifier;
+    private final ExceptionUtil exceptionUtil;
 
     @Inject
-    public TripController(TripRepository tripRepository, Security security, UserRepository userRepository,
-                          HttpExecutionContext httpExecutionContext, TripUtil tripUtil,
-                          DestinationRepository destinationRepository, TripNotifier tripNotifier) {
+    public TripController(
+        TripRepository tripRepository,
+        UserRepository userRepository,
+        HttpExecutionContext httpExecutionContext,
+        TripUtil tripUtil,
+        DestinationRepository destinationRepository,
+        TripNotifier tripNotifier,
+        ExceptionUtil exceptionUtil) {
         this.tripRepository = tripRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.tripUtil = tripUtil;
-        this.security = security;
         this.userRepository = userRepository;
         this.destinationRepository = destinationRepository;
         this.tripNotifier = tripNotifier;
+        this.exceptionUtil = exceptionUtil;
     }
 
     /**
@@ -81,7 +82,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(userFromMiddleware, userId)) {
+        if (Security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
         JsonNode jsonBody = request.body().asJson();
@@ -123,7 +124,6 @@ public class TripController extends Controller {
                         TripComposite trip = new TripComposite(tripNodes, users, tripName);
                         List<UserRole> userRoles = new ArrayList<>();
                         for (User roledUser : users) {
-
                           for (JsonNode userIdJson : userIdsJson) {
                             if (userIdJson.get("userId").asInt() == roledUser.getUserId()) {
                               Role role =
@@ -137,7 +137,8 @@ public class TripController extends Controller {
                         }
 
                         Role role = userRepository.getSingleRoleByType(TRIP_OWNER);
-                        UserRole userRole = new UserRole(users.get(users.size() - 1), role);
+                        User owner = users.get(users.size() - 1);
+                        UserRole userRole = new UserRole(owner, role);
                         userRole.save();
                         userRoles.add(userRole);
                         trip.setUserRoles(userRoles);
@@ -146,11 +147,7 @@ public class TripController extends Controller {
                         return tripRepository.saveTrip(trip);
                       })
                   .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
-                  .exceptionally(
-                      e -> {
-                        log.error(e.getMessage());
-                        return internalServerError();
-                      });
+                  .exceptionally(exceptionUtil::getResultFromError);
             },
             httpExecutionContext.current());
     }
@@ -167,7 +164,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> getTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(user, userId)) {
+        if (Security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -208,7 +205,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(user, userId)) {
+        if (Security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -226,16 +223,7 @@ public class TripController extends Controller {
                         httpExecutionContext.current())
                 .thenApplyAsync(trip -> (Result) ok(), httpExecutionContext.current())
                 // Exceptions / error checking
-                .exceptionally(
-                        e -> {
-                            try {
-                                throw e.getCause();
-                            } catch (NotFoundException notFoundError) {
-                                return notFound("Trip id was not found");
-                            } catch (Throwable serverError) {
-                                return internalServerError();
-                            }
-                        });
+                .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**
@@ -253,7 +241,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(user, userId)) {
+        if (Security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -279,29 +267,7 @@ public class TripController extends Controller {
                             return tripRepository.restoreTrip(trip);
                         })
                 .thenApplyAsync(trip -> ok(Json.toJson(trip)))
-                .exceptionally(
-                        error -> {
-                            ObjectNode message = Json.newObject();
-                            try {
-                                throw error.getCause();
-                            } catch (BadRequestException e) {
-                                message.put(MESSAGE_KEY, e.getMessage());
-                                return badRequest(message);
-                            } catch (UnauthorizedException e) {
-                                message.put(MESSAGE_KEY, e.getMessage());
-                                return unauthorized(message);
-                            } catch (ForbiddenRequestException e) {
-                                message.put(MESSAGE_KEY, e.getMessage());
-                                return forbidden(message);
-                            } catch (NotFoundException e) {
-                                message.put(MESSAGE_KEY, e.getMessage());
-                                return notFound(message);
-                            } catch (Throwable e) {
-                                log.error(e.getMessage());
-                                log.error("An unexpected error has occurred", e);
-                                return internalServerError();
-                            }
-                        });
+                .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**
@@ -321,7 +287,7 @@ public class TripController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> updateTrip(Http.Request request, int userId, int tripId) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
-        if (!security.userHasPermission(userFromMiddleware, userId)) {
+        if (Security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -409,21 +375,7 @@ public class TripController extends Controller {
                                     });
                         },
                         httpExecutionContext.current())
-                .exceptionally(
-                        e -> {
-                            try {
-                                throw e.getCause();
-                            } catch (NotFoundException notFoundError) {
-                                return notFound();
-                            } catch (BadRequestException badRequestError) {
-                                return badRequest();
-                            } catch (ForbiddenRequestException forbiddenRequestError) {
-                                return forbidden();
-                            } catch (Throwable serverError) {
-                                log.error(serverError.getMessage());
-                                return internalServerError();
-                            }
-                        });
+                .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**
@@ -472,8 +424,10 @@ public class TripController extends Controller {
                                                     !destination.get().getDestinationOwner().equals(userId)) {
                                                 destination.get().setDestinationOwner(null);
                                                 destinationRepository.update(destination.get());
-                                            }
+                                            } else if (destination.isPresent()) {
                                             return destination.get();
+                                            }
+                                            return null;
                                         }
                                 );
                 updateDestinations.add(updateDestination);
@@ -513,7 +467,12 @@ public class TripController extends Controller {
      *
      * @param userId  of the owner of the trips
      * @param request the http request.
-     * @return the result to return to the client. TODO: no status codes
+     * @return the result to return to the client.
+     * Status Codes:
+     *    200 - OK - get trips successful.
+     *    401 - Unauthorized - user not logged in.
+     *    403 - Forbidden - user does not have permission.
+     *    500 - Internal Server Error - Unexpected Error.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getHighLevelTrips(int userId, Http.Request request) {

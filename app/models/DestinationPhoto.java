@@ -29,6 +29,11 @@ public class DestinationPhoto extends Model {
     @JsonIgnore
     private Timestamp deletedExpiry;
 
+    /**
+     * Creates a new photo for a destination
+     * @param destination The destination to add the photo to
+     * @param personalPhoto The personal photo to add to the destination
+     */
     public DestinationPhoto(Destination destination, PersonalPhoto personalPhoto)  {
         this.destination = destination;
         this.personalPhoto = personalPhoto;
@@ -42,10 +47,6 @@ public class DestinationPhoto extends Model {
         this.deleted = deleted;
     }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
-
     public void setDeletedExpiry(Timestamp deletedExpiry) {
         this.deletedExpiry = deletedExpiry;
     }
@@ -56,10 +57,6 @@ public class DestinationPhoto extends Model {
 
     public Destination getDestination() {
         return destination;
-    }
-
-    public void setDestinationPhotoId(int destinationPhotoId) {
-        this.destinationPhotoId = destinationPhotoId;
     }
 
     public int getDestinationPhotoId() {

@@ -95,7 +95,10 @@ export default {
       } catch (err) {
         this.$root.$emit('show-error-snackbar', "Could not get connected users for the chat", 4000);
       }
-    }, 
+    },
+    /**
+     * Sends a chat message to the group chat
+     */
     async sendMessage() {
       try {
           if (!this.message.length) {
@@ -131,6 +134,10 @@ export default {
         });
       }
     },
+    /**
+     * Handles the scrolling of the chat component to work always as intended
+     * @returns {Promise<void>}
+     */
     async handleScroll() {
       const contents = this.$refs.contents;
       const nearTop = contents.scrollTop <= 50;

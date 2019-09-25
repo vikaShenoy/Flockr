@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility class for helping with country scheduler task.
+ */
 public class CountrySchedulerUtil {
 
     /**
@@ -86,6 +89,13 @@ public class CountrySchedulerUtil {
         return passportsToSave;
     }
 
+    /**
+     * Gets the nationalities tro save.
+     *
+     * @param newCountries the new countries
+     * @param currentNationalities the existing nationalities.
+     * @return the list of nationalities to save.
+     */
     public List<Nationality> getNationalitiesToSave(Map<String, Country> newCountries, Map<String, Nationality> currentNationalities) {
         List<Nationality> nationalitiesToSave = new ArrayList<>();
 

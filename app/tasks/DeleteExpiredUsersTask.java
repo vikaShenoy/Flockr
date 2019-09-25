@@ -19,7 +19,8 @@ import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 /**
- * Task to delete all users that are deleted and have expired.
+ * Task to delete all Users in the database that have been soft deleted if their
+ * expiry has passed.
  */
 public class DeleteExpiredUsersTask {
 
@@ -49,6 +50,7 @@ public class DeleteExpiredUsersTask {
                     .le("deleted_expiry", now).findList();
         });
     }
+
 
     private void initialise() {
         this.actorSystem

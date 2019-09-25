@@ -1,6 +1,6 @@
 <template>
-  <div class="trip-destination">
-    <v-timeline-item
+  <div v-bind:class="hasPermissionToEdit ? 'trip-destination-cursor' : '' ">
+    <v-timeline-item  
       :style="{width: '90%', marginLeft: '5%'}"
       color="primary"
       small
@@ -104,7 +104,7 @@ export default {
     tripNode: Object,
     alignRight: Boolean,
     rootTrip: Object,
-    parentTrip: Object
+    parentTrip: Object,
   },
   data() {
     return {
@@ -114,33 +114,15 @@ export default {
     };
   },
   computed: {
+    /**
+     * Checks if the trip node is a TripDestinationLeaf, and returns true if it is.
+     */
     isTripDestinationLeaf() {
       return this.tripNode.nodeType === "TripDestinationLeaf";
     },
-    getArrivalDate() {
-      const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
-      return isLeaf
-        ? this.tripNode.arrivalDate
-        : this.getTripNodeArrivalDate(this.tripNode);
-    },
-    getArrivalTime() {
-      const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
-      return isLeaf
-        ? this.tripNode.arrivalTime
-        : this.getTripNodeArrivalTime(this.tripNode);
-    },
-    getDepartureDate() {
-      const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
-      return isLeaf
-        ? this.tripNode.departureDate
-        : this.getTripNodeDepartureDate(this.tripNode);
-    },
-    getDepartureTime() {
-      const isLeaf = this.tripNode.nodeType === "TripDestinationLeaf";
-      return isLeaf
-        ? this.tripNode.departureTime
-        : this.getTripNodeDepartureTime(this.tripNode);
-    },
+    /**
+     * Checks if the user has the permission to edit the trip node
+     */
     hasPermissionToEdit() {
       let userRole;
       if (this.tripNode.nodeType === "TripDestinationLeaf") {
@@ -158,6 +140,10 @@ export default {
 
       return isTripManager || isTripOwner;
     },
+    /**
+     * Checks if the user is a trip manager or owner, if they are, this returns true. Otherwise
+     * returns false.
+     */
     hasPermissionToUnlink() {
       const userRole = this.parentTrip.userRoles.find(
         userRole => userRole.user.userId === UserStore.data.userId
@@ -170,80 +156,15 @@ export default {
     }
   },
   methods: {
-    getTripNodeArrivalDate(tripNode) {
-      if (tripNode.nodeType === "TripDestinationLeaf") {
-        if (tripNode.arrivalDate) {
-          return tripNode.arrivalDate;
-        }
-        if (tripNode.departureDate) {
-          return tripNode.departureDate;
-        }
-      } else {
-        for (const currentTripNode of tripNode.tripNodes) {
-          return this.getTripNodeArrivalDate(currentTripNode);
-        }
-      }
-    },
-    getTripNodeArrivalTime(tripNode) {
-      if (tripNode.nodeType === "TripDestinationLeaf") {
-        if (tripNode.arrivalDate) {
-          return tripNode.arrivalTime;
-        }
-        if (tripNode.departureDate) {
-          return tripNode.departureTime;
-        }
-      } else {
-        for (const currentTripNode of tripNode.tripNodes) {
-          return this.getTripNodeArrivalTime(currentTripNode);
-        }
-      }
-    },
-    getTripNodeDepartureDate(tripNode) {
-      if (tripNode.nodeType === "TripDestinationLeaf") {
-        if (tripNode.departureDate) {
-          return tripNode.departureDate;
-        }
-        if (tripNode.arrivalDate) {
-          return tripNode.arrivalDate;
-        }
-      } else {
-        for (const currentTripNode of [...tripNode.tripNodes].reverse()) {
-          return this.getTripNodeDepartureDate(currentTripNode);
-        }
-      }
-    },
-    getTripNodeDepartureTime(tripNode) {
-      if (tripNode.nodeType === "TripDestinationLeaf") {
-        if (tripNode.departureDate) {
-          return tripNode.departureTime;
-        }
-        if (tripNode.arrivalDate) {
-          return tripNode.arrivalTime;
-        }
-      } else {
-        for (const currentTripNode of [...tripNode.tripNodes].reverse()) {
-          return this.getTripNodeDepartureTime(currentTripNode);
-        }
-      }
-    },
-
     /**
-     * Formats a date based on an optional date and time
+     * Emits the toggle expanded trip node component
      */
-    formatDateTime(date, time) {
-      if (!date && !time) {
-        return "No Date";
-      }
-
-      const momentDate = moment(`${date} ${time}`);
-
-      return momentDate.isSame(moment(), "year")
-          ? momentDate.format("DD MMM hh:mm A")
-          : momentDate.format("DD MMM YYYY hh:mm A");
-    },
     toggleShowTripNodes(tripNode) {
       this.$emit("toggleExpanded", tripNode.tripNodeId);
     },
+    /**
+     * If the trip name is edited, it emits the function that indicates the trip name is updated.
+     */
     nameEdited() {
       if (this.editedTripName && this.editedTripName.length > 0) {
         if (this.editedTripName !== this.tripNode.name) {
@@ -255,7 +176,7 @@ export default {
       }
     },
     /**
-     * Either goes to subtrip if trip node is a trip, or destination
+     * Either goes to sub-trip if trip node is a trip, or destination
      */
     goToTripNode() {
       if (this.tripNode.nodeType === "TripComposite") {
@@ -266,6 +187,10 @@ export default {
         );
       }
     },
+    /**
+     * Checks if the trip node is a trip composite, and sets the trip name to the trip node name and the editing
+     * trip into true.
+     */
     editTripNode() {
       if (this.tripNode.nodeType === "TripComposite") {
         this.editedTripName = this.tripNode.name;
@@ -287,7 +212,7 @@ export default {
   padding: 5px;
 }
 
-.trip-destination {
+.trip-destination-cursor {
   cursor: move;
 }
 

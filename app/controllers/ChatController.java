@@ -24,6 +24,7 @@ import play.mvc.Result;
 import play.mvc.With;
 import repository.ChatRepository;
 import util.ChatUtil;
+import util.ExceptionUtil;
 import util.Security;
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class ChatController extends Controller {
 
   private final ChatUtil chatUtil;
   private final ChatRepository chatRepository;
+  private final ExceptionUtil exceptionUtil;
   private HttpExecutionContext httpExecutionContext;
   private VoiceServerApi voiceServerApi;
   private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -51,11 +53,13 @@ public class ChatController extends Controller {
       ChatUtil chatUtil,
       ChatRepository chatRepository,
       HttpExecutionContext httpExecutionContext,
-      VoiceServerApi voiceServerApi) {
+      VoiceServerApi voiceServerApi,
+      ExceptionUtil exceptionUtil) {
     this.chatUtil = chatUtil;
     this.chatRepository = chatRepository;
     this.httpExecutionContext = httpExecutionContext;
     this.voiceServerApi = voiceServerApi;
+    this.exceptionUtil = exceptionUtil;
   }
 
   /**
@@ -101,7 +105,7 @@ public class ChatController extends Controller {
               }
             },
             httpExecutionContext.current())
-        .exceptionally(e -> internalServerError());
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -128,7 +132,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
                   && !userFromMiddleware.isAdmin()) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
@@ -153,20 +157,7 @@ public class ChatController extends Controller {
             },
             httpExecutionContext.current())
         .thenApplyAsync(modifiedChatGroup -> (Result) ok(), httpExecutionContext.current())
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenException) {
-                return forbidden(forbiddenException.getMessage());
-              } catch (BadRequestException badRequestException) {
-                return badRequest(badRequestException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -183,7 +174,7 @@ public class ChatController extends Controller {
     return chatRepository
         .getChatsByUserId(userFromMiddleware.getUserId())
         .thenApplyAsync(chats -> ok(Json.toJson(chats)), httpExecutionContext.current())
-        .exceptionally(e -> internalServerError());
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -222,24 +213,7 @@ public class ChatController extends Controller {
               }
               return ok(currentConnectedUsers);
             })
-        .exceptionally(
-            error -> {
-              try {
-                throw error.getCause();
-              } catch (ForbiddenRequestException e) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, e.getMessage());
-                return forbidden(Json.toJson(message));
-              } catch (NotFoundException e) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, e.getMessage());
-                return notFound(Json.toJson(message));
-              } catch (Throwable e) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, e.getMessage());
-                return internalServerError(message);
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -264,7 +238,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
                   && !userFromMiddleware.isAdmin()) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
@@ -294,18 +268,7 @@ public class ChatController extends Controller {
               JsonNode messagesJson = Json.toJson(messages);
               return ok(messagesJson);
             })
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenException) {
-                return forbidden(forbiddenException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -329,7 +292,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
@@ -337,18 +300,7 @@ public class ChatController extends Controller {
             },
             httpExecutionContext.current())
         .thenApplyAsync(deletedChatGroup -> (Result) ok(), httpExecutionContext.current())
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenException) {
-                return forbidden(forbiddenException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -374,7 +326,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException("Could not find chat group"));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
@@ -397,20 +349,7 @@ public class ChatController extends Controller {
                   createdMessage.getMessageId());
               return created(Json.toJson(createdMessage));
             })
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenRequestException) {
-                return forbidden(forbiddenRequestException.getMessage());
-              } catch (BadRequestException badRequestException) {
-                return badRequest(badRequestException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError(throwable.getMessage());
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -447,19 +386,7 @@ public class ChatController extends Controller {
               chatEvents.notifyChatMessageHasBeenDeleted(userFromMiddleware, deletedMessage);
               return (Result) ok();
             })
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenRequestException) {
-                return forbidden(forbiddenRequestException.getMessage());
-              } catch (Throwable throwable) {
-                log.error(throwable.getMessage());
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -482,7 +409,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException("Could not find chat group"));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 

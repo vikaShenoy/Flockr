@@ -35,14 +35,26 @@
       }
     },
     methods: {
+      /**
+       * Sets the router to the login page
+       * @returns {Promise<void>}
+       */
       async homeLogin() {
         this.$router.push("/login");
       },
+      /**
+       * Sets the router to the sign up page
+       * @returns {Promise<void>}
+       */
       async homeSignup() {
         this.$router.push("/signup");
       }
     },
     computed: {
+      /**
+       * Checks if the user is logged in or not
+       * @returns {*|UserStore.data.userId|null} the user id of the user or null if the user is not logged in
+       */
       isLoggedIn() {
         return UserStore.methods.loggedIn();
       }

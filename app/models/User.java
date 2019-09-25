@@ -254,10 +254,6 @@ public class User extends Model {
     this.deleted = deleted;
   }
 
-  public Timestamp getDeletedExpiry() {
-    return deletedExpiry;
-  }
-
   public void setDeletedExpiry(Timestamp deletedExpiry) {
     this.deletedExpiry = deletedExpiry;
   }
@@ -378,10 +374,6 @@ public class User extends Model {
     return passwordHash;
   }
 
-  public void setPasswordHash(String passwordHash) {
-    this.passwordHash = passwordHash;
-  }
-
   public String getToken() {
     return token;
   }
@@ -396,19 +388,5 @@ public class User extends Model {
 
   public void setRoles(List<Role> roles) {
     this.roles = roles;
-  }
-
-  public boolean profileCompleted() {
-    return firstName != null
-        && middleName != null
-        && lastName != null
-        && !nationalities.isEmpty()
-        && dateOfBirth != null
-        && gender != null
-        && email != null
-        && !travellerTypes.isEmpty()
-        && timestamp != null
-        && passwordHash != null
-        && token != null;
   }
 }

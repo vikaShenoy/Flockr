@@ -2,7 +2,7 @@ import superagent from "superagent";
 import { endpoint } from "../../../utils/endpoint";
 
 /**
- * Get a list of all destinations (private and public) destinations
+ * Get a list of all destinations (private and public) destinations of the user
  * @returns {Promise<Array>} the users public and private destinations
  */
 export async function getYourDestinations() {
@@ -13,7 +13,10 @@ export async function getYourDestinations() {
   return res.body;
 }
 
-
+/**
+ * Gets the trips of the user
+ * @returns {Promise<*>} the trips of the user
+ */
 export async function getUserTrips() {
   const userId = localStorage.getItem("userId");
   const authToken = localStorage.getItem("authToken");
@@ -43,5 +46,19 @@ export async function undoDeleteDestination(destinationId) {
     .put(endpoint(`/destinations/${destinationId}/undodelete`))
     .set("Authorization", authToken);
 }
+
+/**
+ * Function to check if a destination is used in any trips
+ * @param destinationId the ID of the destination to check
+ * @returns {Promise<*>} contains true or false
+ */
+export async function checkDestinationUsed(destinationId) {
+  const authToken = localStorage.getItem("authToken");
+  const res = await superagent
+    .get(endpoint(`/destinationUsed/${destinationId}`))
+    .set("Authorization", authToken);
+  return res.body;
+}
+
 
 

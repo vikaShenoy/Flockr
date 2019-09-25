@@ -14,9 +14,6 @@ import repository.AuthRepository;
 import repository.ChatRepository;
 import repository.TripRepository;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
-
-
 import javax.inject.Inject;
 
 /**
@@ -55,12 +52,11 @@ public class WebSocketController extends Controller {
              String authToken = request.getQueryString("Authorization");
 
              return authRepository.getByToken(authToken)
-                     .thenApplyAsync(user -> {
-                         if (!user.isPresent()) {
-                             return F.Either.<Result, Flow<String, String, ?>>Left(unauthorized());
-                         }
-                         return F.Either.Right(ActorFlow.actorRef(actorRef -> Props.create(WebSocket.class, actorRef, user.get(), tripRepository, chatRepository), actorSystem, materializer));
-                     });
+                     .thenApplyAsync(user -> user.<F.Either<Result, Flow<String, String, ?>>>map(user1 -> F.Either
+                         .Right(ActorFlow.actorRef(actorRef -> Props
+                             .create(WebSocket.class, actorRef, user1, tripRepository,
+                                 chatRepository), actorSystem, materializer)))
+                         .orElseGet(() -> F.Either.Left(unauthorized())));
         });
     }
 
