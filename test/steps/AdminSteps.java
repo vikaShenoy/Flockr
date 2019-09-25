@@ -12,14 +12,17 @@ import org.junit.Assert;
 import play.libs.Json;
 import play.mvc.Result;
 import util.Security;
-import utils.FakeClient;
-import utils.PlayResultToJson;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Test that the admin features work as expected.
+ */
 public class AdminSteps {
 
     // data
@@ -130,10 +133,9 @@ public class AdminSteps {
         reqJsonBody.put("password", "password");
 
         Result loginResult = fakeClient.makeRequestWithNoToken("POST", reqJsonBody, "/api/auth/users/login");
+        Assert.assertEquals(200, loginResult.status());
 
         JsonNode authenticationResponseAsJson = PlayResultToJson.convertResultToJson(loginResult);
-
-        Assert.assertEquals(200, loginResult.status());
 
         this.authToken = authenticationResponseAsJson.get("token").asText();
 

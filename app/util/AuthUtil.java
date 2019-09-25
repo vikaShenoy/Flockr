@@ -16,7 +16,7 @@ public class AuthUtil {
      * @return true or false depending on the content of the string
      */
     public static boolean isAlpha(String name) {
-        return name.matches("[a-zA-Z]+");
+        return name.matches("[a-zA-Z ]+");
     }
 
     /**

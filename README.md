@@ -115,6 +115,8 @@ Password: so-secure
 * Vue-cli-Plugin-Vuetify 0.5.0
 * Vue-Template-Compiler 2.5.21
 * Vuetify-Loader 1.0.5
+* SBT-Jacoco v3.1.0
+* Open Data Soft - [World Cities Population Data-Set](https://public.opendatasoft.com/explore/dataset/worldcitiespop/table/?disjunctive.country&sort=population)
 
 ## Copyright
 Copyyright of Canterbury University

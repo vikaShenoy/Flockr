@@ -59,7 +59,7 @@ public class TravellerType extends Model {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj.getClass() != getClass()) {
+        if (!(obj instanceof TravellerType)) {
             return false;
         }
         TravellerType comparedTravellerType = (TravellerType) obj;

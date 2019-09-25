@@ -3,7 +3,7 @@ import { endpoint } from "../../utils/endpoint";
 
 /**
  * Get a list of all public and private destinations that a user has
- * @param {number} userId ID of the user to get destinations from
+ *
  * @returns {Promise<Array>} the users public and private destinations
  */
 export async function getYourDestinations() {
@@ -16,11 +16,21 @@ export async function getYourDestinations() {
 
 /**
  * Get a list of all public destinations
- * @returns {Promise<Array>} the list of public destinations
+ *
+ * @param {String} searchCriterion optional, to filter destinations by name
+ * @param {Number} offset the offset for the returned public destinations
+ * @returns {Promise<Array>} the list of public destinations, sorted by name
  */
-export async function getPublicDestinations() {
+export async function getPublicDestinations(searchCriterion, offset) {
+  const query = {
+    offset: offset
+  };
+  if (searchCriterion) {
+    query.search = searchCriterion;
+  }
   const res = await superagent.get(endpoint("/destinations"))
-    .set("Authorization", localStorage.getItem("authToken"));
+    .set("Authorization", localStorage.getItem("authToken"))
+    .query(query);
 
   return res.body;
 }
@@ -64,13 +74,13 @@ export async function sendUndoDeleteDestination(destinationId) {
 
 /**
  * Add a destination to the database
- * @param destinationInfo JSON object containing the destination
- * @param destinationInfo.destinationName String name of the destination
- * @param destinationInfo.destinationTypeId int id of the destination type
- * @param destinationInfo.countryId int id of the country
- * @param destinationInfo.districtId int id of the district
- * @param destinationInfo.latitude float latitude of the destination
- * @param destinationInfo.longitude float longitude of the destination
+ * @param destination JSON object containing the destination
+ * @param destination.destinationName String name of the destination
+ * @param destination.destinationTypeId int id of the destination type
+ * @param destination.countryId int id of the country
+ * @param destination.districtId int id of the district
+ * @param destination.latitude float latitude of the destination
+ * @param destination.longitude float longitude of the destination
  * @returns {Promise<>} contains nothing
  */
 export async function sendAddDestination(destination) {
@@ -78,7 +88,7 @@ export async function sendAddDestination(destination) {
     destinationName: destination.destinationName,
     destinationTypeId: destination.destinationType.destinationTypeId,
     countryId: destination.destinationCountry.countryId,
-    districtId: destination.destinationDistrict.districtId,
+    districtName: destination.destinationDistrict.districtName,
     latitude: destination.destinationLat,
     longitude: destination.destinationLon,
     travellerTypeIds: destination.travellerTypes.map(travellerType => travellerType.travellerTypeId),
@@ -93,13 +103,13 @@ export async function sendAddDestination(destination) {
 
 /**
  * Update an existing destination in the database
- * @param destinationInfo JSON object containing the destination
- * @param destinationInfo.destinationName String name of the destination
- * @param destinationInfo.destinationTypeId int id of the destination type
- * @param destinationInfo.countryId int id of the country
- * @param destinationInfo.districtId int id of the district
- * @param destinationInfo.latitude float latitude of the destination
- * @param destinationInfo.longitude float longitude of the destination
+ * @param destination JSON object containing the destination
+ * @param destination.destinationName String name of the destination
+ * @param destination.destinationTypeId int id of the destination type
+ * @param destination.countryId int id of the country
+ * @param destination.districtId int id of the district
+ * @param destination.latitude float latitude of the destination
+ * @param destination.longitude float longitude of the destination
  * @param destinationId int id of the destination to update
  * @returns {Promise<>} contains nothing
  */
@@ -108,7 +118,7 @@ export async function sendUpdateDestination(destination, destinationId) {
     destinationName: destination.destinationName,
     destinationTypeId: destination.destinationType.destinationTypeId,
     countryId: destination.destinationCountry.countryId,
-    districtId: destination.destinationDistrict.districtId,
+    districtName: destination.destinationDistrict,
     latitude: destination.destinationLat,
     longitude: destination.destinationLon,
     travellerTypeIds: destination.travellerTypes.map(travellerType => travellerType.travellerTypeId),

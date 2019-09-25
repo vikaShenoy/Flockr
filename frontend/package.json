@@ -15,6 +15,7 @@
     "eslint-loader": "^2.2.1",
     "i": "^0.3.6",
     "jest": "^24.8.0",
+    "jquery": "^1.9.1",
     "moment": "^2.24.0",
     "sortablejs": "^1.8.4",
     "superagent": "^4.1.0",
@@ -36,7 +37,8 @@
     "node-sass": "^4.11.0",
     "sass-loader": "^7.1.0",
     "stylus": "^0.54.5",
-    "stylus-loader": "^3.0.1"
+    "stylus-loader": "^3.0.1",
+    "webrtc-adapter": "^7.3.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.5.0",

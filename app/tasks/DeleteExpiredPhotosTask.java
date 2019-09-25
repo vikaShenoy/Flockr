@@ -62,7 +62,6 @@ public class DeleteExpiredPhotosTask {
                             .thenApplyAsync(personalPhotos -> {
                                 int numSuccesses = 0;
                                 log.info("-----------Cleaning up deleted photos-------------");
-                                System.out.println("-----------Cleaning up deleted photos-------------");
                                 for (PersonalPhoto personalPhoto : personalPhotos) {
                                     File photoToDelete = new File(
                                             "./storage/photos/" + personalPhoto.getFilenameHash());
@@ -80,7 +79,6 @@ public class DeleteExpiredPhotosTask {
                                     personalPhoto.deletePermanent();
                                 }
                                 log.info(String.format("%d Photos deleted successfully", numSuccesses));
-                                System.out.println(String.format("%d Photos deleted successfully%n", numSuccesses));
                                 return personalPhotos;
                         }),
                         this.executionContext);

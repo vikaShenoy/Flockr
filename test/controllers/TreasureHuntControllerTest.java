@@ -1,10 +1,8 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
-import exceptions.BadRequestException;
 import exceptions.FailedToSignUpException;
 import exceptions.NotFoundException;
 import exceptions.ServerErrorException;
@@ -17,10 +15,10 @@ import play.Application;
 import play.libs.Json;
 import play.mvc.Result;
 import play.test.Helpers;
-import utils.FakeClient;
-import utils.FakePlayClient;
-import utils.PlayResultToJson;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.FakePlayClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -30,6 +28,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
+/**
+ * Test the TreasureHuntController.
+ */
 public class TreasureHuntControllerTest {
 
     @Inject
@@ -75,7 +76,7 @@ public class TreasureHuntControllerTest {
 
         DestinationType destinationType = new DestinationType("city");
         Country country = new Country("Test Nation", "Testing", true);
-        District district = new District("Test District", country);
+        String district = "Test District";
         destination = new Destination("Test City", destinationType, district,
                 0.0, 0.0, country, user.getUserId(), new ArrayList<>(), true);
         editedDestination = new Destination("Edited Destination", destinationType, district,
@@ -83,7 +84,6 @@ public class TreasureHuntControllerTest {
 
         destinationType.save();
         country.save();
-        district.save();
         editedDestination.save();
         destination.save();
 

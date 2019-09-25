@@ -3,7 +3,6 @@ package repository;
 import io.ebean.Ebean;
 import io.ebean.EbeanServer;
 import io.ebean.ExpressionList;
-import io.ebean.OrderBy;
 import models.*;
 import play.db.ebean.EbeanConfig;
 
@@ -40,6 +39,18 @@ public class UserRepository {
         this.executionContext = executionContext;
     }
 
+
+    /**
+     * Return the users with the given ids
+     * @param ids the list of ids we want to get the users for
+     * @return the list of users that are in the list
+     */
+    public List<User> getUsersWithIds(List<Integer> ids) {
+        return User.find.query().where()
+            .idIn(ids)
+            .findList();
+    }
+
     /**
      * Updates a users details
      *
@@ -70,17 +81,22 @@ public class UserRepository {
     }
 
     /**
+     * Function to get a single role from a given role type string
+     * @param roleType the string of the role to retrieve
+     * @return the Role with given roleType
+     */
+    public Role getSingleRoleByType(String roleType) {
+        return Role.find.query().where().eq("role_type", roleType).findOne();
+    }
+
+    /**
      * Gets a user/traveller by their ID
      *
      * @param userId The ID of the user to get
      * @return the user object
      */
     public CompletionStage<Optional<User>> getUserById(int userId) {
-        return supplyAsync(() -> {
-            Optional<User> user = User.find.query().
-                    where().eq("user_id", userId).findOneOrEmpty();
-            return user;
-        }, executionContext);
+        return supplyAsync(() -> User.find.query().where().eq("user_id", userId).findOneOrEmpty(), executionContext);
     }
 
     /**
@@ -102,11 +118,9 @@ public class UserRepository {
      * @return The list of passports
      */
     public CompletionStage<Optional<Passport>> getPassportById(int passportId) {
-        return supplyAsync(() -> {
-            Optional<Passport> passport = Passport.find.query().
-                    where().eq("passport_id", passportId).findOneOrEmpty();
-            return passport;
-        }, executionContext);
+        return supplyAsync(() -> Passport.find.query().
+            where().eq("passport_id", passportId).findOneOrEmpty()
+            , executionContext);
     }
 
     /**
@@ -229,51 +243,54 @@ public class UserRepository {
      * @param dateMin         min age Date
      * @param dateMax         max age Date
      * @param travellerTypeId traveller type Id
+     * @param name            user's name
      * @return List of users or empty list
      */
-    public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax, int travellerTypeId) {
-
-
+    public CompletionStage<List<User>> searchUser(int nationality, String gender, Date dateMin, Date dateMax,
+                                                  int travellerTypeId, String name, int offset, int limit) {
         return supplyAsync(() -> {
             boolean found;
             ExpressionList<User> query = User.find.query()
                     .fetch("travellerTypes").where();
+
+
             if (gender != null) {
                 query = query.eq("gender", gender);
             }
-            if (travellerTypeId != -1) {
-                query = query.where().eq("traveller_type_id", travellerTypeId);
-            }
-            query = query.where().between("dateOfBirth", dateMax, dateMin)
-                    .isNotNull("dateOfBirth")
-                    .isNotNull("gender")
-                    .isNotEmpty("travellerTypes");
 
-            List<User> users = query.findList();
+            if (name != null) {
+                query = query.where().ilike("concat(firstName, ' ' , lastName)", "%" + name + "%");
+            }
+
+            if (travellerTypeId != -1) {
+                query = query.where().eq("travellerTypes.travellerTypeId", travellerTypeId);
+            }
+
+
+            if (dateMin.getTime() != -1 && dateMax.getTime() != -1) {
+                query = query.where().between("dateOfBirth", dateMax, dateMin);
+            }
+
+            List<User> users  = query.where()
+                    .setFirstRow(offset)
+                    .setMaxRows(limit).findList();
 
             if (nationality != -1) {
-                List<User> filteredUsers = new ArrayList<User>();
-                for (int i = 0; i < users.size(); i++) {
+                List<User> filteredUsers = new ArrayList<>();
+                for (User user : users) {
                     found = false;
-                    List<Nationality> natsToCheck = users.get(i).getNationalities();
-                    for (int j = 0; j < natsToCheck.size(); j++) {
-                        if (natsToCheck.get(j).getNationalityId() == nationality) {
+                    List<Nationality> natsToCheck = user.getNationalities();
+                    for (Nationality aNatsToCheck : natsToCheck) {
+                        if (aNatsToCheck.getNationalityId() == nationality) {
                             found = true;
                         }
                     }
                     if (found) {
-                        filteredUsers.add(users.get(i));
+                        filteredUsers.add(user);
                     }
                 }
                 return filteredUsers;
             } else return users;
         }, executionContext);
     }
-
-    public List<User> getAllUsers() {
-        return User.find.all();
-    }
-
-
-
 }

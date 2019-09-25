@@ -23,7 +23,6 @@ import models.Destination;
 import models.DestinationPhoto;
 import models.DestinationProposal;
 import models.DestinationType;
-import models.District;
 import models.PersonalPhoto;
 import models.TravellerType;
 import models.User;
@@ -31,23 +30,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.With;
+import play.mvc.*;
 import repository.DestinationRepository;
 import repository.PhotoRepository;
 import util.DestinationUtil;
 import util.Security;
 
-/** Controller to manage endpoints related to destinations. */
+/**
+ * Controller to manage endpoints related to destinations.
+ */
 public class DestinationController extends Controller {
+  private static final String MESSAGE_KEY = "message";
+  private static final String TRAVELLER_TYPE_IDS_KEY = "travellerTypeIds";
   private final DestinationRepository destinationRepository;
   private final PhotoRepository photoRepository;
   private HttpExecutionContext httpExecutionContext;
   private final DestinationUtil destinationUtil;
   private final Logger log = LoggerFactory.getLogger(this.getClass());
   private final Security security;
+
+
 
   @Inject
   public DestinationController(
@@ -68,22 +70,41 @@ public class DestinationController extends Controller {
    * HTTP client
    *
    * @param request Http.Request the http request
-   * @return a completion stage and a status code 200 if the request is successful, otherwise
-   *     returns 500.
+   * @return a completion stage with status code - 200 - Got destinations successfully - 400 - Bad
+   *     Request, e.g. was missing offset query parameter - 500 - Internal server error
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> getDestinations(Http.Request request) {
-    return destinationRepository
-        .getDestinations()
-        .thenApplyAsync(
-            destinations -> {
-              List<Destination> publicDestinations =
-                  destinations.stream()
-                      .filter(Destination::getIsPublic)
-                      .collect(Collectors.toList());
-              return ok(Json.toJson(publicDestinations));
-            },
-            httpExecutionContext.current());
+    String searchCriterion = request.getQueryString("search"); // optional
+    String offsetString = request.getQueryString("offset");
+    Integer offset;
+    if (offsetString == null) {
+      offsetString = "0";
+    }
+
+    try {
+      offset = Integer.parseInt(offsetString);
+    } catch (NumberFormatException e) {
+      return supplyAsync(Results::badRequest, httpExecutionContext.current());
+    }
+
+    CompletionStage<List<Destination>> destinations;
+
+    if (searchCriterion == null) {
+      destinations = destinationRepository.getDestinations(offset);
+    } else {
+      destinations = destinationRepository.getDestinations(searchCriterion, offset);
+    }
+
+    return destinations.thenApplyAsync(
+        allDestinations -> {
+          List<Destination> publicDestinations =
+              allDestinations.stream()
+                  .filter(Destination::getIsPublic)
+                  .collect(Collectors.toList());
+          return ok(Json.toJson(publicDestinations));
+        },
+        httpExecutionContext.current());
   }
 
   /**
@@ -100,10 +121,10 @@ public class DestinationController extends Controller {
     return destinationRepository
         .getDestinationById(destinationId)
         .thenApplyAsync(
-            (optionalDestination) -> {
+            optionalDestination -> {
               if (!optionalDestination.isPresent()) {
                 ObjectNode message = Json.newObject();
-                message.put("message", "No destination exists with the specified ID");
+                message.put(MESSAGE_KEY, "No destination exists with the specified ID");
                 return notFound(message);
               }
 
@@ -115,7 +136,7 @@ public class DestinationController extends Controller {
                     && destination.getDestinationOwner() != user.getUserId()
                     && !destination.getIsPublic()) {
                   ObjectNode message = Json.newObject();
-                  message.put("message", "You are not authorised to get this destination");
+                  message.put(MESSAGE_KEY, "You are not authorised to get this destination");
                   return forbidden(message);
                 }
               } catch (NullPointerException e) {
@@ -130,8 +151,10 @@ public class DestinationController extends Controller {
   }
 
   /**
-   * Get the destinations owned by a user. If the user is viewing their own destinations, return all
-   * their destinations. If the user is viewing someone elses destinations, return just the public
+   * Get the destinations owned by a user.
+   * If the user is viewing their own destinations or is an admin, return all
+   * their destinations.
+   * If the user is viewing someone else's destinations, return just the public
    * destinations of the specified user.
    *
    * @param userId user to find destinations for.
@@ -142,31 +165,16 @@ public class DestinationController extends Controller {
   public CompletionStage<Result> getUserDestinations(int userId, Http.Request request) {
     User loggedInUser = request.attrs().get(ActionState.USER);
     return destinationRepository
-        .getDestinations()
+        .getUserDestinations(userId)
         .thenApplyAsync(
             destinations -> {
               log.info(String.format("is the logged in user an admin: %s", loggedInUser.isAdmin()));
               if (loggedInUser.getUserId() == userId || loggedInUser.isAdmin()) {
-                List<Destination> userDestinations =
-                    destinations.stream()
-                        .filter(
-                            destination -> {
-                              Integer ownerId = destination.getDestinationOwner();
-                              return ownerId != null && ownerId == userId;
-                            })
-                        .collect(Collectors.toList());
-                return ok(Json.toJson(userDestinations));
+                return ok(Json.toJson(destinations));
               } else {
                 List<Destination> userDestinations =
                     destinations.stream()
-                        .filter(
-                            destination -> {
-                              Integer ownerId = destination.getDestinationOwner();
-                              if (ownerId != null && ownerId == userId) {
-                                return loggedInUser.isAdmin() || destination.getIsPublic();
-                              }
-                              return false;
-                            })
+                        .filter(Destination::getIsPublic)
                         .collect(Collectors.toList());
                 return ok(Json.toJson(userDestinations));
               }
@@ -177,6 +185,7 @@ public class DestinationController extends Controller {
   /**
    * Function to add destinations to the database
    *
+   * @param userId the userId of the user.
    * @param request the HTTP post request.
    * @return a completion stage with a 200 status code and the new json object or a status code 400.
    */
@@ -197,7 +206,7 @@ public class DestinationController extends Controller {
 
       String destinationName;
       int destinationTypeId;
-      int districtId;
+      String districtName;
       double latitude;
       double longitude;
       int countryId;
@@ -206,20 +215,20 @@ public class DestinationController extends Controller {
       try {
         destinationName = jsonRequest.get("destinationName").asText();
         destinationTypeId = jsonRequest.get("destinationTypeId").asInt();
-        districtId = jsonRequest.get("districtId").asInt();
+        districtName = jsonRequest.get("districtName").asText();
         latitude = jsonRequest.get("latitude").asDouble();
         longitude = jsonRequest.get("longitude").asDouble();
         countryId = jsonRequest.get("countryId").asInt();
-        travellerTypeIds = jsonRequest.get("travellerTypeIds");
+        travellerTypeIds = jsonRequest.get(TRAVELLER_TYPE_IDS_KEY);
 
       } catch (NullPointerException exception) {
         throw new BadRequestException("One or more fields are missing.");
       }
 
       DestinationType destinationTypeAdd = DestinationType.find.byId(destinationTypeId);
-      District districtAdd = District.find.byId(districtId);
       Country countryAdd = Country.find.byId(countryId);
-      if (destinationTypeAdd == null || districtAdd == null || countryAdd == null) {
+
+      if (destinationTypeAdd == null || countryAdd == null) {
         throw new BadRequestException("One of the fields you have selected does not exist.");
       }
 
@@ -231,7 +240,7 @@ public class DestinationController extends Controller {
           new Destination(
               destinationName,
               destinationTypeAdd,
-              districtAdd,
+              districtName,
               latitude,
               longitude,
               countryAdd,
@@ -240,13 +249,13 @@ public class DestinationController extends Controller {
               false);
 
       return destinationRepository
-          .getDestinations()
+          .getDuplicateDestinations(destinationToAdd, userId)
           .thenComposeAsync(
               destinations -> {
                 for (Destination dest : destinations) {
                   boolean ownsDestination =
                       dest.getDestinationOwner() != null && dest.getDestinationOwner() == userId;
-                  if (dest.equals(destinationToAdd) && (dest.getIsPublic() || ownsDestination)) {
+                  if (dest.getIsPublic() || ownsDestination) {
                     throw new CompletionException(
                         new ConflictingRequestException("Destination already exists."));
                   }
@@ -262,13 +271,13 @@ public class DestinationController extends Controller {
                 } catch (ConflictingRequestException conflictingException) {
                   return status(409, conflictingException.getMessage());
                 } catch (Throwable generalException) {
-                  generalException.printStackTrace();
+                    log.error(generalException.getMessage());
                   return internalServerError("Error creating destinations");
                 }
               });
     } catch (BadRequestException e) {
       ObjectNode message = Json.newObject();
-      message.put("message", "Please provide a valid Destination with complete data");
+      message.put(MESSAGE_KEY, "Please provide a valid Destination with complete data");
       return supplyAsync(() -> badRequest(message));
     }
   }
@@ -308,11 +317,11 @@ public class DestinationController extends Controller {
               String destinationName = jsonBody.get("destinationName").asText();
               int destinationTypeId = jsonBody.get("destinationTypeId").asInt();
               int countryId = jsonBody.get("countryId").asInt();
-              int districtId = jsonBody.get("districtId").asInt();
+              String districtName = jsonBody.get("districtName").asText();
               double latitude = jsonBody.get("latitude").asDouble();
               double longitude = jsonBody.get("longitude").asDouble();
               boolean isPublic = jsonBody.get("isPublic").asBoolean();
-              JsonNode travellerTypeIds = jsonBody.get("travellerTypeIds");
+              JsonNode travellerTypeIds = jsonBody.get(TRAVELLER_TYPE_IDS_KEY);
               List<TravellerType> allTravellerTypes = TravellerType.find.all();
               List<TravellerType> travellerTypes =
                   destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
@@ -325,13 +334,10 @@ public class DestinationController extends Controller {
               Country country = new Country(null, null, true);
               country.setCountryId(countryId);
 
-              District district = new District(null, null);
-              district.setDistrictId(districtId);
-
               destination.setDestinationName(destinationName);
               destination.setDestinationType(destType);
               destination.setDestinationCountry(country);
-              destination.setDestinationDistrict(district);
+              destination.setDestinationDistrict(districtName);
               destination.setDestinationLat(latitude);
               destination.setDestinationLon(longitude);
               destination.setIsPublic(isPublic);
@@ -339,63 +345,68 @@ public class DestinationController extends Controller {
 
               List<Integer> duplicatedDestinationIds = new ArrayList<>();
               // Checks if destination is a duplicate destination
-              boolean exists, duplicate = false;
-              List<Destination> destinations = Destination.find.query().findList();
-              for (Destination dest : destinations) {
-                if (dest.getDestinationId() != destinationId && destination.getIsPublic()) {
-                  exists = destination.equals(dest);
-                  // Checks if the destination found is private
-                  if (exists && !dest.getIsPublic()) {
-                    duplicatedDestinationIds.add(dest.getDestinationId());
-                  } // Checks if the destination is a duplicate (both public)
-                  else if (exists && (dest.getIsPublic() && optionalDest.get().getIsPublic())) {
-                    duplicate = true;
-                  }
-                }
-              }
+              return destinationRepository
+                  .getDuplicateDestinations(destination, user.getUserId())
+                  .thenComposeAsync(
+                      destinations -> {
+                        boolean exists = false;
+                        boolean duplicate = false;
+                        for (Destination dest : destinations) {
+                          if (dest.getDestinationId() != destinationId
+                              && destination.getIsPublic()) {
+                            exists = destination.equals(dest);
+                            // Checks if the destination found is private
+                            if (exists && !dest.getIsPublic()) {
+                              duplicatedDestinationIds.add(dest.getDestinationId());
+                            } // Checks if the destination is a duplicate (both public)
+                            else if (exists
+                                && (dest.getIsPublic() && optionalDest.get().getIsPublic())) {
+                              duplicate = true;
+                            }
+                          }
+                        }
 
-              if (duplicate) {
-                throw new CompletionException(
-                    new BadRequestException(
-                        "There is already a Destination with the following information"));
-              }
+                        if (duplicate) {
+                          throw new CompletionException(
+                              new BadRequestException(
+                                  "There is already a Destination with the following information"));
+                        }
 
-              for (int destId : duplicatedDestinationIds) {
-                List<DestinationPhoto> photoDest =
-                    DestinationPhoto.find
-                        .query()
-                        .where()
-                        .eq("destination_destination_id", destId)
-                        .findList();
-                destinationRepository.deleteDestination(destId);
+                        for (int destId : duplicatedDestinationIds) {
+                          List<DestinationPhoto> photoDest =
+                              DestinationPhoto.find
+                                  .query()
+                                  .where()
+                                  .eq("destination_destination_id", destId)
+                                  .findList();
+                          destinationRepository.deleteDestination(destId);
 
-                for (DestinationPhoto photo : photoDest) {
-                  photo.setDestination(destination);
-                  destinationRepository.insertDestinationPhoto(photo);
-                }
-              }
-
-              return destinationRepository.update(destination);
+                          for (DestinationPhoto photo : photoDest) {
+                            photo.setDestination(destination);
+                            destinationRepository.insertDestinationPhoto(photo);
+                          }
+                        }
+                        return destinationRepository.update(destination);
+                      });
             },
             httpExecutionContext.current())
-        .thenApplyAsync(destination -> (Result) ok(), httpExecutionContext.current())
+        .thenApplyAsync(destination -> ok(Json.toJson(destination)), httpExecutionContext.current())
         .exceptionally(
             error -> {
               try {
                 throw error.getCause();
               } catch (NotFoundException notFoundE) {
-                response.put("message", "There is no destination with the given ID found");
+                response.put(MESSAGE_KEY, "There is no destination with the given ID found");
                 return notFound(response);
               } catch (ForbiddenRequestException forbiddenRequest) {
-                response.put("message", forbiddenRequest.getMessage());
+                response.put(MESSAGE_KEY, forbiddenRequest.getMessage());
                 return forbidden(response);
               } catch (BadRequestException badRequestE) {
-                response.put("message", badRequestE.getMessage());
+                response.put(MESSAGE_KEY, badRequestE.getMessage());
                 return badRequest(response);
               } catch (Throwable ee) {
-                ee.printStackTrace();
-                response.put("message", "Endpoint under development");
-                return internalServerError(response);
+                    log.error(ee.getMessage());
+                    return internalServerError(response);
               }
             });
   }
@@ -431,7 +442,7 @@ public class DestinationController extends Controller {
                         "You are not permitted to delete this destination"));
               }
               ObjectNode success = Json.newObject();
-              success.put("message", "Successfully deleted the given destination id");
+              success.put(MESSAGE_KEY, "Successfully deleted the given destination id");
               return this.destinationRepository.deleteDestination(destination.getDestinationId());
             },
             httpExecutionContext.current())
@@ -442,14 +453,14 @@ public class DestinationController extends Controller {
                 throw e.getCause();
               } catch (NotFoundException notFoundE) {
                 ObjectNode message = Json.newObject();
-                message.put("message", "The given destination id is not found");
+                message.put(MESSAGE_KEY, "The given destination id is not found");
                 return notFound(message);
               } catch (ForbiddenRequestException forbiddenReqE) {
                 ObjectNode message = Json.newObject();
-                message.put("message", forbiddenReqE.getMessage());
+                message.put(MESSAGE_KEY, forbiddenReqE.getMessage());
                 return forbidden(message);
               } catch (Throwable serverError) {
-                serverError.printStackTrace();
+                log.error(serverError.getMessage());
                 return internalServerError();
               }
             });
@@ -497,16 +508,16 @@ public class DestinationController extends Controller {
               try {
                 throw error.getCause();
               } catch (BadRequestException e) {
-                message.put("message", e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return badRequest(message);
               } catch (UnauthorizedException e) {
-                message.put("message", e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return unauthorized(message);
               } catch (ForbiddenRequestException e) {
-                message.put("message", e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return forbidden(message);
               } catch (NotFoundException e) {
-                message.put("message", e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return notFound(message);
               } catch (Throwable e) {
                 log.error("An unexpected error has occurred", e);
@@ -551,25 +562,6 @@ public class DestinationController extends Controller {
             },
             httpExecutionContext.current())
         .exceptionally(e -> internalServerError());
-  }
-
-  /**
-   * Endpoint to get all districts for a country.
-   *
-   * @param countryId country to get districts for.
-   * @return A completion stage and status code of 200 with districts in the json body if
-   *     successful.
-   */
-  @With(LoggedIn.class)
-  public CompletionStage<Result> getDistricts(int countryId) {
-    return destinationRepository
-        .getDistricts(countryId)
-        .thenApplyAsync(
-            districts -> {
-              JsonNode districtsJson = Json.toJson(districts);
-              return ok(districtsJson);
-            },
-            httpExecutionContext.current());
   }
 
   /**
@@ -658,8 +650,8 @@ public class DestinationController extends Controller {
               } catch (NotFoundException badReqException) {
                 return notFound(badReqException.getMessage());
               } catch (Throwable throwableException) {
-                throwableException.printStackTrace();
-                return internalServerError("dfd");
+                log.error(throwableException.getMessage());
+                return internalServerError();
               }
             });
   }
@@ -675,14 +667,13 @@ public class DestinationController extends Controller {
   public CompletionStage<Result> getPhotos(int destinationId, Http.Request request) {
 
     ObjectNode res = Json.newObject();
-    String messageKey = "message";
     User user = request.attrs().get(ActionState.USER);
     return destinationRepository
         .getDestinationById(destinationId)
         .thenApplyAsync(
             (optionalDestination -> {
               if (!optionalDestination.isPresent()) {
-                res.put(messageKey, "Destination " + destinationId + " does not exist");
+                res.put(MESSAGE_KEY, "Destination " + destinationId + " does not exist");
                 return notFound(res);
               }
               Destination destination = optionalDestination.get();
@@ -700,8 +691,6 @@ public class DestinationController extends Controller {
               photosToReturn.addAll(publicDestinationPhotos);
               photosToReturn.addAll(privatePhotosForUser);
 
-              JsonNode photos = Json.toJson(photosToReturn);
-
               return ok(Json.toJson(photosToReturn));
             }),
             httpExecutionContext.current());
@@ -718,7 +707,6 @@ public class DestinationController extends Controller {
   public CompletionStage<Result> deletePhoto(int destinationId, int photoId, Http.Request request) {
     User user = request.attrs().get(ActionState.USER);
     ObjectNode res = Json.newObject();
-    String messageKey = "message";
 
     return destinationRepository
         .getDestinationPhotoById(destinationId, photoId)
@@ -727,7 +715,7 @@ public class DestinationController extends Controller {
               // return 404 if destination photo is not found
               if (!optionalDestinationPhoto.isPresent()) {
                 res.put(
-                    messageKey,
+                    MESSAGE_KEY,
                     String.format(
                         "Photo %d is not linked to destination %d", photoId, destinationId));
                 return notFound(res);
@@ -737,7 +725,7 @@ public class DestinationController extends Controller {
               DestinationPhoto destinationPhoto = optionalDestinationPhoto.get();
               if (user.isDefaultAdmin() || user.isAdmin()) {
                 destinationRepository.deleteDestinationPhoto(destinationPhoto);
-                res.put(messageKey, "The destination photo link was deleted");
+                res.put(MESSAGE_KEY, "The destination photo link was deleted");
                 return ok(res);
               }
 
@@ -745,13 +733,13 @@ public class DestinationController extends Controller {
               PersonalPhoto personalPhoto = destinationPhoto.getPersonalPhoto();
               if (personalPhoto.getUser().equals(user)) {
                 destinationRepository.deleteDestinationPhoto(destinationPhoto);
-                res.put(messageKey, "The destination photo link was deleted");
+                res.put(MESSAGE_KEY, "The destination photo link was deleted");
                 return ok(res);
               }
 
               // else tell the user they are not allowed :P
               res.put(
-                  messageKey,
+                  MESSAGE_KEY,
                   String.format(
                       "User %d is not allowed to delete destination photo %d",
                       user.getUserId(), photoId));
@@ -801,15 +789,15 @@ public class DestinationController extends Controller {
                 throw e.getCause();
               } catch (BadRequestException error) {
                 ObjectNode message = Json.newObject();
-                message.put("message", error.getMessage());
+                message.put(MESSAGE_KEY, error.getMessage());
                 return badRequest(message);
               } catch (NotFoundException error) {
                 ObjectNode message = Json.newObject();
-                message.put("message", error.getMessage());
+                message.put(MESSAGE_KEY, error.getMessage());
                 return notFound(message);
               } catch (ForbiddenRequestException error) {
                 ObjectNode message = Json.newObject();
-                message.put("message", error.getMessage());
+                message.put(MESSAGE_KEY, error.getMessage());
                 return forbidden(message);
               } catch (Throwable throwable) {
                 log.error("500 - Internal Server Error", throwable);
@@ -856,7 +844,7 @@ public class DestinationController extends Controller {
               }
 
               // Get traveller type objects from ID's
-              JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
+              JsonNode travellerTypeIds = request.body().asJson().get(TRAVELLER_TYPE_IDS_KEY);
               List<TravellerType> allTravellerTypes = TravellerType.find.all();
               List<TravellerType> travellerTypes =
                   destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
@@ -875,7 +863,7 @@ public class DestinationController extends Controller {
               } catch (ForbiddenRequestException forbiddenException) {
                 return forbidden(forbiddenException.getMessage());
               } catch (Throwable throwableException) {
-                throwableException.printStackTrace();
+                log.error(throwableException.getMessage());
                 return internalServerError(throwableException.getMessage());
               }
             });
@@ -887,8 +875,8 @@ public class DestinationController extends Controller {
    * @param destinationProposalId the id of the destination proposal to modify
    * @param request the HTTP request object containing a list of traveller type ids
    * @return A response that complies with the API spec http status codes: - 200 - OK - Successfully
-   * updated proposal. - 400 - Bad Request - Request body incorrect. - 404 - Not Found - Destination
-   * proposal not found.
+   *     updated proposal. - 400 - Bad Request - Request body incorrect. - 404 - Not Found -
+   *     Destination proposal not found.
    */
   @With({LoggedIn.class, Admin.class})
   public CompletionStage<Result> modifyProposal(int destinationProposalId, Http.Request request) {
@@ -901,7 +889,7 @@ public class DestinationController extends Controller {
                     new NotFoundException("Destination proposal not found"));
               }
               DestinationProposal destinationProposal = optionalDestinationProposal.get();
-              JsonNode travellerTypeIds = request.body().asJson().get("travellerTypeIds");
+              JsonNode travellerTypeIds = request.body().asJson().get(TRAVELLER_TYPE_IDS_KEY);
               List<TravellerType> allTravellerTypes = TravellerType.find.all();
               List<TravellerType> travellerTypes =
                   destinationUtil.transformTravellerTypes(travellerTypeIds, allTravellerTypes);
@@ -916,18 +904,18 @@ public class DestinationController extends Controller {
                 throw e.getCause();
               } catch (NotFoundException notFoundException) {
                 ObjectNode message = Json.newObject();
-                message.put("message", notFoundException.getMessage());
+                message.put(MESSAGE_KEY, notFoundException.getMessage());
                 return notFound(message);
               } catch (BadRequestException badRequestException) {
                 ObjectNode message = Json.newObject();
-                message.put("message", badRequestException.getMessage());
+                message.put(MESSAGE_KEY, badRequestException.getMessage());
                 return badRequest(message);
               } catch (ForbiddenRequestException forbiddenRequestException) {
                 ObjectNode message = Json.newObject();
-                message.put("message", forbiddenRequestException.getMessage());
+                message.put(MESSAGE_KEY, forbiddenRequestException.getMessage());
                 return forbidden(message);
               } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                log.error(throwable.getMessage());
                 return internalServerError();
               }
             });
@@ -972,7 +960,7 @@ public class DestinationController extends Controller {
             optionalDestinationProposal -> {
               if (!optionalDestinationProposal.isPresent()) {
                 ObjectNode message = Json.newObject();
-                message.put("message", "The proposal with the given ID does not exist.");
+                message.put(MESSAGE_KEY, "The proposal with the given ID does not exist.");
                 return notFound(message);
               }
               DestinationProposal destinationProposal = optionalDestinationProposal.get();
@@ -1019,7 +1007,7 @@ public class DestinationController extends Controller {
               }
 
               ObjectNode success = Json.newObject();
-              success.put("message", "Successfully rejected the given destination proposal");
+              success.put(MESSAGE_KEY, "Successfully rejected the given destination proposal");
               return this.destinationRepository.deleteDestinationProposal(destinationProposal);
             },
             httpExecutionContext.current())
@@ -1030,28 +1018,36 @@ public class DestinationController extends Controller {
                 throw e.getCause();
               } catch (ForbiddenRequestException forbiddenReqE) {
                 ObjectNode message = Json.newObject();
-                message.put("message", forbiddenReqE.getMessage());
+                message.put(MESSAGE_KEY, forbiddenReqE.getMessage());
                 return forbidden(message);
               } catch (NotFoundException notFoundE) {
                 ObjectNode message = Json.newObject();
-                message.put("message", notFoundE.getMessage());
+                message.put(MESSAGE_KEY, notFoundE.getMessage());
                 return notFound(message);
               } catch (Throwable serverError) {
-                serverError.printStackTrace();
+                log.info(serverError.getMessage());
                 return internalServerError();
               }
             });
   }
 
   /**
-   * Allows an admin to get all the destination proposals
+   * Allows an admin to get all the destination proposals on a given page
    *
+   * @param request the Http request object containing the query string for the page to retrieve
    * @return A response that complies with the API spec
    */
   @With({LoggedIn.class, Admin.class})
-  public CompletionStage<Result> getProposals() {
+  public CompletionStage<Result> getProposals(Http.Request request) {
+    int page = 1;
+    try {
+      String pageString = request.getQueryString("page");
+      page = Integer.parseInt(pageString);
+    } catch (Exception e) {
+      log.info("No page provided, using default of 1");
+    }
     return destinationRepository
-        .getDestinationProposals()
+        .getDestinationProposals(page)
         .thenApplyAsync(destinationProposals -> ok(Json.toJson(destinationProposals)));
   }
 
@@ -1101,16 +1097,16 @@ public class DestinationController extends Controller {
               try {
                 throw error.getCause();
               } catch (BadRequestException e) {
-                message.put("message", e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return badRequest(message);
               } catch (ForbiddenRequestException e) {
-                message.put("message", e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return forbidden(message);
               } catch (NotFoundException e) {
-                message.put("message", e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return notFound(message);
               } catch (UnauthorizedException e) {
-                message.put("message", e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return unauthorized(message);
               } catch (Throwable e) {
                 log.error("An unexpected error has occurred", e);

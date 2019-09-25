@@ -39,6 +39,7 @@
                       type="number"
               ></v-text-field>
             </div>
+
           </div>
         </v-card-text>
 
@@ -66,11 +67,20 @@
                   :value="travellerType"
                   v-model="travellerType"
           ></v-select>
-          <div class="">
-            <v-btn id="searchButton" color="secondary" depressed v-on:click="search" class="button button-card">Search
-            </v-btn>
+
+          <v-text-field
+            class="selector-input col-md-3"
+            label="Name" 
+            v-model="name"
+          >
+
+          </v-text-field>
+          <div class="search-buttons">
             <v-btn id="clearButton" color="secondary" depressed v-on:click="clearFilters" class="button button-card">
               Clear
+            </v-btn>
+
+            <v-btn id="searchButton" color="secondary" depressed @click="search()" class="button button-card">Search
             </v-btn>
           </div>
         </div>
@@ -82,13 +92,18 @@
                 :headers="headers"
                 :items="travellers"
                 class="elevation-1"
+                :loading="isLoading"
                 hide-actions
         >
           <template v-slot:items="props">
             <td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
-              <img v-if="props.item.profilePhoto" class="profile-pic" alt="Profile Photo"
-                   :src="photoUrl(props.item.profilePhoto.photoId)">
-              <img v-else class="profile-pic" alt="Profile Photo" src="../Profile/ProfilePic/defaultProfilePicture.png">
+              <v-avatar v-if="props.item.profilePhoto" class="profile-pic">
+                <img alt="Profile Photo"
+                     :src="photoUrl(props.item.profilePhoto.photoId)">
+              </v-avatar>
+              <v-avatar  v-else class="profile-pic">
+                <img alt="Profile Photo" src="../Profile/ProfilePic/defaultProfilePicture.png">
+              </v-avatar>
             </td>
             <td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">{{ props.item.firstName
               }}
@@ -103,7 +118,7 @@
             </td>
             <td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
               <v-chip class="table-chip" v-for="nationality in props.item.nationalities"
-                      v-bind:key="nationality">
+                      v-bind:key="nationality.nationalityId">
                 <CountryDisplay v-bind:country="nationality.nationalityCountry"></CountryDisplay>
               </v-chip>
             </td>
@@ -114,6 +129,11 @@
             </td>
           </template>
         </v-data-table>
+
+        <v-spacer align="center">
+          <v-icon color="secondary" class="pagination-arrow" @click="goBackOnePage" :disabled="pageIndex === 0">arrow_back</v-icon>
+          <v-icon color="secondary" class="pagination-arrow" @click="goForwardOnePage" :disabled="travellers.length < pageLimit - 1">arrow_forward</v-icon>
+        </v-spacer>
       </v-card>
     </div>
   </div>
@@ -126,6 +146,8 @@
   import {endpoint} from "../../utils/endpoint";
   import moment from "moment";
   import CountryDisplay from "../../components/Country/CountryDisplay";
+
+  const PAGE_LIMIT = 20;
 
   export default {
     components: {CountryDisplay},
@@ -143,6 +165,7 @@
           names: [],
           ids: []
         },
+        name: "",
         nationality: "",
         travellerType: "",
         gender: "",
@@ -156,7 +179,10 @@
           {text: 'Nationality', align: 'left', sortable: false, value: 'nationalityName'},
           {text: 'Traveller Type(s)', align: 'left', sortable: false, value: 'travellerTypes'},
         ],
-        travellers: []
+        travellers: [],
+        pageIndex: 0,
+        pageLimit: PAGE_LIMIT,
+        isLoading: false
       }
     },
     mounted: async function () {
@@ -193,7 +219,7 @@
         /**
          * @param {String} message the message to show in the snackbar
          * @param {String} color the colour for the snackbar
-         * @param {Number} the amount of time (in ms) for which we show the snackbar
+         * @param {Number} timeout the amount of time (in ms) for which we show the snackbar
          */
         showSnackbar(message, color, timeout) {
             this.$root.$emit("show-snackbar", {
@@ -204,13 +230,18 @@
         },
       showError(errorMessage) {
         this.showSnackbar(errorMessage, "error", 3000);
-			},
-      search: async function () {
+      },
+      /**
+       * Searches for travellers in a paginated sense
+       * @param {number | undefined} pageIndex - Either the new page to go to or undefined to reset page to 0
+       */
+      search: async function (pageIndex) {
         // get the queries from the selector variables
         // parse them into an acceptable format to be sent
         let queries = "";
         queries += "ageMin=" + moment().subtract(this.ageRange[0], "years");
         queries += "&ageMax=" + moment().subtract(this.ageRange[1], "years");
+        queries += `&limit=${PAGE_LIMIT}`;
 
         if (this.gender !== "") {
           queries += "&gender=" + this.gender;
@@ -226,9 +257,22 @@
           queries += "&travellerType=" + this.travellerTypes.ids[typeIndex];
         }
 
+        if (this.name !== "") {
+          queries += `&name=${this.name}`;
+        }
+
+        const pageToGoTo = pageIndex || 0;
+        queries += `&offset=${pageToGoTo * PAGE_LIMIT}`;
+
+        if (pageToGoTo === 0) {
+          this.pageIndex = 0;
+        } 
+
         try {
           // call the get travellers function passing in the formatted queries
+          this.isLoading = true;
           const travellers = await requestTravellers(queries);
+          this.isLoading = false;
           const userId = localStorage.getItem("userId");
 
           this.travellers = travellers
@@ -249,8 +293,9 @@
         this.nationality = "";
         this.travellerType = "";
         this.gender = "";
+        this.name = "";
         // Call the search function to get unfiltered results
-        this.search();
+        this.search(this.pageIndex);
       },
 
       /**
@@ -262,6 +307,14 @@
         const authToken = localStorage.getItem("authToken");
         const queryAuthorization = `?Authorization=${authToken}`;
         return endpoint(`/users/photos/${photoId}${queryAuthorization}`);
+      },
+      goBackOnePage() {
+        this.pageIndex -= 1;
+        this.search(this.pageIndex);
+      },
+      goForwardOnePage() {
+        this.pageIndex += 1;
+        this.search(this.pageIndex);
       }
     }
   }
@@ -341,6 +394,17 @@
   .profile-pic {
     width: 30%;
     height: auto;
+  }
+
+  .pagination-arrow {
+    font-size: 2.5rem;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .search-buttons {
+    margin-left: auto;
   }
 
 </style>

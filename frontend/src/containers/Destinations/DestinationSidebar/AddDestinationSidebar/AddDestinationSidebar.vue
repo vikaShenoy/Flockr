@@ -34,16 +34,14 @@
           </v-flex>
 
           <v-flex>
-            <v-select
-                v-model="destination.destinationDistrict.districtId"
-                :value="destination.destinationDistrict.districtId"
-                :items="districts"
-                item-value="districtId"
-                item-text="districtName"
-                :disabled="!destination.destinationCountry.countryId"
-                label="District"
-                :rules="requiredRule"></v-select>
+            <v-text-field
+              v-model="destination.destinationDistrict.districtName"
+              :value="destination.destinationDistrict.districtName"
+              label="District"
+              :rules="requiredRule">
+            </v-text-field>
           </v-flex>
+
 
           <v-flex>
             <v-combobox
@@ -57,6 +55,7 @@
                 clearable
                 solo
                 multiple
+                @change="updateSelectedTravellerType"
             >
 
               <template v-slot:selection="data">
@@ -151,12 +150,11 @@
             destinationTypeName: null
           },
           destinationDistrict: {
-            districtId: null,
             districtName: null
           },
           travellerTypes: [],
-          destinationLat: "",
-          destinationLon: "",
+          destinationLat: null,
+          destinationLon: null,
           destinationCountry: {
             countryId: null,
             countryName: null
@@ -176,12 +174,13 @@
         districtDisabled: true,
         editDistrictDisabled: false,
         countries: [],
-        districts: [],
         destinationTypes: [],
         travellerTypes: [],
         locationDisabled: false,
         isValidForm: false,
-        formIsLoading: false
+        formIsLoading: false,
+        destinationLat: null,
+        destinationLon: null
       };
     },
     mounted() {
@@ -202,8 +201,8 @@
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
               position => {
-                this.destination.destinationLat = position.coords.latitude;
-                this.destination.destinationLon = position.coords.longitude;
+                this.destinationLat = position.coords.latitude;
+                this.destinationLon = position.coords.longitude;
               },
               error => {
                 this.$emit("displayMessage", {
@@ -265,6 +264,8 @@
        * Closes the dialog window and resets all fields to default values.
        */
       closeDialog() {
+        this.latitude = null;
+        this.longitude = null;
         this.destination = {
           destinationName: "",
           destinationType: {
@@ -272,12 +273,11 @@
             destinationTypeName: null
           },
           destinationDistrict: {
-            districtId: null,
             districtName: null
           },
           travellerTypes: [],
-          destinationLat: "",
-          destinationLon: "",
+          destinationLat: null,
+          destinationLon: null,
           destinationCountry: {
             countryId: null,
             countryName: null
@@ -319,27 +319,18 @@
       },
       updateCountry(newValue) {
         this.destination.destinationCountry = newValue;
+      },
+      updateSelectedTravellerType(travellerTypes) {
+        this.destination.travellerTypes = travellerTypes.filter(type => typeof type !== 'string');
       }
     },
-
     watch: {
-      /**
-       * Called when the country is selected.
-       * Requests the district for the given country.
-       */
-      async destCountry() {
-        try {
-          this.districts = await requestDistricts(
-              this.destination.destinationCountry.countryId
-          );
-        } catch (error) {
-          this.$emit("displayMessage", {
-            show: true,
-            text: error.message,
-            color: "red"
-          });
-        }
+      destinationLat(latitude) {
+        this.latitude = latitude;
       },
+      destinationLon(longitude) {
+        this.longitude = longitude;
+      }
     }
   }
 </script>

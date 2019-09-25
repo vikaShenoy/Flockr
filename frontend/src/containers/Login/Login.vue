@@ -40,6 +40,14 @@
                 @click="login()"
         >Log in
         </v-btn>
+  <p id="no_account_text">No account?</p>
+        <v-btn
+                color="secondary"
+                depressed
+                class="col-sm-4 offset-sm-4"
+                @click="signUp()"
+        >Sign Up
+        </v-btn>
 
       </v-form>
 
@@ -79,12 +87,18 @@
           localStorage.setItem("authToken", user.token);
           localStorage.setItem("userId", user.userId);
           localStorage.setItem("ownUserId", user.userId);
-          const socket = new WebSocket(config.websocketUrl);
+          const socket = new WebSocket(`${config.websocketUrl}?Authorization=${localStorage.getItem("authToken")}`);
           UserStore.data.socket = socket;
           this.$router.push(`/profile/${user.userId}`);
         } catch (e) {
           this.hasInvalidCredentials = true;
         }
+      },
+      /**
+       *Redirects user to the signup page if they choose
+       */
+      async signUp() {
+        this.$router.push("/signup");
       }
     }
   };
@@ -108,6 +122,9 @@
     background-size: cover;
     width: 100%;
     height: 100%;
+  }
+  #no_account_text {
+    margin-bottom: 0;
   }
 
 </style>

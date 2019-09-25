@@ -3,10 +3,11 @@ import {endpoint} from "../../../utils/endpoint"
 
 /**
  * Get all destination proposals.
- * @returns {Object} the destination proposals
+ * @param page: the number of the page of proposals to retrieve
+ * @returns {Object} the destination proposals.
  */
-export async function getDestinationProposals() {
-   const res = await superagent.get(endpoint("/destinations/proposals"))
+export async function getDestinationProposals(page) {
+   const res = await superagent.get(endpoint("/destinations/proposals?page=" + page))
                 .set("Authorization", localStorage.getItem("authToken"));
 
   return res.body;
@@ -24,7 +25,8 @@ export async function getDestinationProposal(destinationProposalId) {
 }
 
 /**
- * Accept a proposal.
+ * Accept a destination proposal.
+ * @param destinationProposalId id of the proposal to accept.
  */
 export async function acceptProposal(destinationProposalId) {
    await superagent.patch(endpoint(`/destinations/proposals/${destinationProposalId}`))
@@ -33,7 +35,8 @@ export async function acceptProposal(destinationProposalId) {
 
 
 /**
- * Decline a proposal.
+ * Decline a destination proposal.
+ * @param destinationProposalId id of the proposal to reject (delete).
  */
 export async function declineProposal(destinationProposalId) {
    const userId = localStorage.getItem("userId");

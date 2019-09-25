@@ -18,9 +18,12 @@ import models.User;
 import org.junit.Assert;
 import play.libs.Json;
 import play.mvc.Result;
-import utils.FakeClient;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.TestState;
 
+/**
+ * Test that the user roles feature works as expected.
+ */
 public class UserRoleSteps {
 
     // User data
@@ -130,7 +133,7 @@ public class UserRoleSteps {
         Assert.assertEquals(200, roleResult.status());
 
         // Save the response to be tested in the last step
-        JsonNode roleBody = utils.PlayResultToJson.convertResultToJson(roleResult);
+        JsonNode roleBody = testingUtilities.PlayResultToJson.convertResultToJson(roleResult);
         this.userRoles = new ArrayList<>();
         for (JsonNode role : roleBody) {
             this.userRoles.add(role.get("roleType").asText());

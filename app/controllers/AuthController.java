@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.ConflictingRequestException;
 import exceptions.UnauthorizedException;
 import models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Http.Request;
@@ -21,7 +23,6 @@ import repository.UserRepository;
 import util.Responses;
 import util.Security;
 import javax.inject.Inject;
-import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -35,19 +36,24 @@ import static util.AuthUtil.isValidEmailAddress;
 public class AuthController {
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final Security security;
-    private final Responses responses;
+    private static final String FIRST_NAME_KEY = "firstName";
+    private static final String MIDDLE_NAME_KEY = "middleName";
+    private static final String LAST_NAME_KEY = "lastName";
+    private static final String MESSAGE_KEY = "message";
+    private static final String PASSWORD_KEY = "password";
+    private static final String EMAIL_KEY = "email";
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
-    public AuthController(AuthRepository authRepository, UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, Responses responses, RoleRepository roleRepository) {
+    public AuthController(AuthRepository authRepository, UserRepository userRepository,
+                          HttpExecutionContext httpExecutionContext, Security security, Responses responses,
+                          RoleRepository roleRepository) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
-        this.responses = responses;
-        this.roleRepository = roleRepository;
     }
 
     /**
@@ -59,85 +65,81 @@ public class AuthController {
     public CompletionStage<Result> signup(Request request) {
         JsonNode jsonRequest = request.body().asJson();
 
-        String messageKey = "message";
-
         // check that there is a request body, if not return badRequest
         if (jsonRequest == null) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Please provide a valid request body according to the API spec");
+                message.put(MESSAGE_KEY, "Please provide a valid request body according to the API spec");
                 return badRequest(message);
             });
         }
         // Checks if the JSON contains a first name, last name, password and email
-        if (!(jsonRequest.has("firstName"))) {
+        if (!(jsonRequest.has(FIRST_NAME_KEY))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Please provide a first name with the JSON key as firstName");
+                message.put(MESSAGE_KEY, "Please provide a first name with the JSON key as firstName");
                 return badRequest(message);
             });
-        } else if (!(jsonRequest.has("lastName"))) {  // Checks if the JSON contains a last name
+        } else if (!(jsonRequest.has(LAST_NAME_KEY))) {  // Checks if the JSON contains a last name
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Please provide a last name with the JSON key as lastName");
+                message.put(MESSAGE_KEY, "Please provide a last name with the JSON key as lastName");
                 return badRequest(message);
             });
-        } else if (!(jsonRequest.has("email"))) {
+        } else if (!(jsonRequest.has(EMAIL_KEY))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Please provide a valid email address with the JSON key as email");
+                message.put(MESSAGE_KEY, "Please provide a valid email address with the JSON key as email");
                 return badRequest(message);
             });
-        } else if (!(jsonRequest.has("password"))) {
+        } else if (!(jsonRequest.has(PASSWORD_KEY))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Please provide a password with at least 6 characters with the JSON key as password");
+                message.put(MESSAGE_KEY, "Please provide a password with at least 6 characters with the JSON key as password");
                 return badRequest(message);
             });
         }
 
-        String middleName = jsonRequest.has("middleName") ? jsonRequest.get("middleName").asText() : "";
-        String firstName = jsonRequest.get("firstName").asText();
-        String lastName = jsonRequest.get("lastName").asText();
-        String email = jsonRequest.get("email").asText();
-        String password = jsonRequest.get("password").asText();
+        String middleName = jsonRequest.has(MIDDLE_NAME_KEY) ? jsonRequest.get(MIDDLE_NAME_KEY).asText() : "";
+        String firstName = jsonRequest.get(FIRST_NAME_KEY).asText();
+        String lastName = jsonRequest.get(LAST_NAME_KEY).asText();
+        String email = jsonRequest.get(EMAIL_KEY).asText();
+        String password = jsonRequest.get(PASSWORD_KEY).asText();
         String hashedPassword = this.security.hashPassword(password);
         String userToken = this.security.generateToken();
 
         // Middle name is optional and checks if the middle name is a valid name
-        if (jsonRequest.has("middleName")) {
-            if (!(isAlpha(middleName)) || (middleName.length() < 2)) {
-                return supplyAsync(() -> {
-                    ObjectNode message = Json.newObject();
-                    message.put(messageKey, "Please provide a valid middle name that contains only letters and has at least 2 characters");
-                    return badRequest(message);
-                });
-            }
+        if (jsonRequest.has(MIDDLE_NAME_KEY) && (!isAlpha(middleName) || middleName.length() < 2)) {
+            return supplyAsync(() -> {
+                ObjectNode message = Json.newObject();
+                message.put(MESSAGE_KEY, "Please provide a valid middle name that contains only letters and has at least 2 characters");
+                return badRequest(message);
+            });
         }
 
         // Checks if the first name, last name, email and password given is valid
         if ((firstName.isEmpty()) || !(isAlpha(firstName)) || (firstName.length() < 2)) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Please provide a valid first name that contains only letters and has at least 2 characters");
+                message.put(MESSAGE_KEY, "Please provide a valid first name that contains only letters and has at least 2 characters");
                 return badRequest(message);
             });
         } else if ((lastName.isEmpty()) || !(isAlpha(lastName)) || (lastName.length() < 2)) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Please provide a valid last name that contains only letters and has at least 2 characters");
+                message.put(MESSAGE_KEY, "Please provide a valid last name that contains only letters and has at least 2 characters");
                 return badRequest(message);
             });
         } else if ((email.isEmpty()) || !(isValidEmailAddress(email))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Please provide a valid email address");
+                message.put(MESSAGE_KEY, "Please provide a valid email address");
                 return badRequest(message);
             });
         } else if (password.isEmpty() || (password.length() < 6) ) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Please provide a valid password with at least 6 characters");
+                message.put(MESSAGE_KEY, "Please provide a valid password with at least 6 characters");
                 return badRequest(message);
             });
         }
@@ -149,7 +151,7 @@ public class AuthController {
             }
 
             User user = new User(firstName, middleName, lastName, email, hashedPassword, userToken);
-            return authRepository.insert(user).thenApplyAsync((insertedUser) -> created(Json.toJson(insertedUser)),
+            return authRepository.insert(user).thenApplyAsync(insertedUser -> created(Json.toJson(insertedUser)),
                 httpExecutionContext.current());
         }), httpExecutionContext.current())
         .exceptionally(error -> {
@@ -157,12 +159,12 @@ public class AuthController {
                 throw error.getCause();
             } catch (ConflictingRequestException e) {
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, e.getMessage());
+                message.put(MESSAGE_KEY, e.getMessage());
                 return Results.status(Http.Status.CONFLICT, message);
             } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                log.error(throwable.getMessage());
                 ObjectNode message = Json.newObject();
-                message.put(messageKey, "Something went wrong trying to sign up");
+                message.put(MESSAGE_KEY, "Something went wrong trying to sign up");
                 return internalServerError(message);
             }
         });
@@ -177,12 +179,12 @@ public class AuthController {
     public CompletionStage<Result> login(Request request) {
         JsonNode jsonBody = request.body().asJson();
 
-        String email = jsonBody.get("email").asText();
-        String password = jsonBody.get("password").asText();
+        String email = jsonBody.get(EMAIL_KEY).asText();
+        String password = jsonBody.get(PASSWORD_KEY).asText();
         String hashedPassword = this.security.hashPassword(password);
 
         return authRepository.getUserByCredentials(email, hashedPassword)
-                .thenComposeAsync((optionalUser) -> {
+                .thenComposeAsync(optionalUser -> {
                     if (!optionalUser.isPresent()) {
                         throw new CompletionException(new UnauthorizedException());
                     }
@@ -198,7 +200,7 @@ public class AuthController {
 
                     return userRepository.updateUser(user);
                 }, httpExecutionContext.current())
-                .thenApplyAsync((user) -> {
+                .thenApplyAsync(user -> {
                             JsonNode userJson = Json.toJson(user);
                             return ok(userJson);
                         }
@@ -209,7 +211,7 @@ public class AuthController {
                     } catch (UnauthorizedException noAuthError) {
                         return unauthorized();
                     } catch (Throwable genericError) {
-                        genericError.printStackTrace();
+                        log.error(genericError.getMessage());
                         return internalServerError();
                     }
                 });
@@ -226,9 +228,7 @@ public class AuthController {
         user.setToken(null);
 
         return userRepository.updateUser(user)
-                .thenApplyAsync((u) -> {
-                    return ok();
-                }, httpExecutionContext.current());
+            .thenApplyAsync(u -> ok(), httpExecutionContext.current());
 
     }
 
@@ -242,26 +242,19 @@ public class AuthController {
      */
     @With({LoggedIn.class, Admin.class})
     public CompletionStage<Result> logoutById( int userId, Request request) {
-        User user = request.attrs().get(ActionState.USER);
-
-
-        CompletionStage<Optional<User>> getUser;
-
-        getUser = userRepository.getUserById(userId);
-
        return userRepository.getUserById(userId).thenApplyAsync(optionalUser -> {
             if (!optionalUser.isPresent()) {
                 ObjectNode message = Json.newObject();
-                message.put("message", "User not found");
+                message.put(MESSAGE_KEY, "User not found");
                 return notFound(message);
             }
 
-            User userToLogut = optionalUser.get();
-            userToLogut.setToken(null);
-            userToLogut.save();
-           ObjectNode message = Json.newObject();
-           message.put("message", "User successfully logged out");
-           return ok(message);
+            User userToLogout = optionalUser.get();
+            userToLogout.setToken(null);
+            userToLogout.save();
+            ObjectNode message = Json.newObject();
+            message.put(MESSAGE_KEY, "User successfully logged out");
+            return ok(message);
         });
 
     }
@@ -274,11 +267,11 @@ public class AuthController {
     public CompletionStage<Result> checkEmailAvailable(String email) {
         if (email.isEmpty()) return supplyAsync(Results::badRequest);
         return authRepository.getUserByEmail(email)
-                .thenApplyAsync((user) -> {
-                    if (user.isPresent()) {
-                        return status(409);
-                    }
-                    return ok();
-                }, httpExecutionContext.current());
+            .thenApplyAsync(user -> {
+                if (user.isPresent()) {
+                    return status(409);
+                }
+                return ok();
+            }, httpExecutionContext.current());
     }
 }

@@ -15,9 +15,9 @@
         </v-btn>
       </v-flex>
 
-      <v-flex>
+      <v-flex style="margin-bottom: 0px">
 
-        <v-card class="trip-item" @click="$router.push(`/trips/${trip.tripId}`)">
+        <v-card :class="{'trip-item': true, 'elevation-0': viewOnly, 'trip-border': viewOnly}" @click="$router.push(`/trips/${trip.tripId}`)" >
 
           <div class="status">
             <v-icon v-if="trip.status === 'Upcoming'" style="font-size: 40px;color: #FFF;">flight_takeoff</v-icon>
@@ -67,9 +67,9 @@
   @import "../../../styles/_variables.scss";
 
   .trip-item {
-    margin: 15px;
+    margin: 7px;
     cursor: pointer;
-    height: 80px;
+      height: 100%;
 
     &:hover {
       background-color: #f4f4f4;
@@ -92,6 +92,10 @@
   .content {
     padding-top: 10px;
     padding-left: 10px;
+  }
+
+  .trip-border {
+    border: 1px solid rgba(0, 0, 0, 0.12);
   }
 
 

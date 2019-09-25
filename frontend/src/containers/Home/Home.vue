@@ -3,17 +3,50 @@
     <div>
       <h2>Welcome to </h2>
       <h1>Flockr</h1>
+
+        <v-spacer row>
+          <v-btn
+            v-if="!isLoggedIn"
+            color="secondary"
+            depressed
+            @click="homeSignup()"
+            >Sign Up
+          </v-btn>
+          <v-btn
+            v-if="!isLoggedIn"
+            color="secondary"
+            depressed
+            @click="homeLogin()"
+            >Log in
+          </v-btn>
+        </v-spacer>
+
     </div>
   </div>
 </template>
 
 <script>
+  import UserStore from "../../stores/UserStore";
   export default {
     data() {
       return {
         e1: 0
       }
+    },
+    methods: {
+      async homeLogin() {
+          this.$router.push("/login");
+      },
+      async homeSignup() {
+        this.$router.push("/signup");
+      }
+    },
+    computed: {
+      isLoggedIn() {
+        return UserStore.methods.loggedIn();
+      }
     }
+
   }
 </script>
 

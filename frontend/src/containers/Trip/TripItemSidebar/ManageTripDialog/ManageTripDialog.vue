@@ -16,19 +16,42 @@
       <v-container grid-list-md text-center>
       <v-layout wrap>
         <v-flex xs10 offset-xs1>
-          <h4 id="selected-users-title">Selected users</h4>
+          <div v-if="trip.users.length > 1">
+          <h4>Chat</h4>
+          <v-layout row >
+            <v-text-field v-if="!chatExists" v-model="chatNameToCreate" placeholder="Chat name" />
+            <v-btn v-if="!chatExists" color="info" @click="chatButtonClicked" :loading="isChatButtonLoading">
+              <v-icon left>chat</v-icon>
+              Create chat
+            </v-btn>
 
+            <p v-if="chatExists">To access your chat, please open the chat window</p>
+          </v-layout>
+          </div>
+
+
+          <h4>Selected users</h4>
           <ul>
             <li
-              v-for="user in selectedUsers"
-              v-bind:key="user.userId"
+              v-for="userRole in userRoles"
+              v-bind:key="userRole.user.userId"
+              class="selected-user"
             >
-            {{ formatName(user) }}
+            {{ formatName(userRole.user) }} <v-select v-model="userRole.role" :items="roleTypes" class="role-type" color="secondary" item-text="name" item-value="value"></v-select>
             </li>
           </ul>
 
           <div id="selected-users">
-            <v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>
+
+            <GenericCombobox
+              label="Users"
+              :get-function="searchUser"
+              :item-text="(user) => user.firstName + ' ' + user.lastName"
+              multiple
+              v-model="selectedUsers"
+              @items-selected="updateSelectedUsers"
+            ></GenericCombobox>
+            <!--<v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>-->
           </div>
         </v-flex>
       </v-layout>
@@ -61,7 +84,6 @@
           </v-spacer>
 
         </v-layout>
-        <v-btn @click="leaveOrDelete" class="red--text leave-button" flat>{{ onlyUser ? "Delete" : "Leave" }}</v-btn>
       </v-card-title>
 
       <div id="manage-trip-alert-contents">
@@ -82,11 +104,11 @@
             >Cancel</v-btn>
 
             <v-btn
-                    color="success"
-                    flat
-                    :loading="isLoading"
-                    @click="leaveOrDelete"
-            >Continue</v-btn>
+              color="red"
+              flat
+              :loading="isLoading"
+              @click="leaveOrDelete"
+            >{{ onlyUser ? 'Delete' : 'Leave' }}</v-btn>
           </v-spacer>
         </v-card-actions>
       </div>
@@ -96,12 +118,16 @@
 </template>
 
 <script>
-import { getAllUsers } from '../../../AddTrip/AddTripService';
+import { getUsers } from '../../../AddTrip/AddTripService';
 import UserStore from "../../../../stores/UserStore";
 import { editTrip } from '../../TripService';
 import { deleteTripFromList } from '../../../Trips/OldTripsService';
+import GenericCombobox from "../../../../components/GenericCombobox/GenericCombobox";
+import { getChatWithUsers, createChat } from '../../../App/Chat/ChatService';
+import roleType from '../../../../stores/roleType';
 
 export default {
+  components: {GenericCombobox},
   props: {
     isShowing: Boolean,
     trip: Object
@@ -109,23 +135,83 @@ export default {
   data() {
     return {
       isShowingDialog: false,
+      userRoles: [],
       selectedUsers: [],
       users: [],
       isLoading: false,
-      showAlertCard: false
+      showAlertCard: false,
+        chat: null,
+        chatNameToCreate: '',
+        isChatButtonLoading: false,
+      roleTypes: [
+        {
+          name: "Trip Manager",
+          value: roleType.TRIP_MANAGER
+        },
+        {
+          name: "Trip Member",
+          value: roleType.TRIP_MEMBER
+        },
+        {
+          name: "Trip Owner",
+          value: roleType.TRIP_OWNER
+        }
+      ]
     };
   },
   methods: {
+
+    updateSelectedUsers(newUsers) {
+      this.selectedUsers = newUsers
+    },
+
+    searchUser: async name => await getUsers(name),
+
+    /**
+     * Attempt to get the chat with the users of the trip.
+     */
+    async tryToGetChat() {
+      try {
+        const userIds = this.trip.users.map(user => user.userId);
+        this.chat = await getChatWithUsers(userIds);
+      } catch (err) {
+        // could not find a chat with those users ¯\_(ツ)_/¯
+      }
+    },
+    /**
+     * Called when the user clicks in the chat button
+     */
+    async chatButtonClicked() {
+      this.isChatButtonLoading = true;
+      await this.tryToGetChat(); // refresh the chat to confirm it doesn't exist
+      this.isChatButtonLoading = false;
+      if (!this.chatExists) {
+        const creatingUserId = UserStore.data.userId;
+        const userIds = this.trip.users.map(user => user.userId).filter(id => id !== creatingUserId);
+        try {
+          this.isChatButtonLoading = true;
+          this.chat = await createChat(userIds, this.chatNameToCreate);
+          this.isChatButtonLoading = false;
+          this.$root.$emit("show-success-snackbar", "Created the chat", 3000);
+          this.$root.$emit("add-chat");
+        } catch (err) {
+          // could not create the chat
+          this.$root.$emit("show-error-snackbar", "Could not create the chat", 3000);
+          this.isChatButtonLoading = false;
+        }
+      }
+    },
     /**
      * Gets all users and filters out own user ID
      */
-    async getAllUsers() {
+    async getAllUsers(name) {
       // Filter out user's own ID
-      const users = (await getAllUsers())
+      const users = (await getUsers(name))
         .filter(user => user.userId !== UserStore.data.userId);
 
 
       this.users = users;
+      return users;
     },
     /**
      * Formats full name for combobox input
@@ -158,29 +244,68 @@ export default {
      * Saves the current selected users that are in the trip
      */
     async saveUsersInTrip() {
-      const users = [...this.selectedUsers, UserStore.data]
+      const users = [...this.selectedUsers, UserStore.data];
       this.isLoading = true;
       this.trip.users = users;
+      const ownUserRole = this.trip.userRoles.find(role => role.user.userId === UserStore.data.userId);
+
+      // NOTE: this is mutating a prop and is not good practice, but it does get changed in the parent
+      // add new user roles for other users
+      this.trip.userRoles = this.userRoles.map(userRole => ({
+        user: userRole.user,
+        role: {
+          roleType: userRole.role
+        }
+      }));
+      // add the own user's role too
+      this.trip.userRoles.push(ownUserRole);
+
       await editTrip(this.trip);
       this.isLoading = false;
       this.isShowingDialog = false;
       this.$emit("newUsers", users);
+    },
+    getUserPermission(user) {
+      const userRole = this.trip.userRoles.find(userRole => userRole.user === user.userId);
+      return userRole.role.roleType;
     }
   },
   mounted() {
-    this.getAllUsers(); 
+    this.getAllUsers();
+    this.tryToGetChat();
   },
   watch: {
     /**
-     * Refreshes selectedUsers when opening up modal
+     * Refreshes userRoles when opening up modal
      */
     isShowingDialog(value) {
       if (value) {
+        this.userRoles = [...this.trip.userRoles]
+          .filter(userRole => userRole.user.userId !== UserStore.data.userId)
+          .map(userRole => ({user: userRole.user, role: userRole.role.roleType}));
+
         this.selectedUsers = [...this.trip.users]
           .filter(user => user.userId !== UserStore.data.userId);
+
       }
       
       this.$emit("update:isShowing", value);
+    },
+    selectedUsers: {
+      handler() {
+        this.userRoles = this.selectedUsers.map(user => {
+          const userRole = this.userRoles.find(userRole => userRole.user.userId === user.userId);
+          if (userRole) {
+            return userRole;
+          } else {
+            return {
+              user,
+              role: "TRIP_MEMBER"
+            };
+          }
+        });
+      },
+      deep: true
     },
     isShowing(value) {
       this.isShowingDialog = value;
@@ -189,6 +314,13 @@ export default {
   computed: {
     onlyUser() {
       return this.trip.users.length === 1;
+    },
+    /**
+     * Return whether a chat for the trip exists
+     * @returns {Boolean} true if chat exists, false otherwise
+     */
+    chatExists() {
+      return !!this.chat;
     }
   }
 }
@@ -219,6 +351,18 @@ export default {
 #selected-users-title {
   text-align: left;
   color: $secondary;
+}
+
+.role-type {
+  margin-left: 10px;
+  flex: none;
+  width: 150px;
+}
+
+
+.selected-user {
+  display: flex;
+  align-items: center;
 }
 
 </style>

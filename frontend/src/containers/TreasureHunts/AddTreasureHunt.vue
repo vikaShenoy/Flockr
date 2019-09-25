@@ -33,10 +33,13 @@
                     <v-text-field v-model="createTreasureHuntName" label="Name" required></v-text-field>
                   </v-flex>
                   <v-flex xs12>
-                    <v-select v-model="createTreasureHuntDestination" required label="Destination" :items="destinations"
-                              item-text="destinationName" item-value="destinationId">
-
-                    </v-select>
+                    <GenericCombobox
+                      label="Destination"
+                      :required="true"
+                      item-text="destinationName"
+                      :get-function="getPublicDestinationsFunction"
+                      v-model="createTreasureHuntDestination"
+                    />
                   </v-flex>
                   <v-flex xs12>
                     <v-textarea v-model="createTreasureHuntRiddle" label="Riddle" required></v-textarea>
@@ -82,13 +85,15 @@
   import {
     createTreasureHunt,
     deleteTreasureHuntData,
-    getPublicDestinations,
     undoDeleteTreasureHuntData
   } from "./TreasureHuntsService"
+  import { getPublicDestinations } from "../Destinations/DestinationsService";
   import Command from "../../components/UndoRedo/Command";
+  import GenericCombobox from "../../components/GenericCombobox/GenericCombobox";
 
   export default {
     name: "AddTreasureHunt",
+    components: { GenericCombobox },
     props: {
       toggle: Boolean
     },
@@ -100,12 +105,13 @@
         visible: false,
         destinations: [],
         createTreasureHuntName: "",
-        createTreasureHuntDestination: -1,
+        createTreasureHuntDestination: null,
         createTreasureHuntRiddle: "",
         startDate: null,
         endDate: null,
         today: new Date().toISOString().split("T")[0],
-        treasure: null
+        treasure: null,
+        getPublicDestinationsFunction: search => getPublicDestinations(search, 0) // used by GenericCombobox component
       }
     },
     methods: {
@@ -127,7 +133,11 @@
        * Calls the treasure hunt service to update the list of public destinations displayed in the dropdown box
        */
       async getDestinations() {
-        this.destinations = await getPublicDestinations()
+        try {
+          this.destinations = await getPublicDestinations();
+        } catch (err) {
+          this.$root.$emit("show-error-snackbar", "Could not get public destinations", 3000);
+        }
       },
 
       /**
@@ -138,7 +148,7 @@
         let treasureHunt = {
 
           treasureHuntName: this.createTreasureHuntName,
-          treasureHuntDestinationId: this.createTreasureHuntDestination,
+          treasureHuntDestinationId: this.createTreasureHuntDestination.destinationId,
           riddle: this.createTreasureHuntRiddle,
           startDate: this.startDate,
           endDate: this.endDate + " 23:59:59"
@@ -175,7 +185,7 @@
        * @returns {boolean}
        */
       validTreasureHunt() {
-        return !(this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
+          return !(this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
       }
     },
     watch: {

@@ -23,9 +23,9 @@
               @updateDestination="updateDestination"
               @showError="showError"
       />
-      <v-container grid-list-lg style="padding-top: 0px">
+      <v-container grid-list-lg style="padding-top: 0">
         <v-layout row wrap>
-          <v-flex xs12 style="padding-bottom: 0px">
+          <v-flex xs12 style="padding-bottom: 0">
 
             <div style="float: right">
 
@@ -53,7 +53,7 @@
 
             </div>
           </v-flex>
-          <v-flex xs12 sm6 lg4 xl4 style="padding-bottom: 0px">
+          <v-flex xs12 sm6 lg4 xl4 style="padding-bottom: 0">
 
             <Carousel
                     v-if="destinationPhotos"
@@ -67,7 +67,7 @@
           </v-flex>
 
 
-          <v-flex xs12 sm6 lg8 xl8 style="padding-bottom: 0px">
+          <v-flex xs12 sm6 lg8 xl8 style="padding-bottom: 0">
             <DestinationDetails
                     :destination="destination"
             />
@@ -248,10 +248,10 @@
       /**
        * @param {String} message the message to show in the snackbar
        * @param {String} color the colour for the snackbar
-       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       * @param {Number} timeout the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
-        this.$root.$emit({
+        this.$root.$emit("show-snackbar", {
           message: message,
           color: color,
           timeout: timeout
@@ -269,7 +269,7 @@
         const removePhoto = this.removePhoto;
         const addPhotoToDisplay = this.addPhotoToDisplay;
         this.index = index;
-        const removeFunction = async () => {
+        this.promptDialog.deleteFunction = async () => {
           try {
             const photoData = this.destinationPhotos[index];
             const destinationPhotoId = photoData.destinationPhotoId;
@@ -298,8 +298,6 @@
             this.showSnackbar('Could not remove the photo', 'error', 3000);
           }
         };
-
-        this.promptDialog.deleteFunction = removeFunction;
         this.promptDialog.message = 'Are you sure that you would like to delete this photos?';
         this.promptDialog.show = true;
       },

@@ -2,6 +2,7 @@ package models;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers.TripControllerTests.TripControllerTestUtil;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import java.io.IOException;
@@ -17,11 +18,14 @@ import play.Application;
 import play.libs.Json;
 import play.mvc.Result;
 import play.test.Helpers;
-import utils.FakeClient;
-import utils.FakePlayClient;
-import utils.PlayResultToJson;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.FakePlayClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 
+/**
+ * Test the TripNode model.
+ */
 public class TripNodeTest {
 
   private Application application;
@@ -69,10 +73,14 @@ public class TripNodeTest {
     adminUser.setRoles(roles);
     adminUser.save();
 
+    // Add Trip roles
+    Role tripOwnerRole = new Role(RoleType.TRIP_OWNER);
+    tripOwnerRole.save();
+
     // Add some destinations
     DestinationType destinationType = new DestinationType("city");
     Country country = new Country("Peru", "PE", true);
-    District district = new District("Test District", country);
+    String district = "Test District";
     destination1 =
         new Destination(
             "Test City 1",
@@ -98,7 +106,6 @@ public class TripNodeTest {
 
     destinationType.save();
     country.save();
-    district.save();
     destination1.save();
     destination2.save();
 
@@ -232,7 +239,8 @@ public class TripNodeTest {
 
   @Test
   public void userUpdatesTrip() throws IOException {
-
+    TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
+    ObjectNode userNode = Json.newObject();
     String date = null;
     ObjectNode updatedTripJson = Json.newObject();
     updatedTripJson.put("name", "Updated Trip");
@@ -250,7 +258,10 @@ public class TripNodeTest {
     secondNode.put("nodeType", "TripComposite");
 
     updatedTripJson.putArray("tripNodes").add(firstNode).add(secondNode);
-    updatedTripJson.putArray("userIds").add(user.getUserId());
+
+    userNode.put("userId", user.getUserId());
+    userNode.put("role", RoleType.TRIP_MEMBER.toString());
+    updatedTripJson.putArray("userIds").add(userNode);
 
     Result result =
         fakeClient.makeRequestWithToken(
@@ -273,6 +284,10 @@ public class TripNodeTest {
     ObjectNode updatedTripJson = Json.newObject();
     updatedTripJson.put("name", "Updated Trip");
 
+    ObjectNode userNode = Json.newObject();
+    userNode.put("userId", user.getUserId());
+    userNode.put("role", RoleType.TRIP_OWNER.toString());
+
     ObjectNode firstNode = Json.newObject();
     firstNode.put("destinationId", leaf2.getDestination().getDestinationId());
     firstNode.put("nodeType", "TripDestinationLeaf");
@@ -286,7 +301,7 @@ public class TripNodeTest {
     secondNode.put("nodeType", "TripComposite");
 
     updatedTripJson.putArray("tripNodes").add(firstNode).add(secondNode);
-    updatedTripJson.putArray("userIds").add(user.getUserId());
+    updatedTripJson.putArray("userIds").add(userNode);
 
     Result result =
         fakeClient.makeRequestWithToken(
@@ -326,7 +341,6 @@ public class TripNodeTest {
     updatedTripJson.putArray("tripNodes").add(firstNode).add(secondNode);
     updatedTripJson.putArray("userIds").add(user.getUserId());
 
-    System.out.println(trip.getUsers());
     Result result =
         fakeClient.makeRequestWithToken(
             "PUT",

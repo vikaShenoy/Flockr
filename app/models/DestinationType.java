@@ -48,6 +48,11 @@ public class DestinationType extends Model {
         DestinationType destinationTypeToCompare = (DestinationType) obj;
         return this.destinationTypeId == destinationTypeToCompare.destinationTypeId;
     }
+
+    @Override
+    public int hashCode() {
+        return this.destinationTypeId;
+    }
 }
 
 

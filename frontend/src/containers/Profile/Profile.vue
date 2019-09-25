@@ -1,72 +1,99 @@
 <template>
   <div
-          id="root-container"
-          v-if="userProfile"
+      id="root-container"
+      v-if="userProfile"
   >
     <v-alert
-            :value="shouldShowBanner()"
-            color="info"
-            icon="info"
+        :value="shouldShowBanner()"
+        color="info"
+        icon="info"
     >
       Please fill in your full profile before using the site
     </v-alert>
+    <v-layout>
+      <v-flex xs10 offset-xs1>
+        <v-card>
+          <cover-photo
+              :userProfile="userProfile"
+              :photos="userProfile.personalPhotos"
+              v-on:updateProfilePic="updateProfilePic"
+              v-on:showError="showError"
+              id="cover-photo"
+              @deleteCoverPhoto="deleteCoverPhoto"
+              ref="cover-photo"
+              @coverPhotoUpdated="coverPhotoUpdated"/>
 
-    <div class="row">
-      <div class="col-lg-4">
-        <ProfilePic
-                :profilePhoto="userProfile.profilePhoto"
-                :photos="userProfile.personalPhotos"
-                :userId="userProfile.userId"
-                v-on:updateProfilePic="updateProfilePic"
-                v-on:showError="showError"
-        />
-
-        <v-card id="undo-redo-card">
-          <p>You can undo and redo your changes.</p>
-
-          <UndoRedo ref="undoRedo"/>
-        </v-card>
-
-        <BasicInfo
-                :userProfile="userProfile"
-                @update-basic-info="this.updateBasicInfo"
-        />
-
-        <!-- TODO: move undo redo to unified component -->
-        <Photos
-                :photos="userProfile.personalPhotos"
-                @deletePhoto="deletePhoto"
-                @undoDeletePhoto="undoDeletePhoto"
-                @addPhoto="addImage"
-                @showError="showError"
-                @addPhotoCommand="addPhotoCommand"
-        />
-      </div>
-
-      <div class="col-lg-8">
-        <Nationalities
-                :userNationalities="userProfile.nationalities"
-                @update-user-nationalities="updateUserNationalities"
-                :userId="userProfile.userId"
-        />
-        <Passports
-                :userPassports="userProfile.passports"
-                @update-user-passports="updateUserPassports"
-                :userId="userProfile.userId"
-        />
-        <TravellerTypes
-                :userTravellerTypes="userProfile.travellerTypes"
-                @update-user-traveller-types="updateUserTravellerTypes"
-                :userId="userProfile.userId"
-        />
-        <div>
-          <Trips
-                  :trips.sync="userProfile.trips"
-                  viewOnly
+          <ProfilePic
+              :profilePhoto="userProfile.profilePhoto"
+              :photos="userProfile.personalPhotos"
+              :userId="userProfile.userId"
+              v-on:updateProfilePic="updateProfilePic"
+              v-on:showError="showError"
+              :fullname="fullname"
+              class="profile-pic"
           />
-        </div>
-      </div>
-    </div>
+
+
+          <v-card-title primary-title>
+
+            <div class="col-lg-5">
+              <v-card v-if="shouldSeeUndoRedo" id="undo-redo-card">
+                <p>You can undo and redo your changes.</p>
+
+                <UndoRedo ref="undoRedo"/>
+              </v-card>
+
+              <BasicInfo
+                  :userProfile="userProfile"
+                  @update-basic-info="this.updateBasicInfo"
+              />
+            </div>
+            <div class="col-lg-7">
+              <Nationalities
+                  :userNationalities="userProfile.nationalities"
+                  @update-user-nationalities="updateUserNationalities"
+                  :userId="userProfile.userId"
+              />
+              <Passports
+                  :userPassports="userProfile.passports"
+                  @update-user-passports="updateUserPassports"
+                  :userId="userProfile.userId"
+              />
+              <TravellerTypes
+                  :userTravellerTypes="userProfile.travellerTypes"
+                  @update-user-traveller-types="updateUserTravellerTypes"
+                  :userId="userProfile.userId"
+              />
+            </div>
+
+            <v-flex sm12>
+              <Photos
+                  :photos="userProfile.personalPhotos"
+                  @deletePhoto="deletePhoto"
+                  @undoDeletePhoto="undoDeletePhoto"
+                  @addPhoto="addImage"
+                  @showError="showError"
+                  @addPhotoCommand="addPhotoCommand"/>
+            </v-flex>
+
+            <v-flex sm12>
+              <div>
+
+                <h3 class="trips-header headline">Trips</h3>
+                <v-card class="trips-card">
+
+                  <Trips
+                      :trips.sync="userProfile.trips"
+                      viewOnly
+                  />
+                </v-card>
+              </div>
+            </v-flex>
+
+          </v-card-title>
+        </v-card>
+      </v-flex>
+    </v-layout>
   </div>
 </template>
 
@@ -82,7 +109,12 @@
   import Command from "../../components/UndoRedo/Command";
   import UserStore from "../../stores/UserStore";
   import moment from "moment";
-  import {getUser} from "./ProfileService";
+  import {
+    getUser,
+    requestChangeCoverPhoto,
+    requestDeleteCoverPhoto,
+    requestUndoDeleteCoverPhoto
+  } from "./ProfileService";
   import {updateBasicInfo} from "./BasicInfo/BasicInfoService";
   import {updateNationalities} from "./Nationalities/NationalityService";
   import {updatePassports} from "./Passports/PassportService";
@@ -90,9 +122,11 @@
   import {setProfilePictureToOldPicture} from "./ProfilePic/ProfilePicService";
   import {endpoint} from "../../utils/endpoint";
   import {deleteUserPhoto, undoDeleteUserPhoto} from '../UserGallery/UserGalleryService';
+  import CoverPhoto from "./CoverPhoto/CoverPhoto";
 
   export default {
     components: {
+      CoverPhoto,
       ProfilePic,
       Nationalities,
       Passports,
@@ -113,11 +147,113 @@
     },
     methods: {
       /**
+       * Changes a cover photo and sets the undo and redo commands.
+       *
+       * @param {Object} newCoverPhoto the new cover photo to update.
+       */
+      coverPhotoUpdated(newCoverPhoto) {
+        const oldCoverPhoto = {...this.userProfile.coverPhoto};
+
+        this.userProfile.coverPhoto = newCoverPhoto;
+
+        const undoCommand = async () => {
+          let message = "Cover photo successfully reverted";
+          let color = "success";
+          try {
+            if (oldCoverPhoto) {
+              this.userProfile.coverPhoto = await requestChangeCoverPhoto(this.userProfile.userId,
+                  oldCoverPhoto.photoId);
+            } else {
+              await requestDeleteCoverPhoto(this.userProfile.userId);
+            }
+          } catch (e) {
+            message = "Cover photo could not be reverted";
+            color = "error";
+          }
+          this.$root.$emit("show-snackbar", {
+            timeout: 3000,
+            color: color,
+            message: message
+          });
+        };
+
+        const redoCommand = async () => {
+          let message = "Cover photo changed successfully";
+          let color = "success";
+          try {
+            this.userProfile.coverPhoto = await requestChangeCoverPhoto(this.userProfile.userId, newCoverPhoto.photoId);
+          } catch (e) {
+            message = "Could not change cover photo";
+            color = "error";
+          }
+          this.$root.$emit("show-snackbar", {
+            timeout: 3000,
+            color: color,
+            message: message
+          });
+        };
+
+        const changeCoverPhotoCommand = new Command(undoCommand, redoCommand);
+        this.$refs.undoRedo.addUndo(changeCoverPhotoCommand);
+      },
+      /**
+       * Deletes a cover photo and sets the undo and redo commands.
+       */
+      async deleteCoverPhoto() {
+        try {
+          await requestDeleteCoverPhoto(this.userProfile.userId);
+          const photoId = this.userProfile.coverPhoto.photoId;
+          this.userProfile.coverPhoto = null;
+          this.$refs["cover-photo"].closeCoverPhotoDialog();
+
+          const undoCommand = async () => {
+            try {
+              this.userProfile.coverPhoto = await requestUndoDeleteCoverPhoto(this.userProfile.userId, photoId);
+            } catch (error) {
+              this.$root.$emit("show-snackbar", {
+                timeout: 4000,
+                color: "error",
+                message: "Error undoing cover photo deletion"
+              });
+            }
+          };
+          let redoCommand = async () => {
+            try {
+              await requestDeleteCoverPhoto(this.userProfile.userId);
+              this.userProfile.coverPhoto = null;
+            } catch (error) {
+              this.$root.$emit("show-snackbar", {
+                timeout: 4000,
+                color: "error",
+                message: "Error redoing cover photo deletion"
+              });
+            }
+          };
+
+          const deleteCoverPhotoCommand = new Command(undoCommand, redoCommand);
+          this.$refs.undoRedo.addUndo(deleteCoverPhotoCommand);
+        } catch (error) {
+          this.$root.$emit("show-snackbar", {
+            timeout: 4000,
+            color: "error",
+            message: "Error deleting cover photo" //TODO: do this properly.
+          });
+        }
+      },
+      /**
        * Add an undo/redo command to the stack.
+       *
+       * @param {Command} command the command to add to the undo/redo panel.
        * */
       addPhotoCommand(command) {
         this.$refs.undoRedo.addUndo(command);
       },
+      /**
+       * Updates a users traveller types and sets undo/redo commands.
+       *
+       * @param oldTravellerTypes the old traveller types of the user.
+       * @param newTravellerTypes the new traveller types to set.
+       */
       updateUserTravellerTypes(oldTravellerTypes, newTravellerTypes) {
         const userId = localStorage.getItem("userId");
 
@@ -134,6 +270,12 @@
         this.$refs.undoRedo.addUndo(updateTravellerTypesCommand);
         redoCommand(); // perform update
       },
+      /**
+       * Updates a users passports and sets undo/redo commands.
+       *
+       * @param oldPassports the old passports of the user.
+       * @param newPassports the new passport to update.
+       */
       updateUserPassports(oldPassports, newPassports) {
         const userId = localStorage.getItem("userId");
 
@@ -150,6 +292,12 @@
         this.$refs.undoRedo.addUndo(updatePassportsCommand);
         redoCommand(); // actually perform the update
       },
+      /**
+       * Updates a users nationalities and sets undo/redo commands.
+       *
+       * @param oldNationalities the old nationalities of the user.
+       * @param newNationalities the new nationalities to set.
+       */
       updateUserNationalities(oldNationalities, newNationalities) {
         const userId = localStorage.getItem("userId");
 
@@ -166,6 +314,12 @@
         this.$refs.undoRedo.addUndo(updateNationalitiesCommand);
         redoCommand(); // perform the update
       },
+      /**
+       * Updates the basic info of a user and sets undo/redo commands.
+       *
+       * @param oldBasicInfo the old basic info of the user.
+       * @param newBasicInfo the new basic info of the user.
+       */
       updateBasicInfo(oldBasicInfo, newBasicInfo) {
         const userId = localStorage.getItem("userId");
         const {userProfile} = this;
@@ -186,7 +340,7 @@
       /**
        * @param {String} message the message to show in the snackbar
        * @param {String} color the colour for the snackbar
-       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       * @param {Number} timeout the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
         this.$root.$emit({
@@ -199,7 +353,8 @@
        * Called when a deletePhoto event is emitted from the photos component.
        * Removes the photo at the given index.
        *
-       * @param index {Number} the index of the photo to be removed.
+       * @param {Number} index the index of the photo to be removed.
+       * @param {Boolean} shouldShowSnackbar true if the snackbar should be shown.
        */
       deletePhoto(index, shouldShowSnackbar) {
         this.userProfile.personalPhotos.splice(index, 1);
@@ -211,8 +366,8 @@
        * Called when a undoDeletePhoto event is emitted from the photos component.
        * Adds the photo back to the list at the given index.
        *
-       * @param index {number} the index where the photo should be added.
-       * @param photo {} the photo to add.
+       * @param {Number} index the index where the photo should be added.
+       * @param {Object} photo the photo to add.
        */
       undoDeletePhoto(index, photo) {
         this.userProfile.personalPhotos.splice(index, 0, photo);
@@ -226,14 +381,15 @@
         const user = await getUser(userId);
 
         // Change date format so that it displays on the basic info component.
-        const formattedDate = user.dateOfBirth
+        user.dateOfBirth = user.dateOfBirth
             ? moment(user.dateOfBirth).format("YYYY-MM-DD")
             : "";
 
-        user.dateOfBirth = formattedDate;
-
         this.userProfile = user;
       },
+      /**
+       * Decides when the incomplete user banner should display.
+       */
       shouldShowBanner() {
         return !(
             this.userProfile.firstName &&
@@ -278,10 +434,15 @@
       /**
        * Update an image in the front end and create and store undo/redo commands
        * for it.
+       *
+       * @param image the image to update.
        */
       addImage(image) {
-        image.endpoint = endpoint(`/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
-        image.thumbEndpoint = endpoint(`/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+        image.endpoint = endpoint(
+            `/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
+        image.thumbEndpoint = endpoint(
+            `/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem(
+                "authToken")}`);
         this.userProfile.personalPhotos.push(image);
 
         const undoCommand = (
@@ -293,8 +454,12 @@
         const redoCommand = (
             async (image) => {
               await undoDeleteUserPhoto(image);
-              image.endpoint = endpoint(`/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem("authToken")}`);
-              image.thumbEndpoint = endpoint(`/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
+              image.endpoint = endpoint(
+                  `/users/photos/${image["photoId"]}?Authorization=${localStorage.getItem(
+                      "authToken")}`);
+              image.thumbEndpoint = endpoint(
+                  `/users/photos/${image["photoId"]}/thumbnail?Authorization=${localStorage.getItem(
+                      "authToken")}`);
               this.userProfile.personalPhotos.push(image);
             }
         ).bind(null, image);
@@ -302,8 +467,31 @@
         const undoUploadCommand = new Command(undoCommand, redoCommand);
         this.$refs.undoRedo.addUndo(undoUploadCommand);
       },
+      /**
+       * Undo function for adding an image.
+       *
+       * @param image the image to undo.
+       */
       undoAddPhoto(image) {
-        this.userProfile.personalPhotos = this.userProfile.personalPhotos.filter(e => e.photoId !== image.photoId);
+        this.userProfile.personalPhotos = this.userProfile.personalPhotos.filter(
+            e => e.photoId !== image.photoId);
+      }
+    },
+    computed: {
+      /**
+       * Gets the full name of the user.
+       *
+       * @return {string} the full name of the user.
+       */
+      fullname() {
+        return `${this.userProfile.firstName} ${this.userProfile.lastName}`;
+      },
+        /**
+         * Return whether to see the undo / redo component
+         * @returns {boolean} true if should see the undo/redo component, false otherwise
+         */
+      shouldSeeUndoRedo() {
+        return this.userProfile.userId === UserStore.data.userId;
       }
     }
   };
@@ -325,6 +513,32 @@
       justify-content: flex-start;
       align-items: center;
     }
+  }
+
+  .trips-header {
+    text-align: left;
+    margin-bottom: 7px;
+    margin-top: 30px;
+  }
+
+  .trips-card {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+
+  .top-panel {
+    margin-top: 75px;
+  }
+
+
+  .profile-pic {
+    position: absolute;
+    left: 30px;
+    top: 190px;
+  }
+
+  #cover-photo {
+    margin-bottom: 75px;
   }
 </style>
 

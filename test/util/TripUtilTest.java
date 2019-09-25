@@ -18,9 +18,11 @@ import org.junit.Test;
 import play.Application;
 import play.libs.Json;
 import play.test.Helpers;
-import utils.FakeClient;
-import utils.TestState;
+import testingUtilities.TestState;
 
+/**
+ * Test that the class used to parse trips from JSON works as expected.
+ */
 public class TripUtilTest {
     TripUtil util;
     JsonNode testData1;

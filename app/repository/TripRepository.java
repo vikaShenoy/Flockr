@@ -261,7 +261,7 @@ public class TripRepository {
                   .findOneOrEmpty();
           if (trip.isPresent()) {
             List<TripNode> tripNodes = recursiveGetTripNodesWithSoftDelete(tripId);
-            trip.get().setTripNodes(tripNodes);
+//            trip.get().setTripNodes(tripNodes);
           }
           return trip;
         },
@@ -280,7 +280,7 @@ public class TripRepository {
           List<TripComposite> trips =
               TripComposite.find
                   .query()
-                  .fetch("users")
+                  .fetchLazy("users","userId")
                   .where()
                   .in("users.userId", travellerId)
                   .findList();

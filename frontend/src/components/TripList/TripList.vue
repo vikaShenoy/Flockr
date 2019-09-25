@@ -5,6 +5,7 @@
         <v-icon>directions_walk</v-icon>
         No Trips Available
       </h3>
+
       <TripItem
         @handleDelete="handleDelete"
         @refreshList="refreshList"

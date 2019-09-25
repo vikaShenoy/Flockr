@@ -1,16 +1,15 @@
 <template>
   <div>
-
     <div class="header">
       <h3>Traveller Types</h3>
 
       <div id="edit-btn">
         <v-btn
-                v-if="userStore.userId === userId"
-                small
-                flat
-                color="secondary"
-                @click="toggleEditSave"
+          v-if="userStore.userId === userId"
+          small
+          flat
+          color="secondary"
+          @click="toggleEditSave"
         >
           <v-icon v-if="!isEditing">edit</v-icon>
           <span v-else>Save</span>
@@ -39,6 +38,8 @@
               :item-text="getTravellerTypeName"
               :error-messages="travellerTypeErrors"
               label="Your traveller types"
+              @change="updateSelectedTravellerType"
+
               chips
               clearable
               solo
@@ -95,8 +96,7 @@
        */
       async getAllTravellerTypes() {
         try {
-          const travellerTypes = await getAllTravellerTypes();
-          this.allTravellerTypes = travellerTypes;
+          this.allTravellerTypes = await getAllTravellerTypes();
         } catch (err) {
           // Add error handling later
         }
@@ -130,6 +130,15 @@
       removeTravellerType(item) {
         this.editingTravellerTypes.splice(this.editingTravellerTypes.indexOf(item), 1);
         this.editingTravellerTypes = [...this.editingTravellerTypes];
+      },
+      /**
+       * Updates the selected traveller types of the user to all valid ones so if there is an
+       * invalid traveller type i.e. the user typed a string in the combo box, it is removed
+       * automatically.
+       * @param travellerTypes the chosen traveller types values
+       */
+      updateSelectedTravellerType(travellerTypes) {
+        this.editingTravellerTypes = travellerTypes.filter(type => typeof type !== 'string');
       }
     }
   }

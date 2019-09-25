@@ -3,8 +3,6 @@
     <div id="map">
       <DestinationMap
         :destinations="getDestinationsCurrentlyViewing()"
-        :latitude="latitude"
-        :longitude="longitude"
         @coordinates-selected="addCoordinates"
       />
     </div>
@@ -17,6 +15,9 @@
       v-on:addDestinationClicked="addDestinationClicked"
       @addNewDestination="addNewDestination"
       @refreshDestinations="refreshDestinations"
+      @search-criterion-updated="searchCriterionUpdated"
+      @get-more-public-destinations="getMorePublicDestinations"
+      :destinationsLoading="destinationsLoading"
       ref="sidebar"
       :latitude="latitude"
       :longitude="longitude"
@@ -45,16 +46,41 @@
         destination: null,
         latitude: null,
         longitude: null,
-        yourDestinations: null,
-        publicDestinations: null,
+        yourDestinations: [],
+        publicDestinations: [],
         showCreateDestDialog: false,
-        viewOption: "your"
+        viewOption: "your",
+        searchCriterion: '', // to ask API to only return destinations with this in the name
+        destinationsLoading: false // whether there is a pending API call to get destinations
       };
     },
     mounted() {
       this.getYourDestinations();
+      this.getPublicDestinations();
     },
     methods: {
+      /**
+       * Called to get more public destinations by a lazy loading implementation
+       */
+      async getMorePublicDestinations() {
+        const numberOfPublicDestinations = this.publicDestinations.length;
+        this.destinationsLoading = true;
+        try {
+          const newDestinations = await getPublicDestinations(this.searchCriterion, numberOfPublicDestinations);
+          this.publicDestinations = [...this.publicDestinations, ...newDestinations];
+          this.destinationsLoading = false;
+        } catch (err) {
+          this.$root.$emit('show-error-snackbar', 'Could not get more public destinations', 3000);
+          this.destinationsLoading = false;
+        }
+      },
+      /**
+       * Called when the search criterion is updated
+       */
+      searchCriterionUpdated(newValue) {
+        this.searchCriterion = newValue;
+        this.getPublicDestinations();
+      },
       /**
        * Sets the latitude and longitude coordinates to the given coordinates
        */
@@ -78,10 +104,12 @@
        */
       async getYourDestinations() {
         try {
-          const yourDestinations = await getYourDestinations();
-          this.yourDestinations = yourDestinations;
+          this.destinationsLoading = true;
+          this.yourDestinations = await getYourDestinations();
+          this.destinationsLoading = false;
         } catch (e) {
           this.showSnackbar("Could not get your destinations", "error", 3000);
+          this.destinationsLoading = false;
         }
       },
       /**
@@ -89,9 +117,13 @@
        */
       async getPublicDestinations() {
         try {
-          this.publicDestinations = await getPublicDestinations();
+          const { searchCriterion } = this;
+          this.destinationsLoading = true;
+          this.publicDestinations  = await getPublicDestinations(searchCriterion, 0);
+          this.destinationsLoading = false;
         } catch (e) {
           this.showSnackbar("Could not get public destinations", "error", 3000);
+          this.destinationsLoading = false;
         }
       },
       /**
@@ -108,10 +140,10 @@
       /**
        * @param {String} message the message to show in the snackbar
        * @param {String} color the colour for the snackbar
-       * @param {Number} the amount of time (in ms) for which we show the snackbar
+       * @param {Number} timeout the amount of time (in ms) for which we show the snackbar
        */
       showSnackbar(message, color, timeout) {
-        this.$root.$emit({
+        this.$root.$emit("show-snackbar", {
           message: message,
           color: color,
           timeout: timeout
@@ -188,7 +220,6 @@
       height: 100%;
     }
   }
-
 </style>
 
 

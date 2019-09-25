@@ -1,26 +1,22 @@
 package steps;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
-import com.google.inject.Module;
 import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import models.*;
 import play.Application;
-import play.ApplicationLoader;
-import play.Environment;
-import play.inject.guice.GuiceApplicationBuilder;
-import play.inject.guice.GuiceApplicationLoader;
 import play.test.Helpers;
-import utils.FakePlayClient;
-import utils.TestState;
+import testingUtilities.FakePlayClient;
+import testingUtilities.TestState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Used to share common test steps across Cucumber tests.
+ */
 public class CommonTestSteps {
 
     @Inject
@@ -127,12 +123,8 @@ public class CommonTestSteps {
         unitedStatesOfAmerica.save();
         australia.save();
 
-        District blackRockCity = new District("Black Rock City", unitedStatesOfAmerica);
-        District newFarm = new District("New Farm", australia);
-
-        blackRockCity.save();
-        newFarm.save();
-
+        String blackRockCity = "Black Rock City";
+        String newFarm ="New Farm";
 
         Destination burningMan = new Destination("Burning Man",event, blackRockCity, 12.1234,12.1234, unitedStatesOfAmerica,  null, new ArrayList<>(), false);
         Destination brisbaneCity = new Destination("Brisbane City", city, newFarm, 11.1234,11.1234, australia, null, new ArrayList<>(), false);
@@ -152,6 +144,7 @@ public class CommonTestSteps {
         TravellerType travellerType5 = new TravellerType("Holidaymaker");
         TravellerType travellerType6 = new TravellerType("Functional/Business");
         TravellerType travellerType7 = new TravellerType("Backpacker");
+        TravellerType travellerType8 = new TravellerType("Luxury Traveller");
 
         travellerType1.save();
         travellerType2.save();
@@ -160,6 +153,7 @@ public class CommonTestSteps {
         travellerType5.save();
         travellerType6.save();
         travellerType7.save();
+        travellerType8.save();
     }
 
     @After
