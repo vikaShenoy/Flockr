@@ -142,7 +142,6 @@ public class ExampleTripsDataTask {
    * @param country the country the trip is going to.
    */
   private void makeTourOfCountry(List<User> users, List<UserRole> userRoles, Country country) {
-    System.out.println("here");
     List<Destination> destinations = fetchNumDestinationsFromCountry(country, 20);
     List<TripNode> tripNodes = new ArrayList<>();
 
@@ -156,7 +155,6 @@ public class ExampleTripsDataTask {
         new TripComposite(tripNodes, users, String.format("Tour of %s", country.getCountryName()));
     tripComposite.setUserRoles(userRoles);
     tripRepository.saveTrip(tripComposite);
-    System.out.println("here");
   }
 
   /**
