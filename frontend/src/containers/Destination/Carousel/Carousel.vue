@@ -1,6 +1,14 @@
 <template>
   <div>
     <v-carousel class="carousel" :cycle="false">
+      <v-carousel-item>
+        <v-img
+          v-if="destinationPhotos.length === 0"
+          class="dest-image"
+          :src="defaultDestinationPhoto"
+        />
+      </v-carousel-item>
+
       <v-carousel-item v-for="(photo, index) in destinationPhotos" :key="photo.photoId" lazy>
         <v-img
           :src="photo.endpoint"
@@ -9,12 +17,6 @@
           @click="openPhotoDialog(photo, index)"
         />
       </v-carousel-item>
-
-      <v-img
-        v-if="destinationPhotos.length === 0"
-        class="dest-image"
-        :src="defaultDestinationPhoto"
-      />
 
       <v-btn
         class="carousel"
@@ -196,7 +198,6 @@ export default {
   max-height: 300px;
 
   .dest-image {
-    height: 50%;
   }
 }
 
