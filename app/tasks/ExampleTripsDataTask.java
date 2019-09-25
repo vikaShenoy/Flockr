@@ -56,7 +56,7 @@ public class ExampleTripsDataTask {
       "Goesmann",
       "Shenoy",
       "Foster",
-      "De La Cruz"
+      "Dela Cruz"
   };
 
   @Inject
