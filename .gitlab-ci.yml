@@ -55,16 +55,16 @@ staging-run:
   dependencies:
   - staging-artifacts-backend
   script:
-  - cd target/universal
-  - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-  - pm2 delete dev-server || true
-  - rm -r /var/www/dev/photos
-  - cp -r /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/photos /var/www/dev/photos
-  - rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true
-  - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
-  - cp -r /var/www/dev/photos/* /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage/photos 
-  - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
-  - pm2 start "bash seng302-team-500 -Dhttp.port=9443" --name=dev-server
+    - cd target/universal
+    - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+    - pm2 delete dev-server || true
+    - rm -rf /var/www/dev/photos || true
+    - cp -r /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage/photos /var/www/dev/photos || true
+    - rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true
+    - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
+    - cp /var/www/dev/photos/* /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage/photos/ || true
+    - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
+    - pm2 start "bash seng302-team-500 -Dhttp.port=9443" --name=dev-server
   only:
   - dev
   stage: deploy
@@ -73,16 +73,18 @@ production-run:
   dependencies:
   - release-artifacts-backend
   script:
-  - cd target/universal
-  - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-  - pm2 delete prod-server || true
-  - rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT || true
-  - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
-  - mkdir /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage || true
-  - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/bin
-  - pm2 start "bash seng302-team-500 -Dhttp.port=7443" --name=prod-server
+    - cd target/universal
+    - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+    - pm2 delete prod-server || true
+    - rm -rf /var/www/prod/photos || true
+    - cp -r /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage/photos /var/www/prod/photos ||
+    - rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT || true
+    - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
+    - cp -r /var/www/prod/storage/photos/* /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage/photos/ || true
+    - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/bin
+    - pm2 start "bash seng302-team-500 -Dhttp.port=7443" --name=prod-server
   only:
-  - master 
+  - master
   stage: deploy
 
 
