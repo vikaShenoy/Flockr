@@ -1,9 +1,8 @@
 <template>
   <div>
     <v-carousel class="carousel" :cycle="false">
-      <v-carousel-item>
+      <v-carousel-item v-if="destinationPhotos.length === 0">
         <v-img
-          v-if="destinationPhotos.length === 0"
           class="dest-image"
           :src="defaultDestinationPhoto"
         />
