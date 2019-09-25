@@ -12,7 +12,7 @@
             />
           </div>
 
-          <h2>Treasure Hunts</h2>
+          <h2>Current Treasure Hunts</h2>
         </div>
 
         <div v-if="!treasureHunts">
@@ -67,12 +67,12 @@
             </template>
             <v-card class="card">
               <v-card-text><b>Riddle</b>: {{item.riddle}}</v-card-text>
-              <v-card-text><b>Start Date</b>: {{formatDate(item.startDate)}}
+              <v-card-text><b>Start Date and Time</b>: {{formatDate(item.startDate)}}
                 <br>
-                <b>End Date</b>: {{formatDate(item.endDate)}}
+                <b>End Date and Time</b>: {{formatDate(item.endDate)}}
                 <br>Date and times are in your local timezone.
               </v-card-text>
-              <v-card-text v-if="isOwner(item.ownerId) || isAdmin()"><b>Destination</b>: {{item.destination}}
+              <v-card-text v-if="isOwner(item.ownerId) || isAdmin()"><b>Destination Answer</b>: {{item.destination}}
               </v-card-text>
             </v-card>
           </v-expansion-panel-content>
