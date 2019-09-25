@@ -85,7 +85,6 @@ production-run:
     - pm2 start "bash seng302-team-500 -Dhttp.port=7443" --name=prod-server
   only:
     - master
-  - master
   stage: deploy
 
 
