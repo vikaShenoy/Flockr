@@ -168,7 +168,6 @@
        */
       async getTreasureHunts() {
         const rawTreasureHunts = await getAllTreasureHunts();
-        console.log(rawTreasureHunts);
 
         const treasureHuntsPromises = rawTreasureHunts.map(async treasureHunt => {
           return {
