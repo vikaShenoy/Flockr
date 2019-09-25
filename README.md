@@ -24,7 +24,7 @@ and the dev branch that is the development branch for the project.
 ##### Dev Branch
 ![Dev Pipeline](https://eng-git.canterbury.ac.nz/seng302-2019/team-500/badges/dev/pipeline.svg?style=flat)
 
-TravelEA is split into:
+Flockr is split into:
 - Backend using Play and Java to implement the TravelEA API
 - Front end using Vue.js
 
@@ -345,7 +345,7 @@ Refer to the root directory for the [project license](/LICENSE)
 * Andy Holden
 * Angelica Dela Cruz
 * Exequiel Bahamonde Carcamo
-* Finn Greig 
+* Finn Greig
 * Isaac Foster
 * Rafael Goesmann
 * Sam Annand
