@@ -123,6 +123,9 @@
           this.$emit("displayError", e.message);
         }
       },
+      /**
+       * Sets the id to the destination id
+       */
       onDestinationIdUpdated() {
         this.id = this.destinationId;
       }

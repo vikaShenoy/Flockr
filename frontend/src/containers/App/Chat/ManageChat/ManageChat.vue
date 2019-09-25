@@ -67,19 +67,22 @@
       return {
         addUsers: [],
         currentName: this.chatGroup.name,
-        currentUsers: [], //todo had to change
+        currentUsers: [],
         usersToAdd: [],
         requiredRule: [rules.required],
       }
     },
     methods: {
-
-        updateSelectedUsers(newUsers) {
-          this.currentUsers = newUsers
-        },
-
-        searchUser: async name => await getUsers(name),
-
+      /**
+       * The users that belong in the chat are updated to the new selected users
+       */
+      updateSelectedUsers(newUsers) {
+        this.currentUsers = newUsers
+      },
+      /**
+       * Searches the user based on the search string that the user
+       */
+      searchUser: async name => await getUsers(name),
       /**
        * Populate the add users combobox. Fill it with all users except ones already in chat.
        * @returns {Promise<void>}

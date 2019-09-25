@@ -58,9 +58,15 @@ import UserStore from '../../../../stores/UserStore';
       };
     },
     methods: {
+      /**
+       * Updates the users to the new selected users
+       */
       updateSelectedUsers(newUsers) {
           this.selectedUsers = newUsers
       },
+      /**
+       * Allows the user to search for other user names to add in the chat
+       */
       searchUser: async name => {
         const allUsers = await getUsers(name);
         return allUsers.filter(user => {
@@ -98,6 +104,7 @@ import UserStore from '../../../../stores/UserStore';
         }
       },
       /**
+       * Shows a snackbar based on the message, colour and timeout.
        * @param {String} message the message to show in the snackbar
        * @param {String} color the colour for the snackbar
        * @param {Number} timeout the amount of time (in ms) for which we show the snackbar

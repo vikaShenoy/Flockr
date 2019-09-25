@@ -209,7 +209,6 @@ export default {
         timeout: 2000
       });
     },
-
     /**
      * Gets a list of all the chats that a user is apart of
      */
