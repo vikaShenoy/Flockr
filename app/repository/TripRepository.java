@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
-import models.TripComposite;
-import models.TripNode;
-import models.User;
+
+import models.*;
 
 /**
  * Contains all trip related db interactions
@@ -24,10 +24,12 @@ import models.User;
 public class TripRepository {
 
   private final DatabaseExecutionContext executionContext;
+  private final RoleRepository roleRepository;
 
   @Inject
-  public TripRepository(DatabaseExecutionContext executionContext) {
+  public TripRepository(DatabaseExecutionContext executionContext, RoleRepository roleRepository) {
     this.executionContext = executionContext;
+    this.roleRepository = roleRepository;
   }
 
   /**
@@ -104,10 +106,25 @@ public class TripRepository {
    * @param users the list of users to add to the sub trips.
    */
   private void recursivelyAddUsersToSubTrips(List<TripNode> trips, List<User> users) {
+    Role memberRole = roleRepository.getRole(RoleType.TRIP_MEMBER);
+
     for (TripNode tripNode: trips) {
       if (tripNode.getNodeType().equals("TripComposite")) {
         for (User user : users) {
           ((TripComposite) tripNode).addUser(user);
+          List<UserRole> userRoles = tripNode.getUserRoles();
+
+          List<UserRole> userRolesForUser = userRoles
+              .stream()
+              .filter(userRole -> userRole.getUser().equals(user))
+              .collect(Collectors.toList());
+
+            // if user has no role, add a member role for them
+            if (userRolesForUser.isEmpty()) {
+              UserRole newUserRole = new UserRole(user, memberRole);
+              userRoles.add(newUserRole);
+          }
+
         }
         tripNode.save();
         recursivelyAddUsersToSubTrips(tripNode.getTripNodes(), tripNode.getUsers());

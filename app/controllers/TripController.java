@@ -132,7 +132,7 @@ public class TripController extends Controller {
                         TripComposite trip = new TripComposite(tripNodes, users, tripName);
                         List<UserRole> userRoles = new ArrayList<>();
                         for (User roledUser : users) {
-
+                          System.out.println(roledUser);
                           for (JsonNode userIdJson : userIdsJson) {
                             if (userIdJson.get("userId").asInt() == roledUser.getUserId()) {
                               Role role =
@@ -146,9 +146,11 @@ public class TripController extends Controller {
                         }
 
                         Role role = userRepository.getSingleRoleByType(TRIP_OWNER);
-                        UserRole userRole = new UserRole(users.get(users.size() - 1), role);
+                        User owner = users.get(users.size() - 1);
+                        UserRole userRole = new UserRole(owner, role);
                         userRole.save();
                         userRoles.add(userRole);
+                          System.out.println(userRoles);
                         trip.setUserRoles(userRoles);
                         trip.save();
 
