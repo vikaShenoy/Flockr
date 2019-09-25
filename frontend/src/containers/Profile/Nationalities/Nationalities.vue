@@ -134,7 +134,10 @@
         this.userNat.splice(this.userNat.indexOf(item), 1);
         this.userNat = [...this.userNat];
       },
-
+      /**
+       * Filters the nationalities list to only contain the valid nationalities when the user is selecting their
+       * nationality
+       */
       async filterNationalities() {
         const nationalities = await getNationalities();
         this.validNationalities = nationalities.filter(nationality => nationality.nationalityCountry.isValid === true);

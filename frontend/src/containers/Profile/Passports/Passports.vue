@@ -115,6 +115,9 @@
         this.userPass.splice(this.userPass.indexOf(item), 1);
         this.userPass = [...this.userPass];
       },
+      /**
+       * Filters the passports list to only contain all the valid countries
+       */
       async filterPassports() {
         const passports = await getPassports();
         this.validPassports = passports.filter(passport => passport.country.isValid === true);
@@ -129,7 +132,6 @@
         this.userPass = passports.filter(passport => typeof passport !== 'string');
         this.$refs.combobox.lazySearch = "";
       }
-
     }
   }
 </script>

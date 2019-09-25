@@ -38,7 +38,7 @@
                 depressed
                 class="col-sm-4 offset-sm-4"
                 @click="login()"
-        >Log in
+        >Login
         </v-btn>
   <p id="no_account_text">No account?</p>
         <v-btn
