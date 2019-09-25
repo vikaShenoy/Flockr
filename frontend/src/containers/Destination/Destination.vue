@@ -26,7 +26,6 @@
       <v-container grid-list-lg style="padding-top: 0">
         <v-layout row wrap>
           <v-flex xs12 style="padding-bottom: 0">
-
             <div style="float: right">
 
               <div id="undo-redo-btns">
@@ -49,6 +48,13 @@
                       v-if="userStore.methods.isAdmin() || destination.destinationOwner === userStore.data.userId"
               >
                 <v-icon>edit</v-icon>
+              </v-btn>
+
+              <v-btn
+              color="primary"
+              depressed
+              @click="returnToDestinations">
+                Back to Destinations
               </v-btn>
 
             </div>
@@ -158,6 +164,10 @@
       }
     },
     methods: {
+      returnToDestinations() {
+        this.$router.push("/destinations/");
+      },
+
       editDestDialogChanged(dialogValue) {
         this.showingEditDestDialog = dialogValue;
       },
