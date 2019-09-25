@@ -122,7 +122,7 @@
         this.allPassports = await getPassports();
         this.allTravellerTypes = await getAllTravellerTypes();
       } catch (err) {
-        console.error(`Could not get info from server needed to sign up: ${err}`);
+        this.$root.$emit('show-error-snackbar', 'Could not get info from server', 3000);
       }
     },
     data() {
@@ -158,7 +158,7 @@
       /**
        * Return true if all the required fields in the basic info stepper are completed
        */
-      isBasicInfoStepperCompleted: function () {
+      isBasicInfoStepperCompleted() {
         const {firstName, lastName, gender, dateOfBirth, email,  isEmailTaken} = this;
         const fieldsAreNotEmpty = [firstName, lastName, gender, email, dateOfBirth].every(field => field.length > 0);
         return fieldsAreNotEmpty && !isEmailTaken;
@@ -166,16 +166,34 @@
       /**
        * Return true if all the required fields in the login info stepper are completed
        */
-      isLoginInfoStepperCompleted: function () {
+      isLoginInfoStepperCompleted() {
         const {password, confirmPassword} = this;
         return password.length > 0 && password === confirmPassword;
       },
       /**
        * Return true if all the required fields in the travelling info stepper are completed
        */
-      isTravellingInfoStepperCompleted: function () {
+      isTravellingInfoStepperCompleted() {
         const {selectedNationalities, selectedTravellerTypes} = this;
         return [selectedNationalities, selectedTravellerTypes].every(array => array.length > 0);
+      },
+      /**
+       * @returns {Number[]} the selected nationality ids
+       */
+      selectedNationalityIds() {
+        return this.selectedNationalities.map(nationality => nationality.nationalityId);
+      },
+      /**
+       * @returns {Number[]} the selected passport ids
+       */
+      selectedPassportIds() {
+        return this.selectedPassports.map(passport => passport.passportId);
+      },
+      /**
+       * @returns {Number[]} the selected traveller type ids
+       */
+      selectedTravellerTypeIds() {
+        return this.selectedTravellerTypes.map(travellerType => travellerType.travellerTypeId);
       }
     },
     methods: {
@@ -324,7 +342,7 @@
           this.loading = false;
           this.currStepperStep = 3; // go to next stepper in sign up sequence
         } catch (e) {
-          console.log(e);
+          this.$root.$emit('show-error-snackbar', 'Could not sign up', 3000);
         }
       },
       /**
