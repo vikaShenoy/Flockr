@@ -7,25 +7,12 @@
   >
     <template v-slot:items="props">
       <td>
-
         <GenericCombobox
           label="Destination"
           :get-function="searchDestination"
           item-text="destinationName"
           v-model="props.item.destination"
           />
-
-        <!--<v-select
-                v-model="props.item.destinationId"
-                :items="destinations"
-                label="Destination"
-                item-text="destinationName"
-                item-value="destinationId"
-                color="secondary"
-                :rules="fieldRules"
-                :error-messages="props.item.destinationErrors"
-        ></v-select>
-        -->
       </td>
       <td>
         <v-text-field
@@ -131,20 +118,10 @@
       };
     },
     methods: {
-      //
-      // newDestinationSelected(newDestinations) {
-      //   //this.tripDestinations[index].destinationId = newDestinations.destinationId;
-      //   //this.destinations = newDestinations;
-      //   console.log("newDest", newDestinations);
-      //   console.log(this.tripDestinations);
-      //
-      //   //console.log("updateSelectedDest tripDest: ", this.tripDestinations);
-      //   //this.$emit("newDestinationSelected", this.tripDestinations)
-      // },
-
-      updateSelectedDestination(newDestinations) {
-        console.log(newDestinations);
-        //console.log("updateSelectedDest tripDest: ", this.tripDestinations);
+      /**
+       * Emits the change in the selected destination by the user
+       */
+      updateSelectedDestination() {
         this.$emit("updateSelectedDestination", this.tripDestinations)
       },
 

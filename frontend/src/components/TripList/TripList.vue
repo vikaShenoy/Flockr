@@ -63,6 +63,10 @@
         const sortedTrips = sortTrips(trips);
         this.trips = transformTrips(sortedTrips);
       },
+      /**
+       * Emits a delete trip event
+       * @param tripId the trip Id to be deleted
+       */
       handleDelete(tripId) {
         this.$emit("delete-trip", tripId);
       }

@@ -23,7 +23,7 @@ export async function uploadImage(imageFile, isPublic, userId) {
  * @param {*} imageId id of the image to soft delete. 
  */
 export async function undoImageUpload(image) {
-  const response = await superAgent.delete(endpoint(`/users/photos/${image.imageId}`))
+  const response = await superagent.delete(endpoint(`/users/photos/${image.imageId}`))
       .set("authorization", localStorage.getItem("authToken"));
   return response.body;
 }
@@ -33,7 +33,7 @@ export async function undoImageUpload(image) {
  * @param {*} imageId image to un-soft delete (re-upload)
  */
 export async function redoImageUpload(image) {
-  const response = await superAgent.put(endpoint(`/users/photos/${image.imageId}/undodelete`))
+  const response = await superagent.put(endpoint(`/users/photos/${image.imageId}/undodelete`))
         .set("authorization", localStorage.getItem("authToken"));
   return response.body;
 }
