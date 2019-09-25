@@ -185,8 +185,8 @@ export default {
       return foundContiguousDestination;
     },
     /**
-     * Validates and renders errors if there are any
-     * @returns {boolean} True if fields are valid, false otherwise
+     * Validates and renders errors if there are any.
+     * @returns {boolean} True if fields are valid, false otherwise.
      */
     validate() {
       const validFields = this.$refs.addTripForm.validate();
@@ -198,7 +198,7 @@ export default {
     },
 
     /**
-     * Validates fields before sending a request to add a trip
+     * Validates fields before sending a request to add a trip.
      */
     async addTrip() {
       const validFields = this.validate();
@@ -208,7 +208,8 @@ export default {
         tripDestination.destinationId =
           tripDestination.destination.destinationId;
         return tripDestination;
-      });
+      }); 
+
       let userIds = [];
 
       // Specifies the extra users that should be added to the trip
@@ -218,6 +219,7 @@ export default {
           role: selectedUser.userRole
         });
       });
+
       try {
         const subTrip = await createTrip(
           this.tripName,
@@ -233,6 +235,7 @@ export default {
 
         this.$emit("newTripAdded", subTrip);
       } catch (e) {
+        console.log(e);
         this.$root.$emit("show-snackbar", {
           color: "error",
           message: "Error creating trip",

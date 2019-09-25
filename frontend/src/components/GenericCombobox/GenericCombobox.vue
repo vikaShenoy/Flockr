@@ -95,7 +95,6 @@ export default {
             } catch (err) {
                 this.$root.$emit("show-error-snackbar", `Could not get items for ${this.label}`, 3000);
                 this.isLoadingItems = false;
-                console.log(err);
             }
         }
     },

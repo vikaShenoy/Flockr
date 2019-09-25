@@ -360,13 +360,14 @@
           dateOfBirth
         } = this;
         try {
-          await updateBasicInfo(signedUpUserId, {
+          const updatedUser = await updateBasicInfo(signedUpUserId, {
             nationalities: selectedNationalityIds,
             passports: selectedPassportIds,
             travellerTypes: selectedTravellerTypeIds,
             gender: gender,
             dateOfBirth: moment(dateOfBirth, 'DD/MM/YYYY').format('YYYY-DD-MM')
           });
+          UserStore.methods.setData(updatedUser);
 
           // If signing up a user as admin, then emit, otherwise go to user profile page
           if (this.isSigningUpAsAdmin) {

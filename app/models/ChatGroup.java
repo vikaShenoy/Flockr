@@ -37,6 +37,12 @@ public class ChatGroup extends Model {
     @DbDefault("null")
     private String roomToken;
 
+    /**
+     * Creates a new chat group. Also sets voice details to null
+     * @param name The name of the chat group
+     * @param users The users in a chat group
+     * @param messages The messages in a chat group
+     */
     public ChatGroup(String name, List<User> users, List<Message> messages) {
         this.name = name;
         this.users = users;
@@ -47,13 +53,16 @@ public class ChatGroup extends Model {
 
     public static final Finder<Integer, ChatGroup> find = new Finder<>(ChatGroup.class);
 
+
     public List<User> getUsers() {
         return users;
     }
 
+
     public List<Message> getMessages() {
         return messages;
     }
+
 
     public int getChatGroupId() {
         return chatGroupId;

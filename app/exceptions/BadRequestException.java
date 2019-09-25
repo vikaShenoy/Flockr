@@ -13,7 +13,10 @@ public class BadRequestException extends Exception {
         super(message);
     }
 
-   public BadRequestException() {
+    /**
+     * Initialises a bad request exception without an error
+      */
+    public BadRequestException() {
         super();
     }
 }

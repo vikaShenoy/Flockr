@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -91,82 +90,86 @@ public class UserController extends Controller {
             return supplyAsync(Controller::forbidden);
         }
 
-        return userRepository.getUserById(userId)
-                .thenApplyAsync(user -> {
-                    if (!user.isPresent()) {
-                        return notFound();
-                    }
+    return userRepository
+        .getUserById(userId)
+        .thenComposeAsync(
+            user -> {
+              if (!user.isPresent()) {
+                throw new CompletionException(new NotFoundException("User not found"));
+              }
 
-                    if (jsonBody.has("firstName")) {
-                        user.get().setFirstName(jsonBody.get("firstName").asText());
-                    }
+              if (jsonBody.has("firstName")) {
+                user.get().setFirstName(jsonBody.get("firstName").asText());
+              }
 
-                    if (jsonBody.has("middleName")) {
-                        user.get().setMiddleName(jsonBody.get("middleName").asText());
-                    }
+              if (jsonBody.has("middleName")) {
+                user.get().setMiddleName(jsonBody.get("middleName").asText());
+              }
 
-                    if (jsonBody.has("lastName")) {
-                        user.get().setLastName(jsonBody.get("lastName").asText());
-                    }
+              if (jsonBody.has("lastName")) {
+                user.get().setLastName(jsonBody.get("lastName").asText());
+              }
 
-                    if (jsonBody.has("email")) {
-                        user.get().setEmail(jsonBody.get("email").asText());
-                    }
+              if (jsonBody.has("email")) {
+                user.get().setEmail(jsonBody.get("email").asText());
+              }
 
-                    if (jsonBody.has("dateOfBirth")) {
-                        try {
-                            String incomingDate = jsonBody.get("dateOfBirth").asText();
-                            Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
-                            log.info(String.format("Date stored in db for user is: %s", date));
-                            user.get().setDateOfBirth(date);
-                        } catch (ParseException e) {
-                            log.error("Error: ", e);
-                        }
-                    }
+              if (jsonBody.has("dateOfBirth")) {
+                try {
+                  String incomingDate = jsonBody.get("dateOfBirth").asText();
+                  Date date = new SimpleDateFormat("yyyy-MM-dd").parse(incomingDate);
+                  log.info(String.format("Date stored in db for user is: %s", date));
+                  user.get().setDateOfBirth(date);
+                } catch (ParseException e) {
+                  log.error("Error: ", e);
+                }
+              }
 
-                    if (jsonBody.has(GENDER_KEY)) {
-                        user.get().setGender(jsonBody.get(GENDER_KEY).asText());
-                    }
+              if (jsonBody.has(GENDER_KEY)) {
+                user.get().setGender(jsonBody.get(GENDER_KEY).asText());
+              }
 
-                    if (jsonBody.has("nationalities")) {
-                        JsonNode arrNode = jsonBody.get("nationalities");
-                        ArrayList<Nationality> nationalities = new ArrayList<>();
-                        for (JsonNode id : arrNode) {
+              if (jsonBody.has("nationalities")) {
+                JsonNode arrNode = jsonBody.get("nationalities");
+                ArrayList<Nationality> nationalities = new ArrayList<>();
+                for (JsonNode id : arrNode) {
 
-                            Nationality nationality = Nationality.find.byId(id.asInt());
-                            nationalities.add(nationality);
-                        }
-                        user.get().setNationalities(nationalities);
-                    }
+                  Nationality nationality = Nationality.find.byId(id.asInt());
+                  nationalities.add(nationality);
+                }
+                user.get().setNationalities(nationalities);
+              }
 
-                    if (jsonBody.has("passports")) {
-                        JsonNode arrNode = jsonBody.get("passports");
-                        ArrayList<Passport> passports = new ArrayList<>();
-                        for (JsonNode id : arrNode) {
+              if (jsonBody.has("passports")) {
+                JsonNode arrNode = jsonBody.get("passports");
+                ArrayList<Passport> passports = new ArrayList<>();
+                for (JsonNode id : arrNode) {
 
-                            Passport passport = Passport.find.byId(id.asInt());
-                            passports.add(passport);
+                  Passport passport = Passport.find.byId(id.asInt());
+                  passports.add(passport);
+                }
+                user.get().setPassports(passports);
+              }
 
-                        }
-                        user.get().setPassports(passports);
-                    }
+              if (jsonBody.has("travellerTypes")) {
+                JsonNode arrNode = jsonBody.get("travellerTypes");
+                ArrayList<TravellerType> travellerTypes = new ArrayList<>();
+                for (JsonNode id : arrNode) {
+                  TravellerType travellerType = TravellerType.find.byId(id.asInt());
+                  travellerTypes.add(travellerType);
+                }
+                user.get().setTravellerTypes(travellerTypes);
+              }
 
-                    if (jsonBody.has("travellerTypes")) {
-                        JsonNode arrNode = jsonBody.get("travellerTypes");
-                        ArrayList<TravellerType> travellerTypes = new ArrayList<>();
-                        for (JsonNode id : arrNode) {
-                            TravellerType travellerType = TravellerType.find.byId(id.asInt());
-                            travellerTypes.add(travellerType);
-                        }
-                        user.get().setTravellerTypes(travellerTypes);
-                    }
-
-                    if (jsonBody.has(GENDER_KEY)) {
-                        user.get().setGender(jsonBody.get(GENDER_KEY).asText());
-                    }
-                    return userRepository.updateUser(user.get());
-                }, httpExecutionContext.current())
-                .thenApplyAsync(updatedUser -> ok());
+              if (jsonBody.has(GENDER_KEY)) {
+                user.get().setGender(jsonBody.get(GENDER_KEY).asText());
+              }
+              return userRepository.updateUser(user.get());
+            },
+            httpExecutionContext.current())
+        .thenApplyAsync(
+            updatedUser -> ok(Json.toJson(updatedUser)))
+        .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**
