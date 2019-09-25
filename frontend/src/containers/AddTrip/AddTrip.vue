@@ -237,7 +237,6 @@ export default {
 
         this.$emit("newTripAdded", subTrip);
       } catch (e) {
-        console.log(e);
         this.$root.$emit("show-snackbar", {
           color: "error",
           message: "Error creating trip",
