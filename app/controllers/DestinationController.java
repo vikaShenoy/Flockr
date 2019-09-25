@@ -1,5 +1,6 @@
 package controllers;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import actions.ActionState;
@@ -63,6 +64,20 @@ public class DestinationController extends Controller {
     this.httpExecutionContext = httpExecutionContext;
     this.destinationUtil = destinationUtil;
     this.exceptionUtil = exceptionUtil;
+  }
+
+    /**
+     * A function that queries the database to check if a given destination is being used in any trips
+     *
+     * @param destinationId the destination ID of the destination to check
+     * @param request the play request object
+     * @return true or false depending on whether the destination is used or not
+     */
+  @With(LoggedIn.class)
+  public CompletionStage<Result> isDestinationUsed(int destinationId, Http.Request request) {
+
+      return destinationRepository.isDestinationUsed(destinationId).thenApplyAsync( (used) ->
+              ok(Json.toJson(used)));
   }
 
   /**

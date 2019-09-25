@@ -204,11 +204,21 @@ export default {
       const validFields = this.validate();
       if (!validFields) return;
 
-      const tripDestinations = this.tripDestinations.map(tripDestination => {
-        tripDestination.destinationId =
-          tripDestination.destination.destinationId;
-        return tripDestination;
-      });
+      try {
+        const tripDestinations = this.tripDestinations.map(tripDestination => {
+          tripDestination.destinationId =
+            tripDestination.destination.destinationId;
+          return tripDestination;
+        });
+      } catch (e) {
+        this.$root.$emit("show-snackbar", {
+          color: "error",
+          time: 1500,
+          message: "Select at least 2 trip destinations"
+        });
+        return;
+      }
+
       let userIds = [];
 
       // Specifies the extra users that should be added to the trip
@@ -218,6 +228,7 @@ export default {
           role: selectedUser.userRole
         });
       });
+
       try {
         const subTrip = await createTrip(
           this.tripName,

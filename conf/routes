@@ -59,6 +59,7 @@ DELETE        /api/destinations/:destinationId                                  
 POST          /api/users/:userId/destinations                                         controllers.DestinationController.addDestination(userId: Int, request: Request)
 PUT           /api/destinations/:destinationId                                        controllers.DestinationController.updateDestination(request: Request, destinationId: Int)
 PUT           /api/destinations/:destinationId/undodelete                             controllers.DestinationController.undoDeleteDestination(destinationId: Int, request: Request)
+GET           /api/destinationUsed/:destinationId                                     controllers.DestinationController.isDestinationUsed(destinationId: Int, request: Request)
 
 
 # Destination photos routes

@@ -80,7 +80,7 @@
       The destination that you are trying to delete is in the following trips:
 
       <ul>
-        <li v-for="usedTrip in usedTrips" v-bind:key="usedTrip.tripId">{{ usedTrip.tripName }}</li>
+        <li v-for="usedTrip in usedTrips" v-bind:key="usedTrip.tripId">{{ usedTrip.name }}</li>
       </ul>
 
     </AlertDialog>
@@ -90,7 +90,12 @@
 <script>
   import DestinationSummary from "./DestinationSummary/DestinationSummary";
   import PromptDialog from "../../../components/PromptDialog/PromptDialog";
-  import {deleteDestination, getUserTrips, undoDeleteDestination} from "./DestinationSidebarService";
+  import {
+    checkDestinationUsed,
+    deleteDestination,
+    getUserTrips,
+    undoDeleteDestination
+  } from "./DestinationSidebarService";
   import AlertDialog from "../../../components/AlertDialog/AlertDialog";
   import UndoRedo from "../../../components/UndoRedo/UndoRedo";
   import Command from '../../../components/UndoRedo/Command';
@@ -196,22 +201,28 @@
       /**
        * Gets trips that are using a specific destination
        */
-      getTripsUsingDestination(destinationId) {
-        return this.trips.filter(trip => {
-          const usedTripDestinations = trip.tripDestinations.filter(tripDestination => {
-            return tripDestination.destination.destinationId === destinationId;
-          });
+      getTripsUsingDestination(trips) {
 
-          return usedTripDestinations.length;
+        const toReturn = this.trips.filter(trip => {
+          let ids = trips.map(trip => trip.tripNodeId);
+          return ids.includes(trip.tripNodeId)
         });
+        return toReturn
+        // return this.trips.filter(trip => {
+        //   const usedTripDestinations = trip.tripNodes.filter(tripNode => {
+        //     return tripNode.destination.destinationId === destinationId;
+        //   });
+        //
+        //   return usedTripDestinations.length;
+        // });
       },
       /**
        * Shows the trips that the destination is being used on when destination
        * is trying to be deleted
        */
-      showDeleteDestination(destinationId) {
-        const usedTrips = this.getTripsUsingDestination(destinationId);
-        if (usedTrips.length) {
+      async showDeleteDestination(destinationId) {
+        const usedTrips = this.getTripsUsingDestination(await checkDestinationUsed(destinationId));
+        if (usedTrips.length > 0) {
           this.usedTrips = usedTrips;
           this.cannotDeleteDestDialog = true;
         } else {

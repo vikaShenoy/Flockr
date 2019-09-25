@@ -5,11 +5,15 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
+
+import models.*;
+import play.db.ebean.EbeanConfig;
 import models.Country;
 import models.Destination;
 import models.DestinationPhoto;
@@ -33,6 +37,25 @@ public class DestinationRepository {
   @Inject
   public DestinationRepository(DatabaseExecutionContext executionContext) {
     this.executionContext = executionContext;
+  }
+
+    /**
+     * Check whether a destination is used in any trips
+     *
+     * @param destinationId the destination ID of the destination to check
+     * @return true or false depending on whether or not the destination is used in any trips
+     */
+  public CompletionStage<List<TripNode>> isDestinationUsed(int destinationId) {
+      return supplyAsync(
+              () -> {
+                  List<TripNode> trips = TripNode.find.query().where().eq("destination_destination_id", destinationId).findList();
+                  List<TripNode> tripParents = new ArrayList<>();
+                  for (TripNode trip : trips) {
+                      tripParents.addAll(trip.getParents());
+                  }
+                  return tripParents;
+              }, executionContext
+      );
   }
 
   /**
