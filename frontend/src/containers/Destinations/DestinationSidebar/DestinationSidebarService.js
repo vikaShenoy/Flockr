@@ -47,4 +47,18 @@ export async function undoDeleteDestination(destinationId) {
     .set("Authorization", authToken);
 }
 
+/**
+ * Function to check if a destination is used in any trips
+ * @param destinationId the ID of the destination to check
+ * @returns {Promise<*>} contains true or false
+ */
+export async function checkDestinationUsed(destinationId) {
+  const authToken = localStorage.getItem("authToken");
+  const res = await superagent
+    .get(endpoint(`/destinationUsed/${destinationId}`))
+    .set("Authorization", authToken);
+  return res.body;
+}
+
+
 
