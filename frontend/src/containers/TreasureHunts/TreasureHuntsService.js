@@ -7,12 +7,9 @@ import {endpoint} from "../../utils/endpoint"
  */
 export async function getAllTreasureHunts() {
     let token = localStorage.getItem("authToken");
-
     const res = await superagent.get(endpoint("/treasurehunts"))
         .set("Authorization", token);
-
     return res.body;
-
 }
 
 /**
@@ -23,11 +20,9 @@ export async function getAllTreasureHunts() {
 export async function createTreasureHunt(treasureHunt) {
     let token = localStorage.getItem("authToken");
     let userId = localStorage.getItem("userId");
-
     const res = await superagent.post(endpoint(`/users/${userId}/treasurehunts`))
         .set("Authorization", token)
         .send(treasureHunt);
-
     return res.body;
 }
 
@@ -37,14 +32,11 @@ export async function createTreasureHunt(treasureHunt) {
  * @returns {Promise<*>} the confirmation of the treasure hunt being updated or not
  */
 export async function editTreasureHunt(treasureHunt) {
-
     let token = localStorage.getItem("authToken");
     let treasureHuntId = treasureHunt.treasureHuntId;
-
     const res = await superagent.put(endpoint(`/treasurehunts/${treasureHuntId}`))
         .set("Authorization", token)
         .send(treasureHunt);
-
     return res.body;
 }
 
@@ -55,21 +47,27 @@ export async function editTreasureHunt(treasureHunt) {
  */
 export async function getDestination(destinationId) {
     let token = localStorage.getItem("authToken");
-
     const res = await superagent.get(endpoint(`/destinations/${destinationId}`)).set("Authorization", token);
-
     return res.body.destinationName;
 }
 
+/**
+ * Deletes the treasure hunt with the given treasure hunt id
+ * @param treasureHuntId the treasure hunt id
+ * @returns {Promise<*>}
+ */
 export async function deleteTreasureHuntData(treasureHuntId) {
     let token = localStorage.getItem("authToken");
-
     const res = await superagent.delete(endpoint(`/treasurehunts/${treasureHuntId}`))
         .set("Authorization", token);
-
     return res.body;
 }
 
+/**
+ * Undoes the deletion of the treasure hunt with the given treasure hunt it
+ * @param treasureHuntId the treasure hunt id
+ * @returns {Promise<*>}
+ */
 export async function undoDeleteTreasureHuntData(treasureHuntId) {
     const res = await superagent.put(endpoint(`/treasurehunts/${treasureHuntId}/undodelete `))
       .set("Authorization", localStorage.getItem("authToken"));
