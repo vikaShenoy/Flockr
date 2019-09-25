@@ -12,7 +12,7 @@
             />
           </div>
 
-          <h2>Treasure Hunts</h2>
+          <h2>Current Treasure Hunts</h2>
         </div>
 
         <div v-if="!treasureHunts">
@@ -168,6 +168,7 @@
        */
       async getTreasureHunts() {
         const rawTreasureHunts = await getAllTreasureHunts();
+        console.log(rawTreasureHunts);
 
         const treasureHuntsPromises = rawTreasureHunts.map(async treasureHunt => {
           return {
