@@ -112,6 +112,11 @@ const routes = [
     component: Destination,
     beforeEnter: loggedIn
   },
+  {
+    path: "/logout",
+    component: Home,
+    beforeEnter: loggedIn
+  },
   { path: "*",
     component: PageNotFound,
     beforeEnter: loggedInOrOut
