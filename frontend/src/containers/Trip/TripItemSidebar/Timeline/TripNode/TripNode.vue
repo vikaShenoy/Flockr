@@ -1,6 +1,6 @@
 <template>
-  <div class="trip-destination">
-    <v-timeline-item
+  <div v-bind:class="hasPermissionToEdit ? 'trip-destination-cursor' : '' ">
+    <v-timeline-item  
       :style="{width: '90%', marginLeft: '5%'}"
       color="primary"
       small
@@ -104,7 +104,7 @@ export default {
     tripNode: Object,
     alignRight: Boolean,
     rootTrip: Object,
-    parentTrip: Object
+    parentTrip: Object,
   },
   data() {
     return {
@@ -287,7 +287,7 @@ export default {
   padding: 5px;
 }
 
-.trip-destination {
+.trip-destination-cursor {
   cursor: move;
 }
 
