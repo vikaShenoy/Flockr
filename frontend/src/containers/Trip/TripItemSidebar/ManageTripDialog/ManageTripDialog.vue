@@ -244,6 +244,8 @@ export default {
      * Saves the current selected users that are in the trip
      */
     async saveUsersInTrip() {
+        const oldUsers = this.trip.users;
+        const oldRoles = this.trip.userRoles;
       const users = [...this.selectedUsers, UserStore.data];
       this.isLoading = true;
       this.trip.users = users;
@@ -259,11 +261,12 @@ export default {
       }));
       // add the own user's role too
       this.trip.userRoles.push(ownUserRole);
+      const newRoles = this.trip.userRoles;
 
       await editTrip(this.trip);
       this.isLoading = false;
       this.isShowingDialog = false;
-      this.$emit("newUsers", users);
+      this.$emit("newUsers", users, oldUsers, newRoles, oldRoles);
     },
     getUserPermission(user) {
       const userRole = this.trip.userRoles.find(userRole => userRole.user === user.userId);

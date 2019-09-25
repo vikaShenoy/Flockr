@@ -219,19 +219,24 @@
       /**
        * Emit event called when new users have been updated
        */
-      async newUsers(users) {
-        const undoCommand = async (oldUsers) => {
-          await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, oldUsers);
+      async newUsers(users, oldUsers, newRoles, oldRoles) {
+
+        const undoCommand = async (oldUsers, oldRoles) => {
+              this.trip.users = oldUsers;
+              this.trip.userRoles = oldRoles;
+          await editTrip(this.trip);
           this.getTrip();
         };
 
-        const redoCommand = async (users) => {
-          await editTrip(this.trip.tripId, this.trip.tripName, this.trip.tripDestinations, users);
+        const redoCommand = async (users, newRoles) => {
+            this.trip.users = users;
+            this.trip.userRoles = newRoles;
+            await editTrip(this.trip);
           this.getTrip();
         };
 
-        const command = new Command(undoCommand.bind(null, [...this.trip.users]),
-            redoCommand.bind(null, users));
+        const command = new Command(undoCommand.bind(null, oldUsers, oldRoles),
+            redoCommand.bind(null, users, newRoles));
         this.$refs.undoRedo.addUndo(command);
 
         this.getTrip();
