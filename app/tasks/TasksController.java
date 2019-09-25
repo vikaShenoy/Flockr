@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigFactory;
  */
 public class TasksController extends AbstractModule {
 
-  private boolean populate = false; //NOTE: MUST HAVE INTERNET ENABLED !!!
+  private boolean populate = true; //NOTE: MUST HAVE INTERNET ENABLED !!!
 
   @Override
   protected void configure() {
@@ -35,9 +35,9 @@ public class TasksController extends AbstractModule {
 
       // you may add more tasks here
       if (populate) {
-        bind(ExampleUserPhotoData.class).asEagerSingleton();
-        bind(ExampleUserData.class).asEagerSingleton();
-        bind(ExampleDestinationDataTask.class).asEagerSingleton();
+//        bind(ExampleUserPhotoData.class).asEagerSingleton();
+//        bind(ExampleUserData.class).asEagerSingleton();
+//        bind(ExampleDestinationDataTask.class).asEagerSingleton();
         bind(ExampleTripsDataTask.class).asEagerSingleton();
       }
     }

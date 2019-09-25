@@ -112,7 +112,6 @@ const UserStore = {
      * Determines if the user's profile has been completed
      * @returns {boolean} Whether profile has been completed
      */
-
     profileCompleted() {
       return UserStore.data.dateOfBirth !== null && UserStore.data.gender
           !== null && UserStore.data.nationalities.length

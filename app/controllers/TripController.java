@@ -218,6 +218,14 @@ public class TripController extends Controller {
                             }
 
                             TripComposite trip = optionalTrip.get();
+
+                            String permissionLevel = getTripUserPermissionLevel(trip, user);
+                            if (permissionLevel.equals("TRIP_MEMBER")) {
+                                throw new CompletionException(
+                                        new ForbiddenRequestException(
+                                                "You do not have permission to delete this trip."));
+                            }
+
                             return tripRepository.deleteTrip(trip);
                         },
                         httpExecutionContext.current())

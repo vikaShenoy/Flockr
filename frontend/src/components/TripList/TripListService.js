@@ -103,6 +103,7 @@ export function transformTrips(trips) {
       tripId: trip.tripNodeId,
       tripName: trip.name,
       status: tripStatus,
+      userRoles: trip.userRoles,
     };
   });
 }

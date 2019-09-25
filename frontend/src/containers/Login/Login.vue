@@ -91,6 +91,7 @@
           UserStore.data.socket = socket;
           this.$router.push(`/profile/${user.userId}`);
         } catch (e) {
+          this.$root.$emit("show-error-snackbar", "Something went wrong while logging in.", 3000);
           this.hasInvalidCredentials = true;
         }
       },
