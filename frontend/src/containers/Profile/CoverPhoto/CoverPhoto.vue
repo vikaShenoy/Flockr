@@ -42,7 +42,6 @@
     computed: {
       /**
        * Gets the cover photo endpoint for the cover photo.
-       *
        * @return {string} the filename of the cover photo (null if none)
        */
       coverPhotoEndpoint() {
@@ -61,6 +60,9 @@
       }
     },
     methods: {
+      /**
+       * Changes the user's cover photo with the new chosen cover photo
+       */
       async coverPhotoSelected(newCoverPhoto) {
         try {
           const coverPhoto = await requestChangeCoverPhoto(this.userProfile.userId,

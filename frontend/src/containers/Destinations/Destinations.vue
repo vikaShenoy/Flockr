@@ -153,6 +153,7 @@
        * Shows create destination dialog
        */
       addDestinationClicked() {
+        this.resetCoordinates();
         this.showCreateDestDialog = true;
       },
       /**
@@ -191,10 +192,6 @@
         this.$refs.sidebar.addUndoRedoCommand(updateDestCommand);
         this.showCreateDestDialog = false;
 
-      },
-      addDestDialogChanged(dialogValue) {
-        this.resetCoordinates();
-        this.showCreateDestDialog = dialogValue;
       },
       /**
        * Show either your destinations or public destinations depending on view option.

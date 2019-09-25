@@ -3,7 +3,6 @@
           v-model="visible"
           width="500"
   >
-
     <v-tabs
             centered
             color="secondary"
@@ -11,12 +10,10 @@
             icons-and-text
             hide-slider
     >
-
       <v-tab href="#tab-1">
         Edit Treasure Hunt
         <v-icon>zoom_out_map</v-icon>
       </v-tab>
-
       <v-tab-item
               key="1"
               value="tab-1"
@@ -255,6 +252,10 @@
       visible(newVal) {
         this.$emit("updateToggle", newVal)
       },
+      /**
+       * Changes the treasure hunt destination value to the newly chosen destination value
+       * @param newDestination
+       */
       editTreasureHuntDestination(newDestination) {
         this.editTreasureHuntDestination = newDestination;
         if (newDestination !== null) {

@@ -26,12 +26,14 @@ export default {
     };
   },
   mounted() {
-
-      this.soundEffects = {
-          join: new Audio(require("../../../../assets/user_join.mp3")),
-          leave: new Audio(require("../../../../assets/user_leave.mp3"))
-      };
-
+    /**
+     * The sound effects setup
+     * @type {{leave: HTMLAudioElement, join: HTMLAudioElement}}
+     */
+    this.soundEffects = {
+      join: new Audio(require("../../../../assets/user_join.mp3")),
+      leave: new Audio(require("../../../../assets/user_leave.mp3"))
+    };
 
     this.voiceChat = new VoiceChat();
     
@@ -68,10 +70,16 @@ export default {
         this.voiceChat.leaveRoom();
       }
     },
+    /**
+     * This function is called when a user joins the chat
+     */
       handleJoin() {
           this.isInChat = true;
           this.soundEffects.join.play();
       },
+    /**
+     * This function is called when a user leaves the chat
+     */
       handleLeave() {
         this.$emit("participants", []);
         this.isInChat = false;

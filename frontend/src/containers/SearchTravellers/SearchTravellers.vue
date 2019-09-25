@@ -228,6 +228,9 @@
                 timeout: timeout
             });
         },
+      /**
+       * Shows the snackbar error with the given error message
+       */
       showError(errorMessage) {
         this.showSnackbar(errorMessage, "error", 3000);
       },
@@ -287,6 +290,9 @@
           this.showError("Could not search for travellers")
         }
       },
+      /**
+       * Clears the filters age range, nationality, traveller type, gender and name
+       */
       clearFilters: async function () {
         // Reset the selector variables to their default values
         this.ageRange = [13, 115];
@@ -297,7 +303,6 @@
         // Call the search function to get unfiltered results
         this.search(this.pageIndex);
       },
-
       /**
        * Gets the URL of a photo for a user
        * @param {number} photoId the ID of the photo to get
@@ -308,10 +313,16 @@
         const queryAuthorization = `?Authorization=${authToken}`;
         return endpoint(`/users/photos/${photoId}${queryAuthorization}`);
       },
+      /**
+       * Goes back one page in the table
+       */
       goBackOnePage() {
         this.pageIndex -= 1;
         this.search(this.pageIndex);
       },
+      /**
+       * Goes to the next page in the table
+       */
       goForwardOnePage() {
         this.pageIndex += 1;
         this.search(this.pageIndex);

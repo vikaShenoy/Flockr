@@ -3,7 +3,6 @@
           v-model="visible"
           width="500"
   >
-
     <v-tabs
             centered
             color="secondary"
@@ -11,12 +10,10 @@
             icons-and-text
             hide-slider
     >
-
       <v-tab href="#tab-1">
         Create Treasure Hunt
         <v-icon>zoom_out_map</v-icon>
       </v-tab>
-
       <v-tab-item
               key="1"
               value="tab-1"
@@ -187,7 +184,6 @@
       async createTreasureHunt() {
 
         let treasureHunt = {
-
           treasureHuntName: this.createTreasureHuntName,
           treasureHuntDestinationId: this.createTreasureHuntDestination.destinationId,
           riddle: this.createTreasureHuntRiddle,
@@ -195,11 +191,9 @@
           endDate: this.endDate,
           startTime: this.startTime,
           endTime: this.endTime
-
         };
 
         try {
-
           this.treasure = await createTreasureHunt(treasureHunt);
 
           const undoCommand = async () => {

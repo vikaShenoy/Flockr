@@ -164,10 +164,12 @@
       }
     },
     methods: {
+      /**
+       * Returns to the destinations
+       */
       returnToDestinations() {
         this.$router.push("/destinations/");
       },
-
       editDestDialogChanged(dialogValue) {
         this.showingEditDestDialog = dialogValue;
       },
@@ -194,6 +196,9 @@
         this.showingEditDestDialog = false;
         this.showSnackbar("Updated the destination", "success", 3500)
       },
+      /**
+       * Shows snackbar error with the given error message.
+       */
       showError(errorMessage) {
         this.showSnackbar(errorMessage, "error", 3000);
       },

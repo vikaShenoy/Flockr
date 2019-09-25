@@ -145,15 +145,6 @@
       };
     },
     computed: {
-      selectedNationalityIds: function () {
-        return this.selectedNationalities.map(n => n.nationalityId)
-      },
-      selectedPassportIds: function () {
-        return this.selectedPassports.map(p => p.passportId)
-      },
-      selectedTravellerTypeIds: function () {
-        return this.selectedTravellerTypes.map(t => t.travellerTypeId)
-      },
       /**
        * Return true if all the required fields in the basic info stepper are completed
        */
@@ -326,6 +317,9 @@
           console.log(e);
         }
       },
+      /**
+       * Updates the traveller information
+       */
       async sendTravellerInfo() {
         this.loading = true;
         const {
@@ -361,8 +355,18 @@
 
           this.loading = false;
         } catch (err) {
-          console.error(`Could not add traveller info for user with id ${signedUpUserId}: ${err}`);
+          this.showErrorSnackbar(`Could not add traveller info for user with id ${signedUpUserId}`);
         }
+      },
+      /**
+       * Shows an error snackbar
+       */
+      showErrorSnackbar(text) {
+        this.$root.$emit("show-snackbar", {
+          message: text,
+          color: "error",
+          timeout: 5000
+        });
       },
       /**
        * Updates the selected nationalities of the user to all valid ones so if there is an
@@ -391,6 +395,10 @@
       updateSelectedTravellerType(travellerTypes) {
         this.selectedTravellerTypes = travellerTypes.filter(type => typeof type !== 'string');
       },
+      /**
+       * Login the user
+       * @returns {Promise<void>}
+       */
       async signIn() {
         this.$router.push("/login");
       }

@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
-import exceptions.UnauthorizedException;
 import io.ebean.Ebean;
 import io.ebean.text.PathProperties;
 import java.util.ArrayList;
@@ -21,8 +20,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
@@ -43,13 +40,10 @@ import java.util.stream.Collectors;
 public class TripController extends Controller {
 
     private static final String TRIP_OWNER = "TRIP_OWNER";
-    private static final String MESSAGE_KEY = "message";
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final TripUtil tripUtil;
-    private final Security security;
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final DestinationRepository destinationRepository;
     private final TripNotifier tripNotifier;
     private final ExceptionUtil exceptionUtil;
@@ -57,7 +51,6 @@ public class TripController extends Controller {
     @Inject
     public TripController(
         TripRepository tripRepository,
-        Security security,
         UserRepository userRepository,
         HttpExecutionContext httpExecutionContext,
         TripUtil tripUtil,
@@ -67,7 +60,6 @@ public class TripController extends Controller {
         this.tripRepository = tripRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.tripUtil = tripUtil;
-        this.security = security;
         this.userRepository = userRepository;
         this.destinationRepository = destinationRepository;
         this.tripNotifier = tripNotifier;
@@ -90,7 +82,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(userFromMiddleware, userId)) {
+        if (!Security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
         JsonNode jsonBody = request.body().asJson();
@@ -174,7 +166,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> getTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(user, userId)) {
+        if (!Security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -215,7 +207,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(user, userId)) {
+        if (!Security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -251,7 +243,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(user, userId)) {
+        if (!Security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -297,7 +289,7 @@ public class TripController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> updateTrip(Http.Request request, int userId, int tripId) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
-        if (!security.userHasPermission(userFromMiddleware, userId)) {
+        if (!Security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -434,8 +426,10 @@ public class TripController extends Controller {
                                                     !destination.get().getDestinationOwner().equals(userId)) {
                                                 destination.get().setDestinationOwner(null);
                                                 destinationRepository.update(destination.get());
-                                            }
+                                            } else if (destination.isPresent()) {
                                             return destination.get();
+                                            }
+                                            return null;
                                         }
                                 );
                 updateDestinations.add(updateDestination);
@@ -475,7 +469,12 @@ public class TripController extends Controller {
      *
      * @param userId  of the owner of the trips
      * @param request the http request.
-     * @return the result to return to the client. TODO: no status codes
+     * @return the result to return to the client.
+     * Status Codes:
+     *    200 - OK - get trips successful.
+     *    401 - Unauthorized - user not logged in.
+     *    403 - Forbidden - user does not have permission.
+     *    500 - Internal Server Error - Unexpected Error.
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> getHighLevelTrips(int userId, Http.Request request) {

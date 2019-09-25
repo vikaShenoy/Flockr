@@ -4,6 +4,8 @@ version := "0.0.1-SNAPSHOT"
 
 maintainer := "s302team500@cosc.canterbury.ac.nz"
 
+import NativePackagerHelper._
+
 scalaVersion := "2.12.8"
 
 import java.io.File
@@ -35,6 +37,8 @@ libraryDependencies += evolutions
 libraryDependencies ++= Seq(
   javaWs
 )
+
+mappings in Universal ++= directory("storage")  
 
 // Jacoco Settings
 configs(IntegrationTest)

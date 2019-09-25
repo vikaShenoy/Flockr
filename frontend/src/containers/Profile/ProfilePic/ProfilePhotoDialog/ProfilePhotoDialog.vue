@@ -106,14 +106,26 @@
       }
     },
     methods: {
+      /**
+       * Updates the profile photo to the newly selected photo
+       * @param photo
+       */
       photoSelected(photo) {
         this.selectedPhoto = photo;
       },
+      /**
+       * Gets the photo url based on the given photo id
+       * @param photoId the photo id
+       * @returns {string}
+       */
       photoUrl(photoId) {
         const authToken = localStorage.getItem("authToken");
         const queryAuthorization = `?Authorization=${authToken}`;
         return endpoint(`/users/photos/${photoId}${queryAuthorization}`);
       },
+      /**
+       * Crops the image based on the auto cropper or manual cropping
+       */
       cropImage() {
         const cropper = this.cropOption === "self" ? this.$refs.cropper : this.$refs.autoCropper;
         cropper.getCroppedCanvas().toBlob(async blob => {
@@ -129,6 +141,9 @@
           }
         });
       },
+      /**
+       * Saves the profile image
+       */
       saveProfilePicture() {
         this.cropImage()
       }
