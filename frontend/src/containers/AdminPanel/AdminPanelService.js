@@ -1,7 +1,6 @@
 import superagent from "superagent";
 import { endpoint } from "../../utils/endpoint";
 
-
 /**
  * Deletes a user
  * @param {number} userId The ID of the user to delete
@@ -19,10 +18,9 @@ export async function deleteUsers(userIds) {
   const deleteUserPromises = userIds.map(userId => deleteUser(userId));
   await Promise.all(deleteUserPromises);
 }
-
 /**
  * Undoes the deletion of a user
- * @param {number} userId the ID of the user to undelete
+ * @param {number} userId the ID of the user to un-delete
  */
 export async function undoDeleteUser(userId) {
   const authToken = localStorage.getItem("authToken");
@@ -30,7 +28,6 @@ export async function undoDeleteUser(userId) {
       .put(endpoint(`/users/${userId}/undodelete`))
       .set("Authorization", authToken);
 }
-
 /**
  * Un-deletes users (soft delete functionality).
  */
@@ -38,9 +35,6 @@ export async function undoDeleteUsers(userIds) {
   const undoDeleteUserPromises = userIds.map(userId => undoDeleteUser(userId));
   await Promise.all(undoDeleteUserPromises);
 }
-
-
-
 /**
  * Get user data for users, with a complete profile.
  * Allows admin to edit users.
@@ -50,7 +44,6 @@ export async function getUsers() {
   const res = await superagent.get(endpoint("/users")).set("Authorization", authToken);
   return res.body;
 }
-
 /**
  * Get user data for all users, including those without a complete profile.
  * Used so admin can edit signed up users they created.
@@ -60,7 +53,6 @@ export async function getAllUsers() {
   const res = await superagent.get(endpoint("/users/all")).set("Authorization", authToken);
   return res.body;
 }
-
 /**
  * Get users from the search endpoint with offset for lazy loading.
  * @param queries query params like offset, limit, search terms.
@@ -74,8 +66,6 @@ export async function getMoreUsers(queries) {
   return res.body;
 
 }
-
-
 /**
  * Patch user to edit their details.
  * @param userId user to edit.
@@ -95,7 +85,6 @@ export async function patchUser(userId, body) {
       .send(body);
   }
 }
-
 /**
  * Updates a user's roles
  * @param {number} selectedUserId userId of roles to update
