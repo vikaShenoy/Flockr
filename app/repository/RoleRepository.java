@@ -46,7 +46,7 @@ public class RoleRepository {
         return supplyAsync(() -> User.find.byId(userId), executionContext);
     }
 
-    public CompletionStage<Role> getRole(RoleType roleType) {
-        return supplyAsync(() -> Role.find.query().where().eq("role_type", roleType.name()).findOne(), executionContext);
+    public Role getRole(RoleType roleType) {
+        return Role.find.query().where().eq("role_type", roleType.name()).findOne();
     }
 }
