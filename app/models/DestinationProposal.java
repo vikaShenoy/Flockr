@@ -35,7 +35,12 @@ public class DestinationProposal extends Model {
     @ManyToOne
     private User user;
 
-
+    /**
+     * Creates a new destination proposal
+     * @param destination The destination to propose traveller types to
+     * @param travellerTypes The traveller types to propose
+     * @param user The user that made the proposal
+     */
     public DestinationProposal(Destination destination, List<TravellerType> travellerTypes, User user) {
         this.destination = destination;
         this.travellerTypes = travellerTypes;
