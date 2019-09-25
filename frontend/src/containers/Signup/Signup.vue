@@ -343,6 +343,7 @@
           this.currStepperStep = 3; // go to next stepper in sign up sequence
         } catch (e) {
           this.$root.$emit('show-error-snackbar', 'Could not sign up', 3000);
+          this.loading = false; // to allow users to make changes
         }
       },
       /**
@@ -384,7 +385,8 @@
 
           this.loading = false;
         } catch (err) {
-          this.showErrorSnackbar(`Could not add traveller info for user with id ${signedUpUserId}`);
+          this.showErrorSnackbar(`Could not add traveller info for your user`);
+          this.loading = false;
         }
       },
       /**
