@@ -172,116 +172,104 @@ public class ExampleTripsDataTask {
                       log.info("Loading Example Trips");
                       role = userRepository.getSingleRoleByType("TRIP_MANAGER");
                       ownerRole = userRepository.getSingleRoleByType("TRIP_OWNER");
-//                      int countryIndex = 0;
-//                      List<Country> countries = Country.find.all();
-//                      List<User> users = fetchAllUsers();
-//                                            for (User user : users) {
-//                                              if (!doesUserHaveTrips(user)) {
-//                                                List<User> thisUserList = new ArrayList<>();
-//                                                List<UserRole> thisUserRoles = new ArrayList<>();
-//                                                UserRole userRole = new UserRole(user, role);
-//                                                userRole.save();
-//                                                thisUserRoles.add(userRole);
-//                                                thisUserList.add(user);
-//
-//                                                // Get countries
-//                                                Country countryOne = countries.get(countryIndex);
-//                                                String countryOneName =
-//                       countryOne.getCountryName();
-//                                                List<Destination> countryOneDestinations = new
-//                       ArrayList<>();
-//                                                while (countryOneDestinations.size() < 5) {
-//                                                  countryOneDestinations =
-//                       fetchNumDestinationsFromCountry(countryOne, 5);
-//                                                  countryOneName = countryOne.getCountryName();
-//                                                  countryIndex = (countryIndex + 1) %
-//                       countries.size();
-//                                                  countryOne = countries.get(countryIndex);
-//                                                }
-//                                                Country countryTwo = countries.get(countryIndex);
-//                                                String countryTwoName =
-//                       countryTwo.getCountryName();
-//                                                List<Destination> countryTwoDestinations = new
-//                       ArrayList<>();
-//                                                while (countryTwoDestinations.size() < 5) {
-//                                                  countryTwoDestinations =
-//                       fetchNumDestinationsFromCountry(countryTwo, 5);
-//                                                  countryTwoName = countryTwo.getCountryName();
-//                                                  countryIndex = (countryIndex + 1) %
-//                       countries.size();
-//                                                  countryTwo = countries.get(countryIndex);
-//                                                }
-//
-//                                                List<TripNode> tripNodes1 =
-//                                                    makeTripNodesList(
-//                                                        countryOneDestinations.get(0),
-//                                                        countryOneDestinations.get(1),
-//                                                        countryTwoDestinations.get(0),
-//                                                        countryTwoDestinations.get(1));
-//
-//                                                TripComposite tripOne =
-//                                                    new TripComposite(
-//                                                        tripNodes1,
-//                                                        thisUserList,
-//                                                        String.format(
-//                                                            "%s %s's trip from %s to %s",
-//                                                            user.getFirstName(),
-//                                                            user.getLastName(),
-//                                                            countryOneName,
-//                                                            countryTwoName));
-//                                                tripOne.setUserRoles(thisUserRoles);
-//
-//                                                List<TripNode> tripNodes2 =
-//                                                    makeTripNodesList(
-//                                                        countryTwoDestinations.get(2),
-//                                                        countryTwoDestinations.get(3),
-//                                                        countryOneDestinations.get(2),
-//                                                        countryOneDestinations.get(3));
-//
-//                                                List<TripNode> tripNodes3 =
-//                                                    makeTripNodesList(
-//                                                        countryOneDestinations.get(4),
-//                       countryTwoDestinations.get(4));
-//
-//                                                TripComposite tripThree =
-//                                                    new TripComposite(
-//                                                        tripNodes3,
-//                                                        thisUserList,
-//                                                        String.format(
-//                                                            "%s %s's trip from %s to %s",
-//                                                            user.getFirstName(),
-//                                                            user.getLastName(),
-//                                                            countryTwoName,
-//                                                            countryOneName));
-//                                                tripThree.setUserRoles(thisUserRoles);
-//
-//                                                tripNodes2.add(tripThree);
-//
-//                                                TripComposite tripTwo =
-//                                                    new TripComposite(
-//                                                        tripNodes2,
-//                                                        thisUserList,
-//                                                        String.format(
-//                                                            "%s %s's return trip from %s to %s",
-//                                                            user.getFirstName(),
-//                                                            user.getLastName(),
-//                                                            countryTwoName,
-//                                                            countryOneName));
-//                                                tripTwo.setUserRoles(thisUserRoles);
-//
-//                                                tripOne.save();
-//                                                log.info(String.format("%s has been created",
-//                       tripOne.getName()));
-//
-//                                                tripThree.save();
-//                                                log.info(String.format("%s has been created",
-//                       tripThree.getName()));
-//
-//                                                tripTwo.save();
-//                                                log.info(String.format("%s has been created",
-//                       tripTwo.getName()));
-//                                              }
-//                                            }
+                      int countryIndex = 0;
+                      List<Country> countries = Country.find.all();
+                      List<User> users = fetchAllUsers();
+                      for (User user : users) {
+                        if (!doesUserHaveTrips(user)) {
+                          List<User> thisUserList = new ArrayList<>();
+                          List<UserRole> thisUserRoles = new ArrayList<>();
+                          UserRole userRole = new UserRole(user, role);
+                          userRole.save();
+                          thisUserRoles.add(userRole);
+                          thisUserList.add(user);
+
+                          // Get countries
+                          Country countryOne = countries.get(countryIndex);
+                          String countryOneName = countryOne.getCountryName();
+                          List<Destination> countryOneDestinations = new ArrayList<>();
+                          while (countryOneDestinations.size() < 5) {
+                            countryOneDestinations = fetchNumDestinationsFromCountry(countryOne, 5);
+                            countryOneName = countryOne.getCountryName();
+                            countryIndex = (countryIndex + 1) % countries.size();
+                            countryOne = countries.get(countryIndex);
+                          }
+                          Country countryTwo = countries.get(countryIndex);
+                          String countryTwoName = countryTwo.getCountryName();
+                          List<Destination> countryTwoDestinations = new ArrayList<>();
+                          while (countryTwoDestinations.size() < 5) {
+                            countryTwoDestinations = fetchNumDestinationsFromCountry(countryTwo, 5);
+                            countryTwoName = countryTwo.getCountryName();
+                            countryIndex = (countryIndex + 1) % countries.size();
+                            countryTwo = countries.get(countryIndex);
+                          }
+
+                          List<TripNode> tripNodes1 =
+                              makeTripNodesList(
+                                  countryOneDestinations.get(0),
+                                  countryOneDestinations.get(1),
+                                  countryTwoDestinations.get(0),
+                                  countryTwoDestinations.get(1));
+
+                          TripComposite tripOne =
+                              new TripComposite(
+                                  tripNodes1,
+                                  thisUserList,
+                                  String.format(
+                                      "%s %s's trip from %s to %s",
+                                      user.getFirstName(),
+                                      user.getLastName(),
+                                      countryOneName,
+                                      countryTwoName));
+                          tripOne.setUserRoles(thisUserRoles);
+
+                          List<TripNode> tripNodes2 =
+                              makeTripNodesList(
+                                  countryTwoDestinations.get(2),
+                                  countryTwoDestinations.get(3),
+                                  countryOneDestinations.get(2),
+                                  countryOneDestinations.get(3));
+
+                          List<TripNode> tripNodes3 =
+                              makeTripNodesList(
+                                  countryOneDestinations.get(4), countryTwoDestinations.get(4));
+
+                          TripComposite tripThree =
+                              new TripComposite(
+                                  tripNodes3,
+                                  thisUserList,
+                                  String.format(
+                                      "%s %s's trip from %s to %s",
+                                      user.getFirstName(),
+                                      user.getLastName(),
+                                      countryTwoName,
+                                      countryOneName));
+                          tripThree.setUserRoles(thisUserRoles);
+
+                          tripNodes2.add(tripThree);
+
+                          TripComposite tripTwo =
+                              new TripComposite(
+                                  tripNodes2,
+                                  thisUserList,
+                                  String.format(
+                                      "%s %s's return trip from %s to %s",
+                                      user.getFirstName(),
+                                      user.getLastName(),
+                                      countryTwoName,
+                                      countryOneName));
+                          tripTwo.setUserRoles(thisUserRoles);
+
+                          tripOne.save();
+                          log.info(String.format("%s has been created", tripOne.getName()));
+
+                          tripThree.save();
+                          log.info(String.format("%s has been created", tripThree.getName()));
+
+                          tripTwo.save();
+                          log.info(String.format("%s has been created", tripTwo.getName()));
+                        }
+                      }
                       if (makeBigTrips) {
                         List<User> vipUsers = new ArrayList<>();
                         List<UserRole> userRoles = new ArrayList<>();
@@ -302,7 +290,6 @@ public class ExampleTripsDataTask {
                               userRole = new UserRole(optionalUser.get(), ownerRole);
                             } else {
                               userRole = new UserRole(optionalUser.get(), role);
-
                             }
                             userRole.save();
                             userRoles.add(userRole);
