@@ -2,16 +2,12 @@ package controllers;
 
 import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import actions.ActionState;
-import exceptions.UnauthorizedException;
 import models.TreasureHunt;
 import models.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.Http.Request;
 import play.mvc.Controller;
@@ -37,15 +33,11 @@ public class TreasureHuntController extends Controller {
 
   private static final String TREASURE_HUNT_NAME_KEY = "treasureHuntName";
   private static final String START_DATE_KEY = "startDate";
-  private static final String MESSAGE_KEY = "message";
   private static final String RIDDLE_KEY = "riddle";
   private static final String END_DATE_KEY = "endDate";
   private static final String TREASURE_HUNT_DESTINATION_ID_KEY = "treasureHuntDestinationId";
-  private static final String START_TIME_KEY = "startTime";
-  private static final String END_TIME_KEY = "endTime";
 
 
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
   private final TreasureHuntRepository treasureHuntRepository;
   private final ExceptionUtil exceptionUtil;
   private final DatabaseExecutionContext executionContext;

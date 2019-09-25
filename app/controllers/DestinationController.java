@@ -47,7 +47,6 @@ public class DestinationController extends Controller {
   private HttpExecutionContext httpExecutionContext;
   private final DestinationUtil destinationUtil;
   private final Logger log = LoggerFactory.getLogger(this.getClass());
-  private final Security security;
   private final ExceptionUtil exceptionUtil;
 
 
@@ -58,13 +57,11 @@ public class DestinationController extends Controller {
       HttpExecutionContext httpExecutionContext,
       PhotoRepository photoRepository,
       DestinationUtil destinationUtil,
-      Security security,
       ExceptionUtil exceptionUtil) {
     this.photoRepository = photoRepository;
     this.destinationRepository = destinationRepository;
     this.httpExecutionContext = httpExecutionContext;
     this.destinationUtil = destinationUtil;
-    this.security = security;
     this.exceptionUtil = exceptionUtil;
   }
 
@@ -80,7 +77,7 @@ public class DestinationController extends Controller {
   public CompletionStage<Result> getDestinations(Http.Request request) {
     String searchCriterion = request.getQueryString("search"); // optional
     String offsetString = request.getQueryString("offset");
-    Integer offset;
+    int offset;
     if (offsetString == null) {
       offsetString = "0";
     }
@@ -286,7 +283,6 @@ public class DestinationController extends Controller {
    */
   @With(LoggedIn.class)
   public CompletionStage<Result> updateDestination(Http.Request request, int destinationId) {
-    ObjectNode response = Json.newObject();
     User user = request.attrs().get(ActionState.USER);
     return destinationRepository
         .getDestinationById(destinationId)
@@ -343,7 +339,7 @@ public class DestinationController extends Controller {
                   .getDuplicateDestinations(destination, user.getUserId())
                   .thenComposeAsync(
                       destinations -> {
-                        boolean exists = false;
+                        boolean exists;
                         boolean duplicate = false;
                         for (Destination dest : destinations) {
                           if (dest.getDestinationId() != destinationId
@@ -729,7 +725,7 @@ public class DestinationController extends Controller {
 
     User user = User.find.byId(userId);
 
-    if (!security.userHasPermission(userFromMiddleware, userId)) {
+    if (!Security.userHasPermission(userFromMiddleware, userId)) {
       return supplyAsync(Controller::forbidden);
     }
 
@@ -858,7 +854,7 @@ public class DestinationController extends Controller {
     User userFromMiddleware = request.attrs().get(ActionState.USER);
 
     User user = User.find.byId(userId);
-    if (!security.userHasPermission(userFromMiddleware, userId)) {
+    if (!Security.userHasPermission(userFromMiddleware, userId)) {
       return supplyAsync(() -> forbidden("Not authorized to reject proposal"));
     }
 
