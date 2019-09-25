@@ -4,9 +4,11 @@ import static play.mvc.Results.badRequest;
 import static play.mvc.Results.forbidden;
 import static play.mvc.Results.internalServerError;
 import static play.mvc.Results.notFound;
+import static play.mvc.Results.status;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
+import exceptions.ConflictingRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import org.slf4j.Logger;
@@ -44,6 +46,10 @@ public class ExceptionUtil {
       ObjectNode message = Json.newObject();
       message.put(MESSAGE_KEY, exception.getMessage());
       return notFound(message);
+    } catch (ConflictingRequestException exception) {
+      ObjectNode message = Json.newObject();
+      message.put(MESSAGE_KEY, exception.getMessage());
+      return status(409, message);
     } catch (Exception exception) {
       ObjectNode message = Json.newObject();
       message.put(MESSAGE_KEY, exception.getMessage());
