@@ -262,6 +262,9 @@ public class TripControllerTest {
     Assert.assertEquals(403, result.status());
   }
 
+  /**
+   * Edits a trip with users in the Trip
+   */
   @Test
   public void editTripWithUsers() {
     TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
@@ -284,6 +287,9 @@ public class TripControllerTest {
     Assert.assertEquals(200, result.status());
   }
 
+  /**
+   * Checks the scenario where the trips have no users in the trip
+   */
   @Test
   public void cannotHaveNoUsersInTrip() {
     String endpoint = "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId();
@@ -300,6 +306,9 @@ public class TripControllerTest {
     Assert.assertEquals(403, result.status());
   }
 
+  /**
+   * Checks that contiguous destinations are being detected as expected
+   */
   @Test
   public void destinationsAreContiguous() {
     ArrayNode nodes = Json.newArray();
@@ -309,6 +318,9 @@ public class TripControllerTest {
     Assert.assertTrue(isContiguous);
   }
 
+  /**
+   * Checks that non-contiguous destinations are not passed as contiguous destinations
+   */
   @Test
   public void destinationsNotContiguous() {
     ArrayNode nodes = Json.newArray();
@@ -334,6 +346,10 @@ public class TripControllerTest {
     Assert.assertTrue(isContiguous);
   }
 
+  /**
+   * Checks the undo-deletion of the trip node works
+   * @param trip the trip to undo deletion of
+   */
   private void restore(TripComposite trip) {
     trip.setDeleted(false);
     trip.setDeletedExpiry(null);
@@ -343,6 +359,9 @@ public class TripControllerTest {
     Assert.assertTrue(optionalTrip.isPresent());
   }
 
+  /**
+   * Checks undo-deletion of trip works when the user owns the trip
+   */
   @Test
   public void restoreTripOk() {
     trip.delete();
@@ -358,6 +377,10 @@ public class TripControllerTest {
     Assert.assertEquals(200, result.status());
   }
 
+  /**
+   * Checks the undo-deletion of the trip does not work when the user trying to undo the deletion
+   * does not own the trip and gives appropriate status code.
+   */
   @Test
   public void restoreTripForbidden() {
     trip.delete();
@@ -374,6 +397,10 @@ public class TripControllerTest {
     restore(trip);
   }
 
+  /**
+   * Checks undo-deletion of the trip does not work when the user is not logged in and gives
+   * appropriate status code.
+   */
   @Test
   public void restoreTripUnauthorized() {
     trip.delete();
@@ -389,6 +416,9 @@ public class TripControllerTest {
     restore(trip);
   }
 
+  /**
+   * Checks the undo-deletion of the trip works when the admin is the on trying to undo the deletion
+   */
   @Test
   public void restoreTripAdmin() {
     trip.delete();
@@ -404,6 +434,10 @@ public class TripControllerTest {
     Assert.assertEquals(200, result.status());
   }
 
+  /**
+   * Checks that the undo-deletion of the trip does not work when the trip does not even exist and
+   * gives appropriate status code.
+   */
   @Test
   public void restoreTripNotFound() {
     trip.delete();
@@ -420,6 +454,9 @@ public class TripControllerTest {
     restore(trip);
   }
 
+  /**
+   * Checks the undo-deletion of the trip when the trip is not even deleted and gives appropriate status code.
+   */
   @Test
   public void restoreTripBadRequest() {
 
@@ -450,16 +487,29 @@ public class TripControllerTest {
     Assert.assertEquals(result.status(), statusCode);
   }
 
+  /**
+   * Checks if the high level trips (the trips without a parent) endpoint works when the user owns the
+   * trip
+   */
   @Test
   public void getHighLevelTripsUserOk() {
     getHighLevelTrips(user.getToken(), user.getUserId(), 200);
   }
 
+  /**
+   * Checks if the high level trips (the trips without a parent) endpoint works when the admin wants
+   * to view the trip
+   */
   @Test
   public void getHighLevelTripsAdminOk() {
     getHighLevelTrips(adminUser.getToken(), user.getUserId(), 200);
   }
 
+
+  /**
+   * Checks if the high level trips (the trips without a parent) endpoint does not works when the
+   * user is not logged in.
+   */
   @Test
   public void getHighLevelTripsUnauthorised() {
     Result result =
@@ -469,11 +519,14 @@ public class TripControllerTest {
     Assert.assertEquals(401, result.status());
   }
 
+  /**
+   * Checks if the high level trips (the trips without a parent) endpoint does not works when the
+   * user does not owns the trip is trying to view another user's trip
+   */
   @Test
   public void getHighLevelTripsForbidden() {
     getHighLevelTrips(otherUser.getToken(), user.getUserId(), 403);
   }
-
 
   /**
    * The Test suite for updating a trip with the PUT endpoint.
@@ -511,7 +564,9 @@ public class TripControllerTest {
     Assert.assertEquals(statusCode, result.status());
   }
 
-
+  /**
+   * Checks if the updating of trips works when the user owns the trip being updated
+   */
   @Test
   public void updateTripOk() {
     TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
@@ -522,16 +577,25 @@ public class TripControllerTest {
         tripComposite -> Assert.assertEquals("PutTest", tripComposite.getName()));
   }
 
+  /**
+   * Checks if the updating of trips does not work when the trip does not exist
+   */
   @Test
   public void updateTripNotFound() {
     updateTrip(otherUser.getToken(), otherUser.getUserId(), 404, true);
   }
 
+  /**
+   * Checks if the updating of trips does not work when the user is not logged in
+   */
   @Test
   public void updateTripForbidden() {
     updateTrip(user.getToken(), user.getUserId(), 401, false);
   }
 
+  /**
+   * Checks if the updating of trips works when the admin wants to update the trip
+   */
   @Test
   public void updateTripAdmin() {
     TripControllerTestUtil.setUserTripRole(user, trip, RoleType.TRIP_OWNER);
@@ -565,6 +629,9 @@ public class TripControllerTest {
     Assert.assertEquals(statusCode, result.status());
   }
 
+  /**
+   * Checks the trip members cannot update a trip and gives appropriate status code
+   */
   @Test
   public void updateTripAsTripMemberForbidden() {
     String originalName = trip.getName();
@@ -751,7 +818,10 @@ public class TripControllerTest {
             tripComposite -> Assert.assertEquals(tripOriginalName, tripComposite.getName()));
   }
 
-
+  /**
+   * Checks the a user can create a trip by themselves (not as a group trip)
+   * @throws IOException
+   */
   @Test
   public void createSoloTripOwner() throws IOException {
 
@@ -774,6 +844,10 @@ public class TripControllerTest {
       Assert.assertEquals("TRIP_OWNER", jsonResult.get("userRoles").get(0).get("role").get("roleType").asText());
   }
 
+  /**
+   * Checks that a user can create a group trip with an owner, manager and a member.
+   * @throws IOException
+   */
   @Test
   public void createGroupTripOwnerManagerMember() throws IOException {
     String endpoint = "/api/users/" + user.getUserId() + "/trips";
