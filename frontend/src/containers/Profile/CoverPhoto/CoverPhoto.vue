@@ -5,6 +5,7 @@
         aspect-ratio="2.75"
         class="cover-photo"
     >
+
       <v-btn @click="openCoverPhotoDialog" id="edit-btn" v-if="hasPermissionToEdit" color="secondary" fab><v-icon>edit</v-icon></v-btn>
     </v-img>
 
@@ -114,7 +115,7 @@
   @import "../../../styles/_variables.scss";
 
   .cover-photo {
-    height: 350px;
+    height: 200px;
     min-width: 800px;
   }
 

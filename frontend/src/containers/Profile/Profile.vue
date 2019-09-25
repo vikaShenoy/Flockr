@@ -10,8 +10,6 @@
     >
       Please fill in your full profile before using the site
     </v-alert>
-    <v-layout>
-      <v-flex xs10 offset-xs1>
         <v-card>
           <cover-photo
               :userProfile="userProfile"
@@ -92,8 +90,6 @@
 
           </v-card-title>
         </v-card>
-      </v-flex>
-    </v-layout>
   </div>
 </template>
 
@@ -502,7 +498,6 @@
 
   #root-container {
     width: 100%;
-    margin-left: 15px;
     margin-right: 15px;
 
     #undo-redo-card {
@@ -534,7 +529,7 @@
   .profile-pic {
     position: absolute;
     left: 30px;
-    top: 190px;
+    top: 40px;
   }
 
   #cover-photo {
