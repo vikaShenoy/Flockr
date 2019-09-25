@@ -42,10 +42,6 @@ public class DestinationPhoto extends Model {
         this.deleted = deleted;
     }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
-
     public void setDeletedExpiry(Timestamp deletedExpiry) {
         this.deletedExpiry = deletedExpiry;
     }
@@ -56,10 +52,6 @@ public class DestinationPhoto extends Model {
 
     public Destination getDestination() {
         return destination;
-    }
-
-    public void setDestinationPhotoId(int destinationPhotoId) {
-        this.destinationPhotoId = destinationPhotoId;
     }
 
     public int getDestinationPhotoId() {

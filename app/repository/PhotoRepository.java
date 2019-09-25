@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+/**
+ * Class that performs operations on the database regarding photos.
+ */
 public class PhotoRepository {
   private final DatabaseExecutionContext executionContext;
 
@@ -21,22 +23,12 @@ public class PhotoRepository {
     this.executionContext = databaseExecutionContext;
   }
 
-  public CompletionStage<Optional<PersonalPhoto>> getPhotoByIdAndUser(int photoId, int userId) {
-    return supplyAsync(
-        () -> {
-          Optional<PersonalPhoto> personalPhoto =
-              PersonalPhoto.find
-                  .query()
-                  .where()
-                  .eq("user_user_id", userId)
-                  .eq("photo_id", photoId)
-                  .findOneOrEmpty();
-
-          return personalPhoto;
-        },
-        executionContext);
-  }
-
+  /**
+   * Updates a photo.
+   *
+   * @param personalPhoto the photo to update.
+   * @return the updated photo.
+   */
   public CompletionStage<PersonalPhoto> updatePhoto(PersonalPhoto personalPhoto) {
     return supplyAsync(
         () -> {
@@ -69,11 +61,7 @@ public class PhotoRepository {
    */
   public CompletionStage<Optional<PersonalPhoto>> getPhotoById(int photoId) {
     return supplyAsync(
-        () -> {
-          Optional<PersonalPhoto> photo =
-              PersonalPhoto.find.query().where().eq("photo_id", photoId).findOneOrEmpty();
-          return photo;
-        },
+        () -> PersonalPhoto.find.query().where().eq("photo_id", photoId).findOneOrEmpty(),
         executionContext);
   }
 
@@ -85,26 +73,12 @@ public class PhotoRepository {
    */
   public CompletionStage<Optional<PersonalPhoto>> getPhotoByIdWithSoftDelete(int photoId) {
     return supplyAsync(
-        () -> {
-          Optional<PersonalPhoto> photo =
-              PersonalPhoto.find
-                  .query()
-                  .setIncludeSoftDeletes()
-                  .where()
-                  .eq("photo_id", photoId)
-                  .findOneOrEmpty();
-          return photo;
-        },
-        executionContext);
-  }
-
-  public CompletionStage<Optional<PersonalPhoto>> getPhotoByFilename(String filenameHash) {
-    return supplyAsync(
-        () -> {
-          Optional<PersonalPhoto> photo =
-              PersonalPhoto.find.query().where().eq("filename_hash", filenameHash).findOneOrEmpty();
-          return photo;
-        },
+        () -> PersonalPhoto.find
+            .query()
+            .setIncludeSoftDeletes()
+            .where()
+            .eq("photo_id", photoId)
+            .findOneOrEmpty(),
         executionContext);
   }
 

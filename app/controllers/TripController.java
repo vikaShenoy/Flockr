@@ -82,7 +82,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> addTrip(int userId, Http.Request request) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        if (!Security.userHasPermission(userFromMiddleware, userId)) {
+        if (Security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
         JsonNode jsonBody = request.body().asJson();
@@ -124,7 +124,6 @@ public class TripController extends Controller {
                         TripComposite trip = new TripComposite(tripNodes, users, tripName);
                         List<UserRole> userRoles = new ArrayList<>();
                         for (User roledUser : users) {
-
                           for (JsonNode userIdJson : userIdsJson) {
                             if (userIdJson.get("userId").asInt() == roledUser.getUserId()) {
                               Role role =
@@ -138,7 +137,8 @@ public class TripController extends Controller {
                         }
 
                         Role role = userRepository.getSingleRoleByType(TRIP_OWNER);
-                        UserRole userRole = new UserRole(users.get(users.size() - 1), role);
+                        User owner = users.get(users.size() - 1);
+                        UserRole userRole = new UserRole(owner, role);
                         userRole.save();
                         userRoles.add(userRole);
                         trip.setUserRoles(userRoles);
@@ -164,7 +164,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> getTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (!Security.userHasPermission(user, userId)) {
+        if (Security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -205,7 +205,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> deleteTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (!Security.userHasPermission(user, userId)) {
+        if (Security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -241,7 +241,7 @@ public class TripController extends Controller {
     public CompletionStage<Result> restoreTrip(int userId, int tripId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
 
-        if (!Security.userHasPermission(user, userId)) {
+        if (Security.userHasPermission(user, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -287,7 +287,7 @@ public class TripController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> updateTrip(Http.Request request, int userId, int tripId) {
         User userFromMiddleware = request.attrs().get(ActionState.USER);
-        if (!Security.userHasPermission(userFromMiddleware, userId)) {
+        if (Security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 

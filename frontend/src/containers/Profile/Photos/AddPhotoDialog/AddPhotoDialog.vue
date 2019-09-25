@@ -54,6 +54,9 @@
         this.imageDialog = false;
         this.$emit("addImage", image);
       },
+      /**
+       * Shows the image dialog
+       */
       showImageDialog() {
         this.imageDialog = true;
       },

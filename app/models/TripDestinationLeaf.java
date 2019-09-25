@@ -53,11 +53,6 @@ public class TripDestinationLeaf extends TripNode {
   }
 
   @Override
-  public void removeTripNode(TripNode tripNode) {
-    // Leaves do not have leaves within them
-  }
-
-  @Override
   public String getName() {
     return this.destination.getDestinationName();
   }

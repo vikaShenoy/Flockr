@@ -7,8 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 
+/**
+ * Utility class for helping with destinations.l
+ */
 public class DestinationUtil {
 
+    /**
+     * Transforms a json of traveller type ids into a list of traveller types.
+     *
+     * @param travellerTypeIdsNode json node of traveller type id's.
+     * @param allTravellerTypes list of all traveller types.
+     * @return the list of traveller types.
+     */
     public List<TravellerType> transformTravellerTypes(JsonNode travellerTypeIdsNode, List<TravellerType> allTravellerTypes) {
         List<TravellerType> travellerTypes = new ArrayList<>();
 

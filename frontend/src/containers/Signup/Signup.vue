@@ -30,12 +30,18 @@
                       label="Gender"/>
           </v-card>
           <v-spacer row>
-          <v-btn color="primary" @click="currStepperStep = 2" :disabled="!isBasicInfoStepperCompleted">Continue</v-btn>
 
-          <v-btn class="sign_in" color="primary"
-                 @click="signIn()">
-            Sign in
-          </v-btn>
+              <div class="button-row">
+                <v-btn color="secondary"
+                      @click="signIn()"
+                      flat
+                      >
+                  Sign in
+                </v-btn>
+
+                <v-btn color="primary" class="continue-btn" @click="currStepperStep = 2" :disabled="!isBasicInfoStepperCompleted">Continue</v-btn>
+              </div> 
+
           </v-spacer>
         </v-stepper-content>
 
@@ -51,10 +57,14 @@
                           v-on:keyup.enter="signup"/>
           </v-card>
 
-          <v-btn :loading="loading" :disabled="!isLoginInfoStepperCompleted" color="primary" @click="signup()">
-            Continue
-          </v-btn>
-          <v-btn flat @click="currStepperStep = 1">Go back</v-btn>
+          <div class="button-row">
+            <v-btn flat @click="currStepperStep = 1">Go back</v-btn>
+
+            <v-btn :loading="loading" :disabled="!isLoginInfoStepperCompleted" color="primary" @click="signup()">
+              Continue
+            </v-btn>
+          </div>
+
         </v-stepper-content>
 
         <v-stepper-content step="3">
@@ -145,15 +155,6 @@
       };
     },
     computed: {
-      selectedNationalityIds: function () {
-        return this.selectedNationalities.map(n => n.nationalityId)
-      },
-      selectedPassportIds: function () {
-        return this.selectedPassports.map(p => p.passportId)
-      },
-      selectedTravellerTypeIds: function () {
-        return this.selectedTravellerTypes.map(t => t.travellerTypeId)
-      },
       /**
        * Return true if all the required fields in the basic info stepper are completed
        */
@@ -326,6 +327,9 @@
           console.log(e);
         }
       },
+      /**
+       * Updates the traveller information
+       */
       async sendTravellerInfo() {
         this.loading = true;
         const {
@@ -361,8 +365,18 @@
 
           this.loading = false;
         } catch (err) {
-          console.error(`Could not add traveller info for user with id ${signedUpUserId}: ${err}`);
+          this.showErrorSnackbar(`Could not add traveller info for user with id ${signedUpUserId}`);
         }
+      },
+      /**
+       * Shows an error snackbar
+       */
+      showErrorSnackbar(text) {
+        this.$root.$emit("show-snackbar", {
+          message: text,
+          color: "error",
+          timeout: 5000
+        });
       },
       /**
        * Updates the selected nationalities of the user to all valid ones so if there is an
@@ -391,6 +405,10 @@
       updateSelectedTravellerType(travellerTypes) {
         this.selectedTravellerTypes = travellerTypes.filter(type => typeof type !== 'string');
       },
+      /**
+       * Login the user
+       * @returns {Promise<void>}
+       */
       async signIn() {
         this.$router.push("/login");
       }
@@ -420,9 +438,15 @@
     justify-content: center;
   }
 
-  .sign_in {
-    float:right;
+  .button-row {
+    display: flex;
+    justify-content: space-between;
   }
+
+  .continue-btn {
+    float: right;
+  }
+
 </style>
 
 

@@ -139,10 +139,12 @@
       };
     },
     methods: {
+      /**
+       * Adds the undo-redo command stack
+       */
       addCommand(editCommand) {
         this.$refs.undoRedo.addUndo(editCommand);
       },
-
       /**
        * Adds the treasure hunt undo-redo in the stack
        */
@@ -155,14 +157,12 @@
       closeDialog() {
         this.showDialog = false;
       },
-
       /**
        * Hides the edit treasure hunt modal
        */
       closeEditDialog() {
         this.showEditForm = false;
       },
-
       /**
        * Calls the treasure hunt service to set the populate the list of treasure hunts with all valid treasure hunts
        */
@@ -180,7 +180,6 @@
 
         this.treasureHunts = await Promise.all(treasureHuntsPromises);
       },
-
       /**
        * Takes in a date number retrieved from the database and converts it into a displayable string
        * @param date from treasure hunt object
@@ -189,7 +188,6 @@
       formatDate(date) {
         return moment(date).format("D/M/YYYY H:mm");
       },
-
       /**
        * Calculates the remaining time left to solve a treasure hunt, currently doesn't take into account the time zones
        * @param date - the ending time of the treasure hunt
@@ -204,7 +202,6 @@
 
         return closeDate.format("DD MMM YYYY");
       },
-
       /**
        * Function to check if the logged in user is the owner of the treasure hunt
        * @param ownerId
@@ -213,14 +210,12 @@
       isOwner(ownerId) {
         return localStorage.getItem("userId") == ownerId;
       },
-
       /**
        * Function to that checks if the user is an admin or not
        */
       isAdmin() {
         return UserStore.methods.isAdmin();
       },
-
       /**
        * Function to update the value of the toggle, emitted from child
        * @param newVal
@@ -228,14 +223,12 @@
       updateToggle(newVal) {
         this.showDialog = newVal;
       },
-
       /**
        * Function called from child to update the list of treasure hunts
        */
       updateList() {
         this.getTreasureHunts();
       },
-
       /**
        * Function to show the edit treasure hunt form
        * @param treasureHunt
@@ -246,7 +239,9 @@
         this.showEditForm = true;
         this.refreshEditDialog += 1;
       },
-
+      /**
+       * Deletes the treasure hunt with the given treasure hunt id
+       */
       async deleteTreasureHunt(event, treasureHuntId) {
         event.stopPropagation();
         try {

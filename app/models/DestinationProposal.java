@@ -46,10 +46,6 @@ public class DestinationProposal extends Model {
         this.deletedExpiry = deletedExpiry;
     }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
-
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }

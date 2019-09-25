@@ -30,6 +30,13 @@ public class TripControllerTestUtil {
         trip.save();
     }
 
+    /**
+     * Creares a Trip json body with the name, trip nodes and users
+     * @param name the name of the trip
+     * @param tripNodes the trip nodes that's part of the trip
+     * @param users the users that is part of the trip
+     * @return
+     */
     public static ObjectNode createTripJsonBody(String name, List<ObjectNode> tripNodes, Map<User, String> users) {
         ObjectNode body = Json.newObject();
         ArrayNode userJson = Json.newArray();

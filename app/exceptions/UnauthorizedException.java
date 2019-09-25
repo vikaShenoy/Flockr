@@ -1,7 +1,7 @@
 package exceptions;
 
 /**
- * Thrown when a destination could not be found
+ * Thrown when a user is not authorized.
  */
 public class UnauthorizedException extends Exception {
 

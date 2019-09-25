@@ -18,7 +18,6 @@ import repository.AuthRepository;
 import repository.RoleRepository;
 import repository.UserRepository;
 import util.ExceptionUtil;
-import util.Responses;
 import util.Security;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionException;
@@ -40,14 +39,13 @@ public class AuthController {
     private static final String MIDDLE_NAME_KEY = "middleName";
     private static final String LAST_NAME_KEY = "lastName";
     private static final String MESSAGE_KEY = "message";
-    private static final String PWD_KEY = "password";
+    private static final String U_CRED = "password";
     private static final String EMAIL_KEY = "email";
 
     @Inject
     public AuthController(AuthRepository authRepository,
         UserRepository userRepository,
         HttpExecutionContext httpExecutionContext,
-        Responses responses,
         RoleRepository roleRepository,
         ExceptionUtil exceptionUtil) {
         this.authRepository = authRepository;
@@ -92,7 +90,7 @@ public class AuthController {
                 message.put(MESSAGE_KEY, "Please provide a valid email address with the JSON key as email");
                 return badRequest(message);
             });
-        } else if (!(jsonRequest.has(PWD_KEY))) {
+        } else if (!(jsonRequest.has(U_CRED))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
                 message.put(MESSAGE_KEY, "Please provide a password with at least 6 characters with the JSON key as password");
@@ -104,7 +102,7 @@ public class AuthController {
         String firstName = jsonRequest.get(FIRST_NAME_KEY).asText();
         String lastName = jsonRequest.get(LAST_NAME_KEY).asText();
         String email = jsonRequest.get(EMAIL_KEY).asText();
-        String password = jsonRequest.get(PWD_KEY).asText();
+        String password = jsonRequest.get(U_CRED).asText();
         String hashedPassword = Security.hashPassword(password);
         String userToken = Security.generateToken();
 
@@ -167,10 +165,9 @@ public class AuthController {
         JsonNode jsonBody = request.body().asJson();
 
         String email = jsonBody.get(EMAIL_KEY).asText();
-        String password = jsonBody.get(PWD_KEY).asText();
-        String hashedPassword = Security.hashPassword(password);
+        String password = jsonBody.get(U_CRED).asText();
 
-        return authRepository.getUserByCredentials(email, hashedPassword)
+        return authRepository.getUserByCredentials(email)
                 .thenComposeAsync(optionalUser -> {
                     if (!optionalUser.isPresent()) {
                         throw new CompletionException(new UnauthorizedException());

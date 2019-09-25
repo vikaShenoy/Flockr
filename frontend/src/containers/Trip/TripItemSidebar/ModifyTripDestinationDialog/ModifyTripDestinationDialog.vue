@@ -287,14 +287,18 @@ export default {
     this.getDestinations();
   },
   methods: {
+    /**
+     * Searches the destinations with the given destination name and filters the destination
+     */
     async searchDestination(destinationName) {
       const destinations = await getPublicDestinations(destinationName, 0);
       const filteredDestinations = this.filteredDestinations(destinations);
       return filteredDestinations;
     },
-
+    /**
+     * Modifies the trip destination
+     */
     async modifyTripDestination() {
-
       if (!this.$refs.form.validate()) return;
       let newTripNodes;
 
@@ -314,7 +318,6 @@ export default {
           if (tripNode.tripNodeId === this.tripDestination.tripNodeId) {
             return this.tripDestination;
           }
-
           return tripNode;
         });
       } else {
@@ -343,6 +346,9 @@ export default {
         nodeType: "TripDestinationLeaf"
       };
     },
+    /**
+     * Gets all the private and all public destinations
+     */
     async getDestinations() {
       const [publicDestinations, yourDestinations] = await Promise.all([
         getDestinations(),
@@ -423,12 +429,22 @@ export default {
     isShowingDialog(value) {
       this.$emit("update:isShowing", value);
     },
+    /**
+     * Changes the showing dialog variable to the new value and changes the trip destination
+     * to the edited trio destination if it is in edit mode and if the dialog is showing.
+     * @param value
+     */
     isShowing(value) {
       this.isShowingDialog = value;
       if (this.isShowing && this.editMode) {
         this.tripDestination = this.editedTripDestination;
       }
     },
+    /**
+     * Changes the trip destination value to the trip destination when editedTripDestination
+     * variable changes
+     * @param tripDestination the trip destination
+     */
     editedTripDestination(tripDestination) {
       this.tripDestination = { ...tripDestination };
     }

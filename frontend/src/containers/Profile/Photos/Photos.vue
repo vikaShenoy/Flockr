@@ -213,14 +213,26 @@
       openGallery() {
         this.$router.push(`/profile/${this.userId}/photos`);
       },
+      /**
+       * Gets the thumbnail url
+       * @param photoId the photo id
+       * @returns {string}
+       */
       thumbnailUrl(photoId) {
         return endpoint(`/users/photos/${photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
       },
+      /**
+       * Adds the photo to the user's profile
+       * @param image the image to be added
+       */
       addImage(image) {
         this.$emit("addPhoto", image);
       }
     },
-
+    /**
+     * Sets the user id from the url parameter of the user id
+     * @returns {Promise<void>}
+     */
     mounted: async function () {
       this.userId = this.$route.params.id;
     }

@@ -12,7 +12,7 @@ export async function getAllTravellerTypes() {
 }
 
 /**
- * 
+ * Updates the user's traveller types with the newly chosen traveller types of the user
  * @param {number} userId The ID of the traveller
  * @param {number} travellerTypeIds The ID's of the traveller types to update
  */

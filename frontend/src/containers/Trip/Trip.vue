@@ -75,45 +75,49 @@
     },
     methods: {
       /**
-         * Called when the trip name is edited.
-         * Sets an edit command for undo redo and updates the trip name.
-         */
-        tripNameChanged(oldTrip, newTrip, newName) {
-          this.addEditTripCommand(oldTrip, newTrip);
-          this.trip.name = newName;
-        },
-        
-        async nestedTripNameChanged(tripNode, newName) {
-          const oldTrip = {...tripNode};
-          tripNode.name = newName;
-          
-          editTrip(tripNode); 
+       * Called when the trip name is edited.
+       * Sets an edit command for undo redo and updates the trip name.
+       */
+      tripNameChanged(oldTrip, newTrip, newName) {
+        this.addEditTripCommand(oldTrip, newTrip);
+        this.trip.name = newName;
+      },
+      /**
+       * Make changes in the nested trip name
+       */
+      async nestedTripNameChanged(tripNode, newName) {
+        const oldTrip = {...tripNode};
+        tripNode.name = newName;
 
-          this.addEditTripCommand(oldTrip, tripNode);
-        },
-        async newTripAdded(subTrip) {
-          const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
-          this.trip.tripNodes.push(subTrip);
-          await editTrip(this.trip);
+        editTrip(tripNode);
+
+        this.addEditTripCommand(oldTrip, tripNode);
+      },
+      /**
+       * Adds a new trip with the given sub-trip trip.
+       */
+      async newTripAdded(subTrip) {
+        const oldTrip = {...this.trip, tripNodes: [...this.trip.tripNodes]};
+        this.trip.tripNodes.push(subTrip);
+        await editTrip(this.trip);
+        this.getTrip();
+
+        const undoCommand = async (subTrip, oldParentTrip) => {
+          await deleteTripFromList(subTrip.tripNodeId);
+          await editTrip(oldParentTrip);
           this.getTrip();
+        };
 
+        const redoCommand = async (subTrip, newParentTrip) => {
+          await restoreTrip(subTrip.tripNodeId);
+          await editTrip(newParentTrip);
+          this.getTrip();
+        };
 
-          const undoCommand = async (subTrip, oldParentTrip) => {
-            await deleteTripFromList(subTrip.tripNodeId);
-            await editTrip(oldParentTrip);
-            this.getTrip();
-          };
-
-          const redoCommand = async (subTrip, newParentTrip) => {
-            await restoreTrip(subTrip.tripNodeId);
-            await editTrip(newParentTrip);
-            this.getTrip();
-          };
-
-          const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldTrip),
-              redoCommand.bind(null, subTrip, this.trip));
-          this.$refs.undoRedo.addUndo(addTripCommand);
-        },
+        const addTripCommand = new Command(undoCommand.bind(null, subTrip, oldTrip),
+          redoCommand.bind(null, subTrip, this.trip));
+        this.$refs.undoRedo.addUndo(addTripCommand);
+      },
 
       /**
        * Open and close a trip composite to show its tripNodes.
@@ -150,6 +154,10 @@
           }
         });
       },
+      /**
+       * Handles the updating of the trip and handles the transforming of the trip node to the
+       * proper formatted object.
+       */
       handleTripUpdate(rawTrip) {
         const transformedTrip = transformTripNode(rawTrip);
         if (transformedTrip.tripNodeId === this.trip.tripNodeId) {

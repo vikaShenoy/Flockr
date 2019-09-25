@@ -87,7 +87,7 @@ public class UserController extends Controller {
         JsonNode jsonBody = request.body().asJson();
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        if (!Security.userHasPermission(userFromMiddleware, userId)) {
+        if (Security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -346,7 +346,7 @@ public class UserController extends Controller {
                              CompletableFuture<Result> completableFuture) {
         try {
             return completableFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (Exception e) {
             log.error(String.format("Async execution interrupted when user %s was deleting user %s",
                 userDoingDeletion, userBeingDeleted), e);
             message.put(MESSAGE_KEY, "Something went wrong deleting that user, try again");

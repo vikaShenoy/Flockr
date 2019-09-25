@@ -1,5 +1,4 @@
 import superAgent from 'superagent';
-
 import {endpoint} from '../../utils/endpoint';
 
 /**

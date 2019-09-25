@@ -740,7 +740,7 @@ public class DestinationController extends Controller {
 
     User user = User.find.byId(userId);
 
-    if (!Security.userHasPermission(userFromMiddleware, userId)) {
+    if (Security.userHasPermission(userFromMiddleware, userId)) {
       return supplyAsync(Controller::forbidden);
     }
 
@@ -869,7 +869,7 @@ public class DestinationController extends Controller {
     User userFromMiddleware = request.attrs().get(ActionState.USER);
 
     User user = User.find.byId(userId);
-    if (!Security.userHasPermission(userFromMiddleware, userId)) {
+    if (Security.userHasPermission(userFromMiddleware, userId)) {
       return supplyAsync(() -> forbidden("Not authorized to reject proposal"));
     }
 

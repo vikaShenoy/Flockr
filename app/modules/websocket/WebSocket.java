@@ -1,19 +1,15 @@
 package modules.websocket;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
-import static org.reflections.util.ConfigurationBuilder.build;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import models.User;
 import modules.websocket.frames.PingMapFrame;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import repository.ChatRepository;
 import repository.TripRepository;
@@ -25,7 +21,6 @@ public class WebSocket extends AbstractActor {
   private final ActorRef out;
   private ConnectionStatusNotifier connectionStatusNotifier = new ConnectionStatusNotifier();
   private User user;
-  final Logger log = LoggerFactory.getLogger(this.getClass());
 
   /**
    * Creates a new websocket and adds user to connected users
@@ -65,11 +60,9 @@ public class WebSocket extends AbstractActor {
 
   /**
    * Notifies to all users that have trips with the connected user that they are connected
-   *
-   * @return CompletionStage to run the task in the background
    */
-  private CompletionStage<Void> notifyTripConnected() {
-    return runAsync(
+  private void notifyTripConnected() {
+    runAsync(
         () ->
             tripRepository
                 .getTripsByUserId(user.getUserId())
@@ -80,11 +73,9 @@ public class WebSocket extends AbstractActor {
 
   /**
    * Notifies to all users that have group chats with the connected user that they are connected.
-   *
-   * @return CompletionStage to run the task in the background.
    */
-  private CompletionStage<Void> notifyChatsConnected() {
-    return runAsync(
+  private void notifyChatsConnected() {
+    runAsync(
         () ->
             chatRepository
                 .getChatsByUserId(user.getUserId())

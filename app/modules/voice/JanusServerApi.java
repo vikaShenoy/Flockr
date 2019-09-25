@@ -44,9 +44,9 @@ public class JanusServerApi implements VoiceServerApi {
   /**
    * Sends a request to the janus server
    * @param request The request to send (e.g. does a room exist and create room)
-   * @param sessionId
-   * @param pluginHandle
-   * @return
+   * @param sessionId the id of the session.
+   * @param pluginHandle the handle of the plugin.
+   * @return the response from the janus server.
    */
   private CompletionStage<JsonNode> sendRequest(JanusVoiceRequest request, long sessionId, long pluginHandle) {
     // Is the message that will be sent in the request body
@@ -54,10 +54,6 @@ public class JanusServerApi implements VoiceServerApi {
     JsonNode requestBody = Json.toJson(janusMessage);
     String endpointUrl = String.format("%s/janus/%d/%d", JANUS_SERVER_URL, sessionId, pluginHandle);
     return wsClient.url(endpointUrl).post(requestBody)
-            .thenApplyAsync(WSResponse::asJson)
-            .exceptionally(e -> {
-              System.err.println(e);
-              return null;
-            });
+            .thenApplyAsync(WSResponse::asJson);
   }
 }

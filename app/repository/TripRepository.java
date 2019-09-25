@@ -13,21 +13,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
-import models.TripComposite;
-import models.TripNode;
-import models.User;
+
+import models.*;
+
 
 /**
- * Contains all trip related db interactions
+ * Class that performs operations on the database regarding trips.
  */
 public class TripRepository {
 
   private final DatabaseExecutionContext executionContext;
+  private final RoleRepository roleRepository;
 
   @Inject
-  public TripRepository(DatabaseExecutionContext executionContext) {
+  public TripRepository(DatabaseExecutionContext executionContext, RoleRepository roleRepository) {
     this.executionContext = executionContext;
+    this.roleRepository = roleRepository;
   }
 
   /**
@@ -44,10 +47,9 @@ public class TripRepository {
    * Deletes the leaf nodes in a list of trip nodes from the database permanently.
    *
    * @param tripNodes the list of trip nodes.
-   * @return Void
    */
-  public CompletionStage<Void> deleteListOfTrips(List<TripNode> tripNodes) {
-    return supplyAsync(
+  public void deleteListOfTrips(List<TripNode> tripNodes) {
+    supplyAsync(
         () -> {
           for (TripNode tripNode : tripNodes) {
             if (tripNode.getNodeType().equals("TripDestinationLeaf")) {
@@ -104,10 +106,25 @@ public class TripRepository {
    * @param users the list of users to add to the sub trips.
    */
   private void recursivelyAddUsersToSubTrips(List<TripNode> trips, List<User> users) {
+    Role memberRole = roleRepository.getRole(RoleType.TRIP_MEMBER);
+
     for (TripNode tripNode: trips) {
       if (tripNode.getNodeType().equals("TripComposite")) {
         for (User user : users) {
           ((TripComposite) tripNode).addUser(user);
+          List<UserRole> userRoles = tripNode.getUserRoles();
+
+          List<UserRole> userRolesForUser = userRoles
+              .stream()
+              .filter(userRole -> userRole.getUser().equals(user))
+              .collect(Collectors.toList());
+
+            // if user has no role, add a member role for them
+            if (userRolesForUser.isEmpty()) {
+              UserRole newUserRole = new UserRole(user, memberRole);
+              userRoles.add(newUserRole);
+          }
+
         }
         tripNode.save();
         recursivelyAddUsersToSubTrips(tripNode.getTripNodes(), tripNode.getUsers());
@@ -261,7 +278,7 @@ public class TripRepository {
                   .findOneOrEmpty();
           if (trip.isPresent()) {
             List<TripNode> tripNodes = recursiveGetTripNodesWithSoftDelete(tripId);
-//            trip.get().setTripNodes(tripNodes);
+            trip.get().setTripNodes(tripNodes);
           }
           return trip;
         },

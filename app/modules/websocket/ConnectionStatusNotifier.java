@@ -14,12 +14,12 @@ import play.libs.Json;
 /**
  * Notifies users when user's disconnect and connect
  */
-public class ConnectionStatusNotifier {
+class ConnectionStatusNotifier {
 
 
   private ConnectedUsers connectedUsers;
 
-  public ConnectionStatusNotifier() {
+  ConnectionStatusNotifier() {
     this.connectedUsers = ConnectedUsers.getInstance();
   }
 
@@ -29,7 +29,7 @@ public class ConnectionStatusNotifier {
    * @param user The user that is connected
    * @param trips The trips that the user is apart of
    */
-  public void notifyConnectedUser(User user, List<TripComposite> trips) {
+   void notifyConnectedUser(User user, List<TripComposite> trips) {
     notifyConnectionStatus(user, trips, ConnectionStatus.CONNECTED);
   }
 
@@ -39,7 +39,8 @@ public class ConnectionStatusNotifier {
    * @param user The user that connected or disconnected
    * @param trips The trip that the user is apart of
    */
-  public void notifyConnectionStatus(User user, List<TripComposite> trips, ConnectionStatus connectionStatus) {
+  private void notifyConnectionStatus(User user, List<TripComposite> trips,
+      ConnectionStatus connectionStatus) {
    Set<User> usersToNotify = new HashSet<>();
 
     for (TripComposite trip : trips) {
@@ -72,7 +73,7 @@ public class ConnectionStatusNotifier {
    * @param user The user that disconnected
    * @param trips The trips that the user is apart of
    */
-  public void notifyDisconnectedUser(User user, List<TripComposite> trips) {
+  void notifyDisconnectedUser(User user, List<TripComposite> trips) {
     notifyConnectionStatus(user, trips, ConnectionStatus.DISCONNECTED);
   }
 }

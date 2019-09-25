@@ -10,6 +10,10 @@ import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+
+/**
+ * Class that performs operations on the database regarding chats.
+ */
 public class ChatRepository {
   private final DatabaseExecutionContext executionContext;
 

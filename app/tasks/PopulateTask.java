@@ -17,11 +17,13 @@ import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 import util.Security;
 
+/**
+ * Task to populate the database.
+ */
 public class PopulateTask {
 
   private final ActorSystem actorSystem;
   private final ExecutionContext executionContext;
-  private final Security security;
   private final Environment environment;
   final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -29,11 +31,9 @@ public class PopulateTask {
   public PopulateTask(
       ActorSystem actorSystem,
       ExecutionContext executionContext,
-      Security security,
       Environment environment) {
     this.actorSystem = actorSystem;
     this.executionContext = executionContext;
-    this.security = security;
     this.environment = environment;
     this.initialise();
   }
@@ -102,7 +102,7 @@ public class PopulateTask {
                               "Luis",
                               "something",
                               "Hamilton",
-                              this.security.hashPassword("so-secure"),
+                              Security.hashPassword("so-secure"),
                               "Male",
                               "luis@gmail.com",
                               adminUserNationalities,
@@ -118,7 +118,7 @@ public class PopulateTask {
                               "Jane",
                               "",
                               "Doe",
-                              this.security.hashPassword("so-secure"),
+                              Security.hashPassword("so-secure"),
                               "Female",
                               "jane@gmail.com",
                               janeUserNationalities,

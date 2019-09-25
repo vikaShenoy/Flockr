@@ -80,7 +80,6 @@
     methods: {
       /**
        * Re-emits the select cover photo event.
-       *
        * @param newCoverPhoto the new cover photo.
        */
       photoSelected(newCoverPhoto) {

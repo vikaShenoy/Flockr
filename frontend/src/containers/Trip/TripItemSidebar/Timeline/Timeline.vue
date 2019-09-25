@@ -44,6 +44,9 @@ export default {
     TripNode
   },
   methods: {
+    /**
+     * Sorts the trips nodes
+     */
     initSorting() {
       // Loop through each nested sortable element
       const sortableTimelines = document.querySelectorAll(".v-timeline");
@@ -66,6 +69,12 @@ export default {
         }
       }
     },
+    /**
+     * Checks if the user has the right to edit the trip. Returns true if the user has the right, otherwise
+     * returns false
+     * @param trip the trip to be checked
+     * @returns {T | boolean}
+     */
     hasPermissionToEdit(trip) {
       const userRole = trip.userRoles.find(
         userRole => userRole.user.userId === UserStore.data.userId

@@ -577,7 +577,7 @@ public class PhotoController extends Controller {
   public CompletionStage<Result> undoProfilePhoto(int userId, int photoId, Http.Request request) {
     User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-    if (!Security.userHasPermission(userFromMiddleware, userId)) {
+    if (Security.userHasPermission(userFromMiddleware, userId)) {
       return supplyAsync(Controller::forbidden);
     }
     User user = User.find.byId(userId);
