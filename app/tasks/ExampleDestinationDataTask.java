@@ -53,7 +53,7 @@ public class ExampleDestinationDataTask {
    */
   private CompletionStage<List<JsonNode>> fetchCitiesFromCountry(Country country) {
     String countryUrl =
-        "https://public.opendatasoft.com/api/records/1.0/search/?dataset=worldcitiespop&rows=3000&facet=country&refine.country="
+        "https://public.opendatasoft.com/api/records/1.0/search/?dataset=worldcitiespop&rows=200&facet=country&refine.country="
             + country.getISOCode().toLowerCase()
             + "&sort=population";
     List<JsonNode> cities = new ArrayList<>();
@@ -81,7 +81,7 @@ public class ExampleDestinationDataTask {
               try {
                 throw e.getCause();
               } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                log.error(throwable.getMessage());
                 return cities;
               }
             });
@@ -185,14 +185,11 @@ public class ExampleDestinationDataTask {
               } else {
                 if (countryIndex < countries.size()) {
                   Country country = countries.get(countryIndex);
-                  log.info(
-                      String.format(
-                          "Beginning getting cities from open data soft api for %s",
-                          country.getCountryName()));
-                  System.out.println(
-                      String.format(
-                          "Beginning getting cities from open data soft api for %s",
-                          country.getCountryName()));
+                  //                  log.info(
+                  //                      String.format(
+                  //                          "Beginning getting cities from open data soft api for
+                  // %s",
+                  //                          country.getCountryName()));
                   fetchCitiesFromCountry(country)
                       .thenApplyAsync(
                           cities -> {
@@ -218,31 +215,33 @@ public class ExampleDestinationDataTask {
                                           saveCityDestination(destination)
                                               .thenAcceptAsync(
                                                   savedCity -> {
-                                                    log.info(
-                                                        String.format(
-                                                            "%s saved to the database.",
-                                                            savedCity.getDestinationName()));
-                                                    System.out.println(
-                                                        String.format(
-                                                            "%s saved to the database.",
-                                                            savedCity.getDestinationName()));
+                                                    //
+                                                    //      log.info(
+                                                    //
+                                                    //          String.format(
+                                                    //
+                                                    //              "%s saved to the database.",
+                                                    //
+                                                    //
+                                                    // savedCity.getDestinationName()));
                                                   });
                                         } else {
-                                          log.info(
-                                              String.format(
-                                                  "%s already exists in the database.",
-                                                  city.get("name").asText()));
+                                          //                                          log.info(
+                                          //
+                                          // String.format(
+                                          //                                                  "%s
+                                          // already exists in the database.",
+                                          //
+                                          // city.get("name").asText()));
                                         }
                                       });
                             }
-                            log.info(
-                                String.format(
-                                    "Finished getting cities from open data soft api for %s",
-                                    country.getCountryName()));
-                            System.out.println(
-                                String.format(
-                                    "Finished getting cities from open data soft api for %s",
-                                    country.getCountryName()));
+                            System.out.println(String.format("finished for %s", country.getCountryName()));
+                            //                            log.info(
+                            //                                String.format(
+                            //                                    "Finished getting cities from open
+                            // data soft api for %s",
+                            //                                    country.getCountryName()));
                             return null;
                           });
                 }

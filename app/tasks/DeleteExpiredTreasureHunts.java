@@ -52,12 +52,10 @@ public class DeleteExpiredTreasureHunts {
                         () -> getDeletedTreasureHunts()
                                     .thenApplyAsync(treasureHuntsList -> {
                                         log.info("-----------Cleaning up deleted treasure hunts-------------");
-                                        System.out.println("-----------Cleaning up deleted treasure hunts-------------");
                                         for (TreasureHunt treasureHunt: treasureHuntsList) {
                                             treasureHunt.deletePermanent();
                                         }
                                         log.info(String.format("%d treasure hunts deleted successfully", treasureHuntsList.size()));
-                                        System.out.println(String.format("%d treasure hunts deleted successfully", treasureHuntsList.size()));
                                         return treasureHuntsList;
                                     }),
                                     this.executionContext);

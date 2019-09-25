@@ -2,7 +2,6 @@ package modules.websocket;
 
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.Map;
 import models.TripComposite;
 import models.User;
 import modules.websocket.frames.TripUpdatedFrame;

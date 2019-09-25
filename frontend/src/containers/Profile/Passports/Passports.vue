@@ -27,6 +27,7 @@
       </div>
 
       <v-combobox
+              ref="combobox"
               v-else
               v-model="userPass"
               :items="this.validPassports"
@@ -126,6 +127,7 @@
        */
       updateSelectedPassports(passports) {
         this.userPass = passports.filter(passport => typeof passport !== 'string');
+        this.$refs.combobox.lazySearch = "";
       }
 
     }

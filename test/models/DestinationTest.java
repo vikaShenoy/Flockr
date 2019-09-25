@@ -7,6 +7,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Test the destination model.
+ */
 public class DestinationTest {
 
     DestinationType destinationType;
@@ -28,8 +31,6 @@ public class DestinationTest {
         destinationType = new DestinationType("Backpacker");
         destinationType.setDestinationTypeId(2);
         destinationDistrict = "Ilam";
-//        destinationDistrict = new District("Ilam", destinationCountry);
-//        destinationDistrict.setDistrictId(1);
         destinationLat = 3.0;
         destinationLon = 45.0;
         travellerTypes = new ArrayList<>();
@@ -103,8 +104,9 @@ public class DestinationTest {
     }
 
     /**
-     * Checks when two destinations have different travellerTypes, the will not be equal
+     * Checks when two destinations have different travellerTypes, they will be equal
      */
+    @Test
     public void twoDestinationsHaveDifferentTravellerTypes() {
         List<TravellerType> travellerTypes1 = new ArrayList<>();
         travellerTypes1.add(outdoorExplorer);
@@ -117,6 +119,6 @@ public class DestinationTest {
         Destination destination2 = new Destination("Atlantis", destinationType, destinationDistrict,
                 destinationLat, destinationLon, destinationCountry, destinationOwner, travellerTypes2, isPublic);
 
-        Assert.assertNotEquals(destination1, destination2);
+        Assert.assertEquals(destination1, destination2);
     }
 }

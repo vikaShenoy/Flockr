@@ -1,6 +1,5 @@
 package repository;
 
-import io.ebean.PagedList;
 import models.ChatGroup;
 import models.Message;
 import javax.inject.Inject;

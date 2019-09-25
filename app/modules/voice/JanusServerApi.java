@@ -7,14 +7,11 @@ import modules.voice.Requests.JanusVoiceRequest;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
-import play.mvc.Result;
-
-import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
 public class JanusServerApi implements VoiceServerApi {
-  private final String janusServerUrl = "http://csse-s302g5.canterbury.ac.nz:8088";
+  private static final String JANUS_SERVER_URL = "http://csse-s302g5.canterbury.ac.nz:8088";
 
   private final WSClient wsClient;
 
@@ -55,11 +52,11 @@ public class JanusServerApi implements VoiceServerApi {
     // Is the message that will be sent in the request body
     JanusMessage janusMessage = new JanusMessage(request);
     JsonNode requestBody = Json.toJson(janusMessage);
-    String endpointUrl = String.format("%s/janus/%d/%d", janusServerUrl, sessionId, pluginHandle);
+    String endpointUrl = String.format("%s/janus/%d/%d", JANUS_SERVER_URL, sessionId, pluginHandle);
     return wsClient.url(endpointUrl).post(requestBody)
             .thenApplyAsync(WSResponse::asJson)
             .exceptionally(e -> {
-              System.out.println(e);
+              System.err.println(e);
               return null;
             });
   }

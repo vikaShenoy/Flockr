@@ -1,6 +1,6 @@
 <template>
-  <div class="trip-destination">
-    <v-timeline-item
+  <div v-bind:class="hasPermissionToEdit ? 'trip-destination-cursor' : '' ">
+    <v-timeline-item  
       :style="{width: '90%', marginLeft: '5%'}"
       color="primary"
       small
@@ -54,12 +54,15 @@
             </v-flex>
           </v-layout>
           <v-spacer align="center" v-if="tripNode.nodeType === 'TripComposite'">
-            <v-icon
-              class="expand-trip"
+            <v-btn
+              @click="toggleShowTripNodes(tripNode)"
+              tile
+              outlined
               color="secondary"
-              @click="
-          toggleShowTripNodes(tripNode)"
-            >{{ tripNode.isShowing ? "keyboard_arrow_up" : "keyboard_arrow_down"}}</v-icon>
+            >
+              <v-icon left>{{ tripNode.isShowing ? "keyboard_arrow_up" : "keyboard_arrow_down"}}</v-icon>
+              {{ tripNode.isShowing ? 'Collapse' : 'Expand' }}
+            </v-btn>
           </v-spacer>
         </div>
       </v-card>
@@ -101,7 +104,7 @@ export default {
     tripNode: Object,
     alignRight: Boolean,
     rootTrip: Object,
-    parentTrip: Object
+    parentTrip: Object,
   },
   data() {
     return {
@@ -284,7 +287,7 @@ export default {
   padding: 5px;
 }
 
-.trip-destination {
+.trip-destination-cursor {
   cursor: move;
 }
 

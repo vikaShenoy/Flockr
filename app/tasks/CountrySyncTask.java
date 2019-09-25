@@ -9,7 +9,6 @@ import models.Passport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSRequest;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 import util.CountrySchedulerUtil;
@@ -167,7 +166,7 @@ public class CountrySyncTask {
                                 saveNationalities(nationalitiesToSave);
                                 long endTime = System.currentTimeMillis();
                                 long duration = (endTime - startTime) / 1000;
-                                log.info("Country schedule finished, took: " + duration + " seconds");
+                                log.info(String.format("Country schedule finished, took: %d seconds", duration));
                            });
                 },
                 this.executionContext

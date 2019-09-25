@@ -5,7 +5,6 @@ import com.google.inject.Inject;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
-import java.util.concurrent.CompletionStage;
 import models.*;
 import repository.UserRepository;
 
@@ -120,7 +119,7 @@ public class TripUtil {
                 int currentUserId = userIdJson.get("userId").asInt();
                 userIds.add(currentUserId);
             }
-            if (userIds.size() > 0) {
+            if (!userIds.isEmpty()) {
                 users = userRepository.getUsersWithIds(userIds);
             }
 

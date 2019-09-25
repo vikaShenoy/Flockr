@@ -165,7 +165,7 @@
        * Adds admin priviledge to a user
        * @param {number} selectedUserId ID of user to give admin priviledges to
        */
-      async addAdminPriviledge(selectedUserId) {
+      async addAdminPrivilege(selectedUserId) {
         const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
         const roleTypes = selectedUser.roles.map(role => role.roleType);
         const newRoleTypes = [...roleTypes, roleType.ADMIN];
@@ -195,7 +195,7 @@
        * Removes admin priviledge from a user
        * @param {number} selectedUserId ID of user to remove admin priviledges for
        */
-      async removeAdminPriviledge(selectedUserId) {
+      async removeAdminPrivilege(selectedUserId) {
         const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
         const oldRoleTypes = selectedUser.roles.map(role => role.roleType);
         // Remove admin role from user

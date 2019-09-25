@@ -1,4 +1,4 @@
-package utils;
+package testingUtilities;
 
 import static play.test.Helpers.route;
 

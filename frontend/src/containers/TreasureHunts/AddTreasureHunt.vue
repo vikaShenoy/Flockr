@@ -34,34 +34,71 @@
                   </v-flex>
                   <v-flex xs12>
                     <GenericCombobox
+                      v-model="createTreasureHuntDestination"
                       label="Destination"
                       :required="true"
                       item-text="destinationName"
                       :get-function="getPublicDestinationsFunction"
-                      @item-selected="destinationSelected"
                     />
                   </v-flex>
                   <v-flex xs12>
                     <v-textarea v-model="createTreasureHuntRiddle" label="Riddle" required></v-textarea>
                   </v-flex>
-                  <v-flex xs12>
-                    <v-text-field
-                            v-model="startDate"
-                            label="Start Date"
-                            prepend-icon="event"
-                            type="date"
-                            :max="today"
-                    ></v-text-field>
-                  </v-flex>
-                  <v-flex xs12>
-                    <v-text-field
-                            v-model="endDate"
-                            label="End Date"
-                            prepend-icon="event"
-                            type="date"
-                            :min="today"
-                    ></v-text-field>
-                  </v-flex>
+                  <div class="start-date-time-field">
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="startDate"
+                          label="Start Date"
+                          prepend-icon="event"
+                          type="date"
+                          :max="today"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+
+                    <div>
+                        <v-flex xs12>
+                        <v-text-field
+                          v-model="startTime"
+                          label="Start Time"
+                          prepend-icon="timer"
+                          type="time"
+                          :min="startTime"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+                  </div>
+
+                  <div class="end-date-time-field">
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="endDate"
+                          label="End Date"
+                          prepend-icon="event"
+                          type="date"
+                          :min="startDate"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+
+                    <div>
+                      <v-flex xs12>
+                        <v-text-field
+                          v-model="endTime"
+                          label="End Time"
+                          prepend-icon="timer"
+                          type="time"
+                        ></v-text-field>
+                      </v-flex>
+                    </div>
+
+                  </div>
+
+
+
+
                 </v-layout>
               </v-container>
             </v-form>
@@ -109,19 +146,14 @@
         createTreasureHuntRiddle: "",
         startDate: null,
         endDate: null,
+        endTime: null,
         today: new Date().toISOString().split("T")[0],
+        startTime: new Date().getHours() + ":" + new Date().getMinutes(),
         treasure: null,
         getPublicDestinationsFunction: search => getPublicDestinations(search, 0) // used by GenericCombobox component
       }
     },
     methods: {
-      /**
-       * Called when a destination is selected from the GenericCombobox.
-       * @param {Object} destination the selected destination
-       */
-      destinationSelected(destination) {
-        this.createTreasureHuntDestination = destination.destinationId;
-      },
       /**
        * Function called by the close button in the dialog,
        *  emits an event to the parent to close the modal,
@@ -134,6 +166,8 @@
         this.createTreasureHuntDestination = null;
         this.startDate = null;
         this.endDate = null;
+        this.startTime = null;
+        this.endTime = null;
       },
 
       /**
@@ -155,10 +189,12 @@
         let treasureHunt = {
 
           treasureHuntName: this.createTreasureHuntName,
-          treasureHuntDestinationId: this.createTreasureHuntDestination,
+          treasureHuntDestinationId: this.createTreasureHuntDestination.destinationId,
           riddle: this.createTreasureHuntRiddle,
           startDate: this.startDate,
-          endDate: this.endDate + " 23:59:59"
+          endDate: this.endDate,
+          startTime: this.startTime,
+          endTime: this.endTime
 
         };
 
@@ -192,7 +228,9 @@
        * @returns {boolean}
        */
       validTreasureHunt() {
-        return !(this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null)
+        return !(this.createTreasureHuntName.length > 0 && this.createTreasureHuntDestination != null && this.createTreasureHuntRiddle.length > 0 && this.startDate != null && this.endDate != null && this.startTime != null && this.endTime != null)
+
+
       }
     },
     watch: {
@@ -207,5 +245,23 @@
 </script>
 
 <style scoped>
+
+  .start-date-time-field {
+    float: left;
+    width: 100%
+  }
+
+  .start-date-time-field div{
+    float: left;
+  }
+
+  .end-date-time-field {
+    float: left;
+    width: 100%
+  }
+
+  .end-date-time-field div{
+    float: left;
+  }
 
 </style>

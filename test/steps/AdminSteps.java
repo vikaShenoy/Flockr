@@ -12,14 +12,17 @@ import org.junit.Assert;
 import play.libs.Json;
 import play.mvc.Result;
 import util.Security;
-import utils.FakeClient;
-import utils.PlayResultToJson;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Test that the admin features work as expected.
+ */
 public class AdminSteps {
 
     // data

@@ -22,6 +22,11 @@ export async function createTrip(name, tripNodes, userIds) {
   return res.body;
 }
 
+/**
+ * Transforms the trip nodes to the proper trip node format
+ * @param tripNodes the trip nodes to be formatted
+ * @returns the transformed formatted trip nodes
+ */
 function transformTripNodes(tripNodes) {
   return tripNodes.map(tripNode => {
     let transformedTripNode = {};
@@ -36,7 +41,6 @@ function transformTripNodes(tripNodes) {
     return transformedTripNode;
   });
 }
-
 
 /**
  * Gets all users that match the given search parameter

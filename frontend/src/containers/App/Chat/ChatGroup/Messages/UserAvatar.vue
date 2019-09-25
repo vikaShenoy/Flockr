@@ -9,6 +9,7 @@
 
 <script>
 import { endpoint } from "../../../../../utils/endpoint";
+import defaultPic from "../../../../Profile/ProfilePic/defaultProfilePicture.png";
 
 export default {
   props: {
@@ -23,7 +24,7 @@ export default {
      */
     getPhotoUrl(user) {
       if (!user.profilePhoto) {
-        return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
+        return defaultPic;
       }
       return endpoint(`/users/photos/${user.profilePhoto.photoId}/thumbnail?Authorization=${localStorage.getItem("authToken")}`);
     }

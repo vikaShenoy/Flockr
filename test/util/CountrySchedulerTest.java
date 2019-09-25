@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Test that the class used when updating countries works as expected.
+ */
 public class CountrySchedulerTest {
     private final CountrySchedulerUtil countrySchedulerUtil = new CountrySchedulerUtil();
 

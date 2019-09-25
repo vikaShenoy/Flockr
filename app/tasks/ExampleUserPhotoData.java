@@ -1,20 +1,20 @@
 package tasks;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
-
 import akka.actor.ActorSystem;
 import com.google.inject.Inject;
 import controllers.PhotoController;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import models.PersonalPhoto;
 import models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
+
+import java.io.File;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 /** Task to create profile photos for all the users in the database. */
 public class ExampleUserPhotoData {
@@ -45,7 +45,7 @@ public class ExampleUserPhotoData {
             () ->
                 runAsync(
                     () -> {
-                      System.out.println("Started adding example photos to users.");
+                      log.info("Started adding example photos to users.");
                       photoController.checkForAndCreatePhotosDirectory();
                       List<User> users = User.find.all();
                       final Integer[] fileIndex = {0};
@@ -72,7 +72,7 @@ public class ExampleUserPhotoData {
                                     personalPhoto.save();
                                     user.setProfilePhoto(personalPhoto);
                                     user.save();
-                                    System.out.println(
+                                    log.info(
                                         String.format(
                                             "Added photo for user %s %s%n",
                                             user.getFirstName(), user.getLastName()));
@@ -82,7 +82,7 @@ public class ExampleUserPhotoData {
                               });
                         }
                       }
-                      System.out.println("Finished adding example photos to users");
+                      log.info("Finished adding example photos to users");
                     }),
             executionContext);
   }

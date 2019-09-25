@@ -4,7 +4,7 @@
 			<v-list two-line>
 				<v-subheader class="manage-users-row">
 					<div class="manage-users-text">
-						<p>Manage users</p>
+						<p>Manage Users</p>
 					</div>
 					<v-text-field label="Search User" color="secondary" @input="searchAdminChange"/>
 
@@ -25,7 +25,7 @@
 									depressed
 									color="secondary"
 					>
-						Log Out User
+						Logout User
 					</v-btn>
 
 					<v-btn
@@ -39,8 +39,8 @@
 
 					<v-btn
 									class="action-button"
-									:disabled="!this.canAddAdminPriviledge"
-									@click="showPrompt('Are you sure?', addAdminPriviledge)"
+									:disabled="!this.canAddAdminPrivilege"
+									@click="showPrompt('Are you sure?', addAdminPrivilege)"
 									depressed
 									color="secondary"
 					>
@@ -49,12 +49,12 @@
 
 					<v-btn
 									class="action-button"
-									:disabled="!this.canRemoveAdminPriviledge"
-									@click="showPrompt('Are you sure?', removeAdminPriviledge)"
+									:disabled="!this.canRemoveAdminPrivilege"
+									@click="showPrompt('Are you sure?', removeAdminPrivilege)"
 									depressed
 									color="secondary"
 					>
-						Remove admin
+						Remove Admin
 					</v-btn>
 
 
@@ -65,7 +65,7 @@
 									depressed
 									color="secondary"
 					>
-						Delete users
+						Delete Users
 					</v-btn>
 				</v-subheader>
 			</v-list>
@@ -117,7 +117,8 @@
   import SignUp from "../../Signup/Signup";
   import PromptDialog from "../../../components/PromptDialog/PromptDialog.vue";
   import UserStore from "../../../stores/UserStore";
-  import roleType from '../../../stores/roleType';
+  import roleType from "../../../stores/roleType";
+  import defaultPic from "../../Profile/ProfilePic/defaultProfilePicture.png";
 
   export default {
     components: {
@@ -151,7 +152,7 @@
        * Checks if user can add admin privileges to the selected users
        * @returns {boolean} True if admin can add admin priviledges, false otherwise
        */
-      canAddAdminPriviledge() {
+      canAddAdminPrivilege() {
         if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
           return false;
         }
@@ -162,13 +163,12 @@
             return false;
           }
         }
-
         return true;
       },
       /**
        * Check if the person trying to remove admin rights is allowed to do so.
        */
-      canRemoveAdminPriviledge() {
+      canRemoveAdminPrivilege() {
         if (this.selectedUsers.length === 0 || this.selectedUsers.length > 1) {
           return false;
         }
@@ -203,7 +203,6 @@
           setTimeout(() => {this.scrollCalled = false}, callDelay);
         }
       },
-
       /**
        * Called when the view destinations button is clicked.
        * routes the admin to the destinations page for the selected user.
@@ -213,7 +212,6 @@
 
         this.$router.push(`/users/${userId}/destinations`);
       },
-
       /**
        * Emit a function call, indicates search admin
        * has changed.
@@ -221,7 +219,6 @@
       searchAdminChange(searchAdmin) {
         this.$emit('update:adminSearch', searchAdmin);
       },
-
       /**
        * Show a prompt to the user.
        */
@@ -230,17 +227,15 @@
         this.prompt.onConfirm = onConfirm;
         this.prompt.show = true;
       },
-
       /**
-       * Close the modal containing the signup component.
+       * Close the modal containing the sign up component.
        */
       closeSignupModal(userId) {
         this.showSignup = false;
         this.$emit("userSignedUp", userId);
       },
-
       /**
-       * Open the modal component containing the signup component.
+       * Open the modal component containing the sign up component.
        */
       signupButtonClicked: function () {
         this.showSignup = true;
@@ -259,7 +254,6 @@
         const userIds = this.selectedUsers;
         this.$emit("deleteUsersByIds", userIds);
       },
-
       /**
        * Open the trips page for the selected user.
        */
@@ -296,7 +290,7 @@
           const queryAuthorization = `?Authorization=${authToken}`;
           return endpoint(`/users/photos/${profilePhoto.photoId}${queryAuthorization}`);
         } else {
-          return "http://s3.amazonaws.com/37assets/svn/765-default-avatar.png";
+          return defaultPic;
         }
       },
       /**
@@ -311,14 +305,14 @@
       /**
        * Emits event to add admin priviledge to a user
        */
-      addAdminPriviledge() {
-        this.$emit("addAdminPriviledge", this.selectedUsers[0]);
+      addAdminPrivilege() {
+        this.$emit("addAdminPrivilege", this.selectedUsers[0]);
       },
       /**
        * Emits event to remove admin priviledge from a user
        */
-      removeAdminPriviledge() {
-        this.$emit('removeAdminPriviledge', this.selectedUsers[0]);
+      removeAdminPrivilege() {
+        this.$emit('removeAdminPrivilege', this.selectedUsers[0]);
       }
     },
     props: ["users"],

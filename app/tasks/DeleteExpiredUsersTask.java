@@ -1,12 +1,10 @@
 package tasks;
 
 import akka.actor.ActorSystem;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.PersonalPhoto;
 import models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.libs.Json;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
@@ -61,7 +59,6 @@ public class DeleteExpiredUsersTask {
                         () -> getDeletedUsers()
                                 .thenApplyAsync(users -> {
                                     log.info("-----------Cleaning up deleted users-------------");
-                                    System.out.println("-----------Cleaning up deleted users-------------");
                                     for (User user : users) {
                                         List<PersonalPhoto> photos = user.getPersonalPhotos();
                                         for (PersonalPhoto photo: photos) {
@@ -81,14 +78,12 @@ public class DeleteExpiredUsersTask {
                                         }
                                         if (user.deletePermanent()) {
                                             log.info(String.format("User %s %s deleted successfully.", user.getFirstName(), user.getLastName()));
-                                            System.out.println(String.format("User %s %s deleted successfully.", user.getFirstName(), user.getLastName()));
                                         } else {
                                             log.info(String.format("User %s %s was not deleted.", user.getFirstName(), user.getLastName()));
-                                            System.out.println(String.format("User %s %s was not deleted.", user.getFirstName(), user.getLastName()));
                                         }
                                     }
                                     log.info(String.format("%d users deleted successfully", users.size()));
-                                    System.out.println(String.format("%d users deleted successfully", users.size()));
+
                                     return users;
                                 }),
                         this.executionContext);

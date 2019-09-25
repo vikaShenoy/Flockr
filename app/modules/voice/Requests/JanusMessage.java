@@ -9,7 +9,7 @@ public class JanusMessage {
    /**
    * Janus property specifies the type of request, in this case message
    */
-  private final String messageType = "message";
+  private static final String MESSAGE_TYPE = "message";
 
   /**
    * Transaction is used to clients know what responses correspond with what request
@@ -25,7 +25,7 @@ public class JanusMessage {
 
 
   public String getJanus() {
-    return messageType;
+    return MESSAGE_TYPE;
   }
 
   public String getTransaction() {

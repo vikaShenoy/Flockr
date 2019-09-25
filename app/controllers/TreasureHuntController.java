@@ -1,7 +1,6 @@
 package controllers;
 
 import actions.LoggedIn;
-import akka.http.javadsl.model.HttpRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
@@ -29,16 +28,28 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.Date;
 import java.util.concurrent.CompletionStage;
+import util.ExceptionUtil;
 
 import static util.TreasureHuntUtil.validateTreasureHunts;
 
 /** Controller to handle all end points associated with treasure hunts. */
 public class TreasureHuntController extends Controller {
 
+  private static final String TREASURE_HUNT_NAME_KEY = "treasureHuntName";
+  private static final String START_DATE_KEY = "startDate";
+  private static final String MESSAGE_KEY = "message";
+  private static final String RIDDLE_KEY = "riddle";
+  private static final String END_DATE_KEY = "endDate";
+  private static final String TREASURE_HUNT_DESTINATION_ID_KEY = "treasureHuntDestinationId";
+  private static final String START_TIME_KEY = "startTime";
+  private static final String END_TIME_KEY = "endTime";
+
+
   private final Logger log = LoggerFactory.getLogger(this.getClass());
-  private TreasureHuntRepository treasureHuntRepository;
+  private final TreasureHuntRepository treasureHuntRepository;
+  private final ExceptionUtil exceptionUtil;
   private final DatabaseExecutionContext executionContext;
-  private UserRepository userRepository;
+  private final UserRepository userRepository;
 
   /**
    * Dependency Injection.
@@ -51,10 +62,12 @@ public class TreasureHuntController extends Controller {
   public TreasureHuntController(
       TreasureHuntRepository treasureHuntRepository,
       UserRepository userRepository,
-      DatabaseExecutionContext executionContext) {
+      DatabaseExecutionContext executionContext,
+      ExceptionUtil exceptionUtil) {
     this.treasureHuntRepository = treasureHuntRepository;
     this.userRepository = userRepository;
     this.executionContext = executionContext;
+    this.exceptionUtil = exceptionUtil;
   }
 
   /**
@@ -73,7 +86,7 @@ public class TreasureHuntController extends Controller {
     return treasureHuntRepository
         .getTreasureHuntById(treasureHuntId)
         .thenComposeAsync(
-            (optionalTreasureHunt) -> {
+            optionalTreasureHunt -> {
               if (!optionalTreasureHunt.isPresent()) {
                 throw new CompletionException(new NotFoundException("Treasure Hunt not found."));
               }
@@ -88,8 +101,8 @@ public class TreasureHuntController extends Controller {
               }
 
               JsonNode jsonBody = request.body().asJson();
-              if (jsonBody.has("treasureHuntName")) {
-                String treasureHuntName = jsonBody.get("treasureHuntName").asText();
+              if (jsonBody.has(TREASURE_HUNT_NAME_KEY)) {
+                String treasureHuntName = jsonBody.get(TREASURE_HUNT_NAME_KEY).asText();
                 if (treasureHuntName.length() == 0) {
                   throw new CompletionException(
                       new BadRequestException("Treasure hunt name is required."));
@@ -100,30 +113,27 @@ public class TreasureHuntController extends Controller {
                 }
                 treasureHunt.setTreasureHuntName(treasureHuntName);
               }
-              if (jsonBody.has("treasureHuntDestinationId")) {
-                int destinationId = jsonBody.get("treasureHuntDestinationId").asInt();
+              if (jsonBody.has(TREASURE_HUNT_DESTINATION_ID_KEY)) {
+                int destinationId = jsonBody.get(TREASURE_HUNT_DESTINATION_ID_KEY).asInt();
                 try {
                   treasureHunt.setTreasureHuntDestinationId(destinationId);
                 } catch (NotFoundException e) {
                   throw new CompletionException(e);
                 }
               }
-              if (jsonBody.has("riddle")) {
-                String riddle = jsonBody.get("riddle").asText();
+              if (jsonBody.has(RIDDLE_KEY)) {
+                String riddle = jsonBody.get(RIDDLE_KEY).asText();
                 if (riddle.length() == 0) {
                   throw new CompletionException(new BadRequestException("Riddle is required."));
                 }
                 treasureHunt.setRiddle(riddle);
               }
-              if (jsonBody.has("endDate")) {
-                String endDateString = jsonBody.get("endDate").asText();
+              if (jsonBody.has(END_DATE_KEY)) {
+                String endDateString = jsonBody.get(END_DATE_KEY).asText();
                 try {
                   Date endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDateString);
-                  if (!jsonBody.has("startDate")) {
-                    if (endDate.before(treasureHunt.getStartDate())) {
-                      throw new CompletionException(
-                          new BadRequestException("End date cannot be before start date."));
-                    }
+                  if (!jsonBody.has(START_DATE_KEY) && endDate.before(treasureHunt.getStartDate())) {
+                    throw new CompletionException(new BadRequestException("End date cannot be before start date."));
                   }
                   treasureHunt.setEndDate(endDate);
                 } catch (ParseException e) {
@@ -131,8 +141,8 @@ public class TreasureHuntController extends Controller {
                       new BadRequestException("End date must be of format yyyy-mm-dd HH:mm:ss"));
                 }
               }
-              if (jsonBody.has("startDate")) {
-                String startDateString = jsonBody.get("startDate").asText();
+              if (jsonBody.has(START_DATE_KEY)) {
+                String startDateString = jsonBody.get(START_DATE_KEY).asText();
                 try {
                   Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDateString);
                   if (startDate.after(treasureHunt.getEndDate())) {
@@ -149,28 +159,9 @@ public class TreasureHuntController extends Controller {
             },
             executionContext)
         .thenApplyAsync(result -> ok(Json.toJson(result)), executionContext)
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                ObjectNode message = Json.newObject();
-                message.put("message", notFoundException.getMessage());
-                return notFound(message);
-              } catch (BadRequestException badRequestException) {
-                ObjectNode message = Json.newObject();
-                message.put("message", badRequestException.getMessage());
-                return badRequest(message);
-              } catch (ForbiddenRequestException forbiddenRequestException) {
-                ObjectNode message = Json.newObject();
-                message.put("message", forbiddenRequestException.getMessage());
-                return forbidden(message);
-              } catch (Throwable throwable) {
-                throwable.printStackTrace();
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
+
 
   /**
    * Method for the DELETE /treasurehunts/:treasureHuntId endpoint. Edits a treasure hunt if the
@@ -208,18 +199,7 @@ public class TreasureHuntController extends Controller {
               if (deleted) return ok(Json.newObject()); // Strange error if json is removed...
               else return internalServerError();
             })
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenRequestException) {
-                return forbidden(forbiddenRequestException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -235,43 +215,39 @@ public class TreasureHuntController extends Controller {
     return userRepository
         .getUserById(userId)
         .thenApplyAsync(
-            (optUser) -> {
-              if (!optUser.isPresent()) {
-                ObjectNode message =
-                    Json.newObject().put("message", "User with id " + userId + " was not found");
-                return notFound(message);
+            optionalUser -> {
+              if (!optionalUser.isPresent()) {
+                throw new CompletionException(new NotFoundException(
+                    String.format("User with id %d was not found", userId)));
               }
-
               try {
                 JsonNode jsonBody = request.body().asJson();
-                String treasureHuntName = jsonBody.get("treasureHuntName").asText();
-                String riddle = jsonBody.get("riddle").asText();
-                String startDateString = jsonBody.get("startDate").asText();
+                String treasureHuntName = jsonBody.get(TREASURE_HUNT_NAME_KEY).asText();
+                String riddle = jsonBody.get(RIDDLE_KEY).asText();
+                String startDateString = jsonBody.get(START_DATE_KEY).asText();
 
                 Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDateString);
-                String endDateString = jsonBody.get("endDate").asText();
+                String endDateString = jsonBody.get(END_DATE_KEY).asText();
                 Date endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endDateString);
-                int destinationId = jsonBody.get("treasureHuntDestinationId").asInt();
+                int destinationId = jsonBody.get(TREASURE_HUNT_DESTINATION_ID_KEY).asInt();
 
                 TreasureHunt treasureHunt =
                     new TreasureHunt(
                         treasureHuntName, userId, destinationId, riddle, startDate, endDate);
-                User user = optUser.get();
+                User user = optionalUser.get();
                 treasureHunt.setOwnerId(user.getUserId());
                 treasureHunt.save();
                 int treasureHuntId = treasureHunt.getTreasureHuntId();
                 return created(Json.newObject().put("treasureHuntId", treasureHuntId));
-              } catch (NotFoundException e) {
-                ObjectNode message = Json.newObject().put("message", "Destination not found");
-                return notFound(message);
               } catch (NullPointerException e) {
-                return badRequest(Json.newObject().put("Message", "Insufficient data provided."));
+                throw new CompletionException(new BadRequestException("Insufficient data provided."));
               } catch (Exception e) {
-                return internalServerError();
+                throw new CompletionException(e);
               }
-            },
-            executionContext);
+            }, executionContext)
+        .exceptionally(exceptionUtil::getResultFromError);
   }
+
 
   /**
    * Endpoint to get all treasure hunts for a user.
@@ -303,22 +279,7 @@ public class TreasureHuntController extends Controller {
               return ok(treasureJson);
             },
             executionContext)
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundExc) {
-                ObjectNode message = Json.newObject();
-                message.put("message", notFoundExc.getMessage());
-                return notFound(message);
-              } catch (ForbiddenRequestException forbiddenException) {
-                ObjectNode message = Json.newObject();
-                message.put("message", forbiddenException.getMessage());
-                return forbidden(message);
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -339,14 +300,7 @@ public class TreasureHuntController extends Controller {
               return ok(treasureJson);
             },
             executionContext)
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -386,27 +340,6 @@ public class TreasureHuntController extends Controller {
               return treasureHuntRepository.undoTreasureHuntDelete(treasureHunt);
             })
         .thenApplyAsync(treasureHunt -> ok(Json.toJson(treasureHunt)))
-        .exceptionally(
-            error -> {
-              ObjectNode message = Json.newObject();
-              try {
-                throw error.getCause();
-              } catch (ForbiddenRequestException e) {
-                message.put("message", e.getMessage());
-                return forbidden(message);
-              } catch (BadRequestException e) {
-                message.put("message", e.getMessage());
-                return badRequest(message);
-              } catch (NotFoundException e) {
-                message.put("message", e.getMessage());
-                return notFound(message);
-              } catch (UnauthorizedException e) {
-                message.put("message", e.getMessage());
-                return unauthorized(message);
-              } catch (Throwable e) {
-                log.error("An unexpected error has occurred", e);
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 }

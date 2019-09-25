@@ -43,6 +43,9 @@
       }
     },
     methods: {
+      /**
+       * Shows a snackbar based on the given timeout, colour, and message
+       */
       handleShowSnackbar(event) {
         this.timeout = event.timeout;
         this.color = event.color;

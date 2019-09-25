@@ -12,6 +12,9 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
+/**
+ * Test that keeping track of connected users works as expected.
+ */
 public class ConnectedUsersTest {
     User user1;
     User user2;

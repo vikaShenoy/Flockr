@@ -143,7 +143,6 @@
       }
     },
     methods: {
-
       /**
        * Increment the page by one and make a call to the backend to retrieve this new page
        */
@@ -151,7 +150,6 @@
         this.page += 1;
         this.getAllProposals(this.page);
       },
-
       /**
        * Decrement the page by one and make a call to the backend to retrieve this new page
        */
@@ -159,7 +157,6 @@
         this.page -= 1;
         this.getAllProposals(this.page);
       },
-
       /**
        * Return a list of traveller types not in the given list.
        *

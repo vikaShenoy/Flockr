@@ -15,7 +15,7 @@
         </v-btn>
       </v-flex>
 
-      <v-flex>
+      <v-flex style="margin-bottom: 0px">
 
         <v-card :class="{'trip-item': true, 'elevation-0': viewOnly, 'trip-border': viewOnly}" @click="$router.push(`/trips/${trip.tripId}`)" >
 
@@ -67,9 +67,9 @@
   @import "../../../styles/_variables.scss";
 
   .trip-item {
-    margin: 15px;
+    margin: 7px;
     cursor: pointer;
-    height: 80px;
+      height: 100%;
 
     &:hover {
       background-color: #f4f4f4;

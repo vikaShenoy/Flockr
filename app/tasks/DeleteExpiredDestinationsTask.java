@@ -59,12 +59,10 @@ public class DeleteExpiredDestinationsTask {
                         () -> getDeletedDestinations()
                                 .thenApplyAsync(destinations -> {
                                     log.info("-----------Cleaning up deleted destinations-------------");
-                                    System.out.println("-----------Cleaning up deleted destinations-------------");
                                     for (Destination destination : destinations) {
                                         destination.deletePermanent();
                                     }
                                     log.info(String.format("%d Destinations deleted successfully", destinations.size()));
-                                    System.out.printf("%d Destinations deleted successfully%n", destinations.size());
                                     return destinations;
                                 }),
                         this.executionContext);
