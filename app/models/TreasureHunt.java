@@ -6,6 +6,8 @@ import io.ebean.Finder;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
 
+import java.sql.Time;
+import java.time.LocalTime;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Date;
