@@ -49,7 +49,7 @@ public class ChatEvents {
    * @param userConnecting the user connecting.
    * @param chatGroups the chat groups for the user.
    */
-  public void notifyConnect(User userConnecting, List<ChatGroup> chatGroups) {
+  void notifyConnect(User userConnecting, List<ChatGroup> chatGroups) {
     Frame frame = new ConnectedFrame(userConnecting);
 
     notifyUsersFromChatGroups(userConnecting, chatGroups, frame);
@@ -87,7 +87,7 @@ public class ChatEvents {
    *
    * @param userDisconnecting the user who is disconnecting
    */
-  public void notifyDisconnect(User userDisconnecting, List<ChatGroup> chatGroups) {
+  void notifyDisconnect(User userDisconnecting, List<ChatGroup> chatGroups) {
     Frame frame = new DisconnectedFrame(userDisconnecting);
 
     notifyUsersFromChatGroups(userDisconnecting, chatGroups, frame);

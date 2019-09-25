@@ -6,8 +6,8 @@ package exceptions;
 public class ForbiddenRequestException extends Exception {
 
     /**
-     * Create a new exception
-     * @param message a helpful error message
+     * Initialise the exception
+     * @param message the message for whatever is catching this exception to see
      */
     public ForbiddenRequestException(String message) {
         super(message);

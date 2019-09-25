@@ -36,11 +36,6 @@ public class Message extends Model {
         timestamp = new Date();
     }
 
-    // Used to specify messages that already exist
-    private Message(int messageId) {
-        this.messageId = messageId;
-    }
-
     public String getContents() {
         return contents;
     }

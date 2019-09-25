@@ -24,7 +24,7 @@ public class ConnectedUsers {
 
     /**
      * Singleton getter for connected users
-     * @return
+     * @return the instance of ConnectedUsers.
      */
     public static ConnectedUsers getInstance() {
         if (instance == null) {
@@ -62,11 +62,6 @@ public class ConnectedUsers {
      */
     public boolean isUserConnected(User user) {
         return currentlyConnectedUsers.containsKey(user);
-    }
-
-
-    public Map<User, ActorRef> getCurrentlyConnectedUsers() {
-        return currentlyConnectedUsers;
     }
 
 

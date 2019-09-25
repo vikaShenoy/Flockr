@@ -18,8 +18,9 @@ import javax.inject.Inject;
 
 import models.*;
 
+
 /**
- * Contains all trip related db interactions
+ * Class that performs operations on the database regarding trips.
  */
 public class TripRepository {
 
@@ -46,10 +47,9 @@ public class TripRepository {
    * Deletes the leaf nodes in a list of trip nodes from the database permanently.
    *
    * @param tripNodes the list of trip nodes.
-   * @return Void
    */
-  public CompletionStage<Void> deleteListOfTrips(List<TripNode> tripNodes) {
-    return supplyAsync(
+  public void deleteListOfTrips(List<TripNode> tripNodes) {
+    supplyAsync(
         () -> {
           for (TripNode tripNode : tripNodes) {
             if (tripNode.getNodeType().equals("TripDestinationLeaf")) {
@@ -278,7 +278,7 @@ public class TripRepository {
                   .findOneOrEmpty();
           if (trip.isPresent()) {
             List<TripNode> tripNodes = recursiveGetTripNodesWithSoftDelete(tripId);
-//            trip.get().setTripNodes(tripNodes);
+            trip.get().setTripNodes(tripNodes);
           }
           return trip;
         },

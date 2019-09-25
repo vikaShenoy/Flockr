@@ -16,7 +16,8 @@ import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
 /**
- * Task to delete any trips in the database that have surpassed their soft-deletion expiry date
+ * Task to delete all Trips in the database that have been soft deleted if their
+ * expiry has passed.
  */
 public class DeleteExpiredTripsTask {
 

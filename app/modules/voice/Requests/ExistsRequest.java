@@ -4,7 +4,7 @@ package modules.voice.Requests;
  * Queries the voice server and checks if a chat room exists
  */
 public class ExistsRequest implements JanusVoiceRequest {
-  private final String request = "exists";
+
   private long roomId;
 
   public ExistsRequest(long roomId) {
@@ -13,7 +13,7 @@ public class ExistsRequest implements JanusVoiceRequest {
 
   @Override
   public String getRequest() {
-    return request;
+    return "exists";
   }
 
   public long getRoom() {

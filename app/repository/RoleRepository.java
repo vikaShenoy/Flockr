@@ -2,7 +2,6 @@
 package repository;
 
 import models.Role;
-import models.RoleType;
 import models.User;
 import play.db.ebean.EbeanConfig;
 
@@ -12,6 +11,10 @@ import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+
+/**
+ * Class that performs operations on the database regarding roles.
+ */
 public class RoleRepository {
     private final DatabaseExecutionContext executionContext;
 
@@ -46,6 +49,12 @@ public class RoleRepository {
         return supplyAsync(() -> User.find.byId(userId), executionContext);
     }
 
+  /**
+   * Gets a role from the database.
+   *
+   * @param roleType the type of role.
+   * @return the Role.
+   */
     public Role getRole(RoleType roleType) {
         return Role.find.query().where().eq("role_type", roleType.name()).findOne();
     }

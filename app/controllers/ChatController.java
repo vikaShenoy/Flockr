@@ -132,7 +132,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
                   && !userFromMiddleware.isAdmin()) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
@@ -238,7 +238,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
                   && !userFromMiddleware.isAdmin()) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
@@ -292,7 +292,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
@@ -326,7 +326,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException("Could not find chat group"));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
@@ -409,7 +409,7 @@ public class ChatController extends Controller {
                 throw new CompletionException(new NotFoundException("Could not find chat group"));
               }
 
-              if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
+              if (chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
                 throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 

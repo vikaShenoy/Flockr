@@ -31,8 +31,8 @@ public class CountrySyncTask {
 
     /**
      * Please refer to Play documentation: https://www.playframework.com/documentation/2.7.x/ScheduledTasks
-     * @param actorSystem
-     * @param executionContext
+     * @param actorSystem the actor system.
+     * @param executionContext the context to execute the async functions on.
      */
     @Inject
     public CountrySyncTask(ActorSystem actorSystem, ExecutionContext executionContext, WSClient ws, CountrySchedulerUtil countrySchedulerUtil) {

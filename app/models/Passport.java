@@ -39,10 +39,6 @@ public class Passport extends Model {
         return passportId;
     }
 
-    public void setPassportId(int passportId) {
-        this.passportId = passportId;
-    }
-
     public Country getCountry() {
         return country;
     }

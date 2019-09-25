@@ -16,6 +16,11 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
+
+/**
+ * Task to delete all Treasure Hunts in the database that have been soft deleted if their
+ * expiry has passed.
+ */
 public class DeleteExpiredTreasureHunts {
     private final ActorSystem actorSystem;
     private final ExecutionContext executionContext;
@@ -33,7 +38,7 @@ public class DeleteExpiredTreasureHunts {
      *
      * @return the list of expired deleted treasure hunts.
      */
-    public CompletionStage<List<TreasureHunt>> getDeletedTreasureHunts() {
+    private CompletionStage<List<TreasureHunt>> getDeletedTreasureHunts() {
         return supplyAsync(() -> {
             Timestamp now = Timestamp.from(Instant.now());
             return TreasureHunt.find.query().setIncludeSoftDeletes()

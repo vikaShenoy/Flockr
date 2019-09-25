@@ -156,10 +156,6 @@ public class Destination extends Model {
         this.deleted = deleted;
     }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
-
     public void setDeletedExpiry(Timestamp deletedExpiry) {
         this.deletedExpiry = deletedExpiry;
     }
@@ -268,10 +264,6 @@ public class Destination extends Model {
             .filter((destinationPhoto -> destinationPhoto.getPersonalPhoto().getUser().getUserId() == userId))
             .filter(destinationPhoto -> !destinationPhoto.getPersonalPhoto().isPublic())
             .collect(Collectors.toList());
-    }
-
-    public boolean canModifyDestination(User user) {
-        return user.isAdmin() || (destinationOwner != null && destinationOwner == user.getUserId());
     }
 
     /**

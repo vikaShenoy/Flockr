@@ -18,7 +18,6 @@ import repository.AuthRepository;
 import repository.RoleRepository;
 import repository.UserRepository;
 import util.ExceptionUtil;
-import util.Responses;
 import util.Security;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionException;
@@ -47,7 +46,6 @@ public class AuthController {
     public AuthController(AuthRepository authRepository,
         UserRepository userRepository,
         HttpExecutionContext httpExecutionContext,
-        Responses responses,
         RoleRepository roleRepository,
         ExceptionUtil exceptionUtil) {
         this.authRepository = authRepository;
@@ -168,9 +166,8 @@ public class AuthController {
 
         String email = jsonBody.get(EMAIL_KEY).asText();
         String password = jsonBody.get(PWD_KEY).asText();
-        String hashedPassword = Security.hashPassword(password);
 
-        return authRepository.getUserByCredentials(email, hashedPassword)
+        return authRepository.getUserByCredentials(email)
                 .thenComposeAsync(optionalUser -> {
                     if (!optionalUser.isPresent()) {
                         throw new CompletionException(new UnauthorizedException());
