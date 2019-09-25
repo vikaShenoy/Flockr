@@ -81,7 +81,7 @@ public class ExampleDestinationDataTask {
               try {
                 throw e.getCause();
               } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                log.error(throwable.getMessage());
                 return cities;
               }
             });
@@ -189,10 +189,6 @@ public class ExampleDestinationDataTask {
                       String.format(
                           "Beginning getting cities from open data soft api for %s",
                           country.getCountryName()));
-                  System.out.println(
-                      String.format(
-                          "Beginning getting cities from open data soft api for %s",
-                          country.getCountryName()));
                   fetchCitiesFromCountry(country)
                       .thenApplyAsync(
                           cities -> {
@@ -222,10 +218,6 @@ public class ExampleDestinationDataTask {
                                                         String.format(
                                                             "%s saved to the database.",
                                                             savedCity.getDestinationName()));
-                                                    System.out.println(
-                                                        String.format(
-                                                            "%s saved to the database.",
-                                                            savedCity.getDestinationName()));
                                                   });
                                         } else {
                                           log.info(
@@ -236,10 +228,6 @@ public class ExampleDestinationDataTask {
                                       });
                             }
                             log.info(
-                                String.format(
-                                    "Finished getting cities from open data soft api for %s",
-                                    country.getCountryName()));
-                            System.out.println(
                                 String.format(
                                     "Finished getting cities from open data soft api for %s",
                                     country.getCountryName()));

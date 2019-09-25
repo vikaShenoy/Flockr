@@ -13,12 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.With;
+import play.mvc.*;
 import repository.PhotoRepository;
 import repository.UserRepository;
+import util.ExceptionUtil;
 import util.Security;
 
 import javax.inject.Inject;
@@ -39,18 +37,27 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
  */
 public class UserController extends Controller {
 
+    public static final String MESSAGE_KEY = "message";
+    public static final String GENDER_KEY = "gender";
     final Logger log = LoggerFactory.getLogger(this.getClass());
     private final UserRepository userRepository;
     private HttpExecutionContext httpExecutionContext;
     private final Security security;
     private final PhotoRepository photoRepository;
+    private final ExceptionUtil exceptionUtil;
 
     @Inject
-    public UserController(UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, PhotoRepository photoRepository) {
+    public UserController(
+        UserRepository userRepository,
+        HttpExecutionContext httpExecutionContext,
+        Security security,
+        PhotoRepository photoRepository,
+        ExceptionUtil exceptionUtil) {
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
         this.photoRepository = photoRepository;
+        this.exceptionUtil = exceptionUtil;
     }
 
     /**
@@ -63,12 +70,12 @@ public class UserController extends Controller {
     @With(LoggedIn.class)
     public CompletionStage<Result> getTraveller(int userId, Http.Request request) {
         return userRepository.getUserById(userId)
-                .thenApplyAsync((optUser) -> {
-                    if (!optUser.isPresent()) {
-                        ObjectNode message = Json.newObject().put("message", "User with id " + userId + " was not found");
+                .thenApplyAsync(optionalUser -> {
+                    if (!optionalUser.isPresent()) {
+                        ObjectNode message = Json.newObject().put(MESSAGE_KEY, "User with id " + userId + " was not found");
                         return notFound(message);
                     }
-                    User user = optUser.get();
+                    User user = optionalUser.get();
                     JsonNode userAsJson = Json.toJson(user);
                     return ok(userAsJson);
                 }, httpExecutionContext.current());
@@ -122,8 +129,8 @@ public class UserController extends Controller {
                         }
                     }
 
-                    if (jsonBody.has("gender")) {
-                        user.get().setGender(jsonBody.get("gender").asText());
+                    if (jsonBody.has(GENDER_KEY)) {
+                        user.get().setGender(jsonBody.get(GENDER_KEY).asText());
                     }
 
                     if (jsonBody.has("nationalities")) {
@@ -159,11 +166,9 @@ public class UserController extends Controller {
                         user.get().setTravellerTypes(travellerTypes);
                     }
 
-                    if (jsonBody.has("gender")) {
-                        user.get().setGender(jsonBody.get("gender").asText());
+                    if (jsonBody.has(GENDER_KEY)) {
+                        user.get().setGender(jsonBody.get(GENDER_KEY).asText());
                     }
-
-                    ObjectNode message = Json.newObject();
                     return userRepository.updateUser(user.get());
                 }, httpExecutionContext.current())
                 .thenApplyAsync(updatedUser -> ok());
@@ -177,9 +182,7 @@ public class UserController extends Controller {
      */
     public CompletionStage<Result> getAllPassports(Http.Request request) {
         return userRepository.getAllPassports()
-                .thenApplyAsync((passports) -> {
-                    return ok(Json.toJson(passports));
-                }, httpExecutionContext.current());
+                .thenApplyAsync(passports -> ok(Json.toJson(passports)), httpExecutionContext.current());
     }
 
     /**
@@ -190,9 +193,7 @@ public class UserController extends Controller {
      */
     public CompletionStage<Result> getNationalities(Http.Request request) {
         return userRepository.getAllNationalities()
-                .thenApplyAsync((nationalities) -> {
-                    return ok(Json.toJson(nationalities));
-                }, httpExecutionContext.current());
+                .thenApplyAsync(nationalities -> ok(Json.toJson(nationalities)), httpExecutionContext.current());
     }
 
     /**
@@ -238,7 +239,7 @@ public class UserController extends Controller {
         for (JsonNode roleJson : roleArray) {
             String roleTypeString = roleJson.asText();
             if (!RoleType.contains(roleTypeString)) {
-                return supplyAsync(() -> badRequest());
+                return supplyAsync(Results::badRequest);
             }
             roleTypes.add(roleTypeString);
         }
@@ -289,7 +290,7 @@ public class UserController extends Controller {
         int passportId = request.body().asJson().get("passportId").asInt();
 
         return userRepository.getPassportById(passportId)
-                .thenApplyAsync((passport) -> {
+                .thenApplyAsync(passport -> {
                     if (!passport.isPresent()) {
                         return notFound();
                     }
@@ -313,80 +314,67 @@ public class UserController extends Controller {
      */
     @With(LoggedIn.class)
     public CompletionStage<Result> deleteUser(int userId, Http.Request request) {
-        //TODO:: Issue #42 when deleting a user the profile photo file is never deleted.
         User userDoingDeletion = request.attrs().get(ActionState.USER);
         final ObjectNode message = Json.newObject();// used in the response
 
         return userRepository.getUserById(userId)
-                .thenApplyAsync((optionalUserBeingDeleted) -> {
+                .thenApplyAsync(optionalUserBeingDeleted -> {
                     if (!optionalUserBeingDeleted.isPresent()) {
                         // check that the user being deleted actually exists
-                        message.put("message", "Did not find user with id " + userId);
+                        message.put(MESSAGE_KEY, "Did not find user with id " + userId);
                         return notFound(message);
                     }
 
                     User userBeingDeleted = optionalUserBeingDeleted.get();
                     if (userBeingDeleted.isDefaultAdmin()) {
                         // if user is the default admin, leave it alone
-                        message.put("message", "No one can delete the default admin");
+                        message.put(MESSAGE_KEY, "No one can delete the default admin");
                         return unauthorized(message);
                     } else if (userBeingDeleted.isAdmin()) {
                         if (userDoingDeletion.isAdmin() || userDoingDeletion.isDefaultAdmin()) {
                             // only admins and the default admin can delete admins
                             message.put(
-                                    "message", "Deleted user with id: " + userBeingDeleted.getUserId());
+                                    MESSAGE_KEY, "Deleted user with id: " + userBeingDeleted.getUserId());
                             CompletionStage<Result> completionStage = userRepository.deleteUserById(
-                                    userId).thenApply((ignored) -> ok(message));
+                                    userId).thenApply(ignored -> ok(message));
                             CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
-                            try {
-                                return completableFuture.get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                System.err.println(String.format(
-                                        "Async execution interrupted when user %s was deleting user %s",
-                                        userDoingDeletion, userBeingDeleted));
-                                message.put(
-                                        "message", "Something went wrong deleting that user, try again");
-                                return internalServerError(message);
-                            }
+                            return getResult(userDoingDeletion, message, userBeingDeleted, completableFuture);
                         } else {
                             message.put(
-                                    "message", "Only admins or the default admin can delete other admins");
+                                    MESSAGE_KEY, "Only admins or the default admin can delete other admins");
                             return unauthorized(message);
                         }
                     } else {
                         if (userDoingDeletion.equals(userBeingDeleted) && !userBeingDeleted.isDefaultAdmin()) {
                             // a user can delete itself
-                            message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
+                            message.put(MESSAGE_KEY, "Deleted user with id: " + userBeingDeleted.getUserId());
                             CompletionStage<Result> completionStage = userRepository.deleteUserById(
-                                    userId).thenApply((ignored) -> ok(message));
+                                    userId).thenApply(ignored -> ok(message));
                             CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
-                            try {
-                                return completableFuture.get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                System.err.println(String.format(
-                                        "Async execution interrupted when user %s was deleting user %s",
-                                        userDoingDeletion, userBeingDeleted));
-                                message.put(
-                                        "message", "Something went wrong deleting that user, try again");
-                                return internalServerError(message);
-                            }
+                            return getResult(userDoingDeletion, message, userBeingDeleted, completableFuture);
                         } else if ((userDoingDeletion.isAdmin() && !userBeingDeleted.isDefaultAdmin()) || userDoingDeletion.isDefaultAdmin()) {
-                            message.put("message", "Deleted user with id: " + userBeingDeleted.getUserId());
-                            CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply((ignored) -> ok(message));
+                            message.put(MESSAGE_KEY, "Deleted user with id: " + userBeingDeleted.getUserId());
+                            CompletionStage<Result> completionStage = userRepository.deleteUserById(userId).thenApply(ignored -> ok(message));
                             CompletableFuture<Result> completableFuture = completionStage.toCompletableFuture();
-                            try {
-                                return completableFuture.get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                System.err.println(String.format("Async execution interrupted when user %s was deleting user %s", userDoingDeletion, userBeingDeleted));
-                                message.put("message", "Something went wrong deleting that user, try again");
-                                return internalServerError(message);
-                            }
+                            return getResult(userDoingDeletion, message, userBeingDeleted, completableFuture);
                         } else {
-                            message.put("message", "Regular users can not delete other regular users");
+                            message.put(MESSAGE_KEY, "Regular users can not delete other regular users");
                             return unauthorized(message);
                         }
                     }
                 }, httpExecutionContext.current());
+    }
+
+    private Result getResult(User userDoingDeletion, ObjectNode message, User userBeingDeleted,
+                             CompletableFuture<Result> completableFuture) {
+        try {
+            return completableFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            log.error(String.format("Async execution interrupted when user %s was deleting user %s",
+                userDoingDeletion, userBeingDeleted), e);
+            message.put(MESSAGE_KEY, "Something went wrong deleting that user, try again");
+            return internalServerError(message);
+        }
     }
 
     /**
@@ -424,26 +412,7 @@ public class UserController extends Controller {
                     return userRepository.undoDeleteUser(deletedUser);
                 })
                 .thenApplyAsync(user -> ok(Json.toJson(user)))
-                .exceptionally(e -> {
-                    try {
-                        throw e.getCause();
-                    } catch (BadRequestException error) {
-                        ObjectNode message = Json.newObject();
-                        message.put("message", e.getMessage());
-                        return badRequest(message);
-                    } catch (ForbiddenRequestException error) {
-                        ObjectNode message = Json.newObject();
-                        message.put("message", e.getMessage());
-                        return forbidden(message);
-                    } catch (NotFoundException error) {
-                        ObjectNode message = Json.newObject();
-                        message.put("message", e.getMessage());
-                        return notFound(message);
-                    } catch (Throwable throwable) {
-                        log.error("Error while undoing user deletion", throwable);
-                        return internalServerError();
-                    }
-                });
+                .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**
@@ -458,7 +427,7 @@ public class UserController extends Controller {
         User user = request.attrs().get(ActionState.USER);
 
         return userRepository.getPassportById(passportId)
-                .thenApplyAsync((passport) -> {
+                .thenApplyAsync(passport -> {
                     if (!passport.isPresent()) {
                         return notFound();
                     }
@@ -484,7 +453,7 @@ public class UserController extends Controller {
         int nationalityId = request.body().asJson().get("nationalityId").asInt();
 
         return userRepository.getNationalityById(nationalityId)
-                .thenApplyAsync((nationality) -> {
+                .thenApplyAsync(nationality -> {
                     if (!nationality.isPresent()) {
                         return notFound();
                     }
@@ -507,7 +476,7 @@ public class UserController extends Controller {
     public CompletionStage<Result> deleteNationalityForUser(int userId, int nationalityId, Http.Request request) {
         User user = request.attrs().get(ActionState.USER);
         return userRepository.getNationalityById(nationalityId)
-                .thenApplyAsync((optionalNationality) -> {
+                .thenApplyAsync(optionalNationality -> {
                     if (!optionalNationality.isPresent()) {
                         return notFound("Could not find nationality " + nationalityId);
                     }
@@ -536,7 +505,7 @@ public class UserController extends Controller {
      */
     public CompletionStage<Result> getTravellerTypes(Http.Request request) {
         return userRepository.getAllTravellerTypes()
-                .thenApplyAsync((types) -> ok(Json.toJson(types)), httpExecutionContext.current());
+                .thenApplyAsync(types -> ok(Json.toJson(types)), httpExecutionContext.current());
     }
 
     /**
@@ -583,7 +552,7 @@ public class UserController extends Controller {
                 travellerType = Integer.parseInt(travellerTypeQuery);
         } catch (NullPointerException e){ log.error("No Parameter travellerType, excluding from search");}
         try {
-            gender = request.getQueryString("gender");
+            gender = request.getQueryString(GENDER_KEY);
         } catch (Exception e){ log.error("No Parameter gender");}
 
         try {
@@ -601,7 +570,6 @@ public class UserController extends Controller {
 
         try {
           String limitQuery = request.getQueryString("limit");
-          System.out.println(limitQuery);
           limit = Integer.parseInt(limitQuery);
         } catch (NumberFormatException e) {
           log.info("No parameter limit");
@@ -609,12 +577,9 @@ public class UserController extends Controller {
 
         Date dateMin = new Date(ageMin);
         Date dateMax = new Date(ageMax);
-        log.debug("nationality="+nationality + " agemin=" + ageMin +" agemax="+ ageMax + " gender=" + gender + " travellerType=" + travellerType);
 
         return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType, name, offset, limit)  //Just for testing purposes
-                .thenApplyAsync((user) -> {
-                  System.out.println("The users are: ");
-                  System.out.println(user);
+                .thenApplyAsync(user -> {
                     JsonNode userAsJson = Json.toJson(user);
                     log.debug(userAsJson.asText());
 

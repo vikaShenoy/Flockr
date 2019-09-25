@@ -5,17 +5,17 @@ import actions.LoggedIn;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.AbstractModule;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
 import models.ChatGroup;
 import models.Message;
 import models.User;
-import modules.voice.JanusServerApi;
 import modules.voice.VoiceServerApi;
 import modules.websocket.ChatEvents;
 import modules.websocket.ConnectedUsers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
@@ -24,34 +24,42 @@ import play.mvc.Result;
 import play.mvc.With;
 import repository.ChatRepository;
 import util.ChatUtil;
+import util.ExceptionUtil;
 import util.Security;
-
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class ChatController extends Controller {
 
   private final ChatUtil chatUtil;
   private final ChatRepository chatRepository;
+  private final ExceptionUtil exceptionUtil;
   private HttpExecutionContext httpExecutionContext;
   private VoiceServerApi voiceServerApi;
+  private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+  private static final String CHAT_NOT_FOUND_MESSAGE = "Chat not found";
+  private static final String USER_NOT_IN_GROUP_MESSAGE = "User not in group";
+  private static final String TOKEN_KEY = "token";
+  private static final String ROOM_KEY = "room";
+  private static final String MESSAGE_KEY = "message";
 
   @Inject
   public ChatController(
       ChatUtil chatUtil,
       ChatRepository chatRepository,
       HttpExecutionContext httpExecutionContext,
-      VoiceServerApi voiceServerApi) {
+      VoiceServerApi voiceServerApi,
+      ExceptionUtil exceptionUtil) {
     this.chatUtil = chatUtil;
     this.chatRepository = chatRepository;
     this.httpExecutionContext = httpExecutionContext;
     this.voiceServerApi = voiceServerApi;
+    this.exceptionUtil = exceptionUtil;
   }
 
   /**
@@ -97,7 +105,7 @@ public class ChatController extends Controller {
               }
             },
             httpExecutionContext.current())
-        .exceptionally(e -> internalServerError());
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -121,12 +129,12 @@ public class ChatController extends Controller {
         .thenComposeAsync(
             chatGroup -> {
               if (chatGroup == null) {
-                throw new CompletionException(new NotFoundException("Chat not found"));
+                throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
                   && !userFromMiddleware.isAdmin()) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
               String chatName;
@@ -149,20 +157,7 @@ public class ChatController extends Controller {
             },
             httpExecutionContext.current())
         .thenApplyAsync(modifiedChatGroup -> (Result) ok(), httpExecutionContext.current())
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenException) {
-                return forbidden(forbiddenException.getMessage());
-              } catch (BadRequestException badRequestException) {
-                return badRequest(badRequestException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -179,7 +174,7 @@ public class ChatController extends Controller {
     return chatRepository
         .getChatsByUserId(userFromMiddleware.getUserId())
         .thenApplyAsync(chats -> ok(Json.toJson(chats)), httpExecutionContext.current())
-        .exceptionally(e -> internalServerError());
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -201,7 +196,7 @@ public class ChatController extends Controller {
         .thenApplyAsync(
             chat -> {
               if (chat == null) {
-                throw new CompletionException(new NotFoundException("Chat not found"));
+                throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
               List<User> chatUsers = chat.getUsers();
               if (!userFromMiddleware.isAdmin() && !chatUsers.contains(userFromMiddleware)) {
@@ -218,24 +213,7 @@ public class ChatController extends Controller {
               }
               return ok(currentConnectedUsers);
             })
-        .exceptionally(
-            error -> {
-              try {
-                throw error.getCause();
-              } catch (ForbiddenRequestException e) {
-                ObjectNode message = Json.newObject();
-                message.put("message", e.getMessage());
-                return forbidden(Json.toJson(message));
-              } catch (NotFoundException e) {
-                ObjectNode message = Json.newObject();
-                message.put("message", e.getMessage());
-                return notFound(Json.toJson(message));
-              } catch (Throwable e) {
-                ObjectNode message = Json.newObject();
-                message.put("message", e.getMessage());
-                return internalServerError(message);
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -257,12 +235,12 @@ public class ChatController extends Controller {
         .thenComposeAsync(
             (chatGroup -> {
               if (chatGroup == null) {
-                throw new CompletionException(new NotFoundException("Chat not found"));
+                throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)
                   && !userFromMiddleware.isAdmin()) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
               int offset = 0;
@@ -272,14 +250,14 @@ public class ChatController extends Controller {
                 String offsetString = request.getQueryString("offset");
                 offset = Integer.parseInt(offsetString);
               } catch (Exception e) {
-                System.out.println("No offset or invalid offset provided, using default of 0");
+                log.error("No offset or invalid offset provided, using default of 0");
               }
 
               try {
                 String limitString = request.getQueryString("limit");
                 limit = Integer.parseInt(limitString);
               } catch (Exception e) {
-                System.out.println("No limit or invalid limit provided, using default of 20");
+                log.error("No limit or invalid limit provided, using default of 20");
               }
 
               return chatRepository.getMessages(chatGroupId, offset, limit);
@@ -290,18 +268,7 @@ public class ChatController extends Controller {
               JsonNode messagesJson = Json.toJson(messages);
               return ok(messagesJson);
             })
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenException) {
-                return forbidden(forbiddenException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -322,29 +289,18 @@ public class ChatController extends Controller {
             chatGroup -> {
               if (chatGroup == null) {
                 // Chat doesn't exist so 404 it
-                throw new CompletionException(new NotFoundException("Chat not found"));
+                throw new CompletionException(new NotFoundException(CHAT_NOT_FOUND_MESSAGE));
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
               return chatRepository.deleteChatGroupById(chatGroup);
             },
             httpExecutionContext.current())
         .thenApplyAsync(deletedChatGroup -> (Result) ok(), httpExecutionContext.current())
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenException) {
-                return forbidden(forbiddenException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -371,14 +327,14 @@ public class ChatController extends Controller {
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
-              if (!jsonBody.has("message")) {
+              if (!jsonBody.has(MESSAGE_KEY)) {
                 throw new CompletionException(new BadRequestException("Message does not exist"));
               }
 
-              String messageContents = jsonBody.get("message").asText();
+              String messageContents = jsonBody.get(MESSAGE_KEY).asText();
               Message message = new Message(chatGroup, messageContents, userFromMiddleware);
 
               return chatRepository.createMessage(message);
@@ -393,20 +349,7 @@ public class ChatController extends Controller {
                   createdMessage.getMessageId());
               return created(Json.toJson(createdMessage));
             })
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenRequestException) {
-                return forbidden(forbiddenRequestException.getMessage());
-              } catch (BadRequestException badRequestException) {
-                return badRequest(badRequestException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError(throwable.getMessage());
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -443,19 +386,7 @@ public class ChatController extends Controller {
               chatEvents.notifyChatMessageHasBeenDeleted(userFromMiddleware, deletedMessage);
               return (Result) ok();
             })
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenRequestException) {
-                return forbidden(forbiddenRequestException.getMessage());
-              } catch (Throwable throwable) {
-                throwable.printStackTrace();
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -479,7 +410,7 @@ public class ChatController extends Controller {
               }
 
               if (!chatUtil.userInGroup(chatGroup.getUsers(), userFromMiddleware)) {
-                throw new CompletionException(new ForbiddenRequestException("User not in group"));
+                throw new CompletionException(new ForbiddenRequestException(USER_NOT_IN_GROUP_MESSAGE));
               }
 
               String roomToken = Security.generateToken();
@@ -492,8 +423,8 @@ public class ChatController extends Controller {
                     .thenComposeAsync(
                         exists -> {
                           if (exists) {
-                            jsonResponse.put("token", chatGroup.getRoomToken());
-                            jsonResponse.put("room", roomId);
+                            jsonResponse.put(TOKEN_KEY, chatGroup.getRoomToken());
+                            jsonResponse.put(ROOM_KEY, roomId);
                             return supplyAsync(() -> ok(jsonResponse));
                           } else {
                             return voiceServerApi
@@ -507,8 +438,8 @@ public class ChatController extends Controller {
                                     httpExecutionContext.current())
                                 .thenApplyAsync(
                                     modifiedRoom -> {
-                                      jsonResponse.put("token", roomToken);
-                                      jsonResponse.put("room", modifiedRoom.getVoiceRoomId());
+                                      jsonResponse.put(TOKEN_KEY, roomToken);
+                                      jsonResponse.put(ROOM_KEY, modifiedRoom.getVoiceRoomId());
                                       return ok(jsonResponse);
                                     });
                           }
@@ -525,8 +456,8 @@ public class ChatController extends Controller {
                         httpExecutionContext.current())
                     .thenApplyAsync(
                         modifiedChatGroup -> {
-                          jsonResponse.put("token", roomToken);
-                          jsonResponse.put("room", modifiedChatGroup.getVoiceRoomId());
+                          jsonResponse.put(TOKEN_KEY, roomToken);
+                          jsonResponse.put(ROOM_KEY, modifiedChatGroup.getVoiceRoomId());
                           return ok(jsonResponse);
                         });
               }

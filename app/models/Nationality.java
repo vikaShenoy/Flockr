@@ -74,8 +74,12 @@ public class Nationality extends Model {
             return false;
         }
         Nationality nationalityToCompare = (Nationality) object;
-        boolean sameNationalityId = this.getNationalityId() == nationalityToCompare.getNationalityId();
-        return sameNationalityId;
+        return this.getNationalityId() == nationalityToCompare.getNationalityId();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.nationalityId;
     }
 }
 

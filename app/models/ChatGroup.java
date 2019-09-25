@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
 import io.ebean.annotation.DbDefault;
-import io.ebean.annotation.SoftDelete;
-
-import javax.annotation.Nullable;
 import javax.persistence.*;
 import java.util.List;
 import java.util.Set;

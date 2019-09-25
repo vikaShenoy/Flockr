@@ -3,8 +3,6 @@ package util;
 import com.fasterxml.jackson.databind.JsonNode;
 import exceptions.BadRequestException;
 import models.TravellerType;
-
-import javax.annotation.processing.Completion;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;

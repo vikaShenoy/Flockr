@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
-import javax.validation.Constraint;
 import play.data.validation.Constraints;
 import javax.persistence.*;
 import java.sql.Timestamp;

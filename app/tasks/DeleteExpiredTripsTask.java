@@ -64,12 +64,10 @@ public class DeleteExpiredTripsTask {
                     .thenApplyAsync(
                         trips -> {
                           log.info("-----------Cleaning up deleted trips-------------");
-                          System.out.println("-----------Cleaning up deleted trips-------------");
                           for (TripNode trip : trips) {
                             trip.deletePermanent();
                           }
                           log.info(String.format("%d Trips deleted successfully", trips.size()));
-                          System.out.printf("%d Trips deleted successfully%n", trips.size());
                           return trips;
                         }),
             this.executionContext);

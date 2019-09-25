@@ -1,97 +1,99 @@
 stages:
-- test
-- build
-- deploy
+  - test
+  - build
+  - deploy
 
 recent-artifacts-backend:
   artifacts:
     expire_in: "1 week"
     paths:
-    - target/universal/*.zip
+      - target/universal/*.zip
   except:
-  - tags
-  - dev
-  - master
+    - tags
+    - dev
+    - master
   script:
-  - "sbt dist"
+    - "sbt dist"
   stage: build
 
 release-artifacts-backend:
   artifacts:
     paths:
-    - target/universal/*.zip
+      - target/universal/*.zip
   only:
-  - master
+    - master
   script:
-  - "NODE_ENV=production sbt dist"
+    - "NODE_ENV=production sbt dist"
   stage: build
 
 staging-artifacts-backend:
   artifacts:
     paths:
-    - target/universal/*.zip
+      - target/universal/*.zip
   only:
-  - dev
+    - dev
   script:
-  - "NODE_ENV=staging sbt dist"
+    - "NODE_ENV=staging sbt dist"
   stage: build
 
 tag_checker:
   only:
-  - tags
+    - tags
   script:
-  - "python tag_checker.py $CI_COMMIT_TAG"
+    - "python tag_checker.py $CI_COMMIT_TAG"
   stage: build
 
 run-tests:
   except:
-  - dev@seng302-2019/team-500
-  - master@seng302-2019/team-500
+    - dev@seng302-2019/team-500
+    - master@seng302-2019/team-500
   script:
-  - "sbt test"
+    - "sbt test"
   stage: test
 
 staging-run:
   dependencies:
-  - staging-artifacts-backend
+    - staging-artifacts-backend
   script:
-  - cd target/universal
-  - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-  - pm2 delete dev-server || true
-  - rm -rf /var/www/dev/storage || true
-  - cp -r /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage /var/www/dev/storage || true
-  - rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true
-  - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
-  - cp -r /var/www/dev/storage /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/
-  - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
-  - pm2 start "bash seng302-team-500 -Dhttp.port=9443" --name=dev-server
+    - cd target/universal
+    - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+    - pm2 delete dev-server || true
+    - rm -rf /var/www/dev/storage || true
+    - cp -r /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage /var/www/dev/storage || true
+    - rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true
+    - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
+    - cp -r /var/www/dev/storage /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/ || true
+    - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
+    - pm2 start "bash seng302-team-500 -Dhttp.port=9443" --name=dev-server
   only:
-  - dev
+    - dev
   stage: deploy
 
 production-run:
   dependencies:
-  - release-artifacts-backend
+    - release-artifacts-backend
   script:
-  - cd target/universal
-  - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
-  - pm2 delete prod-server || true
-  - rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT || true
-  - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
-  - mkdir /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage || true
-  - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/bin
-  - pm2 start "bash seng302-team-500 -Dhttp.port=7443" --name=prod-server
+    - cd target/universal
+    - unzip seng302-team-500-0.0.1-SNAPSHOT.zip
+    - pm2 delete prod-server || true
+    - rm -rf /var/www/prod/storage || true
+    - cp -r /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage /var/www/prod/storage || true
+    - rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT || true
+    - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
+    - cp -r /var/www/prod/storage /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/ || true
+    - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/bin
+    - pm2 start "bash seng302-team-500 -Dhttp.port=7443" --name=prod-server
   only:
-  - master 
+    - master
   stage: deploy
 
 
 update-sonar:
   stage: test
   script:
-  - sbt jacoco
-  - export PATH=$PATH:/opt/sonarqubeScanner/bin
-  - sonar-scanner  --debug
+    - sbt jacoco
+    - export PATH=$PATH:/opt/sonarqubeScanner/bin
+    - sonar-scanner  --debug
   only:
-  - master@seng302-2019/team-500
-  - dev@seng302-2019/team-500
+    - master@seng302-2019/team-500
+    - dev@seng302-2019/team-500

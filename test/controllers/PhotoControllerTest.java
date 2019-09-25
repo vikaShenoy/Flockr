@@ -10,15 +10,18 @@ import org.junit.Test;
 import play.Application;
 import play.mvc.Result;
 import play.test.Helpers;
-import utils.FakeClient;
-import utils.FakePlayClient;
-import utils.PlayResultToJson;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.FakePlayClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Test the PhotoController.
+ */
 public class PhotoControllerTest {
 
   Application application;

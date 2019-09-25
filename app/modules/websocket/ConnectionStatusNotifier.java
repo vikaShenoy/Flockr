@@ -4,9 +4,7 @@ import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import models.TripComposite;
 import models.TripComposite;
 import models.User;
 import modules.websocket.frames.ConnectedFrame;
@@ -54,7 +52,6 @@ public class ConnectionStatusNotifier {
 
 
     ActorRef userWebsocket = connectedUsers.getSocketForUser(user);
-    JsonNode userJson = Json.toJson(user);
 
     for (User userToNotify : usersToNotify) {
       ActorRef receiverWebsocket = connectedUsers.getSocketForUser(userToNotify);

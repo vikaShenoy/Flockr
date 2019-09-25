@@ -1,7 +1,6 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import exceptions.FailedToSignUpException;
 import exceptions.ServerErrorException;
 import models.*;
@@ -9,15 +8,18 @@ import org.junit.*;
 import play.Application;
 import play.mvc.Result;
 import play.test.Helpers;
-import utils.FakeClient;
-import utils.FakePlayClient;
-import utils.PlayResultToJson;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.FakePlayClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Test the UserController.
+ */
 public class UserControllerTest {
 
     Application application;

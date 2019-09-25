@@ -50,7 +50,6 @@ public class ChatEvents {
    * @param chatGroups the chat groups for the user.
    */
   public void notifyConnect(User userConnecting, List<ChatGroup> chatGroups) {
-    ActorRef userSocket = connectedUsers.getSocketForUser(userConnecting);
     Frame frame = new ConnectedFrame(userConnecting);
 
     notifyUsersFromChatGroups(userConnecting, chatGroups, frame);
@@ -89,7 +88,6 @@ public class ChatEvents {
    * @param userDisconnecting the user who is disconnecting
    */
   public void notifyDisconnect(User userDisconnecting, List<ChatGroup> chatGroups) {
-    ActorRef userSocket = connectedUsers.getSocketForUser(userDisconnecting);
     Frame frame = new DisconnectedFrame(userDisconnecting);
 
     notifyUsersFromChatGroups(userDisconnecting, chatGroups, frame);
@@ -106,7 +104,6 @@ public class ChatEvents {
   private void notifyUsersFromChatGroup(User userNotifying, ChatGroup chatGroup, Frame frame) {
     List<ChatGroup> chatGroups = new ArrayList<>();
     chatGroups.add(chatGroup);
-    ActorRef socket = connectedUsers.getSocketForUser(userNotifying);
     notifyUsersFromChatGroups(userNotifying, chatGroups, frame);
   }
 

@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.Environment;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
@@ -21,6 +23,7 @@ public class PopulateTask {
   private final ExecutionContext executionContext;
   private final Security security;
   private final Environment environment;
+  final Logger log = LoggerFactory.getLogger(this.getClass());
 
   @Inject
   public PopulateTask(
@@ -48,8 +51,9 @@ public class PopulateTask {
             () ->
                 runAsync(
                     () -> {
-                      Country newZealand = new Country("New Zealand", "NZL", true);
-                      Nationality newZealandNationality = new Nationality("New Zealand");
+                      String strNewZealand = "New Zealand";
+                      Country newZealand = new Country(strNewZealand, "NZL", true);
+                      Nationality newZealandNationality = new Nationality(strNewZealand);
                       newZealandNationality.setNationalityCountry(newZealand);
                       List<Nationality> adminUserNationalities = new ArrayList<>();
                       adminUserNationalities.add(newZealandNationality);
@@ -60,7 +64,7 @@ public class PopulateTask {
                       List<TravellerType> adminTravellerTypes = new ArrayList<>();
                       adminTravellerTypes.add(frequentWeekender);
                       List<Passport> adminPassports = new ArrayList<>();
-                      Passport newZealandPassport = new Passport("New Zealand");
+                      Passport newZealandPassport = new Passport(strNewZealand);
                       newZealandPassport.save();
                       newZealandPassport.setCountry(newZealand);
                       adminPassports.add(newZealandPassport);
@@ -128,7 +132,7 @@ public class PopulateTask {
                       // Creating some initial destinations
                       DestinationType destinationType = new DestinationType("city");
                       destinationType.save();
-                      Country country = new Country("New Zealand", "NZ", true);
+                      Country country = new Country(strNewZealand, "NZ", true);
                       country.save();
                       String district ="Canterbury";
 
@@ -261,10 +265,9 @@ public class PopulateTask {
                       TripComposite trip6 =
                           new TripComposite(trip6Nodes, users, "Find the family graves");
                       trip6.setUserRoles(userRoles);
-                      // trip2.setParents(tripNodes);
                       trip6.save();
 
-                      System.out.println("Ended populating data");
+                      log.info("Ended populating data");
                     }),
             this.executionContext);
   }

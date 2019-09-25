@@ -4,11 +4,8 @@ import akka.actor.ActorSystem;
 import models.DestinationProposal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Predef;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
-
-import javax.annotation.processing.Completion;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -62,12 +59,10 @@ public class DeleteExpiredDestinationProposal {
                         () -> getDeletedDestinationProposals()
                                     .thenApplyAsync(destinationProposals -> {
                                         log.info("-----------Cleaning up deleted destination proposals-------------");
-                                        System.out.println("-----------Cleaning up deleted destination proposals-------------");
                                         for (DestinationProposal destinationProposal : destinationProposals) {
                                             destinationProposal.deletePermanent();
                                         }
                                         log.info(String.format("%d Destination Proposals deleted successfully", destinationProposals.size()));
-                                        System.out.println(String.format("%d Destination Proposals deleted successfully", destinationProposals.size()));
                                         return destinationProposals;
                                     }),
                         this.executionContext);

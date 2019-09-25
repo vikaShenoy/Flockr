@@ -1,12 +1,7 @@
-package utils;
+package testingUtilities;
 
-import akka.protobuf.ByteString;
-import akka.stream.Materializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.Inject;
-import play.core.j.JavaResultExtractor;
 import play.mvc.Result;
 import play.test.Helpers;
 

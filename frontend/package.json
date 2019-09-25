@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "vue-cli-service serve --port 8080",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit"
@@ -17,7 +17,6 @@
     "jest": "^24.8.0",
     "jquery": "^1.9.1",
     "moment": "^2.24.0",
-    "popper.js": "^1.15.0",
     "sortablejs": "^1.8.4",
     "superagent": "^4.1.0",
     "vue": "^2.6.6",
@@ -28,6 +27,17 @@
     "vue2-google-maps": "^0.10.7",
     "vuejs-datepicker": "^1.5.4",
     "vuetify": "^1.5.5",
+    "@vue/cli-service": "^3.6.0",
+    "vue-cli-plugin-vuetify": "^0.5.0",
+    "vue-template-compiler": "^2.5.21",
+    "vuetify-loader": "^1.0.5",
+    "@vue/cli-plugin-babel": "^3.5.0",
+    "@vue/cli-plugin-eslint": "^3.5.0",
+    "@vue/cli-plugin-unit-jest": "^3.8.0",
+    "node-sass": "^4.11.0",
+    "sass-loader": "^7.1.0",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.1",
     "webrtc-adapter": "^7.3.0"
   },
   "devDependencies": {

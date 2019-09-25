@@ -1,9 +1,7 @@
 package steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import cucumber.api.PendingException;
 import cucumber.api.java.After;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
@@ -14,21 +12,22 @@ import models.PersonalPhoto;
 import models.Role;
 import models.RoleType;
 import models.User;
-import org.checkerframework.checker.nullness.Opt;
 import org.junit.Assert;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.Result;
-import utils.FakeClient;
-import utils.PlayResultToJson;
-import utils.TestState;
+import testingUtilities.FakeClient;
+import testingUtilities.PlayResultToJson;
+import testingUtilities.TestState;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Test that user photo features work as expected.
+ */
 public class UserPhotoSteps {
 
     private Result result;
@@ -126,7 +125,7 @@ public class UserPhotoSteps {
 
         Assert.assertEquals(200, photosRes.status());
 
-        this.photos = utils.PlayResultToJson.convertResultToJson(photosRes);
+        this.photos = testingUtilities.PlayResultToJson.convertResultToJson(photosRes);
 
         Assert.assertNotNull(this.photos);
     }
@@ -459,7 +458,7 @@ public class UserPhotoSteps {
         Assert.assertEquals(200, this.result.status());
 
         this.result = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", user.getToken());
-        this.photos = utils.PlayResultToJson.convertResultToJson(this.result);
+        this.photos = testingUtilities.PlayResultToJson.convertResultToJson(this.result);
     }
 
     @Then("the photo permission is set to private")
@@ -490,7 +489,7 @@ public class UserPhotoSteps {
         Assert.assertNotNull(this.result);
 
         this.result = fakeClient.makeRequestWithToken("GET", "/api/users/" + user.getUserId() + "/photos", user.getToken());
-        this.photos = utils.PlayResultToJson.convertResultToJson(this.result);
+        this.photos = testingUtilities.PlayResultToJson.convertResultToJson(this.result);
     }
 
     @When("another user changes the photo permission to private")

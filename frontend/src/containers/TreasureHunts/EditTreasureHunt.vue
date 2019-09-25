@@ -67,7 +67,6 @@
                           label="Start Time"
                           prepend-icon="timer"
                           type="time"
-                          :min="startTime"
                         ></v-text-field>
                       </v-flex>
                     </div>

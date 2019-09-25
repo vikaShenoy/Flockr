@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Test that the class used when updating countries (and thus their associated nationalities) works as expected.
+ */
 public class NationalitySchedulerTest {
     private final CountrySchedulerUtil countrySchedulerUtil = new CountrySchedulerUtil();
 

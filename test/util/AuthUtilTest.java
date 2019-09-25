@@ -2,11 +2,12 @@ package util;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 import static util.AuthUtil.isAlpha;
 import static util.AuthUtil.isValidEmailAddress;
 
+/**
+ * Test that the AuthUtil class works as expected.
+ */
 public class AuthUtilTest {
 
     @Test

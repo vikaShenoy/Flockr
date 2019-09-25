@@ -3,12 +3,13 @@ package tasks;
 import static java.util.concurrent.CompletableFuture.runAsync;
 
 import akka.actor.ActorSystem;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import io.ebean.Ebean;
 import io.ebean.SqlUpdate;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.Environment;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
@@ -18,6 +19,7 @@ public class SetupTask {
   private final ActorSystem actorSystem;
   private final ExecutionContext executionContext;
   private final Environment environment;
+  final Logger log = LoggerFactory.getLogger(this.getClass());
 
   @Inject
   public SetupTask(
@@ -47,7 +49,7 @@ public class SetupTask {
                     SqlUpdate sqlUpdate = Ebean.createSqlUpdate(statement);
                     sqlUpdate.execute();
 
-                    System.out.println("Ended Setup tasks");
+                    log.info("Ended Setup tasks");
                   });
             },
             this.executionContext);

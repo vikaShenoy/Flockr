@@ -11,14 +11,14 @@ import java.util.Map;
  */
 public class ConnectedUsers {
     private static ConnectedUsers instance;
-    private Map<User, ActorRef> connectedUsers;
+    private Map<User, ActorRef> currentlyConnectedUsers;
 
 
     /**
      * Creates connected users
      */
     private ConnectedUsers() {
-        connectedUsers = new HashMap<>();
+        currentlyConnectedUsers = new HashMap<>();
     }
 
 
@@ -41,7 +41,7 @@ public class ConnectedUsers {
      * @param out The websocket object
      */
     public void addConnectedUser(User user, ActorRef out) {
-        connectedUsers.put(user, out);
+        currentlyConnectedUsers.put(user, out);
     }
 
 
@@ -50,7 +50,7 @@ public class ConnectedUsers {
      * @param user The user object
      */
     public void removeConnectedUser(User user) {
-        connectedUsers.remove(user);
+        currentlyConnectedUsers.remove(user);
     }
 
 
@@ -61,12 +61,12 @@ public class ConnectedUsers {
      * @return true if the user is connected.
      */
     public boolean isUserConnected(User user) {
-        return connectedUsers.containsKey(user);
+        return currentlyConnectedUsers.containsKey(user);
     }
 
 
-    public Map<User, ActorRef> getConnectedUsers() {
-        return connectedUsers;
+    public Map<User, ActorRef> getCurrentlyConnectedUsers() {
+        return currentlyConnectedUsers;
     }
 
 
@@ -74,7 +74,7 @@ public class ConnectedUsers {
      * Clears all connected users
      */
     public void clear() {
-        connectedUsers.clear();
+        currentlyConnectedUsers.clear();
     }
 
 
@@ -85,6 +85,6 @@ public class ConnectedUsers {
      * @return the websocket for the user
      */
     public ActorRef getSocketForUser(User user) {
-        return connectedUsers.get(user);
+        return currentlyConnectedUsers.get(user);
     }
 }

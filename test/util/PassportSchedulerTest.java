@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Test that the class used when updating countries (and thus their associated passport) works as expected.
+ */
 public class PassportSchedulerTest {
     private final CountrySchedulerUtil countrySchedulerUtil = new CountrySchedulerUtil();
 
