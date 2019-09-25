@@ -100,10 +100,11 @@ public class ExampleUserData {
                         }
                         firstReader.close();
                         lastReader.close();
-                        log.info(
-                            String.format(
-                                "Number of users to add:%d",
-                                firstNameList.size() * lastNameList.size()));
+                        //                        log.info(
+                        //                            String.format(
+                        //                                "Number of users to add:%d",
+                        //                                firstNameList.size() *
+                        // lastNameList.size()));
 
                         for (String first : firstNameList) {
                           for (String last : lastNameList) {
@@ -141,13 +142,15 @@ public class ExampleUserData {
                           }
                         }
                       } catch (Exception e) {
-                        log.info(e.getMessage());
+                        //                        log.info(e.getMessage());
                       }
 
-                      log.info(
-                          String.format(
-                              "Ended populating Example profile data. Total profiles added: %d",
-                              userCount));
+                      //                      log.info(
+                      //                          String.format(
+                      //                              "Ended populating Example profile data. Total
+                      // profiles added: %d",
+                      //                              userCount));
+                      System.out.println("Finished populating users.");
                       return null;
                     }),
             this.executionContext);
