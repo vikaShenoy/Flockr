@@ -83,16 +83,25 @@
 			}
 		},
 		methods: {
+    	/**
+			 * Add existing trip
+			 */
 			async addExistingTrip() {
         const validFields = this.validate();
         if (!validFields) return false;
         this.$emit("newTripAdded", this.selectedExistingTrip);
         this.isShowingDialog = false;
 			},
+			/**
+			 * Validates the Add Trip form
+			 */
 			validate() {
         return this.$refs.addTripForm.validate();
       }
 		},
+		/**
+		 * Gets all the existing trips
+		 */
 		async mounted() {
       this.existingTrips = await getTrips();
 		},
@@ -121,6 +130,10 @@
 			isShowing(value) {
         this.isShowingDialog = value;
 			},
+			/**
+			 * Emits the change in value for showing dialog
+			 * @param value the new value
+			 */
 			isShowingDialog(value) {
         this.$emit("update:isShowing", value);
 			}
