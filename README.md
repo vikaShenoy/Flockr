@@ -258,7 +258,7 @@ Start the application with the command:
 ```bash
 sbt run
 ```
-And open <http://localhost:8080/>  
+And open <http://localhost:9000/>  
 **Note:** There may be a small delay as the front end is automatically started.
 
 ### How to build the product for distribution
@@ -269,7 +269,7 @@ sbt dist
 ```
 
 ### How to run the distributable product
-Navigate to the target/universal directory from the project root then use the following commands to run the application on http://localhost:8080
+Navigate to the target/universal directory from the project root then use the following commands to run the application on http://localhost:9000
 ```bash
 unzip seng302-team-500-0.0.1-SNAPSHOT.zip
 cd seng302-team-500-0.0.1-SNAPSHOT/bin
