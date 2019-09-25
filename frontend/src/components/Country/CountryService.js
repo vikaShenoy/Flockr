@@ -1,7 +1,6 @@
 import superagent from "superagent";
 import {endpoint} from '../../utils/endpoint';
 
-// TODO: get from the backend API endpoint
 /**
  * Call the backend endpoint to retrieve a list of destination countries.
  * @returns {Promise<*>} containing list of destination countries.

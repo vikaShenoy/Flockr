@@ -73,7 +73,7 @@ export default {
         },
         /**
          * Called when a new item is selected
-         * @param newSelectedItem
+         * @param newSelectedItem the new item selected by the user
          */
         handleNewItemSelection(newSelectedItem) {
             if (Array.isArray(newSelectedItem)) {
@@ -84,7 +84,7 @@ export default {
             }
         },
         /**
-         * Get the items
+         * Get the items based on what the user search as the search string.
          * @returns {Promise<void>}
          */
         async getItems() {

@@ -1,8 +1,6 @@
 package controllers;
 
-import actions.ActionState;
-import actions.Admin;
-import actions.LoggedIn;
+import actions.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.BadRequestException;
@@ -37,12 +35,11 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
  */
 public class UserController extends Controller {
 
-    public static final String MESSAGE_KEY = "message";
-    public static final String GENDER_KEY = "gender";
-    final Logger log = LoggerFactory.getLogger(this.getClass());
+    private static final String MESSAGE_KEY = "message";
+    private static final String GENDER_KEY = "gender";
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final UserRepository userRepository;
     private HttpExecutionContext httpExecutionContext;
-    private final Security security;
     private final PhotoRepository photoRepository;
     private final ExceptionUtil exceptionUtil;
 
@@ -50,12 +47,10 @@ public class UserController extends Controller {
     public UserController(
         UserRepository userRepository,
         HttpExecutionContext httpExecutionContext,
-        Security security,
         PhotoRepository photoRepository,
         ExceptionUtil exceptionUtil) {
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
-        this.security = security;
         this.photoRepository = photoRepository;
         this.exceptionUtil = exceptionUtil;
     }
@@ -92,7 +87,7 @@ public class UserController extends Controller {
         JsonNode jsonBody = request.body().asJson();
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        if (!security.userHasPermission(userFromMiddleware, userId)) {
+        if (!Security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 
@@ -276,33 +271,6 @@ public class UserController extends Controller {
     }
 
     /**
-     * A function that adds a passport to a user based on the given user ID
-     *
-     * @param userId  the traveller ID
-     * @param request Object to get the passportId to add
-     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> addPassport(int userId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-
-
-        int passportId = request.body().asJson().get("passportId").asInt();
-
-        return userRepository.getPassportById(passportId)
-                .thenApplyAsync(passport -> {
-                    if (!passport.isPresent()) {
-                        return notFound();
-                    }
-                    List<Passport> passports = user.getPassports();
-                    passports.add(passport.get());
-                    user.setPassports(passports);
-                    user.save();
-                    return ok();
-                }, httpExecutionContext.current());
-    }
-
-    /**
      * Delete a user given its id
      * @param userId the id of the user to be deleted
      * @param request the request passed by the controller
@@ -365,6 +333,15 @@ public class UserController extends Controller {
                 }, httpExecutionContext.current());
     }
 
+  /**
+   * Deletes a user.
+   *
+   * @param userDoingDeletion the user performing the delete.
+   * @param message the message object.
+   * @param userBeingDeleted the user being deleted.
+   * @param completableFuture the promise containing the delete functions.
+   * @return the result of the deletion.
+   */
     private Result getResult(User userDoingDeletion, ObjectNode message, User userBeingDeleted,
                              CompletableFuture<Result> completableFuture) {
         try {
@@ -413,88 +390,6 @@ public class UserController extends Controller {
                 })
                 .thenApplyAsync(user -> ok(Json.toJson(user)))
                 .exceptionally(exceptionUtil::getResultFromError);
-    }
-
-    /**
-     * A function that deletes a passport from a user based on the given user ID
-     *
-     * @param userId     the traveller ID
-     * @param passportId the passport ID
-     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> removePassport(int userId, int passportId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-
-        return userRepository.getPassportById(passportId)
-                .thenApplyAsync(passport -> {
-                    if (!passport.isPresent()) {
-                        return notFound();
-                    }
-                    List<Passport> passports = user.getPassports();
-                    passports.remove(passport.get());
-                    user.setPassports(passports);
-                    user.save();
-                    log.debug(user.getPassports().toString());
-                    return ok();
-                }, httpExecutionContext.current());
-    }
-
-    /**
-     * A function that adds a nationality to the user based on the user ID given
-     *
-     * @param userId  the traveller ID
-     * @param request Object to get the nationality to add.
-     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> addNationality(int userId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-        int nationalityId = request.body().asJson().get("nationalityId").asInt();
-
-        return userRepository.getNationalityById(nationalityId)
-                .thenApplyAsync(nationality -> {
-                    if (!nationality.isPresent()) {
-                        return notFound();
-                    }
-                    List<Nationality> nationalities = user.getNationalities();
-                    nationalities.add(nationality.get());
-                    user.setNationalities(nationalities);
-                    user.save();
-                    return ok();
-                }, httpExecutionContext.current());
-    }
-
-    /**
-     * Deletes a nationality for a logged in user given a nationality id in the request body
-     *
-     * @param userId  the traveller for which we want to delete the nationality
-     * @param request the request passed by the routes file
-     * @return a completion stage and a status code 200 if the request is successful, otherwise returns 500.
-     */
-    @With(LoggedIn.class)
-    public CompletionStage<Result> deleteNationalityForUser(int userId, int nationalityId, Http.Request request) {
-        User user = request.attrs().get(ActionState.USER);
-        return userRepository.getNationalityById(nationalityId)
-                .thenApplyAsync(optionalNationality -> {
-                    if (!optionalNationality.isPresent()) {
-                        return notFound("Could not find nationality " + nationalityId);
-                    }
-                    // now that we know that the nationality definitely exists
-                    // extract the Nationality from the Optional<Nationality> object
-                    Nationality nationality = optionalNationality.get();
-                    List<Nationality> userNationalities = user.getNationalities();
-
-                    // return not found if the user did not have that nationality already
-                    if (!userNationalities.contains(nationality)) {
-                        return notFound("User does not have nationality " + nationalityId);
-                    }
-
-                    userNationalities.remove(nationality);
-                    user.setNationalities(userNationalities);
-                    user.save();
-                    return ok("Successfully deleted nationality");
-                }, httpExecutionContext.current());
     }
 
     /**

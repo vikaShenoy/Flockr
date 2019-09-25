@@ -7,7 +7,6 @@ import { endpoint } from "../../../../utils/endpoint";
 
 const server = config.webrtcUrl;
 
-
 /**
  * A class responsible with sending and receiving web rtc data
  * from the janus server
@@ -151,7 +150,7 @@ export class VoiceChat extends EventEmitter {
   };
 
   /**
-   * Unmutes the users mic
+   * Un-mutes the users mic
    */
   unmute = session => {
     const publish = { request: "configure", muted: false };
@@ -162,7 +161,6 @@ export class VoiceChat extends EventEmitter {
    * Once the user has joined the room, they can create an offer to start
    * sending their audio data
    */
-
   createOffer = () => {
     this.channel.createOffer({
       media: { video: false }, // This is an audio only room

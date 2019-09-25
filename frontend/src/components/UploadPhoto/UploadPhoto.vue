@@ -150,10 +150,7 @@
   @import "../../styles/_variables.scss";
 
   #dialog-card {
-    padding-top: 30px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 30px;
+    padding: 30px 10px;
   }
 
   #uploader {

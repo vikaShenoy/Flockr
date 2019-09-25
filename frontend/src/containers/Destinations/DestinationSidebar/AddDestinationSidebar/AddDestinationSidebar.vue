@@ -327,17 +327,33 @@
           timeout: 5000
         });
       },
+      /**
+       * Updates the country to the new country value
+       * @param newValue
+       */
       updateCountry(newValue) {
         this.destination.destinationCountry = newValue;
       },
+      /**
+       * Updates the traveller type to the new selected traveller type
+       * @param travellerTypes
+       */
       updateSelectedTravellerType(travellerTypes) {
         this.destination.travellerTypes = travellerTypes.filter(type => typeof type !== 'string');
       }
     },
     watch: {
+      /**
+       * When changes in the destinationLat occurs, the latitude is updated to the new value
+       * @param latitude the new latitude coordinate
+       */
       destinationLat(latitude) {
         this.latitude = latitude;
       },
+      /**
+       * When changes in the destinationLon occurs, the longitude is updated to the new value
+       * @param longitude the new longitude coordinate
+       */
       destinationLon(longitude) {
         this.longitude = longitude;
       }

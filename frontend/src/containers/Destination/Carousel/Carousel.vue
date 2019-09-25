@@ -174,9 +174,16 @@ export default {
     permissionUpdated(newValue) {
       this.$emit("permissionUpdated", newValue, this.currentPhotoIndex);
     },
+    /**
+     * Opens the Add Photo Dialog
+     */
     openAddPhotoDialog: function() {
       this.showAddPhotoDialog = true;
     },
+    /**
+     * Closes the Add Photo Dialog
+     * @param newVal 
+     */
     closeAddPhotoDialogHandler(newVal) {
       this.showAddPhotoDialog = newVal;
     }

@@ -5,11 +5,11 @@
 
       <div id="edit-btn">
         <v-btn
-                v-if="userStore.userId === userId"
-                small
-                flat
-                color="secondary"
-                @click="toggleEditSave"
+          v-if="userStore.userId === userId"
+          small
+          flat
+          color="secondary"
+          @click="toggleEditSave"
         >
           <v-icon v-if="!isEditing">edit</v-icon>
           <span v-else>Save</span>
@@ -19,39 +19,42 @@
     <v-card id="nationalities">
       <div v-if="!isEditing">
         <v-chip
-                v-for="nationality in userNationalities"
-                v-bind:key="nationality.nationalityId"
-                color="primary"
-                text-color="white">
-          <CountryDisplay v-bind:country="nationality.nationalityCountry"/>
+          v-for="nationality in userNationalities"
+          :key="nationality.nationalityId"
+          color="primary"
+          text-color="white"
+        >
+          <CountryDisplay :country="nationality.nationalityCountry"/>
         </v-chip>
 
         <span v-if="!userNationalities.length">Please provide at least one Nationality</span>
       </div>
 
       <v-combobox
-              v-else
-              v-model="userNat"
-              :items="this.validNationalities"
-              :item-text="getNationalityText"
-              label="Your nationality"
-              :error-messages="nationalityErrors"
-              @change="updateSelectedNationalities"
-              chips
-              clearable
-              solo
-              multiple
+        ref="combobox"
+        v-else
+        v-model="userNat"
+        :items="this.validNationalities"
+        :item-text="getNationalityText"
+        label="Your nationality"
+        :error-messages="nationalityErrors"
+        deletable-chips
+        :value="userNat"
+        @input="updateSelectedNationalities"
+        chips
+        clearable
+        solo
+        multiple
       >
-
         <template v-slot:selection="data">
           <v-chip
-                  color="primary"
-                  text-color="white"
-                  :selected="data.selected"
-                  close
-                  @input="remove(data.item)"
+            color="primary"
+            text-color="white"
+            :selected="data.selected"
+            close
+            @input="remove(data.item)"
           >
-            <strong>{{ data.item.nationalityName }}</strong>&nbsp;
+            <strong>{{ data.item.nationalityName }}</strong>
           </v-chip>
         </template>
       </v-combobox>
@@ -93,7 +96,7 @@
           const nationalities = await getNationalities();
           this.allNationalities = nationalities;
         } catch (e) {
-          // Add error handling later
+          this.$root.$emit('show-error-snackbar', 'Could not load nationalities', 3000);
         }
       },
       /**
@@ -110,7 +113,8 @@
 
           this.nationalityErrors = [];
           this.userNationalities.filter(nationality => typeof nationality !== 'string');
-          this.userNat.filter(nationality => typeof nationality !== 'string');
+          this.userNat = this.userNat.filter(nationality => typeof nationality !== 'string');
+          this.$refs.combobox.lazySearch = '';
 
           const oldNationalities = this.userNationalities;
           const newNationalities = this.userNat;
@@ -142,7 +146,10 @@
        * @param nationalities the chosen nationality values
        */
       updateSelectedNationalities(nationalities) {
-        this.userNat = nationalities.filter(nationality => typeof nationality !== 'string');
+        const newNationalities = nationalities.filter(nationality => typeof nationality !== 'string');
+        this.userNat = newNationalities;
+        this.$refs.combobox.lazySearch = '';
+        this.$emit('input', newNationalities);
       },
     }
   };

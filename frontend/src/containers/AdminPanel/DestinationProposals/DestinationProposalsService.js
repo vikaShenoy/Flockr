@@ -33,7 +33,6 @@ export async function acceptProposal(destinationProposalId) {
                 .set("Authorization", localStorage.getItem("authToken"));
 }
 
-
 /**
  * Decline a destination proposal.
  * @param destinationProposalId id of the proposal to reject (delete).
@@ -46,7 +45,6 @@ export async function declineProposal(destinationProposalId) {
 
 /**
  * Sends a request to update a destination Proposal.
- *
  * @param proposal the proposal to update.
  * @return {Promise<Object>} the promise containing the updated proposal.
  */

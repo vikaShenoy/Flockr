@@ -8,10 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.ConflictingRequestException;
 import exceptions.UnauthorizedException;
 import models.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import play.libs.Json;
-import play.mvc.Http;
 import play.mvc.Http.Request;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Result;
@@ -38,28 +35,24 @@ public class AuthController {
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
     private final HttpExecutionContext httpExecutionContext;
-    private final Security security;
     private final ExceptionUtil exceptionUtil;
     private static final String FIRST_NAME_KEY = "firstName";
     private static final String MIDDLE_NAME_KEY = "middleName";
     private static final String LAST_NAME_KEY = "lastName";
     private static final String MESSAGE_KEY = "message";
-    private static final String PASSWORD_KEY = "password";
+    private static final String PWD_KEY = "password";
     private static final String EMAIL_KEY = "email";
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
     public AuthController(AuthRepository authRepository,
         UserRepository userRepository,
         HttpExecutionContext httpExecutionContext,
-        Security security,
         Responses responses,
         RoleRepository roleRepository,
         ExceptionUtil exceptionUtil) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
-        this.security = security;
         this.exceptionUtil = exceptionUtil;
     }
 
@@ -99,7 +92,7 @@ public class AuthController {
                 message.put(MESSAGE_KEY, "Please provide a valid email address with the JSON key as email");
                 return badRequest(message);
             });
-        } else if (!(jsonRequest.has(PASSWORD_KEY))) {
+        } else if (!(jsonRequest.has(PWD_KEY))) {
             return supplyAsync(() -> {
                 ObjectNode message = Json.newObject();
                 message.put(MESSAGE_KEY, "Please provide a password with at least 6 characters with the JSON key as password");
@@ -111,9 +104,9 @@ public class AuthController {
         String firstName = jsonRequest.get(FIRST_NAME_KEY).asText();
         String lastName = jsonRequest.get(LAST_NAME_KEY).asText();
         String email = jsonRequest.get(EMAIL_KEY).asText();
-        String password = jsonRequest.get(PASSWORD_KEY).asText();
-        String hashedPassword = this.security.hashPassword(password);
-        String userToken = this.security.generateToken();
+        String password = jsonRequest.get(PWD_KEY).asText();
+        String hashedPassword = Security.hashPassword(password);
+        String userToken = Security.generateToken();
 
         // Middle name is optional and checks if the middle name is a valid name
         if (jsonRequest.has(MIDDLE_NAME_KEY) && (!isAlpha(middleName) || middleName.length() < 2)) {
@@ -174,8 +167,8 @@ public class AuthController {
         JsonNode jsonBody = request.body().asJson();
 
         String email = jsonBody.get(EMAIL_KEY).asText();
-        String password = jsonBody.get(PASSWORD_KEY).asText();
-        String hashedPassword = this.security.hashPassword(password);
+        String password = jsonBody.get(PWD_KEY).asText();
+        String hashedPassword = Security.hashPassword(password);
 
         return authRepository.getUserByCredentials(email, hashedPassword)
                 .thenComposeAsync(optionalUser -> {
@@ -185,11 +178,11 @@ public class AuthController {
 
                     User user = optionalUser.get();
 
-                    if (!security.comparePasswordAndHash(password, user.getPasswordHash())) {
+                    if (!Security.comparePasswordAndHash(password, user.getPasswordHash())) {
                         throw new CompletionException(new UnauthorizedException());
                     }
 
-                    String token = this.security.generateToken();
+                    String token = Security.generateToken();
                     user.setToken(token);
 
                     return userRepository.updateUser(user);
