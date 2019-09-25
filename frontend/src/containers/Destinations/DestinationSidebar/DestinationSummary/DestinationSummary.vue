@@ -7,8 +7,6 @@
             alt="avatar"
             class="avatar"
     />
-
-
     </v-avatar>
 
     <div class="content">
@@ -53,6 +51,11 @@
       }
     },
     methods: {
+      /**
+       * Gets the destination photos
+       * @param destinationId the destination id
+       * @returns {Promise<void>}
+       */
       getDestinationPhoto: async function (destinationId) {
         const res = await superagent.get(endpoint(`/destinations/${destinationId}/photos`))
             .set("Authorization", localStorage.getItem("authToken"));
@@ -61,6 +64,11 @@
           this.imageSrc = endpoint(`/users/photos/${photoId}`) + '?Authorization=' + localStorage.getItem("authToken");
         }
       },
+      /**
+       * Shows the delete destination prompt
+       * @param event
+       * @param destinationId the destination id
+       */
       showDeletePrompt(event, destinationId) {
         event.stopPropagation();
         this.$emit("showDeleteDestination", destinationId);
@@ -71,7 +79,6 @@
 
 <style lang="scss" scoped>
   @import "../../../../styles/_variables.scss";
-
 
   .content {
     display: flex;
@@ -108,7 +115,6 @@
     font-size: 0.9rem;
     color: $text-dark-grey;
   }
-
 
   .delete-destination {
     transition: background-color 0.1s linear;

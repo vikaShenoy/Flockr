@@ -77,7 +77,7 @@
             title="Cannot delete destination"
             :dialog.sync="cannotDeleteDestDialog"
     >
-      The destination that you are trying to delete is in the following trips
+      The destination that you are trying to delete is in the following trips:
 
       <ul>
         <li v-for="usedTrip in usedTrips" v-bind:key="usedTrip.tripId">{{ usedTrip.tripName }}</li>
@@ -159,12 +159,16 @@
       async getUserTrips() {
         this.trips = await getUserTrips();
       },
-
+      /**
+       * Toggles the editor and resets the latitude and longitude coordinates
+       */
       toggleEditor() {
         this.resetCoordinates();
         this.shouldShowEditor = !this.shouldShowEditor;
       },
-
+      /**
+       * Emits an add new destination function
+       */
       addNewDestination(destination) {
         this.$emit('addNewDestination', destination);
         this.toggleEditor();
@@ -201,7 +205,10 @@
           return usedTripDestinations.length;
         });
       },
-
+      /**
+       * Shows the trips that the destination is being used on when destination
+       * is trying to be deleted
+       */
       showDeleteDestination(destinationId) {
         const usedTrips = this.getTripsUsingDestination(destinationId);
         if (usedTrips.length) {
@@ -220,6 +227,9 @@
       }
     },
     computed: {
+      /**
+       * Sets which destinations should be shown: either your destinations or the public destinations
+       */
       shouldShowSpinner() {
         return this.viewOption === "your" && !this.yourDestinations || this.viewOption === "public" && !this.publicDestinations;
       },

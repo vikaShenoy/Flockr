@@ -16,8 +16,6 @@
         </v-layout>
       </v-card-title>
 
-      
-
       <v-card-text>
 
         <v-stepper v-model="currStepperStep">
@@ -46,19 +44,6 @@
                 label="District"
                 :rules="requiredRule"
               />
-
-              <!--
-              <v-select
-                v-model="destination.destinationDistrict.districtId"
-                :value="destination.destinationDistrict.districtId"
-                :items="districts"
-                item-value="districtId"
-                item-text="districtName"
-                :disabled="!destination.destinationCountry.countryId"
-                label="District"
-                :rules="requiredRule"
-              />
-              -->
 
               <v-combobox v-model="destination.travellerTypes" :items="travellerTypes" item-text="travellerTypeName"
                 item-value="travellerTypeId" :rules="requiredRule" label="Traveller Types" chips clearable solo
@@ -308,18 +293,6 @@ export default {
     async getDestinationTypes() {
       this.destinationTypes = await requestDestinationTypes();
     },
-    // /**
-    //  * Gets districts in a specific country and sets it as state
-    //  * @param {number} countryId The country of where to get districts from
-    //  */
-    // async getDistricts(countryId) {
-    //   try {
-    //     const districts = await requestDistricts(countryId);
-    //     this.districts = districts;
-    //   } catch (e) {
-    //     this.showError("Could not get districts");
-    //   }
-    // },
     /**
      * Gets all traveller types
      */
@@ -330,6 +303,9 @@ export default {
         this.showError("Could not get traveller types");
       }
     },
+    /**
+     * Shows the snackbar with the given error message
+     */
     showError(errorMessage) {
       this.$emit("showError", errorMessage);
     },
@@ -405,6 +381,9 @@ export default {
             }
         }
     },
+    /**
+     * Update the destination to the new country value
+     */
     updateCountry(newValue) {
       this.destination.destinationCountry = newValue;
     }
@@ -428,24 +407,7 @@ export default {
      */
     dataDialog() {
       this.$emit("dialogChanged", this.dataDialog);
-    },
-    // /**
-    //  * Called when the country is selected.
-    //  * Requests the district for the given country.
-    //  */
-    // async destCountry() {
-    //   try {
-    //     this.districts = await requestDistricts(
-    //       this.destination.destinationCountry.countryId
-    //     );
-    //   } catch (error) {
-    //     this.$emit("displayMessage", {
-    //       show: true,
-    //       text: error.message,
-    //       color: "red"
-    //     });
-    //   }
-    // },
+    }
   }
 };
 </script>
