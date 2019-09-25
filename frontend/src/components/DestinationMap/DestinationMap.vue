@@ -123,9 +123,9 @@
   import {endpoint} from "../../utils/endpoint.js";
   import UserStore from "../../stores/UserStore";
 
-  const publicIcon = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
-  const privateIcon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
-  const pingIcon = "http://earth.google.com/images/kml-icons/track-directional/track-8.png";
+  const publicIcon = "https://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+  const privateIcon = "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+  const pingIcon = "https://earth.google.com/images/kml-icons/track-directional/track-8.png";
 
   export default {
     data() {
