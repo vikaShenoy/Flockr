@@ -41,7 +41,7 @@
 
     </div>
 
-    <div id="destinations-list" ref="destinationsList" @scroll="handleScrolling">
+    <div id="destinations-list" ref="destinationsList" @scroll.passive="handleScrolling">
       <div v-if="shouldShowEditor">
         <AddDestinationSidebar
           v-on:addNewDestination="addNewDestination"
