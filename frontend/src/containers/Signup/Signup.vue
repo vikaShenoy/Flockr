@@ -30,12 +30,18 @@
                       label="Gender"/>
           </v-card>
           <v-spacer row>
-          <v-btn color="primary" @click="currStepperStep = 2" :disabled="!isBasicInfoStepperCompleted">Continue</v-btn>
 
-          <v-btn class="sign_in" color="primary"
-                 @click="signIn()">
-            Sign in
-          </v-btn>
+              <div class="button-row">
+                <v-btn color="secondary"
+                      @click="signIn()"
+                      flat
+                      >
+                  Sign in
+                </v-btn>
+
+                <v-btn color="primary" class="continue-btn" @click="currStepperStep = 2" :disabled="!isBasicInfoStepperCompleted">Continue</v-btn>
+              </div> 
+
           </v-spacer>
         </v-stepper-content>
 
@@ -51,10 +57,14 @@
                           v-on:keyup.enter="signup"/>
           </v-card>
 
-          <v-btn :loading="loading" :disabled="!isLoginInfoStepperCompleted" color="primary" @click="signup()">
-            Continue
-          </v-btn>
-          <v-btn flat @click="currStepperStep = 1">Go back</v-btn>
+          <div class="button-row">
+            <v-btn flat @click="currStepperStep = 1">Go back</v-btn>
+
+            <v-btn :loading="loading" :disabled="!isLoginInfoStepperCompleted" color="primary" @click="signup()">
+              Continue
+            </v-btn>
+          </div>
+
         </v-stepper-content>
 
         <v-stepper-content step="3">
@@ -428,9 +438,15 @@
     justify-content: center;
   }
 
-  .sign_in {
-    float:right;
+  .button-row {
+    display: flex;
+    justify-content: space-between;
   }
+
+  .continue-btn {
+    float: right;
+  }
+
 </style>
 
 
