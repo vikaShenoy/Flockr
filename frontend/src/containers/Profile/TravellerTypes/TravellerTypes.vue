@@ -33,6 +33,7 @@
 
       <v-combobox
               v-else
+              ref="combobox"
               v-model="editingTravellerTypes"
               :items="allTravellerTypes"
               :item-text="getTravellerTypeName"
@@ -139,6 +140,7 @@
        */
       updateSelectedTravellerType(travellerTypes) {
         this.editingTravellerTypes = travellerTypes.filter(type => typeof type !== 'string');
+        this.$refs.combobox.lazySearch = "";
       }
     }
   }
