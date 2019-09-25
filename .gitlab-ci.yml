@@ -61,7 +61,7 @@ staging-run:
   - rm -rf /var/www/dev/storage || true
   - cp -r /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/storage /var/www/dev/storage || true
   - rm -rf /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT || true
-  - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev ||true
+  - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
   - cp -r /var/www/dev/storage /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/
   - cd /var/www/dev/seng302-team-500-0.0.1-SNAPSHOT/bin
   - pm2 start "bash seng302-team-500 -Dhttp.port=9443" --name=dev-server
@@ -79,7 +79,7 @@ production-run:
   - rm -rf /var/www/prod/storage || true
   - cp -r /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage /var/www/prod/storage || true
   - rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT || true
-  - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/dev
+  - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
   - cp -r /var/www/prod/storage /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/ || true
   - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/bin
   - pm2 start "bash seng302-team-500 -Dhttp.port=7443" --name=prod-server
