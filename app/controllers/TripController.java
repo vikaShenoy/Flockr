@@ -32,6 +32,7 @@ import play.mvc.With;
 import repository.DestinationRepository;
 import repository.TripRepository;
 import repository.UserRepository;
+import util.ExceptionUtil;
 import util.Security;
 import util.TripUtil;
 import java.util.stream.Collectors;
@@ -51,11 +52,18 @@ public class TripController extends Controller {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final DestinationRepository destinationRepository;
     private final TripNotifier tripNotifier;
+    private final ExceptionUtil exceptionUtil;
 
     @Inject
-    public TripController(TripRepository tripRepository, Security security, UserRepository userRepository,
-                          HttpExecutionContext httpExecutionContext, TripUtil tripUtil,
-                          DestinationRepository destinationRepository, TripNotifier tripNotifier) {
+    public TripController(
+        TripRepository tripRepository,
+        Security security,
+        UserRepository userRepository,
+        HttpExecutionContext httpExecutionContext,
+        TripUtil tripUtil,
+        DestinationRepository destinationRepository,
+        TripNotifier tripNotifier,
+        ExceptionUtil exceptionUtil) {
         this.tripRepository = tripRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.tripUtil = tripUtil;
@@ -63,6 +71,7 @@ public class TripController extends Controller {
         this.userRepository = userRepository;
         this.destinationRepository = destinationRepository;
         this.tripNotifier = tripNotifier;
+        this.exceptionUtil = exceptionUtil;
     }
 
     /**
@@ -146,11 +155,7 @@ public class TripController extends Controller {
                         return tripRepository.saveTrip(trip);
                       })
                   .thenApplyAsync(updatedTrip -> created(Json.toJson(updatedTrip)))
-                  .exceptionally(
-                      e -> {
-                        log.error(e.getMessage());
-                        return internalServerError();
-                      });
+                  .exceptionally(exceptionUtil::getResultFromError);
             },
             httpExecutionContext.current());
     }
@@ -226,16 +231,7 @@ public class TripController extends Controller {
                         httpExecutionContext.current())
                 .thenApplyAsync(trip -> (Result) ok(), httpExecutionContext.current())
                 // Exceptions / error checking
-                .exceptionally(
-                        e -> {
-                            try {
-                                throw e.getCause();
-                            } catch (NotFoundException notFoundError) {
-                                return notFound("Trip id was not found");
-                            } catch (Throwable serverError) {
-                                return internalServerError();
-                            }
-                        });
+                .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**
@@ -279,29 +275,7 @@ public class TripController extends Controller {
                             return tripRepository.restoreTrip(trip);
                         })
                 .thenApplyAsync(trip -> ok(Json.toJson(trip)))
-                .exceptionally(
-                        error -> {
-                            ObjectNode message = Json.newObject();
-                            try {
-                                throw error.getCause();
-                            } catch (BadRequestException e) {
-                                message.put(MESSAGE_KEY, e.getMessage());
-                                return badRequest(message);
-                            } catch (UnauthorizedException e) {
-                                message.put(MESSAGE_KEY, e.getMessage());
-                                return unauthorized(message);
-                            } catch (ForbiddenRequestException e) {
-                                message.put(MESSAGE_KEY, e.getMessage());
-                                return forbidden(message);
-                            } catch (NotFoundException e) {
-                                message.put(MESSAGE_KEY, e.getMessage());
-                                return notFound(message);
-                            } catch (Throwable e) {
-                                log.error(e.getMessage());
-                                log.error("An unexpected error has occurred", e);
-                                return internalServerError();
-                            }
-                        });
+                .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**
@@ -409,21 +383,7 @@ public class TripController extends Controller {
                                     });
                         },
                         httpExecutionContext.current())
-                .exceptionally(
-                        e -> {
-                            try {
-                                throw e.getCause();
-                            } catch (NotFoundException notFoundError) {
-                                return notFound();
-                            } catch (BadRequestException badRequestError) {
-                                return badRequest();
-                            } catch (ForbiddenRequestException forbiddenRequestError) {
-                                return forbidden();
-                            } catch (Throwable serverError) {
-                                log.error(serverError.getMessage());
-                                return internalServerError();
-                            }
-                        });
+                .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**

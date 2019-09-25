@@ -20,6 +20,7 @@ import play.mvc.With;
 import repository.AuthRepository;
 import repository.RoleRepository;
 import repository.UserRepository;
+import util.ExceptionUtil;
 import util.Responses;
 import util.Security;
 import javax.inject.Inject;
@@ -38,6 +39,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final HttpExecutionContext httpExecutionContext;
     private final Security security;
+    private final ExceptionUtil exceptionUtil;
     private static final String FIRST_NAME_KEY = "firstName";
     private static final String MIDDLE_NAME_KEY = "middleName";
     private static final String LAST_NAME_KEY = "lastName";
@@ -47,13 +49,18 @@ public class AuthController {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
-    public AuthController(AuthRepository authRepository, UserRepository userRepository,
-                          HttpExecutionContext httpExecutionContext, Security security, Responses responses,
-                          RoleRepository roleRepository) {
+    public AuthController(AuthRepository authRepository,
+        UserRepository userRepository,
+        HttpExecutionContext httpExecutionContext,
+        Security security,
+        Responses responses,
+        RoleRepository roleRepository,
+        ExceptionUtil exceptionUtil) {
         this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
+        this.exceptionUtil = exceptionUtil;
     }
 
     /**
@@ -154,20 +161,7 @@ public class AuthController {
             return authRepository.insert(user).thenApplyAsync(insertedUser -> created(Json.toJson(insertedUser)),
                 httpExecutionContext.current());
         }), httpExecutionContext.current())
-        .exceptionally(error -> {
-            try {
-                throw error.getCause();
-            } catch (ConflictingRequestException e) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, e.getMessage());
-                return Results.status(Http.Status.CONFLICT, message);
-            } catch (Throwable throwable) {
-                log.error(throwable.getMessage());
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, "Something went wrong trying to sign up");
-                return internalServerError(message);
-            }
-        });
+        .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**
@@ -205,16 +199,7 @@ public class AuthController {
                             return ok(userJson);
                         }
                         , httpExecutionContext.current())
-                .exceptionally(e -> {
-                    try {
-                        throw e.getCause();
-                    } catch (UnauthorizedException noAuthError) {
-                        return unauthorized();
-                    } catch (Throwable genericError) {
-                        log.error(genericError.getMessage());
-                        return internalServerError();
-                    }
-                });
+                .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**

@@ -34,6 +34,7 @@ import play.mvc.*;
 import repository.DestinationRepository;
 import repository.PhotoRepository;
 import util.DestinationUtil;
+import util.ExceptionUtil;
 import util.Security;
 
 /**
@@ -48,6 +49,7 @@ public class DestinationController extends Controller {
   private final DestinationUtil destinationUtil;
   private final Logger log = LoggerFactory.getLogger(this.getClass());
   private final Security security;
+  private final ExceptionUtil exceptionUtil;
 
 
 
@@ -57,12 +59,14 @@ public class DestinationController extends Controller {
       HttpExecutionContext httpExecutionContext,
       PhotoRepository photoRepository,
       DestinationUtil destinationUtil,
-      Security security) {
+      Security security,
+      ExceptionUtil exceptionUtil) {
     this.photoRepository = photoRepository;
     this.destinationRepository = destinationRepository;
     this.httpExecutionContext = httpExecutionContext;
     this.destinationUtil = destinationUtil;
     this.security = security;
+    this.exceptionUtil = exceptionUtil;
   }
 
   /**
@@ -264,17 +268,8 @@ public class DestinationController extends Controller {
               },
               httpExecutionContext.current())
           .thenApplyAsync(insertedDestination -> created(Json.toJson(insertedDestination)))
-          .exceptionally(
-              e -> {
-                try {
-                  throw e.getCause();
-                } catch (ConflictingRequestException conflictingException) {
-                  return status(409, conflictingException.getMessage());
-                } catch (Throwable generalException) {
-                    log.error(generalException.getMessage());
-                  return internalServerError("Error creating destinations");
-                }
-              });
+          .exceptionally(exceptionUtil::getResultFromError);
+
     } catch (BadRequestException e) {
       ObjectNode message = Json.newObject();
       message.put(MESSAGE_KEY, "Please provide a valid Destination with complete data");
@@ -391,24 +386,7 @@ public class DestinationController extends Controller {
             },
             httpExecutionContext.current())
         .thenApplyAsync(destination -> ok(Json.toJson(destination)), httpExecutionContext.current())
-        .exceptionally(
-            error -> {
-              try {
-                throw error.getCause();
-              } catch (NotFoundException notFoundE) {
-                response.put(MESSAGE_KEY, "There is no destination with the given ID found");
-                return notFound(response);
-              } catch (ForbiddenRequestException forbiddenRequest) {
-                response.put(MESSAGE_KEY, forbiddenRequest.getMessage());
-                return forbidden(response);
-              } catch (BadRequestException badRequestE) {
-                response.put(MESSAGE_KEY, badRequestE.getMessage());
-                return badRequest(response);
-              } catch (Throwable ee) {
-                    log.error(ee.getMessage());
-                    return internalServerError(response);
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -447,23 +425,7 @@ public class DestinationController extends Controller {
             },
             httpExecutionContext.current())
         .thenApplyAsync(destId -> (Result) ok(), httpExecutionContext.current())
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundE) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, "The given destination id is not found");
-                return notFound(message);
-              } catch (ForbiddenRequestException forbiddenReqE) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, forbiddenReqE.getMessage());
-                return forbidden(message);
-              } catch (Throwable serverError) {
-                log.error(serverError.getMessage());
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -502,28 +464,7 @@ public class DestinationController extends Controller {
               return destinationRepository.undoDeletion(destination);
             })
         .thenApplyAsync(destination -> ok(Json.toJson(destination)))
-        .exceptionally(
-            error -> {
-              ObjectNode message = Json.newObject();
-              try {
-                throw error.getCause();
-              } catch (BadRequestException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return badRequest(message);
-              } catch (UnauthorizedException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return unauthorized(message);
-              } catch (ForbiddenRequestException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return forbidden(message);
-              } catch (NotFoundException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return notFound(message);
-              } catch (Throwable e) {
-                log.error("An unexpected error has occurred", e);
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -542,7 +483,7 @@ public class DestinationController extends Controller {
               return ok(countriesJson);
             },
             httpExecutionContext.current())
-        .exceptionally(e -> internalServerError());
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -561,7 +502,7 @@ public class DestinationController extends Controller {
               return ok(destinationTypesJson);
             },
             httpExecutionContext.current())
-        .exceptionally(e -> internalServerError());
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -643,17 +584,7 @@ public class DestinationController extends Controller {
                         return created(destinationPhotoJson);
                       });
             })
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException badReqException) {
-                return notFound(badReqException.getMessage());
-              } catch (Throwable throwableException) {
-                log.error(throwableException.getMessage());
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -783,27 +714,7 @@ public class DestinationController extends Controller {
               return destinationRepository.undoDeleteDestinationPhoto(photo);
             })
         .thenApplyAsync(photo -> ok(Json.toJson(photo)))
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (BadRequestException error) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, error.getMessage());
-                return badRequest(message);
-              } catch (NotFoundException error) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, error.getMessage());
-                return notFound(message);
-              } catch (ForbiddenRequestException error) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, error.getMessage());
-                return forbidden(message);
-              } catch (Throwable throwable) {
-                log.error("500 - Internal Server Error", throwable);
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -854,19 +765,7 @@ public class DestinationController extends Controller {
               return destinationRepository.createProposal(proposal);
             })
         .thenApplyAsync(proposal -> ok(Json.toJson(proposal)))
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (BadRequestException badRequestException) {
-                return badRequest(badRequestException.getMessage());
-              } catch (ForbiddenRequestException forbiddenException) {
-                return forbidden(forbiddenException.getMessage());
-              } catch (Throwable throwableException) {
-                log.error(throwableException.getMessage());
-                return internalServerError(throwableException.getMessage());
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -898,27 +797,7 @@ public class DestinationController extends Controller {
               return destinationRepository.updateDestinationProposal(destinationProposal);
             })
         .thenApplyAsync(destinationProposal -> ok(Json.toJson(destinationProposal)))
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, notFoundException.getMessage());
-                return notFound(message);
-              } catch (BadRequestException badRequestException) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, badRequestException.getMessage());
-                return badRequest(message);
-              } catch (ForbiddenRequestException forbiddenRequestException) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, forbiddenRequestException.getMessage());
-                return forbidden(message);
-              } catch (Throwable throwable) {
-                log.error(throwable.getMessage());
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -1012,23 +891,7 @@ public class DestinationController extends Controller {
             },
             httpExecutionContext.current())
         .thenApplyAsync(destinationProposal -> (Result) ok(), httpExecutionContext.current())
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (ForbiddenRequestException forbiddenReqE) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, forbiddenReqE.getMessage());
-                return forbidden(message);
-              } catch (NotFoundException notFoundE) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, notFoundE.getMessage());
-                return notFound(message);
-              } catch (Throwable serverError) {
-                log.info(serverError.getMessage());
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -1091,27 +954,6 @@ public class DestinationController extends Controller {
               return destinationRepository.undoDestinationProposalDelete(destinationProposal);
             })
         .thenApplyAsync(destinationProposal -> ok(Json.toJson(destinationProposal)))
-        .exceptionally(
-            error -> {
-              ObjectNode message = Json.newObject();
-              try {
-                throw error.getCause();
-              } catch (BadRequestException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return badRequest(message);
-              } catch (ForbiddenRequestException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return forbidden(message);
-              } catch (NotFoundException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return notFound(message);
-              } catch (UnauthorizedException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return unauthorized(message);
-              } catch (Throwable e) {
-                log.error("An unexpected error has occurred", e);
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 }

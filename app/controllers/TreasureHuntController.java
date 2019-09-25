@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.Date;
 import java.util.concurrent.CompletionStage;
+import util.ExceptionUtil;
 
 import static util.TreasureHuntUtil.validateTreasureHunts;
 
@@ -42,9 +43,10 @@ public class TreasureHuntController extends Controller {
   private static final String TREASURE_HUNT_DESTINATION_ID_KEY = "treasureHuntDestinationId";
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
-  private TreasureHuntRepository treasureHuntRepository;
+  private final TreasureHuntRepository treasureHuntRepository;
+  private final ExceptionUtil exceptionUtil;
   private final DatabaseExecutionContext executionContext;
-  private UserRepository userRepository;
+  private final UserRepository userRepository;
 
   /**
    * Dependency Injection.
@@ -57,10 +59,12 @@ public class TreasureHuntController extends Controller {
   public TreasureHuntController(
       TreasureHuntRepository treasureHuntRepository,
       UserRepository userRepository,
-      DatabaseExecutionContext executionContext) {
+      DatabaseExecutionContext executionContext,
+      ExceptionUtil exceptionUtil) {
     this.treasureHuntRepository = treasureHuntRepository;
     this.userRepository = userRepository;
     this.executionContext = executionContext;
+    this.exceptionUtil = exceptionUtil;
   }
 
   /**
@@ -152,27 +156,7 @@ public class TreasureHuntController extends Controller {
             },
             executionContext)
         .thenApplyAsync(result -> ok(Json.toJson(result)), executionContext)
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, notFoundException.getMessage());
-                return notFound(message);
-              } catch (BadRequestException badRequestException) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, badRequestException.getMessage());
-                return badRequest(message);
-              } catch (ForbiddenRequestException forbiddenRequestException) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, forbiddenRequestException.getMessage());
-                return forbidden(message);
-              } catch (Throwable throwable) {
-                log.error(throwable.getMessage());
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -211,18 +195,7 @@ public class TreasureHuntController extends Controller {
               if (deleted) return ok(Json.newObject()); // Strange error if json is removed...
               else return internalServerError();
             })
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundException) {
-                return notFound(notFoundException.getMessage());
-              } catch (ForbiddenRequestException forbiddenRequestException) {
-                return forbidden(forbiddenRequestException.getMessage());
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -306,22 +279,7 @@ public class TreasureHuntController extends Controller {
               return ok(treasureJson);
             },
             executionContext)
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (NotFoundException notFoundExc) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, notFoundExc.getMessage());
-                return notFound(message);
-              } catch (ForbiddenRequestException forbiddenException) {
-                ObjectNode message = Json.newObject();
-                message.put(MESSAGE_KEY, forbiddenException.getMessage());
-                return forbidden(message);
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -342,14 +300,7 @@ public class TreasureHuntController extends Controller {
               return ok(treasureJson);
             },
             executionContext)
-        .exceptionally(
-            e -> {
-              try {
-                throw e.getCause();
-              } catch (Throwable throwable) {
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -389,27 +340,6 @@ public class TreasureHuntController extends Controller {
               return treasureHuntRepository.undoTreasureHuntDelete(treasureHunt);
             })
         .thenApplyAsync(treasureHunt -> ok(Json.toJson(treasureHunt)))
-        .exceptionally(
-            error -> {
-              ObjectNode message = Json.newObject();
-              try {
-                throw error.getCause();
-              } catch (ForbiddenRequestException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return forbidden(message);
-              } catch (BadRequestException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return badRequest(message);
-              } catch (NotFoundException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return notFound(message);
-              } catch (UnauthorizedException e) {
-                message.put(MESSAGE_KEY, e.getMessage());
-                return unauthorized(message);
-              } catch (Throwable e) {
-                log.error("An unexpected error has occurred", e);
-                return internalServerError();
-              }
-            });
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 }

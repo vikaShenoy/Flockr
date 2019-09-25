@@ -16,6 +16,7 @@ import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.*;
 import repository.PhotoRepository;
 import repository.UserRepository;
+import util.ExceptionUtil;
 import util.Security;
 
 import javax.inject.Inject;
@@ -43,13 +44,20 @@ public class UserController extends Controller {
     private HttpExecutionContext httpExecutionContext;
     private final Security security;
     private final PhotoRepository photoRepository;
+    private final ExceptionUtil exceptionUtil;
 
     @Inject
-    public UserController(UserRepository userRepository, HttpExecutionContext httpExecutionContext, Security security, PhotoRepository photoRepository) {
+    public UserController(
+        UserRepository userRepository,
+        HttpExecutionContext httpExecutionContext,
+        Security security,
+        PhotoRepository photoRepository,
+        ExceptionUtil exceptionUtil) {
         this.userRepository = userRepository;
         this.httpExecutionContext = httpExecutionContext;
         this.security = security;
         this.photoRepository = photoRepository;
+        this.exceptionUtil = exceptionUtil;
     }
 
     /**
@@ -404,26 +412,7 @@ public class UserController extends Controller {
                     return userRepository.undoDeleteUser(deletedUser);
                 })
                 .thenApplyAsync(user -> ok(Json.toJson(user)))
-                .exceptionally(e -> {
-                    try {
-                        throw e.getCause();
-                    } catch (BadRequestException error) {
-                        ObjectNode message = Json.newObject();
-                        message.put(MESSAGE_KEY, e.getMessage());
-                        return badRequest(message);
-                    } catch (ForbiddenRequestException error) {
-                        ObjectNode message = Json.newObject();
-                        message.put(MESSAGE_KEY, e.getMessage());
-                        return forbidden(message);
-                    } catch (NotFoundException error) {
-                        ObjectNode message = Json.newObject();
-                        message.put(MESSAGE_KEY, e.getMessage());
-                        return notFound(message);
-                    } catch (Throwable throwable) {
-                        log.error("Error while undoing user deletion", throwable);
-                        return internalServerError();
-                    }
-                });
+                .exceptionally(exceptionUtil::getResultFromError);
     }
 
     /**

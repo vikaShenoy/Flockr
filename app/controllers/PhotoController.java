@@ -19,6 +19,7 @@ import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.*;
 import repository.PhotoRepository;
 import repository.UserRepository;
+import util.ExceptionUtil;
 import util.Security;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -53,6 +54,7 @@ public class PhotoController extends Controller {
   private final PhotoRepository photoRepository;
   private final UserRepository userRepository;
   private final HttpExecutionContext httpExecutionContext;
+  private final ExceptionUtil exceptionUtil;
 
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -61,11 +63,13 @@ public class PhotoController extends Controller {
       Security security,
       PhotoRepository photoRepository,
       UserRepository userRepository,
-      HttpExecutionContext httpExecutionContext) {
+      HttpExecutionContext httpExecutionContext,
+      ExceptionUtil exceptionUtil) {
     this.security = security;
     this.photoRepository = photoRepository;
     this.httpExecutionContext = httpExecutionContext;
     this.userRepository = userRepository;
+    this.exceptionUtil = exceptionUtil;
   }
 
   /**
@@ -146,7 +150,7 @@ public class PhotoController extends Controller {
               return photoRepository.updatePhoto(photo);
             })
         .thenApplyAsync(personalPhoto -> ok("Successfully updated permission groups"))
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -182,7 +186,7 @@ public class PhotoController extends Controller {
               return photoRepository.undoPhotoDelete(photo);
             })
         .thenApplyAsync(photo -> ok(Json.toJson(photo)))
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -211,7 +215,7 @@ public class PhotoController extends Controller {
               return this.photoRepository.deletePhoto(photo);
             })
         .thenApplyAsync(photo -> (Result) ok())
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -300,7 +304,7 @@ public class PhotoController extends Controller {
                 return ok().sendFile(photoToBeSent);
               }
             })
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -510,7 +514,7 @@ public class PhotoController extends Controller {
                       });
             },
             httpExecutionContext.current())
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -561,7 +565,7 @@ public class PhotoController extends Controller {
                 return ok().sendFile(new File(path, filename));
               }
             })
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   @With(LoggedIn.class)
@@ -607,7 +611,7 @@ public class PhotoController extends Controller {
               }
               return (Result) ok();
             })
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -686,7 +690,7 @@ public class PhotoController extends Controller {
             })
         .thenApplyAsync(photo -> (Result) ok())
         .exceptionally(
-                this::getResult);
+                exceptionUtil::getResultFromError);
   }
 
   /**
@@ -737,7 +741,7 @@ public class PhotoController extends Controller {
                       });
             })
         .thenApplyAsync(user -> ok(Json.toJson(user.getCoverPhoto())))
-        .exceptionally(this::getResult);
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 
   /**
@@ -839,36 +843,6 @@ public class PhotoController extends Controller {
                       });
             })
         .thenApplyAsync(user -> ok(Json.toJson(user.getCoverPhoto())))
-        .exceptionally(this::getResult);
-  }
-
-  /**
-   * Gets a result based on an error that has been thrown.
-   *
-   * @param error the error that has been thrown.
-   * @return the result to reply in the http response.
-   */
-  private Result getResult(Throwable error) {
-    try {
-      throw error.getCause();
-    } catch (BadRequestException exception) {
-      ObjectNode message = Json.newObject();
-      message.put(MESSAGE_KEY, exception.getMessage());
-      return badRequest(message);
-    } catch (ForbiddenRequestException exception) {
-      ObjectNode message = Json.newObject();
-      message.put(MESSAGE_KEY, exception.getMessage());
-      return forbidden(message);
-    } catch (NotFoundException exception) {
-      ObjectNode message = Json.newObject();
-      message.put(MESSAGE_KEY, exception.getMessage());
-      return notFound(message);
-    } catch (Throwable throwable) {
-      ObjectNode message = Json.newObject();
-      message.put(MESSAGE_KEY, throwable.getMessage());
-      log.error(throwable.getMessage());
-      log.error("500 - Internal Server Error", throwable);
-      return internalServerError(message);
-    }
+        .exceptionally(exceptionUtil::getResultFromError);
   }
 }
