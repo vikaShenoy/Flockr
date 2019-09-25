@@ -11,7 +11,6 @@ import exceptions.BadRequestException;
 import exceptions.ConflictingRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
-import exceptions.UnauthorizedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;

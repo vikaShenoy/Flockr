@@ -313,9 +313,19 @@
                 error.message === "Conflict"
                     ? "Destination already exists"
                     : error.message;
-            this.showError(errorMessage);
+            this.showErrorSnackbar(errorMessage);
           }
         }
+      },
+      /**
+       * Shows an error snackbar
+       */
+      showErrorSnackbar(text) {
+        this.$root.$emit("show-snackbar", {
+          message: text,
+          color: "error",
+          timeout: 5000
+        });
       },
       updateCountry(newValue) {
         this.destination.destinationCountry = newValue;

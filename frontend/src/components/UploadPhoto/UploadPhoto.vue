@@ -32,7 +32,7 @@
               @change="onImageChange"
       />
 
-      <h3>Choose a file or drag it here</h3>
+      <h3>Choose one file to upload </h3>
     </div>
     <div class="switch">
       <v-switch switch v-model="isPublic" label="Set to public" id="is-public-switch" color="secondary"></v-switch>
