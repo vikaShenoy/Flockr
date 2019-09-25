@@ -34,10 +34,6 @@ public class DestinationType extends Model {
         return destinationTypeName;
     }
 
-    public void setDestinationTypeName(String destinationTypeName) {
-        this.destinationTypeName = destinationTypeName;
-    }
-
     public static final Finder<Integer, DestinationType> find = new Finder<>(DestinationType.class);
 
     @Override

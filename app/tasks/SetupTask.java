@@ -14,6 +14,9 @@ import play.Environment;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
+/**
+ * Task to set up various things in the database on startup.
+ */
 public class SetupTask {
 
   private final ActorSystem actorSystem;
@@ -40,18 +43,16 @@ public class SetupTask {
         .scheduler()
         .scheduleOnce(
             Duration.create(0, TimeUnit.SECONDS),
-            () -> {
-              runAsync(
-                  () -> {
-                    String statement =
-                        "ALTER TABLE trip_node_parent ADD COLUMN child_index INTEGER";
+            () -> runAsync(
+                () -> {
+                  String statement =
+                      "ALTER TABLE trip_node_parent ADD COLUMN child_index INTEGER";
 
-                    SqlUpdate sqlUpdate = Ebean.createSqlUpdate(statement);
-                    sqlUpdate.execute();
+                  SqlUpdate sqlUpdate = Ebean.createSqlUpdate(statement);
+                  sqlUpdate.execute();
 
-                    log.info("Ended Setup tasks");
-                  });
-            },
+                  log.info("Ended Setup tasks");
+                }),
             this.executionContext);
   }
 }

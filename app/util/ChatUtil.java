@@ -10,15 +10,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Utility class for helping with chats
+ */
 public class ChatUtil {
   /**
-   * Tranforms users from json to list of users. Also validates that users from json is valid
-   * is valid
-   * @param ownUserId
-   * @param usersFromReq
+   * Transforms users from json to list of users. Also validates that users from json is valid
+   * is valid.
+   *
+   * @param ownUserId the id of the user.
+   * @param usersFromReq the user from the request.
    * @throws BadRequestException Gets thrown when users from json is invalid
    * @throws ForbiddenRequestException When the user tries to add themselves to their own group
-   * @return
+   * @return the users after transform.
    */
   public List<User> transformUsersFromJson(int ownUserId, JsonNode usersFromReq) throws BadRequestException, ForbiddenRequestException {
     List<User> usersInChat = new ArrayList<>();
@@ -55,13 +59,13 @@ public class ChatUtil {
   }
 
   /**
-   * Tranforms users from json to list of users. Also validates that users from json is valid
+   * Transforms users from json to list of users. Also validates that users from json is valid
    * Overloaded: This method assumes that the user who is editing will be passed into the json body
    * is valid
-   * @param usersFromReq
+   * @param usersFromReq the users from the request.
    * @throws BadRequestException Gets thrown when users from json is invalid
    * @throws ForbiddenRequestException When the user tries to add themselves to their own group
-   * @return
+   * @return the transformed users.
    */
   public List<User> transformUsersFromJson(JsonNode usersFromReq) throws BadRequestException, ForbiddenRequestException {
     List<User> usersInChat = new ArrayList<>();
@@ -88,17 +92,17 @@ public class ChatUtil {
 
   /**
    * Checks to see if current user is in group
+   *
    * @param usersInGroup Current users of a group
    * @param user The user to check if they are in the group
-   * @return True if they are in the group, false otherwise
+   * @return False if they are in the group, true otherwise
    */
   public boolean userInGroup(List<User> usersInGroup, User user) {
     for (User currentUser : usersInGroup) {
       if (currentUser.getUserId() == user.getUserId()) {
-        return true;
+        return false;
       }
     }
-
-    return false;
+    return true;
   }
 }

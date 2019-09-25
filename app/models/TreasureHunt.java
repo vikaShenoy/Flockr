@@ -114,10 +114,6 @@ public class TreasureHunt extends Model {
         this.deletedExpiry = deletedExpiry;
     }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
-
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
@@ -130,7 +126,7 @@ public class TreasureHunt extends Model {
      * Setter for the owner of the treasure hunt.
      *
      * @param ownerId the id of the owner.
-     * @throws NotFoundException
+     * @throws NotFoundException when the treasure hunt does not exist.
      */
     public void setOwnerId(int ownerId) throws NotFoundException {
         Optional<User> optionalUser = User.find.query().where().eq("user_id", ownerId).findOneOrEmpty();

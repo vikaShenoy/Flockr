@@ -172,7 +172,7 @@ public class DeleteUserTestSteps {
         List<TravellerType> travellerTypes = TravellerType.find.query().findList();
         List<Passport> passports = Passport.find.query().findList();
         Date date = new Date();
-        String passwordHash = new Security().hashPassword(this.sharedPassword);
+        String passwordHash = Security.hashPassword(this.sharedPassword);
         User user = new User(firstName, "", lastName, passwordHash, "Other", email, nationalities, travellerTypes, date, passports, roles, "");
         user.save();
         return user;

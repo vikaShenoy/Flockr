@@ -34,7 +34,7 @@ public class LoggedIn extends Action.Simple {
     @Override
     public CompletionStage<Result> call(Http.Request request) {
             Optional<String> optionalToken = request.getHeaders().get("Authorization");
-            String token = optionalToken.isPresent() ? optionalToken.get() : request.getQueryString("Authorization");
+            String token = optionalToken.orElseGet(() -> request.getQueryString("Authorization"));
 
 
             if (token == null) {

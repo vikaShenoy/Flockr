@@ -1,11 +1,9 @@
 package tasks;
 
 import akka.actor.ActorSystem;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.PersonalPhoto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.libs.Json;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 

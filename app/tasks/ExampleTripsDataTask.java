@@ -28,7 +28,9 @@ import repository.UserRepository;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
-/** This class contains the code needed to populate trips. */
+/**
+ * This class contains the code needed to populate trips.
+ */
 public class ExampleTripsDataTask {
 
   private ActorSystem actorSystem;
@@ -36,7 +38,7 @@ public class ExampleTripsDataTask {
   final Logger log = LoggerFactory.getLogger(this.getClass());
   private TripRepository tripRepository;
   private UserRepository userRepository;
-  Date pointOfReference = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
+  private Date pointOfReference = Date.from(Instant.now().plus(1, ChronoUnit.DAYS));
   private boolean readyForBigTrips = false;
   private Role role;
 
@@ -849,7 +851,6 @@ public class ExampleTripsDataTask {
                                         }
                                       }
                                       if (readyForBigTrips) {
-                                        // TODO: everyone create a user each and we add them all to these trips
                                         List<User> vipUsers = new ArrayList<>();
                                         List<UserRole> userRoles = new ArrayList<>();
 

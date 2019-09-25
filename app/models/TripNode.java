@@ -57,8 +57,6 @@ public abstract class TripNode extends Model {
 
     public abstract void addTripNode(TripNode tripNode);
 
-    public abstract void removeTripNode(TripNode tripNode);
-
     public abstract String getName();
 
     public abstract Date getArrivalDate();
@@ -89,10 +87,6 @@ public abstract class TripNode extends Model {
         this.deleted = deleted;
     }
 
-    public Timestamp getDeletedExpiry() {
-        return deletedExpiry;
-    }
-
     public void setDeletedExpiry(Timestamp deletedExpiry) {
         this.deletedExpiry = deletedExpiry;
     }
@@ -101,27 +95,11 @@ public abstract class TripNode extends Model {
         return parents;
     }
 
-    public void setParents(List<TripNode> parents) {
-        this.parents = parents;
-    }
-
-    public void addParent(TripNode parent) {
-        this.parents.add(parent);
-    }
-
-    public void removeParent(TripNode parent) {
-        this.parents.remove(parent);
-    }
-
     public abstract String getNodeType();
 
     public abstract Destination getDestination();
 
     public abstract List<User> getUsers();
-
-    public void addUserRole(UserRole userRole) {
-        this.userRoles.add(userRole);
-    }
 
     public List<UserRole> getUserRoles() {
         return userRoles;

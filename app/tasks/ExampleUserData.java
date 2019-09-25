@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.concurrent.CompletableFuture.runAsync;
 
 /**
  * Task to create 10,000 example users in the system with valid data. Users have random names but
@@ -28,17 +28,15 @@ public class ExampleUserData {
   private final UserRepository userRepository;
   private final ActorSystem actorSystem;
   private final ExecutionContext executionContext;
-  private final Security security;
   private int userCount = 0;
   final Logger log = LoggerFactory.getLogger(this.getClass());
 
   /**
-   * Constructor
+   * Constructor for Example User Data Task.
    *
-   * @param actorSystem
-   * @param executionContext
-   * @param security
-   * @param userRepository
+   * @param actorSystem the actor system.
+   * @param executionContext the context to run the async functions on.
+   * @param userRepository the user repository.
    */
   @Inject
   public ExampleUserData(
@@ -48,7 +46,6 @@ public class ExampleUserData {
       UserRepository userRepository) {
     this.actorSystem = actorSystem;
     this.executionContext = executionContext;
-    this.security = security;
     this.userRepository = userRepository;
     this.initialise();
   }
@@ -61,7 +58,7 @@ public class ExampleUserData {
         .scheduleOnce(
             Duration.create(0, TimeUnit.SECONDS),
             () ->
-                supplyAsync(
+                runAsync(
                     () -> {
                       try {
                         Role userRole =
@@ -100,11 +97,10 @@ public class ExampleUserData {
                         }
                         firstReader.close();
                         lastReader.close();
-                        //                        log.info(
-                        //                            String.format(
-                        //                                "Number of users to add:%d",
-                        //                                firstNameList.size() *
-                        // lastNameList.size()));
+                        log.info(
+                            String.format(
+                                "Number of users to add:%d",
+                                firstNameList.size() * lastNameList.size()));
 
                         for (String first : firstNameList) {
                           for (String last : lastNameList) {
@@ -125,7 +121,7 @@ public class ExampleUserData {
                                     first,
                                     " ",
                                     last,
-                                    this.security.hashPassword("so-secure"),
+                                    Security.hashPassword("so-secure"),
                                     "Female",
                                     first.toLowerCase()
                                         + "."
@@ -142,16 +138,12 @@ public class ExampleUserData {
                           }
                         }
                       } catch (Exception e) {
-                        //                        log.info(e.getMessage());
+                        log.info(e.getMessage());
                       }
-
-                      //                      log.info(
-                      //                          String.format(
-                      //                              "Ended populating Example profile data. Total
-                      // profiles added: %d",
-                      //                              userCount));
-                      System.out.println("Finished populating users.");
-                      return null;
+                      log.info(
+                          String.format(
+                              "Ended populating Example profile data. Total profiles added: %d",
+                              userCount));
                     }),
             this.executionContext);
   }

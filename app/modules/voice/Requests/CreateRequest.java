@@ -5,7 +5,6 @@ import java.util.List;
 
 public class CreateRequest implements JanusVoiceRequest {
 
-    private final String request = "create";
     private final boolean is_private = true;
     private List<String> allowed = new ArrayList<>();
 
@@ -17,7 +16,7 @@ public class CreateRequest implements JanusVoiceRequest {
 
     @Override
     public String getRequest() {
-        return request;
+        return "create";
     }
 
     public boolean isIs_private() {

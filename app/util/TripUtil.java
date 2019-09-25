@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenRequestException;
 import exceptions.NotFoundException;
+import java.util.Collections;
 import models.*;
 import repository.UserRepository;
 
@@ -149,7 +150,7 @@ public class TripUtil {
         // Used in the case where a user is editing a trip node and doesn't send any user ids.
         // Not ideal but this is the simplest way to handle it.
         if (userIdsJson == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<User> users = new ArrayList<>();

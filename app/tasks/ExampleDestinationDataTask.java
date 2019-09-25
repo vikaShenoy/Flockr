@@ -79,8 +79,8 @@ public class ExampleDestinationDataTask {
         .exceptionally(
             e -> {
               try {
-                throw e.getCause();
-              } catch (Throwable throwable) {
+                throw (Exception) e.getCause();
+              } catch (Exception throwable) {
                 log.error(throwable.getMessage());
                 return cities;
               }
@@ -94,10 +94,7 @@ public class ExampleDestinationDataTask {
    */
   private CompletionStage<List<Country>> getCurrentCountries() {
     return supplyAsync(
-        () -> {
-          List<Country> currentCountries = Country.find.all();
-          return currentCountries;
-        });
+        Country.find::all);
   }
 
   /**
@@ -185,13 +182,12 @@ public class ExampleDestinationDataTask {
               } else {
                 if (countryIndex < countries.size()) {
                   Country country = countries.get(countryIndex);
-                  //                  log.info(
-                  //                      String.format(
-                  //                          "Beginning getting cities from open data soft api for
-                  // %s",
-                  //                          country.getCountryName()));
+                                    log.info(
+                                        String.format(
+                                            "Beginning getting cities from open data soft api for %s",
+                                            country.getCountryName()));
                   fetchCitiesFromCountry(country)
-                      .thenApplyAsync(
+                      .thenAcceptAsync(
                           cities -> {
                             for (JsonNode city : cities) {
                               String cityName = city.get("name").asText();
@@ -214,35 +210,22 @@ public class ExampleDestinationDataTask {
                                         if (!exists) {
                                           saveCityDestination(destination)
                                               .thenAcceptAsync(
-                                                  savedCity -> {
-                                                    //
-                                                    //      log.info(
-                                                    //
-                                                    //          String.format(
-                                                    //
-                                                    //              "%s saved to the database.",
-                                                    //
-                                                    //
-                                                    // savedCity.getDestinationName()));
-                                                  });
+                                                  savedCity -> log.info(
+                                                      String.format(
+                                                          "%s saved to the database.",
+                                                          savedCity.getDestinationName())));
                                         } else {
-                                          //                                          log.info(
-                                          //
-                                          // String.format(
-                                          //                                                  "%s
-                                          // already exists in the database.",
-                                          //
-                                          // city.get("name").asText()));
+                                          log.info(
+                                              String.format(
+                                                  "%s already exists in the database.",
+                                                  city.get("name").asText()));
                                         }
                                       });
                             }
-                            System.out.println(String.format("finished for %s", country.getCountryName()));
-                            //                            log.info(
-                            //                                String.format(
-                            //                                    "Finished getting cities from open
-                            // data soft api for %s",
-                            //                                    country.getCountryName()));
-                            return null;
+                            log.info(
+                                String.format(
+                                    "Finished getting cities from open data soft api for %s",
+                                    country.getCountryName()));
                           });
                 }
               }

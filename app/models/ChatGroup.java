@@ -32,10 +32,10 @@ public class ChatGroup extends Model {
     private Set<User> connectedUsers;
 
     @DbDefault("null")
-    Long voiceRoomId;
+    private Long voiceRoomId;
 
     @DbDefault("null")
-    String roomToken;
+    private String roomToken;
 
     public ChatGroup(String name, List<User> users, List<Message> messages) {
         this.name = name;

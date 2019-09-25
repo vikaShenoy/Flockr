@@ -87,7 +87,7 @@ public class UserController extends Controller {
         JsonNode jsonBody = request.body().asJson();
         User userFromMiddleware = request.attrs().get(ActionState.USER);
 
-        if (!Security.userHasPermission(userFromMiddleware, userId)) {
+        if (Security.userHasPermission(userFromMiddleware, userId)) {
             return supplyAsync(Controller::forbidden);
         }
 

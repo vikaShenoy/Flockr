@@ -5,6 +5,9 @@ package util;
  */
 public class AuthUtil {
 
+    /**
+     * Constructor for AuthUtil.
+     */
     private AuthUtil() {
         throw new IllegalStateException("Utility class");
     }
@@ -22,8 +25,8 @@ public class AuthUtil {
     /**
      * A function that checks if the given email is a valid email format. If yes, it returns true.
      * Otherwise, returns false.
-     * @param email
-     * @return
+     * @param email the email to check.
+     * @return true if the email is valid.
      */
     public static boolean isValidEmailAddress(String email) {
         String ePattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";

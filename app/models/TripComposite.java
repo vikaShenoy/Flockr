@@ -50,11 +50,6 @@ public class TripComposite extends TripNode {
   }
 
   @Override
-  public void removeTripNode(TripNode tripNode) {
-    this.tripNodes.remove(tripNode);
-  }
-
-  @Override
   public String getName() {
     return name;
   }
@@ -149,10 +144,6 @@ public class TripComposite extends TripNode {
     if (!users.contains(user)) {
       users.add(user);
     }
-  }
-
-  public void removeUser(User user) {
-    users.remove(user);
   }
 
   @Override

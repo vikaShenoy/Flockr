@@ -2,12 +2,11 @@ package repository;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
-import io.ebean.Ebean;
-import io.ebean.EbeanServer;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
@@ -16,23 +15,23 @@ import models.Destination;
 import models.DestinationPhoto;
 import models.DestinationProposal;
 import models.DestinationType;
-import play.db.ebean.EbeanConfig;
 
+
+/**
+ * Class that performs operations on the database regarding destinations.
+ */
 public class DestinationRepository {
 
-  private final EbeanServer ebeanServer;
   private final DatabaseExecutionContext executionContext;
   private String destinationNamePropertyName = "destinationName";
 
   /**
    * Dependency injection
    *
-   * @param ebeanConfig ebean config to use
    * @param executionContext Context to run completion stages on
    */
   @Inject
-  public DestinationRepository(EbeanConfig ebeanConfig, DatabaseExecutionContext executionContext) {
-    this.ebeanServer = Ebean.getServer(ebeanConfig.defaultServer());
+  public DestinationRepository(DatabaseExecutionContext executionContext) {
     this.executionContext = executionContext;
   }
 
@@ -44,11 +43,8 @@ public class DestinationRepository {
    */
   public CompletionStage<List<Destination>> getUserDestinations(int userId) {
     return supplyAsync(
-        () -> {
-          List<Destination> destinations = Destination.
-                  find.query().where().eq("destination_owner", userId).findList();
-          return destinations;
-        },
+        () -> Destination.
+                find.query().where().eq("destination_owner", userId).findList(),
         executionContext);
   }
 
@@ -129,11 +125,7 @@ public class DestinationRepository {
    */
   public CompletionStage<Optional<Destination>> getDestinationById(int destinationId) {
     return supplyAsync(
-        () -> {
-          Optional<Destination> destination =
-              Destination.find.query().where().eq("destination_id", destinationId).findOneOrEmpty();
-          return destination;
-        },
+        () -> Destination.find.query().where().eq("destination_id", destinationId).findOneOrEmpty(),
         executionContext);
   }
 
@@ -146,16 +138,12 @@ public class DestinationRepository {
   public CompletionStage<Optional<Destination>> getDestinationByIdIncludingSoftDelete(
       int destinationId) {
     return supplyAsync(
-        () -> {
-          Optional<Destination> destination =
-              Destination.find
-                  .query()
-                  .setIncludeSoftDeletes()
-                  .where()
-                  .eq("destination_id", destinationId)
-                  .findOneOrEmpty();
-          return destination;
-        },
+        () -> Destination.find
+            .query()
+            .setIncludeSoftDeletes()
+            .where()
+            .eq("destination_id", destinationId)
+            .findOneOrEmpty(),
         executionContext);
   }
 
@@ -176,21 +164,6 @@ public class DestinationRepository {
   }
 
   /**
-   * Gets a list of all destinations that a user has created
-   *
-   * @return List of destinations
-   */
-  public CompletionStage<List<Destination>> getDestinationsbyUserId(int userId) {
-    return supplyAsync(
-        () -> {
-          List<Destination> destinations =
-              Destination.find.query().where().eq("destination_owner", userId).findList();
-          return destinations;
-        },
-        executionContext);
-  }
-
-  /**
    * Get a destination photo associated with a destination given both ids
    *
    * @param destinationId the id of the destination
@@ -200,17 +173,13 @@ public class DestinationRepository {
   public CompletionStage<Optional<DestinationPhoto>> getDestinationPhotoById(
       int destinationId, int photoId) {
     return supplyAsync(
-        () -> {
-          Optional<DestinationPhoto> destinationPhoto =
-              DestinationPhoto.find
-                  .query()
-                  .where()
-                  .eq("destination_destination_id", destinationId)
-                  .and()
-                  .eq("destination_photo_id", photoId)
-                  .findOneOrEmpty();
-          return destinationPhoto;
-        },
+        () -> DestinationPhoto.find
+            .query()
+            .where()
+            .eq("destination_destination_id", destinationId)
+            .and()
+            .eq("destination_photo_id", photoId)
+            .findOneOrEmpty(),
         executionContext);
   }
 
@@ -251,10 +220,7 @@ public class DestinationRepository {
    */
   public CompletionStage<List<Country>> getCountries() {
     return supplyAsync(
-        () -> {
-          List<Country> countries = Country.find.query().orderBy().asc("country_name").findList();
-          return countries;
-        },
+        () -> Country.find.query().orderBy().asc("country_name").findList(),
         executionContext);
   }
 
@@ -265,10 +231,7 @@ public class DestinationRepository {
    */
   public CompletionStage<List<DestinationType>> getDestinationTypes() {
     return supplyAsync(
-        () -> {
-          List<DestinationType> destinationTypes = DestinationType.find.query().findList();
-          return destinationTypes;
-        },
+        () -> DestinationType.find.query().findList(),
         executionContext);
   }
 
@@ -283,7 +246,7 @@ public class DestinationRepository {
         () -> {
           Destination destination = Destination.find.byId(destinationId);
           // Set the expiry time for an hour from now.
-          destination.setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
+          Objects.requireNonNull(destination).setDeletedExpiry(Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
           destination.save();
 
           destination.delete(); // Soft delete.
@@ -309,17 +272,13 @@ public class DestinationRepository {
   public CompletionStage<Optional<DestinationPhoto>> getPhotoByIdWithSoftDelete(
       int destinationId, int photoId) {
     return supplyAsync(
-        () -> {
-          Optional<DestinationPhoto> photo =
-              DestinationPhoto.find
-                  .query()
-                  .setIncludeSoftDeletes()
-                  .where()
-                  .eq("destination_destination_id", destinationId)
-                  .eq("destination_photo_id", photoId)
-                  .findOneOrEmpty();
-          return photo;
-        },
+        () -> DestinationPhoto.find
+            .query()
+            .setIncludeSoftDeletes()
+            .where()
+            .eq("destination_destination_id", destinationId)
+            .eq("destination_photo_id", photoId)
+            .findOneOrEmpty(),
         executionContext);
   }
 
@@ -327,10 +286,9 @@ public class DestinationRepository {
    * Insert a destination photo into the database
    *
    * @param photo the destination photo to be inserted in the database
-   * @return the photo object
    */
-  public CompletionStage<DestinationPhoto> insertDestinationPhoto(DestinationPhoto photo) {
-    return supplyAsync(
+  public void insertDestinationPhoto(DestinationPhoto photo) {
+    supplyAsync(
         () -> {
           photo.insert();
           return photo;
@@ -342,10 +300,9 @@ public class DestinationRepository {
    * Soft delete a destination photo from the database
    *
    * @param destinationPhoto the DestinationPhoto to delete
-   * @return the ID of the destination photo that was deleted
    */
-  public CompletionStage<Integer> deleteDestinationPhoto(DestinationPhoto destinationPhoto) {
-    return supplyAsync(
+  public void deleteDestinationPhoto(DestinationPhoto destinationPhoto) {
+    supplyAsync(
         () -> {
           destinationPhoto.setDeletedExpiry(
               Timestamp.from(Instant.now().plus(Duration.ofHours(1))));
@@ -452,16 +409,12 @@ public class DestinationRepository {
   public CompletionStage<Optional<DestinationProposal>> getDestinationProposalByIdWithSoftDelete(
       int destinationProposalId) {
     return supplyAsync(
-        () -> {
-          Optional<DestinationProposal> proposal =
-              DestinationProposal.find
-                  .query()
-                  .setIncludeSoftDeletes()
-                  .where()
-                  .eq("destination_proposal_id", destinationProposalId)
-                  .findOneOrEmpty();
-          return proposal;
-        },
+        () -> DestinationProposal.find
+            .query()
+            .setIncludeSoftDeletes()
+            .where()
+            .eq("destination_proposal_id", destinationProposalId)
+            .findOneOrEmpty(),
         executionContext);
   }
 

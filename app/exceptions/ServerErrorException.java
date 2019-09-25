@@ -1,7 +1,7 @@
 package exceptions;
 
 /**
- * Thrown when a destination could not be found
+ * Thrown when an unexpected error occurs.
  */
 public class ServerErrorException extends Exception {
 
