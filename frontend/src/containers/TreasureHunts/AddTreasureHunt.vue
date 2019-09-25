@@ -52,7 +52,7 @@
                           label="Start Date"
                           prepend-icon="event"
                           type="date"
-                          :min="today"
+                          :max="today"
                         ></v-text-field>
                       </v-flex>
                     </div>
