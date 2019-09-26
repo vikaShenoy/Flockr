@@ -10,8 +10,8 @@
             :users="getFilteredUsers"
             v-on:deleteUsersByIds="handleDeleteUsersByIds"
             v-on:logoutUsersByIds="handleLogoutUsersByIds"
-            @addAdminPriviledge="addAdminPriviledge"
-            @removeAdminPriviledge="removeAdminPriviledge"
+            @addAdminPriviledge="addAdminPrivilege"
+            @removeAdminPriviledge="removeAdminPrivilege"
             @userSignedUp="userSignedUp"
 						@getNextUsers="getNextUsers"
     />
@@ -162,8 +162,8 @@
         }
       },
       /**
-       * Adds admin priviledge to a user
-       * @param {number} selectedUserId ID of user to give admin priviledges to
+       * Adds admin privilege to a user
+       * @param {number} selectedUserId ID of user to give admin privileges to
        */
       async addAdminPrivilege(selectedUserId) {
         const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
@@ -185,15 +185,15 @@
 
         try {
           await updateRoles(selectedUserId, newRoleTypes);
-          this.showSuccessSnackbar("Added admin priviledges");
+          this.showSuccessSnackbar("Added admin privileges");
           this.getAllUsers();
         } catch (e) {
-          this.showErrorSnackbar("Error adding admin priviledges");
+          this.showErrorSnackbar("Error adding admin privileges");
         }
       },
       /**
        * Removes admin priviledge from a user
-       * @param {number} selectedUserId ID of user to remove admin priviledges for
+       * @param {number} selectedUserId ID of user to remove admin privileges for
        */
       async removeAdminPrivilege(selectedUserId) {
         const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
@@ -217,10 +217,10 @@
         this.$refs.undoRedo.addUndo(removeAdminPriviledgeCommand);
         try {
           await updateRoles(selectedUserId, roleTypes);
-          this.showSuccessSnackbar("Removed admin priviledges");
+          this.showSuccessSnackbar("Removed admin privileges");
           this.getAllUsers();
         } catch (e) {
-          this.showErrorSnackbar("Error removing admin priviledges");
+          this.showErrorSnackbar("Error removing admin privileges");
         }
       },
 
