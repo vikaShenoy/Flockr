@@ -37,7 +37,7 @@ export const rules = {
   required: field => !!field || "Field is required",
   noNumbers: field => !/\d/.test(field) || "No Numbers Allowed",
   nonEmptyArray: field => field.length > 0 || "Please select at least 1",
-  dateBeforeToday: field => moment(field, 'DD/MM/YYYY') < moment() || "Must be before today and in DD/MM/YYYY format"
+  AtLeast13YearsOld: field => moment(field, 'DD/MM/YYYY') < moment().subtract(13, "years") || "Must be at least 13 years old and in DD/MM/YYYY format",
 };
 
 /**
