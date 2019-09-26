@@ -10,8 +10,8 @@
             :users="getFilteredUsers"
             v-on:deleteUsersByIds="handleDeleteUsersByIds"
             v-on:logoutUsersByIds="handleLogoutUsersByIds"
-            @addAdminPriviledge="addAdminPriviledge"
-            @removeAdminPriviledge="removeAdminPriviledge"
+            @addAdminPrivilege="addAdminPrivilege"
+            @removeAdminPrivilege="removeAdminPrivilege"
             @userSignedUp="userSignedUp"
 						@getNextUsers="getNextUsers"
     />
@@ -59,7 +59,7 @@
         userBeingEdited: null,
 				userOffset: 0,
 				userLimit: 15,
-        users: [] // single source of truth for children components relying on users so that info stays up to date
+        users: [], // single source of truth for children components relying on users so that info stays up to date
       }
     },
     computed: {
@@ -124,23 +124,30 @@
 
           const undoCommand = async (userIds) => {
             await undoDeleteUsers(userIds);
-            this.getAllUsers();
+            await this.refreshUserList();
           };
 
           const redoCommand = async (userIds) => {
             await deleteUsers(userIds);
-            this.getAllUsers();
+            await this.refreshUserList();
           };
 
           const deleteUsersCommand = new Command(undoCommand.bind(null, userIds), redoCommand.bind(null, userIds));
           this.$refs.undoRedo.addUndo(deleteUsersCommand);
 
-          this.getAllUsers();
+          await this.refreshUserList();
           this.showSuccessSnackbar("Successfully deleted user(s)'");
         } catch (err) {
           this.showErrorSnackbar("Could not delete user(s)");
         }
       },
+
+      async refreshUserList() {
+        this.users = [],
+        this.userOffset = 0;
+        await this.getNextUsers();
+      },
+
 
       /**
        * Log out all the selected users. Set their auth tokens in local storage to null.
@@ -162,8 +169,8 @@
         }
       },
       /**
-       * Adds admin priviledge to a user
-       * @param {number} selectedUserId ID of user to give admin priviledges to
+       * Adds admin privilege to a user
+       * @param {number} selectedUserId ID of user to give admin privileges to
        */
       async addAdminPrivilege(selectedUserId) {
         const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];

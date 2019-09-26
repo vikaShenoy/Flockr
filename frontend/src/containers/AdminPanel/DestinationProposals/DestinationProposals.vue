@@ -66,7 +66,7 @@
       <v-btn :disabled="page <= 1" small fab @click="backPage">
         <v-icon>navigate_before</v-icon>
       </v-btn>
-      <v-btn :disabled="destinationProposals.length < 5" small fab @click="nextPage">
+      <v-btn :disabled="destinationProposals !== null && destinationProposals.length < 5" small fab @click="nextPage">
         <v-icon>navigate_next</v-icon>
       </v-btn>
     </div>
@@ -352,7 +352,7 @@
        */
       async getAllProposals(page) {
         this.destinationProposals = await getDestinationProposals(page);
-        if (this.destinationProposals.length < 5) {
+        if (this.destinationProposals !== null && this.destinationProposals.length < 5) {
           this.forwardDisabled = true;
         }
       },

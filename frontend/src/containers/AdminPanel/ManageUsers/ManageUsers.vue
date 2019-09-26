@@ -40,7 +40,7 @@
 					<v-btn
 									class="action-button"
 									:disabled="!this.canAddAdminPrivilege"
-									@click="showPrompt('Are you sure?', addAdminPrivilege)"
+									@click="showPrompt('Are you sure you want to make user(s) an admin?', addAdminPrivilege)"
 									depressed
 									color="secondary"
 					>
@@ -50,7 +50,7 @@
 					<v-btn
 									class="action-button"
 									:disabled="!this.canRemoveAdminPrivilege"
-									@click="showPrompt('Are you sure?', removeAdminPrivilege)"
+									@click="showPrompt('Are you sure you want to remove admin priviledge?', removeAdminPrivilege)"
 									depressed
 									color="secondary"
 					>
@@ -61,7 +61,7 @@
 					<v-btn
 									class="action-button"
 									:disabled="this.selectedUsers.length === 0"
-									@click="showPrompt('Are you sure?', deleteUsersButtonClicked)"
+									@click="showPrompt('Are you sure you want to delete these users?', deleteUsersButtonClicked)"
 									depressed
 									color="secondary"
 					>
@@ -78,7 +78,7 @@
 				<v-list>
 					<v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
 						<v-list-tile-avatar>
-							<img alt="User Image" :src="item.avatar">
+							<img class="avatar" alt="User Image" :src="item.avatar">
 						</v-list-tile-avatar>
 
 						<v-list-tile-content>
@@ -372,4 +372,9 @@
 		max-height: 400px;
 		overflow: auto;
 	}
+
+	.avatar {
+		object-fit: cover;
+	}
+
 </style>
