@@ -98,7 +98,8 @@
           <template v-slot:items="props">
             <td class="text-xs-left" @click="$router.push(`/profile/${props.item.userId}`)">
               <v-avatar v-if="props.item.profilePhoto" class="profile-pic">
-                <img alt="Profile Photo"
+                <img class="avatar"
+                     alt="Profile Photo"
                      :src="photoUrl(props.item.profilePhoto.photoId)">
               </v-avatar>
               <v-avatar  v-else class="profile-pic">
@@ -416,6 +417,10 @@
 
   .search-buttons {
     margin-left: auto;
+  }
+
+  .avatar {
+    object-fit: cover;
   }
 
 </style>

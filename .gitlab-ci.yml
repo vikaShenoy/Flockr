@@ -80,7 +80,7 @@ production-run:
     - cp -r /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage/photos /var/www/prod/photos ||
     - rm -rf /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT || true
     - cp -r seng302-team-500-0.0.1-SNAPSHOT /var/www/prod
-    - cp -r /var/www/prod/storage/photos/* /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage/photos/ || true
+    - cp -r /var/www/prod/photos/* /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/storage/photos/ || true
     - cd /var/www/prod/seng302-team-500-0.0.1-SNAPSHOT/bin
     - pm2 start "bash seng302-team-500 -Dhttp.port=7443" --name=prod-server
   only:

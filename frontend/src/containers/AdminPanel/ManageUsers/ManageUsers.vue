@@ -78,7 +78,7 @@
 				<v-list>
 					<v-list-tile v-for="item in items" :key="item.userId" avatar @click="item.selected = !item.selected">
 						<v-list-tile-avatar>
-							<img alt="User Image" :src="item.avatar">
+							<img class="avatar" alt="User Image" :src="item.avatar">
 						</v-list-tile-avatar>
 
 						<v-list-tile-content>
@@ -372,4 +372,9 @@
 		max-height: 400px;
 		overflow: auto;
 	}
+
+	.avatar {
+		object-fit: cover;
+	}
+
 </style>

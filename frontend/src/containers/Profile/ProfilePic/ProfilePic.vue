@@ -109,8 +109,9 @@ export default {
 }
 
 .profile-pic {
-  max-width: 250px;
-  max-height: 250px;
+  object-fit: cover;
+  width: 250px;
+  height: 250px;
   margin: 0 auto;
   display: block;
   border-radius: 12em;
