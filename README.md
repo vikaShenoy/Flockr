@@ -268,11 +268,13 @@ And open <http://localhost:9000/>
 Open a terminal and navigate to the project root directory.
 Start the application with the commands:
 ```bash
-echo "GOOGLE_MAPS_KEY = < YOUR API KEY HERE >" > .env
+echo "GOOGLE_MAPS_KEY = <YOUR API KEY HERE>" > .env
 sbt dist
 ```
-**Note:** because API keys are usuaully domain restricted, the maps may not work in `localhost` if you set the environment variable.
+**Notes:**
+1. because API keys are usuaully domain restricted, the maps may not work in `localhost` if you set the environment variable.
 If you don't set the environment variable at all, Google Maps may allow you to use map functionality with a watermark stating "for development purposes only".
+2. Replace <YOUR API KEY HERE> with the key, no string quotes are needed.
 
 ### How to run the distributable product
 Navigate to the target/universal directory from the project root then use the following commands to run the application on http://localhost:9000
