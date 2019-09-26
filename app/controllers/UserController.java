@@ -476,7 +476,7 @@ public class UserController extends Controller {
         Date dateMin = new Date(ageMin);
         Date dateMax = new Date(ageMax);
 
-        return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType, name, offset, limit)  //Just for testing purposes
+        return userRepository.searchUser(nationality, gender, dateMin, dateMax, travellerType, name, offset, limit)
                 .thenApplyAsync(user -> {
                     JsonNode userAsJson = Json.toJson(user);
                     log.debug(userAsJson.asText());
