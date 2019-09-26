@@ -372,7 +372,6 @@
           this.loading = false;
           this.currStepperStep = 3; // go to next stepper in sign up sequence
         } catch (e) {
-          console.log(e);
           this.$root.$emit('show-error-snackbar', 'Could not sign up', 3000);
           this.loading = false; // to allow users to make changes
         }

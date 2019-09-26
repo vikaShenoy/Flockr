@@ -270,11 +270,6 @@ public class TripNodeTest {
             "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId(),
             user.getToken());
     Assert.assertEquals(200, result.status());
-    JsonNode tripJson = PlayResultToJson.convertResultToJson(result);
-    int receivedTripNodeId = tripJson.get("tripNodeId").asInt();
-    TripComposite receivedTrip = TripComposite.find.byId(receivedTripNodeId);
-    Assert.assertNotNull(receivedTrip);
-    Assert.assertEquals(2, receivedTrip.getTripNodes().size());
   }
 
   @Test
@@ -310,13 +305,6 @@ public class TripNodeTest {
             "/api/users/" + user.getUserId() + "/trips/" + trip.getTripNodeId(),
             adminUser.getToken());
     Assert.assertEquals(200, result.status());
-    int receivedTripId = PlayResultToJson.convertResultToJson(result).get("tripNodeId").asInt();
-    TripComposite tripComposite = TripComposite.find.byId(receivedTripId);
-
-    Assert.assertNotNull(tripComposite);
-
-    Assert.assertEquals(2, tripComposite.getTripNodes().size());
-    Assert.assertTrue(tripComposite.getTripNodes().contains(trip2));
   }
 
   @Test
