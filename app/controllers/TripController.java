@@ -104,7 +104,7 @@ public class TripController extends Controller {
               List<User> users;
 
               try {
-                Set<TripComposite> trips = tripRepository.getAllTrips();
+                List<TripComposite> trips = tripRepository.getTripsByOwnUserId(userId);
                 tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
                 users = tripUtil.getUsersFromJson(userIdsJson, user);
               } catch (BadRequestException e) {
@@ -313,10 +313,15 @@ public class TripController extends Controller {
 
                             List<TripNode> tripNodes;
                             List<User> users;
-                            try {
+                            List<Integer> userIds = new ArrayList<>();
 
-                                List<User> allUsers = User.find.all();
-                                Set<TripComposite> trips = tripRepository.getAllTrips();
+                            for (JsonNode currentUserJson : userIdsJson) {
+                              userIds.add(currentUserJson.get("userId").asInt());
+                            }
+
+                            try {
+                                List<User> allUsers = userRepository.getUsersWithIds(userIds);
+                                List<TripComposite> trips = tripRepository.getTripsByOwnUserId(userId);
                                 tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
                                 users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 
@@ -325,6 +330,7 @@ public class TripController extends Controller {
                             } catch (ForbiddenRequestException e) {
                                 return CompletableFuture.completedFuture(forbidden(e.getMessage()));
                             } catch (NotFoundException e) {
+                                System.out.println("It is not found");
                                 return CompletableFuture.completedFuture(notFound(e.getMessage()));
                             }
 
@@ -358,6 +364,8 @@ public class TripController extends Controller {
                                                     if (tripNodesJson != null) {
                                                         trip.setUsers(users);
                                                     }
+
+                                                    long roleStartTime = System.nanoTime();
                                                     for (User user : users) {
                                                         for (JsonNode userJson : userIdsJson) {
                                                             if (userJson.get("userId").asInt() == user.getUserId()) {
@@ -369,18 +377,15 @@ public class TripController extends Controller {
                                                             }
                                                         }
                                                     }
+
                                                     trip.setUserRoles(tripUserRoles);
                                                 }
+
                                                 return tripRepository.update(trip);
                                             })
-                                    .thenComposeAsync(trip -> tripRepository.getTripByIds(tripId, userId))
                                     .thenApplyAsync(optionalUpdatedTrip -> {
-                                        // If user removes themselves from trip, then a trip won't be present
-                                        if (!optionalUpdatedTrip.isPresent()) {
-                                            return ok();
-                                        }
-                                        tripNotifier.notifyTripUpdate(userFromMiddleware, optionalUpdatedTrip.get());
-                                        return ok(Json.toJson(optionalUpdatedTrip.get()));
+                                        tripNotifier.notifyTripUpdate(userFromMiddleware, optionalUpdatedTrip);
+                                        return ok();
                                     });
                         },
                         httpExecutionContext.current())

@@ -29,7 +29,7 @@ public class TripUtilTest {
     JsonNode testData2;
     JsonNode testData3;
     Application application;
-    Set<TripComposite> tripComposites;
+    List<TripComposite> tripComposites;
 
     @Before
     public void setUp() {
@@ -87,7 +87,7 @@ public class TripUtilTest {
         testArray3.add(testNode3);
         testData3 = testArray3;
 
-        tripComposites = new HashSet<>();
+        tripComposites = new ArrayList<>();
 
     }
 
