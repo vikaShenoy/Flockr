@@ -256,6 +256,9 @@ Flockr is split into:
 Open a terminal and navigate to the project root directory.
 Start the application with the command:
 ```bash
+cd frontend
+npm install (only needed once)
+cd ..
 sbt run
 ```
 And open <http://localhost:9000/>  
@@ -263,10 +266,13 @@ And open <http://localhost:9000/>
 
 ### How to build the product for distribution
 Open a terminal and navigate to the project root directory.
-Start the application with the command:
+Start the application with the commands:
 ```bash
+echo "GOOGLE_MAPS_KEY = < YOUR API KEY HERE >" > .env
 sbt dist
 ```
+**Note:** because API keys are usuaully domain restricted, the maps may not work in `localhost` if you set the environment variable.
+If you don't set the environment variable at all, Google Maps may allow you to use map functionality with a watermark stating "for development purposes only".
 
 ### How to run the distributable product
 Navigate to the target/universal directory from the project root then use the following commands to run the application on http://localhost:9000
