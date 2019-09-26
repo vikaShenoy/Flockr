@@ -342,7 +342,9 @@
           this.loading = false;
           this.currStepperStep = 3; // go to next stepper in sign up sequence
         } catch (e) {
+          console.log(e);
           this.$root.$emit('show-error-snackbar', 'Could not sign up', 3000);
+          this.loading = false; // to allow users to make changes
         }
       },
       /**
@@ -373,18 +375,18 @@
             this.$emit("exit", this.signedUpUserId);
           } else {
               const user =  await login(this.email, this.password);
-              UserStore.methods.setData(user);
               localStorage.setItem("authToken", user.token);
               localStorage.setItem("userId", user.userId);
               localStorage.setItem("ownUserId", user.userId);
               const socket = new WebSocket(`${config.websocketUrl}?Authorization=${localStorage.getItem("authToken")}`);
-              UserStore.data.socket = socket;
+              UserStore.methods.setData(user, socket);
               this.$router.push(`/profile/${signedUpUserId}`) && this.$router.go(0);
           }
 
           this.loading = false;
         } catch (err) {
-          this.showErrorSnackbar(`Could not add traveller info for user with id ${signedUpUserId}`);
+          this.showErrorSnackbar(`Could not add traveller info for your user`);
+          this.loading = false;
         }
       },
       /**

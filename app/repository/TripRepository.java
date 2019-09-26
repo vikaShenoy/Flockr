@@ -8,10 +8,7 @@ import io.ebean.Transaction;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -297,13 +294,14 @@ public class TripRepository {
           List<TripComposite> trips =
               TripComposite.find
                   .query()
-                  .fetchLazy("users","userId")
+                  .fetch("users","userId")
                   .where()
                   .in("users.userId", travellerId)
                   .findList();
           for (TripComposite tripNode : trips) {
             if (tripNode.getNodeType().equals("TripComposite")) {
-              tripNode.setTripNodes(recursiveGetTripNodes(tripNode.getTripNodeId()));
+              //tripNode.setTripNodes(recursiveGetTripNodes(tripNode.getTripNodeId()));
+                tripNode.setTripNodes(new ArrayList<>());
             }
           }
           return trips;

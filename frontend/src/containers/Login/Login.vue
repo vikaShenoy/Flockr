@@ -83,12 +83,11 @@
 
         try {
           const user = await login(this.email, this.password);
-          UserStore.methods.setData(user);
+          const socket = new WebSocket(`${config.websocketUrl}?Authorization=${user.token}`);
+          UserStore.methods.setData(user, socket);
           localStorage.setItem("authToken", user.token);
           localStorage.setItem("userId", user.userId);
           localStorage.setItem("ownUserId", user.userId);
-          const socket = new WebSocket(`${config.websocketUrl}?Authorization=${localStorage.getItem("authToken")}`);
-          UserStore.data.socket = socket;
           this.$router.push(`/profile/${user.userId}`);
         } catch (e) {
           this.$root.$emit("show-error-snackbar", "Something went wrong while logging in.", 3000);

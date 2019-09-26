@@ -16,7 +16,8 @@ const UserStore = {
     gender: null,
     timestamp: null,
     viewingAsAnotherUser: false,
-    socket: null
+    socket: null,
+    pingInterval: null
   },
   methods: {
     setData(user, socket) {
@@ -40,6 +41,13 @@ const UserStore = {
 
       if (socket) {
         UserStore.data.socket = socket;
+        const pingMilliseconds = 10000;
+
+        UserStore.data.pingInterval = setInterval(() => {
+          UserStore.data.socket.send(JSON.stringify({
+            type: "ping"
+          }));
+        }, pingMilliseconds);
       }
     },
     /**
@@ -106,6 +114,7 @@ const UserStore = {
       UserStore.data.viewingAsAnotherUser = false;
 
       // Close the websocket
+      clearInterval(UserStore.data.pingInterval);
       UserStore.data.socket.close();
     },
     /**
