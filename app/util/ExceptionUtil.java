@@ -46,7 +46,7 @@ public class ExceptionUtil {
       return unauthorized(message);
     } catch (Exception exception) {
       message.put(MESSAGE_KEY, "An unexpected error has occurred.");
-      log.error("500 - Internal Server Error", exception);
+      exception.printStackTrace();
       return internalServerError(message);
     }
   }
