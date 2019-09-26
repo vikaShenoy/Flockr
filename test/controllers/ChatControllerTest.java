@@ -99,6 +99,10 @@ public class ChatControllerTest {
     TestState.clear();
   }
 
+  /**
+   * Test the creation of chat with valid data
+   * @throws IOException
+   */
   @Test
   public void shouldCreateChatWithValidData() throws IOException {
     ObjectNode chatGroupBody = Json.newObject();
@@ -131,6 +135,10 @@ public class ChatControllerTest {
     Assert.assertEquals(chatGroupResBody.get("chatGroupId").asInt(), chatGroup.getChatGroupId());
   }
 
+  /**
+   * Check that the chat is not created with missing data such as no chat name
+   * @throws IOException
+   */
   @Test
   public void shouldNotCreateChatWithNoName() throws IOException {
     ObjectNode chatGroupBody = Json.newObject();
@@ -143,6 +151,10 @@ public class ChatControllerTest {
     Assert.assertEquals(400, result.status());
   }
 
+  /**
+   * Check that the chat is not created with missing data such as no users id given
+   * @throws IOException
+   */
   @Test
   public void shouldNotCreateChatWithNoUserIds() throws IOException {
     ObjectNode chatGroupBody = Json.newObject();
@@ -154,6 +166,11 @@ public class ChatControllerTest {
     Assert.assertEquals(400, result.status());
   }
 
+  /**
+   * Check that the chat is not created when the user id is included as part of the people that should
+   * be in the chat
+   * @throws IOException
+   */
   @Test
   public void shouldNotCreateChatWhenOwnUserIsSpecified() throws IOException {
     // Should not create chat when own user id specified as the people that should be in the chat
@@ -168,6 +185,11 @@ public class ChatControllerTest {
     Assert.assertEquals(403, result.status());
   }
 
+  /**
+   * Check that the chat should not be created when no users are specified even if there is a json
+   * that has userIds in it (it is however an empty array)
+   * @throws IOException
+   */
   @Test
   public void shouldNotCreateChatWhenNoUsersAreSpecified() throws IOException {
     ObjectNode chatGroupBody = Json.newObject();
@@ -182,6 +204,9 @@ public class ChatControllerTest {
     Assert.assertEquals(400, result.status());
   }
 
+  /**
+   * Check that the chat should not be created when user is not logged in
+   */
   @Test
   public void shouldNotCreatChatWhenNotLoggedIn() {
     ObjectNode chatGroupBody = Json.newObject();
@@ -194,6 +219,10 @@ public class ChatControllerTest {
     Assert.assertEquals(401, result.status());
   }
 
+  /**
+   * Checks that the chat can be retrieved for all of the users in the chat
+   * @throws IOException
+   */
   @Test
   public void shouldGetAllChatsForUser() throws IOException {
     String endpoint = "/api/chats";
@@ -217,7 +246,6 @@ public class ChatControllerTest {
 
   /**
    * Converts users json into a set representing the current users ID's
-   *
    * @return A set containing the current user ID's in the chat
    */
   public Set<Integer> getUsersInChat(JsonNode usersInChat) {
@@ -229,6 +257,10 @@ public class ChatControllerTest {
     return userIds;
   }
 
+  /**
+   * Check that the chat should not be retrieved when user is not logged in
+   * @throws IOException
+   */
   @Test
   public void shouldNotGetChatsIfUserIsNotLoggedIn() throws IOException {
     String endpoint = "/api/chats";
@@ -237,6 +269,12 @@ public class ChatControllerTest {
     Assert.assertEquals(401, result.status());
   }
 
+  /**
+   * Check that the chat should be deleted when user who is part of the chat deletes it and gives
+   * appropriate status code
+   *
+   * @throws IOException
+   */
   @Test
   public void shouldSuccessfullyDeleteChatGroup() throws IOException {
     String endpoint = "/api/chats/" + chatGroup.getChatGroupId();
@@ -247,6 +285,10 @@ public class ChatControllerTest {
     Assert.assertNull(ChatGroup.find.byId(chatGroup.getChatGroupId()));
   }
 
+  /**
+   * Check that the chat should not be deleted when user is not part of the group and they try to
+   * delete it and gives appropriate * status code
+   */
   @Test
   public void shouldNotDeleteChatGroupWhenNotInGroup() {
     String endpoint = "/api/chats/" + chatGroup2.getChatGroupId();
@@ -257,6 +299,10 @@ public class ChatControllerTest {
     Assert.assertNotNull(ChatGroup.find.byId(chatGroup2.getChatGroupId()));
   }
 
+  /**
+   * Check that the chat should not be deleted when the group does not even exist and gives appropriate
+   * status code
+   */
   @Test
   public void shouldNotDeleteChatGroupWhenGroupDoesNotExist() {
     String endpoint = "/api/chats/1234";
@@ -267,6 +313,9 @@ public class ChatControllerTest {
     Assert.assertNotNull(ChatGroup.find.byId(chatGroup.getChatGroupId()));
   }
 
+  /**
+   * Create a message in chat when user is part of the chat
+   */
   @Test
   public void shouldCreateMessageInChat() {
     String endpoint = "/api/chats/" + chatGroup.getChatGroupId() + "/message";
@@ -282,6 +331,10 @@ public class ChatControllerTest {
     Assert.assertEquals(message, returnedChatGroup.getMessages().get(0).getContents());
   }
 
+  /**
+   * Checks that it does not create a message in chat when group does not even exist and gives appropriate status
+   * code
+   */
   @Test
   public void shouldNotCreateMessageIfGroupDoesNotExist() {
     String endpoint = "/api/chats/1234/message";
@@ -296,6 +349,10 @@ public class ChatControllerTest {
     Assert.assertEquals(0, returnedChatGroup.getMessages().size());
   }
 
+  /**
+   * Checks that it does not create a message in chat when user is not part of the group and gives appropriate status
+   * code
+   */
   @Test
   public void shouldNotCreateMessageIfNotPartOfGroup() {
     String endpoint = "/api/chats/" + chatGroup2.getChatGroupId() + "/message";
@@ -310,6 +367,9 @@ public class ChatControllerTest {
     Assert.assertEquals(0, returnedChatGroup.getMessages().size());
   }
 
+  /**
+   * Checks that message is deleted if the user is part of the chat and message exists
+   */
   @Test
   public void shouldDeleteMessageInChat() {
     Message message = new Message(chatGroup, "Random message", user);
@@ -324,6 +384,9 @@ public class ChatControllerTest {
     Assert.assertEquals(0, returnedChatGroup.getMessages().size());
   }
 
+  /**
+   * Checks message is not deleted if the message does not even exit and gives appropriate status code
+   */
   @Test
   public void shouldNotDeleteMessageIfMessageDoesNotExist() {
     Message message = new Message(chatGroup, "Random message", user);
@@ -337,6 +400,9 @@ public class ChatControllerTest {
     Assert.assertEquals(1, returnedChatGroup.getMessages().size());
   }
 
+  /**
+   * Checks message is not deleted if the message does not belong to the user and gives appropriate status code
+   */
   @Test
   public void shouldNotDeleteMessageIfMessageIsNotYours() {
     // otherUser made the message so user should not be able to delete it
@@ -353,6 +419,9 @@ public class ChatControllerTest {
 
   // Edit chat group testing
 
+  /**
+   * Checks that editing group chat works
+   */
   @Test
   public void editChatGroupOk() {
 
@@ -380,6 +449,10 @@ public class ChatControllerTest {
     Assert.assertEquals(expectedUserIds, chatUserIds);
   }
 
+  /**
+   * Checks editing of group chat does not work when user is not logged in and tries to edit it.
+   * Checks it gives appropriate status code
+   */
   @Test
   public void editChatGroupUnauthorized() {
 
@@ -405,6 +478,10 @@ public class ChatControllerTest {
     Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
   }
 
+  /**
+   * Checks editing of group chat does not work when chat does not exist and user tries to edit it.
+   * Checks it gives appropriate status code
+   */
   @Test
   public void editChatGroupNotFound() {
 
@@ -413,6 +490,10 @@ public class ChatControllerTest {
     Assert.assertEquals(404, result.status());
   }
 
+  /**
+   * Checks editing of group chat does not work when user does not belong to the chat and tries to edit it.
+   * Checks it gives appropriate status code
+   */
   @Test
   public void editChatGroupForbiddenNotInGroup() {
 
@@ -440,6 +521,10 @@ public class ChatControllerTest {
     Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
   }
 
+  /**
+   * Checks editing of group chat does not work when user does not belong to the chat and tries to edit it.
+   * Checks it gives appropriate status code
+   */
   @Test
   public void editChatGroupForbiddenDuplicateUsers() {
     String newChatName = "newChatName";
@@ -467,6 +552,9 @@ public class ChatControllerTest {
     Assert.assertEquals(expectedUsers, new HashSet<>(unmodifiedChat.getUsers()));
   }
 
+  /**
+   * Checks that editing of group chat works for an admin
+   */
   @Test
   public void editChatGroupAdmin() {
     String newChatName = "editingAsAnAdmin";
@@ -493,6 +581,10 @@ public class ChatControllerTest {
     Assert.assertEquals(expectedUserIds, chatUserIds);
   }
 
+  /**
+   * Checks editing of group chat does not work when user does not belong to the chat and tries to edit it.
+   * Checks it gives appropriate status code
+   */
   @Test
   public void editChatGroupBadRequest() {
     String newChatName = "newChatName";
@@ -521,6 +613,10 @@ public class ChatControllerTest {
 
   // GET /api/chats/:chatId/onlineUsers endpoint.
 
+  /**
+   * Checks that online users for a chat cannot be retrieved if the user retrieving is not
+   * logged in
+   */
   @Test
   public void getOnlineUsersUnauthorized() {
     String endpoint = "/api/chats/" + chatGroup.getChatGroupId() + "/onlineUsers";
@@ -529,6 +625,10 @@ public class ChatControllerTest {
     Assert.assertEquals(401, result.status());
   }
 
+  /**
+   * Checks that online users for a chat cannot be retrieved if the user retrieving is not
+   * part of the group chat
+   */
   @Test
   public void getOnlineUsersForbidden() {
     String endpoint = "/api/chats/" + chatGroup2.getChatGroupId() + "/onlineUsers";
@@ -537,6 +637,10 @@ public class ChatControllerTest {
     Assert.assertEquals(403, result.status());
   }
 
+  /**
+   * Checks that online users for a chat cannot be retrieved if the chat being retrieved does not
+   * exists
+   */
   @Test
   public void getOnlineUsersNotFound() {
     String endpoint = "/api/chats/" + 9000000 + "/onlineUsers";
@@ -545,11 +649,21 @@ public class ChatControllerTest {
     Assert.assertEquals(404, result.status());
   }
 
+  /**
+   * Checks that online users for a chat can be retrieved even if no user is online when the user
+   * that belongs to that chat is retrieving it
+   * @throws IOException
+   */
   @Test
   public void getOnlineUsersEmpty() throws IOException {
     getOnlineUsersFromChat(user, chatGroup);
   }
 
+  /**
+   * Checks that online users for a chat can be retrieved even if no user is online when the admin
+   * is retrieving it
+   * @throws IOException
+   */
   @Test
   public void getOnlineUsersEmptyAdmin() throws IOException {
     getOnlineUsersFromChat(adminUser, chatGroup);
@@ -574,6 +688,10 @@ public class ChatControllerTest {
 
   // Get Messages Endpoint Testing
 
+  /**
+   * Checks that retrieving chat messages works
+   * @throws IOException
+   */
   @Test
   public void getChatMessagesNoParamsOk() throws IOException{
 
@@ -593,6 +711,10 @@ public class ChatControllerTest {
 
   }
 
+  /**
+   * Checks that retrieving chat message with an offset works
+   * @throws IOException
+   */
   @Test
   public void getChatMessagesOffsetOk() throws IOException{
 
@@ -612,6 +734,10 @@ public class ChatControllerTest {
 
   }
 
+  /**
+   * Checks that retrieving chat message with a limit works
+   * @throws IOException
+   */
   @Test
   public void getChatMessagesLimitOk() throws IOException {
 
@@ -631,6 +757,10 @@ public class ChatControllerTest {
 
   }
 
+  /**
+   * Checks that retrieving chat message with an offset and a limit works
+   * @throws IOException
+   */
   @Test
   public void getChatMessagesOffsetAndLimitOk() throws IOException{
 
@@ -650,6 +780,9 @@ public class ChatControllerTest {
 
   }
 
+  /**
+   * Checks that retrieving chat message does not work when user is not logged in
+   */
   @Test
   public void getChatMessagesUnauthorized() {
 
@@ -659,6 +792,10 @@ public class ChatControllerTest {
 
   }
 
+  /**
+   * Checks that retrieving chat messages does not work when user does not belong to that chat
+   * group
+   */
   @Test
   public void getChatMessagesForbidden() {
 
@@ -668,6 +805,9 @@ public class ChatControllerTest {
 
   }
 
+  /**
+   * Checks that retrieving chat messages does not work when that chat group does not exists
+   */
   @Test
   public void getChatMessagesNotFound() {
 
@@ -677,6 +817,10 @@ public class ChatControllerTest {
 
   }
 
+  /**
+   * Checks that retrieving chat messages works when an admin is retrieving it
+   * @throws IOException
+   */
   @Test
   public void getChatMessagesAdmin() throws IOException{
 
