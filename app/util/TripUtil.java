@@ -27,7 +27,7 @@ public class TripUtil {
      * @return Object representation of trip node
      * @throws NotFoundException Gets thrown when a trip isn't found
      */
-    private TripComposite getTripToUpdate(JsonNode tripNodeJson, Set<TripComposite> trips) throws NotFoundException {
+    private TripComposite getTripToUpdate(JsonNode tripNodeJson, List<TripComposite> trips) throws NotFoundException {
         int tripNodeId = tripNodeJson.get("tripNodeId").asInt();
         TripComposite tripComposite = null;
 
@@ -38,6 +38,7 @@ public class TripUtil {
         }
 
         if (tripComposite == null) {
+            System.out.println("Did I get here?");
             throw new NotFoundException("Trip not found");
         }
 
@@ -52,7 +53,7 @@ public class TripUtil {
      * @throws BadRequestException when there are less than 2 destinations or destinations are contiguous
      * @throws NotFoundException Gets thrown when a trip is not found
      */
-    public List<TripNode> getTripNodesFromJson(JsonNode tripNodesJson, Set<TripComposite> trips) throws BadRequestException, NotFoundException {
+    public List<TripNode> getTripNodesFromJson(JsonNode tripNodesJson, List<TripComposite> trips) throws BadRequestException, NotFoundException {
         List<TripNode> tripNodes = new ArrayList<>();
 
         if (tripNodesJson.size() < 2) {
@@ -154,6 +155,7 @@ public class TripUtil {
         }
 
         List<User> users = new ArrayList<>();
+
 
         for (JsonNode userIdJson : userIdsJson) {
             int currentUserId =  userIdJson.get("userId").asInt();
