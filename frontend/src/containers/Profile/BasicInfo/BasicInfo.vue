@@ -186,9 +186,9 @@
         genderErrors: [],
         hasInvalidCredentials: false,
         genderOptions: ["Male", "Female", "Other"],
-        fieldRules: [rules.required, rules.noNumbers],
-        optionalFieldRules: [rules.noNumbers],
-        dateRules: [rules.required],
+        fieldRules: [rules.required, rules.noNumbers, rules.onlyLetters],
+        optionalFieldRules: [rules.noNumbers, rules.onlyLetters],
+        dateRules: [rules.required, rules.AtLeast13YearsOld],
         currentDate: moment().format("YYYY-MM-DD")
       };
     },

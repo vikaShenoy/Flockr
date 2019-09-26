@@ -1,10 +1,14 @@
 import superagent from "superagent";
 import { endpoint } from "../../../utils/endpoint";
+import moment from "moment";
 
 
 export const rules = {
   required: field => !!field || "Field is required",
-  noNumbers: field => !/\d/.test(field) || "No Numbers Allowed"
+  noNumbers: field => !/\d/.test(field) || "No Numbers Allowed",
+  onlyLetters: field => /^[A-Za-z ]+$/.test(field) || field === "" || "Must only contain alphabetical letters",
+  AtLeast13YearsOld: field => moment(field, 'YYYY-MM-DD') < moment().subtract(13, "years") || "Must be at least 13 years old and in DD/MM/YYYY format",
+
 };
 
 /**

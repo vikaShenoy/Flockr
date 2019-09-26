@@ -25,7 +25,7 @@
                           :error-messages="emailErrors" autocomplete="off" :maxlength="320"/>
 
             <v-text-field v-model="dateOfBirth" mask="date" label="Birthday" hint="DD/MM/YYYY" persistent-hint
-                          return-masked-value placeholder="12/04/2003" :rules="[rules.dateBeforeToday, rules.required]"
+                          return-masked-value placeholder="12/04/2003" :rules="[rules.AtLeast13YearsOld, rules.required]"
                           validate-on-blur/>
 
             <v-select :rules="[rules.required]" v-model="gender" :items="genderOptions" color="secondary"
