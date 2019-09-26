@@ -92,7 +92,8 @@ public class UserRepository {
      * @return the user object
      */
     public CompletionStage<Optional<User>> getUserById(int userId) {
-        return supplyAsync(() -> User.find.query().where().eq("user_id", userId).findOneOrEmpty(), executionContext);
+        return supplyAsync(() -> User.find.query().where().eq("user_id", userId).findOneOrEmpty(),
+                executionContext);
     }
 
     /**
@@ -101,7 +102,8 @@ public class UserRepository {
      * @return the list of all the Passports
      */
     public CompletionStage<List<Passport>> getAllPassports() {
-        return supplyAsync(() -> Passport.find.query().orderBy().asc("passport_country").findList(), executionContext);
+        return supplyAsync(() -> Passport.find.query().orderBy().asc("passport_country").findList(),
+                executionContext);
     }
 
     /**
@@ -113,9 +115,8 @@ public class UserRepository {
         return supplyAsync(() -> Nationality.find.query().orderBy().asc("nationality_name").findList(), executionContext);
     }
 
-
     /**
-     * Funtion that gets all of the valid traveller types in the database
+     * Function that gets all of the valid traveller types in the database
      *
      * @return the list of traveller types
      */

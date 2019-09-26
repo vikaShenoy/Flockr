@@ -78,17 +78,13 @@ export default {
      * Permission granted if they have the trip owner role.
      */
     hasPermissionToDelete() {
-      console.log(this.trip);
       const userRole = this.trip.userRoles.find(
         userRole => userRole.user.userId === UserStore.data.userId
       );
-
-      const isTripManager =
-        userRole && userRole.role.roleType === roleType.TRIP_MANAGER;
       const isTripOwner =
         userRole && userRole.role.roleType === roleType.TRIP_OWNER;
 
-      return isTripManager || isTripOwner;
+      return isTripOwner;
     }
   }
 };
