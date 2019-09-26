@@ -17,6 +17,14 @@
           @click="isShowingManageTripDialog = true"
       >Manage
       </v-btn>
+        <v-btn
+                v-else
+                flat
+                color="error"
+                @click="leaveOrDelete"
+        >
+            {{ onlyUser ? 'Delete' : 'Leave' }}
+        </v-btn>
 
       <v-spacer width="100"
                 align="center"
@@ -110,6 +118,7 @@
             :trip="trip"
             v-if="trip"
             @newUsers="newUsers"
+            ref="manageTripDialog"
         />
       </div>
 
@@ -265,6 +274,13 @@ export default {
         }
       });
       return Math.max(...treeDepths) + 1;
+    },
+
+    /**
+     * Leaves or deletes trip
+     */
+    leaveOrDelete() {
+      this.$refs.manageTripDialog.leaveOrDelete();
     }
   },
   computed: {
@@ -289,6 +305,13 @@ export default {
     hasPermissionToEdit() {
       const userRole = this.trip.userRoles.find(userRole => userRole.user.userId === UserStore.data.userId);
       return userRole.role.roleType === roleType.TRIP_MANAGER || userRole.role.roleType === roleType.TRIP_OWNER;
+    },
+    /**
+     * Checks if the user is the only one in the Trip
+     */
+    onlyUser() {
+      console.log(this.trip.users.length === 1)
+      return this.trip.users.length === 1;
     }
   },
   watch: {
