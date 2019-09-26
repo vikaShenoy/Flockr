@@ -124,18 +124,24 @@
 
           const undoCommand = async (userIds) => {
             await undoDeleteUsers(userIds);
-            this.getAllUsers();
+            this.userOffset = 0;
+            this.users = [];
+            this.getNextUsers();
           };
 
           const redoCommand = async (userIds) => {
             await deleteUsers(userIds);
-            this.getAllUsers();
+            this.userOffset = 0;
+            this.users = [];
+            this.getNextUsers();
           };
 
           const deleteUsersCommand = new Command(undoCommand.bind(null, userIds), redoCommand.bind(null, userIds));
           this.$refs.undoRedo.addUndo(deleteUsersCommand);
+          this.userOffset = 0;
+          this.users = [];
 
-          this.getAllUsers();
+          this.getNextUsers();
           this.showSuccessSnackbar("Successfully deleted user(s)'");
         } catch (err) {
           this.showErrorSnackbar("Could not delete user(s)");
