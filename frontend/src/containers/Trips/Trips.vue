@@ -50,7 +50,8 @@
       viewOnly: { // hide action buttons and undo redo
         type: Boolean,
         required: false
-      }
+      },
+      profileId: String // Profile user ID
     },
     components: {
       AddTrip,
@@ -60,7 +61,7 @@
     data() {
       return {
         // Used to know what user to get trips from
-        userId: localStorage.getItem("userId"),
+        userId: this.profileId || localStorage.getItem("userId"),
         isAddingATrip: false,
         tripListKey: 0 // used to force re-renders of the component when trips are added
       };

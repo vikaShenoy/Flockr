@@ -82,6 +82,7 @@
 
                   <Trips
                       :trips.sync="userProfile.trips"
+                      :profile-id="profileId"
                       viewOnly
                   />
                 </v-card>
@@ -135,11 +136,13 @@
     data() {
       return {
         userProfile: null,
-        photos: null
+        photos: null,
+        profileId: this.$route.params.id
       };
     },
     mounted() {
       this.getUserInfo();
+      console.log(this.profileId);
     },
     methods: {
       /**
