@@ -49,6 +49,10 @@ export default {
         rules: {
             type: Array,
             required: false
+        },
+        filterFunction: {
+            type: Function,
+            required: false
         }
     },
     data() {
@@ -90,7 +94,12 @@ export default {
         async getItems() {
             try {
                 this.isLoadingItems = true;
-                this.items = await this.getFunction(this.searchString);
+                let items = await this.getFunction(this.searchString);
+                if (this.filterFunction) {
+                    items = items.filter(this.filterFunction);
+                }
+                this.items = items;
+
                 this.isLoadingItems = false;
             } catch (err) {
                 this.$root.$emit("show-error-snackbar", `Could not get items for ${this.label}`, 3000);

@@ -20,6 +20,7 @@
         multiple
         v-model="selectedUsers"
         @items-selected="updateSelectedUsers"
+        :filter-function="user => user.userId !== userStore.data.userId"
       ></GenericCombobox>
       <ul>
         <li v-for="user in selectedUsers" v-bind:key="user.userId" class="selected-user">
@@ -46,7 +47,7 @@
         <v-icon>add</v-icon>
       </v-btn>
 
-      <v-btn depressed color="secondary" id="add-trip-btn" @click="addTrip">Create</v-btn>
+      <v-btn depressed color="secondary" id="add-trip-btn" @click="addTrip" :loading="isLoading">Create</v-btn>
 
       <v-btn
         depressed
@@ -104,6 +105,8 @@ export default {
       selectedUsers: [],
       users: null,
       destinations: [],
+      isLoading: false,
+      userStore: UserStore,
       roleTypes: [
         {
           name: "Trip Manager",
@@ -201,6 +204,7 @@ export default {
      * Validates fields before sending a request to add a trip.
      */
     async addTrip() {
+      this.isLoading = true;
       const validFields = this.validate();
       if (!validFields) {
         this.$root.$emit('show-error-snackbar', 'Select at least 2 destinations and a trip name', 5000);
@@ -210,7 +214,7 @@ export default {
         tripDestination.destinationId =
           tripDestination.destination.destinationId;
         return tripDestination;
-      }); 
+      });
 
       let userIds = [];
 
@@ -236,12 +240,14 @@ export default {
         }
 
         this.$emit("newTripAdded", subTrip);
+        this.isLoading = false;
       } catch (e) {
         this.$root.$emit("show-snackbar", {
           color: "error",
           message: "Error creating trip",
           time: 2000
         });
+        this.isLoading = false;
       }
     },
 
