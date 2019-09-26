@@ -59,7 +59,7 @@
 
   import {login} from "./LoginService.js";
   import UserStore from "../../stores/UserStore";
-import config from '../../config';
+  import config from "../../config";
 
   export default {
     data() {
@@ -80,7 +80,6 @@ import config from '../../config';
         if (!this.$refs.form.validate()) {
           return;
         }
-
 
         try {
           const user = await login(this.email, this.password);
