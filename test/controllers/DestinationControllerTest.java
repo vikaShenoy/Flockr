@@ -137,6 +137,14 @@ public class DestinationControllerTest {
   }
 
   @Test
+  public void destinationIsNotUsed() throws IOException {
+    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinationUsed/" + destination.getDestinationId(), user.getToken());
+
+    Assert.assertEquals(200, result.status());
+    Assert.assertFalse(PlayResultToJson.convertResultToJson(result).asBoolean());
+  }
+
+  @Test
   public void canGetDestinationsWithOffsetOnly() throws IOException {
     Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?offset=0", user.getToken());
     Assert.assertEquals(200, result.status());
@@ -144,6 +152,23 @@ public class DestinationControllerTest {
     for (JsonNode destination : destinations) {
       Assert.assertFalse(destination.get("destinationName").asText().isEmpty());
     }
+  }
+
+  @Test
+  public void canGetDestinationsWithOutOffset() throws IOException {
+    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations", user.getToken());
+    Assert.assertEquals(200, result.status());
+    JsonNode destinations = fakeClient.converResultToJSON(result);
+    for (JsonNode destination : destinations) {
+      Assert.assertFalse(destination.get("destinationName").asText().isEmpty());
+    }
+  }
+
+  @Test
+  public void canGetDestinationsWithBadOffset() throws IOException {
+    Result result = fakeClient.makeRequestWithToken("GET", "/api/destinations?offset=abc", user.getToken());
+    Assert.assertEquals(400, result.status());
+    JsonNode destinations = fakeClient.converResultToJSON(result);
   }
 
   @Test
