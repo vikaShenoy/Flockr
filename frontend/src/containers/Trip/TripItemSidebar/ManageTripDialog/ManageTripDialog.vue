@@ -228,21 +228,25 @@ export default {
      * Either deletes a trip if only owner or leaves trip if not
      */
     async leaveOrDelete() {
-     if (this.onlyUser) {
-        this.isLoading = true;
-        await deleteTripFromList(this.trip.tripNodeId);
-        this.isLoading = false;
-        this.$router.push("/trips");
-      } else {
-        const usersWithoutCurrent = this.trip.users
-          .filter(user => user.userId !== UserStore.data.userId);
-        this.isLoading = true;
+      try {
+        if (this.onlyUser) {
+          this.isLoading = true;
+          await deleteTripFromList(this.trip.tripNodeId);
+          this.isLoading = false;
+          this.$router.push("/trips");
+        } else {
+          const usersWithoutCurrent = this.trip.users
+            .filter(user => user.userId !== UserStore.data.userId);
+          this.isLoading = true;
 
-        const trip = {...this.trip};
-        trip.users = usersWithoutCurrent;
-        await editTrip(trip);
-        this.isLoading = false;
-        this.$router.push("/trips");
+          const trip = {...this.trip};
+          trip.users = usersWithoutCurrent;
+          await editTrip(trip);
+          this.isLoading = false;
+          this.$router.push("/trips");
+        }
+      } catch (error) {
+        console.log(error)
       }
     },
     /**
