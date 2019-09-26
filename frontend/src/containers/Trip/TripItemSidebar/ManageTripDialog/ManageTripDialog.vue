@@ -50,6 +50,7 @@
               multiple
               v-model="selectedUsers"
               @items-selected="updateSelectedUsers"
+              :filter-function="user => user.userId !== userStore.data.userId"
             ></GenericCombobox>
             <!--<v-combobox :items="users" :item-text="formatName" v-model="selectedUsers" label="Users" multiple></v-combobox>-->
           </div>
@@ -138,6 +139,7 @@ export default {
       userRoles: [],
       selectedUsers: [],
       users: [],
+      userStore: UserStore,
       isLoading: false,
       showAlertCard: false,
         chat: null,
