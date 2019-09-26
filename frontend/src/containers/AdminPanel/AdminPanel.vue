@@ -10,8 +10,8 @@
             :users="getFilteredUsers"
             v-on:deleteUsersByIds="handleDeleteUsersByIds"
             v-on:logoutUsersByIds="handleLogoutUsersByIds"
-            @addAdminPriviledge="addAdminPrivilege"
-            @removeAdminPriviledge="removeAdminPrivilege"
+            @addAdminPrivilege="addAdminPrivilege"
+            @removeAdminPrivilege="removeAdminPrivilege"
             @userSignedUp="userSignedUp"
 						@getNextUsers="getNextUsers"
     />
@@ -59,7 +59,7 @@
         userBeingEdited: null,
 				userOffset: 0,
 				userLimit: 15,
-        users: [] // single source of truth for children components relying on users so that info stays up to date
+        users: [], // single source of truth for children components relying on users so that info stays up to date
       }
     },
     computed: {
@@ -124,23 +124,30 @@
 
           const undoCommand = async (userIds) => {
             await undoDeleteUsers(userIds);
-            this.getAllUsers();
+            await this.refreshUserList();
           };
 
           const redoCommand = async (userIds) => {
             await deleteUsers(userIds);
-            this.getAllUsers();
+            await this.refreshUserList();
           };
 
           const deleteUsersCommand = new Command(undoCommand.bind(null, userIds), redoCommand.bind(null, userIds));
           this.$refs.undoRedo.addUndo(deleteUsersCommand);
 
-          this.getAllUsers();
+          await this.refreshUserList();
           this.showSuccessSnackbar("Successfully deleted user(s)'");
         } catch (err) {
           this.showErrorSnackbar("Could not delete user(s)");
         }
       },
+
+      async refreshUserList() {
+        this.users = [],
+        this.userOffset = 0;
+        await this.getNextUsers();
+      },
+
 
       /**
        * Log out all the selected users. Set their auth tokens in local storage to null.
@@ -185,15 +192,15 @@
 
         try {
           await updateRoles(selectedUserId, newRoleTypes);
-          this.showSuccessSnackbar("Added admin privileges");
+          this.showSuccessSnackbar("Added admin priviledges");
           this.getAllUsers();
         } catch (e) {
-          this.showErrorSnackbar("Error adding admin privileges");
+          this.showErrorSnackbar("Error adding admin priviledges");
         }
       },
       /**
        * Removes admin priviledge from a user
-       * @param {number} selectedUserId ID of user to remove admin privileges for
+       * @param {number} selectedUserId ID of user to remove admin priviledges for
        */
       async removeAdminPrivilege(selectedUserId) {
         const selectedUser = this.users.filter(user => user.userId === selectedUserId)[0];
@@ -217,10 +224,10 @@
         this.$refs.undoRedo.addUndo(removeAdminPriviledgeCommand);
         try {
           await updateRoles(selectedUserId, roleTypes);
-          this.showSuccessSnackbar("Removed admin privileges");
+          this.showSuccessSnackbar("Removed admin priviledges");
           this.getAllUsers();
         } catch (e) {
-          this.showErrorSnackbar("Error removing admin privileges");
+          this.showErrorSnackbar("Error removing admin priviledges");
         }
       },
 

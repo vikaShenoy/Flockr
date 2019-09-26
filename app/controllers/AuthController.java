@@ -176,7 +176,7 @@ public class AuthController {
                     User user = optionalUser.get();
 
                     if (!Security.comparePasswordAndHash(password, user.getPasswordHash())) {
-                        throw new CompletionException(new UnauthorizedException());
+                        throw new CompletionException(new UnauthorizedException("Could not authorise the user"));
                     }
 
                     String token = Security.generateToken();

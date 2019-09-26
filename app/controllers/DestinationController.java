@@ -76,7 +76,7 @@ public class DestinationController extends Controller {
   @With(LoggedIn.class)
   public CompletionStage<Result> isDestinationUsed(int destinationId, Http.Request request) {
 
-      return destinationRepository.isDestinationUsed(destinationId).thenApplyAsync( (used) ->
+      return destinationRepository.isDestinationUsed(destinationId).thenApplyAsync(used ->
               ok(Json.toJson(used)));
   }
 
