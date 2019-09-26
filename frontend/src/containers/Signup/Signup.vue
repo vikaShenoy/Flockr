@@ -15,10 +15,12 @@
             <v-text-field v-model="firstName" color="secondary" label="First name" @blur="validateFirstName()"
                           :error-messages="firstNameErrors" :maxlength="50"/>
 
-            <v-text-field v-model="middleName" color="secondary" label="Middle name (optional)" :maxlength="50"/>
+            <v-text-field v-model="middleName" color="secondary" label="Middle name (optional)" @blur="validateMiddleName()"
+                          :error-messages="middleNameErrors" :maxlength="50"/>
 
             <v-text-field v-model="lastName" color="secondary" label="Last name" @blur="validateLastName()"
                           :error-messages="lastNameErrors" :maxlength="50"/>
+
             <v-text-field v-model="email" color="secondary" label="Email" @blur="validateEmail()"
                           :error-messages="emailErrors" autocomplete="off" :maxlength="320"/>
 
@@ -136,6 +138,7 @@
         gender: "",
         genderOptions: ["Other", "Female", "Male"],
         firstNameErrors: [],
+        middleNameErrors: [],
         lastNameErrors: [],
         emailErrors: [],
         passwordErrors: [],
@@ -197,6 +200,14 @@
       }
     },
     methods: {
+      checksAllLetter(name) {
+        const letters = /^[A-Za-z ]+$/;
+        if (letters.test(name)) {
+          return true;
+        } else {
+          return false;
+        }
+      },
       /**
        * Checks if the first name field is empty and renders error if it is
        * @returns {number} If there are errors or not
@@ -206,10 +217,26 @@
 
         if (!this.firstName) {
           this.firstNameErrors = ["First name is required"];
+        } else if (this.firstName.length < 2 || !this.checksAllLetter(this.firstName))  {
+          this.firstNameErrors = ["First name must be at least 2 characters long and only contains alphabetical letters"];
         } else {
           this.firstNameErrors = [];
         }
         return this.firstNameErrors.length === 0;
+      },
+      /**
+       * Checks if the middle name is valid if the user filled out the middle name field
+       */
+      validateMiddleName() {
+        this.middleNameErrors = [];
+
+        if (this.middleName.length === 0) {
+          this.middleNameErrors = [];
+          return true;
+        } else if (!this.checksAllLetter(this.middleName)) {
+          this.middleNameErrors = ["Middle name must only contain alphabetical letters"];
+          return this.middleNameErrors.length === 0;
+        }
       },
       /**
        * Checks if the last name field is empty and renders error if it is
@@ -220,6 +247,8 @@
 
         if (!this.lastName) {
           this.lastNameErrors = ["Last name is required"];
+        } else if (this.lastName.length < 2 || !this.checksAllLetter(this.lastName)) {
+          this.lastNameErrors = ["Last name must be at least 2 characters long and only contains alphabetical letters"];
         } else {
           this.lastNameErrors = [];
         }
@@ -299,7 +328,8 @@
           this.validateLastName(),
           this.validateEmail(),
           this.validatePassword(),
-          this.validateConfirmPassword()
+          this.validateConfirmPassword(),
+          this.validateMiddleName()
         ];
 
         const fieldResults = await Promise.all(fieldPromises);
