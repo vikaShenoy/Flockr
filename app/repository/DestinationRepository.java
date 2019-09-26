@@ -45,7 +45,7 @@ public class DestinationRepository {
      * @param destinationId the destination ID of the destination to check
      * @return true or false depending on whether or not the destination is used in any trips
      */
-  public CompletionStage<List<TripNode>> isDestinationUsed(int destinationId) {
+  public CompletionStage<Boolean> isDestinationUsed(int destinationId) {
       return supplyAsync(
               () -> {
                   List<TripNode> trips = TripNode.find.query().where().eq("destination_destination_id", destinationId).findList();
@@ -53,7 +53,7 @@ public class DestinationRepository {
                   for (TripNode trip : trips) {
                       tripParents.addAll(trip.getParents());
                   }
-                  return tripParents;
+                  return !tripParents.isEmpty();
               }, executionContext
       );
   }
