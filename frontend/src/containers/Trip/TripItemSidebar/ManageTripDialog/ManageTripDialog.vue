@@ -31,15 +31,17 @@
 
 
           <h4>Selected users</h4>
-          <ul>
-            <li
+          <v-layout column>
+            <v-flex
               v-for="userRole in userRoles"
               v-bind:key="userRole.user.userId"
               class="selected-user"
             >
-            {{ formatName(userRole.user) }} <v-select v-model="userRole.role" :items="roleTypes" class="role-type" color="secondary" item-text="name" item-value="value"></v-select>
-            </li>
-          </ul>
+              <h3>{{ formatName(userRole.user) }}</h3>
+              <v-spacer/>
+             <v-select v-model="userRole.role" :items="roleTypes" class="role-type" color="secondary" item-text="name" item-value="value"></v-select>
+            </v-flex>
+          </v-layout>
 
           <div id="selected-users">
 
@@ -370,6 +372,8 @@ export default {
 .selected-user {
   display: flex;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 </style>
