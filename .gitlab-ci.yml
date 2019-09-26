@@ -87,6 +87,8 @@ production-run:
     - master
   stage: deploy
 
+after_script:
+  - "chown -R gitlab-runner:gitlab-runner ."
 
 update-sonar:
   stage: test

@@ -50,7 +50,7 @@ public class ExampleUserPhotoData {
                       log.info("Started adding example photos to users.");
                       photoController.checkForAndCreatePhotosDirectory();
                       List<User> users = User.find.all();
-                      final Integer[] fileIndex = {0};
+                      final int[] fileIndex = {0};
 
                       File folder = new File("storage/photos");
                       File[] listOfFiles = folder.listFiles();
@@ -60,9 +60,9 @@ public class ExampleUserPhotoData {
                           runAsync(
                               () -> {
                                 if (user.getProfilePhoto() == null) {
-                                  boolean success = false;
-                                  while (!success) {
                                     File photoFile = listOfFiles[fileIndex[0]];
+                                    fileIndex[0] = (fileIndex[0] + 1) % listOfFiles.length;
+
                                     PersonalPhoto personalPhoto =
                                         new PersonalPhoto(
                                             photoFile.getName(),
@@ -78,8 +78,6 @@ public class ExampleUserPhotoData {
                                         String.format(
                                             "Added photo for user %s %s%n",
                                             user.getFirstName(), user.getLastName()));
-                                    success = true;
-                                  }
                                 }
                               });
                         }
