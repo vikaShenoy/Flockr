@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.inject.Inject;
 import models.User;
 import modules.websocket.frames.PingMapFrame;
+import modules.websocket.frames.PongFrame;
 import play.libs.Json;
 import repository.ChatRepository;
 import repository.TripRepository;
@@ -135,6 +136,8 @@ public class WebSocket extends AbstractActor {
                             out.tell("Map ping failed, trip not found", self());
                           }
                         });
+              } else if (message.get("type").asText().equals("ping")) {
+                out.tell(Json.toJson(new PongFrame()).toString(), self());
               }
             })
         .build();
