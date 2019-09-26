@@ -346,3 +346,15 @@ export function tripNodeContains(tripNodeId, tripNode) {
   }
   return contains;
 }
+
+/**
+ * Function to leave a trip
+ * @param tripId the id of the trip to leave
+ */
+export async function leaveTrip(tripId) {
+  const userId = localStorage.getItem("userId");
+  const url = endpoint(`/users/${userId}/trips/${tripId}/leaveTrip`)
+  const res = await superagent.patch(url).set("Authorization",
+    localStorage.getItem("authToken"));
+  return res.body;
+}
