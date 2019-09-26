@@ -104,7 +104,7 @@ public class TripController extends Controller {
               List<User> users;
 
               try {
-                List<TripComposite> trips = tripRepository.getTripsByOwnUserId(userId);
+                List<TripComposite> trips = tripRepository.getTripsByOwnUserIdWithNodes(userId);
                 tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
                 users = tripUtil.getUsersFromJson(userIdsJson, user);
               } catch (BadRequestException e) {
@@ -321,7 +321,7 @@ public class TripController extends Controller {
 
                             try {
                                 List<User> allUsers = userRepository.getUsersWithIds(userIds);
-                                List<TripComposite> trips = tripRepository.getTripsByOwnUserId(userId);
+                                List<TripComposite> trips = tripRepository.getTripsByOwnUserIdWithNodes(userId);
                                 tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
                                 users = tripUtil.getUsersFromJsonEdit(userIdsJson, allUsers);
 

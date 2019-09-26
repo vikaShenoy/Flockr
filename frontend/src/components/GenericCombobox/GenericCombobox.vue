@@ -102,6 +102,7 @@ export default {
 
                 this.isLoadingItems = false;
             } catch (err) {
+                console.log(err);
                 this.$root.$emit("show-error-snackbar", `Could not get items for ${this.label}`, 3000);
                 this.isLoadingItems = false;
             }

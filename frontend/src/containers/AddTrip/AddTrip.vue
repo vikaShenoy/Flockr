@@ -142,7 +142,7 @@ export default {
     /**
      * This function searches users by the given name that is written in the Combo Box
      */
-    searchUser: async name => await getUsers(name),
+    searchUser: name => getUsers(name),
 
     /**
      * Gets all users and filters out the logged in user
