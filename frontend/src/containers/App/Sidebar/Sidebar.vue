@@ -133,20 +133,20 @@
             requiresAdminRole: false
           },
           {
-            title: "Logout",
-            url: "/logout",
-            icon: "power_settings_new",
-            loggedIn: true,
-            loggedOut: false,
-            requiresAdminRole: false
-          },
-          {
             title: "Admin Panel",
             url: "/admin",
             icon: "how_to_reg",
             loggedIn: true,
             loggedOut: false,
             requiresAdminRole: true
+          },
+          {
+            title: "Logout",
+            url: "/logout",
+            icon: "power_settings_new",
+            loggedIn: true,
+            loggedOut: false,
+            requiresAdminRole: false
           }
         ],
       };
