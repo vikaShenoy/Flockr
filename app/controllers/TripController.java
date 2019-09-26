@@ -314,6 +314,7 @@ public class TripController extends Controller {
                             List<TripNode> tripNodes;
                             List<User> users;
                             try {
+
                                 List<User> allUsers = User.find.all();
                                 Set<TripComposite> trips = tripRepository.getAllTrips();
                                 tripNodes = tripUtil.getTripNodesFromJson(tripNodesJson, trips);
