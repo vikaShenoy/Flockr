@@ -53,7 +53,7 @@ public class ExceptionUtil {
     } catch (Exception exception) {
       ObjectNode message = Json.newObject();
       message.put(MESSAGE_KEY, "An unexpected error has occurred.");
-      log.error("500 - Internal Server Error", exception);
+      exception.printStackTrace();
       return internalServerError(message);
     }
   }

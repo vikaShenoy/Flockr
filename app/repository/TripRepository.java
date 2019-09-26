@@ -68,7 +68,10 @@ public class TripRepository {
     return supplyAsync(
         () -> {
           recursivelyAddUsersToSubTrips(trip.getTripNodes(), trip.getUsers());
+          long endTime = System.nanoTime();
+
           trip.save();
+          endTime = System.nanoTime();
 
           // Persist trip node order.
           List<TripNode> tripNodes = trip.getTripNodes();
@@ -86,8 +89,9 @@ public class TripRepository {
               update.setNextParameter(trip.getTripNodeId());
               update.addBatch();
             }
-            update.executeBatch();
 
+            update.executeBatch();
+            endTime = System.nanoTime();
             txn.commit();
           }
 
@@ -307,6 +311,23 @@ public class TripRepository {
           return trips;
         },
         executionContext);
+  }
+
+  public List<TripComposite> getTripsByOwnUserId(int travellerId) {
+              List<TripComposite> trips =
+                      TripComposite.find
+                              .query()
+                              .fetch("users","userId")
+                              .where()
+                              .in("users.userId", travellerId)
+                              .findList();
+              for (TripComposite tripNode : trips) {
+                if (tripNode.getNodeType().equals("TripComposite")) {
+                  //tripNode.setTripNodes(recursiveGetTripNodes(tripNode.getTripNodeId()));
+                  tripNode.setTripNodes(new ArrayList<>());
+                }
+              }
+              return trips;
   }
 
   /**

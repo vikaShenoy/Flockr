@@ -42,6 +42,10 @@ public class UserRepository {
      * @return the list of users that are in the list
      */
     public List<User> getUsersWithIds(List<Integer> ids) {
+        if (ids.size() == 0) {
+            return new ArrayList<>();
+        }
+
         return User.find.query().where()
             .idIn(ids)
             .findList();
