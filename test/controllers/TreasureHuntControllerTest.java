@@ -167,56 +167,7 @@ public class TreasureHuntControllerTest {
         Assert.assertNotNull(editedTreasureHunt);
         Assert.assertEquals("New Riddle", editedTreasureHunt.getRiddle());
     }
-
-    @Test
-    public void editTreasureHuntGoodStartDate() throws IOException, ParseException {
-
-        FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        ObjectNode treasureHuntObject = Json.newObject();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String newDate = dateFormat.format(Date.from(Instant.now().minus(Duration.ofDays(365))));
-        treasureHuntObject.put("startDate", newDate);
-        Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
-                "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
-        //Assert response code is correct.
-        Assert.assertEquals(200, result.status());
-        JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
-
-        //Assert response is correct.
-        Assert.assertTrue(jsonNode.has("startDate"));
-        Assert.assertEquals((
-                dateFormat.parse(newDate)).toInstant().getEpochSecond() * 1000, jsonNode.get("startDate").asLong());
-
-        //Assert database has been updated correctly.
-        TreasureHunt editedTreasureHunt = TreasureHunt.find.byId(treasureHunt.getTreasureHuntId());
-        Assert.assertNotNull(editedTreasureHunt);
-        Assert.assertEquals(dateFormat.parse(newDate), editedTreasureHunt.getStartDate());
-    }
-
-    @Test
-    public void editTreasureHuntGoodEndDate() throws IOException, ParseException {
-
-        FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        ObjectNode treasureHuntObject = Json.newObject();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String newDate = dateFormat.format(Date.from(Instant.now().plus(Duration.ofDays(365))));
-        treasureHuntObject.put("endDate", newDate);
-        Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
-                "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
-        //Assert response code is correct.
-        Assert.assertEquals(200, result.status());
-        JsonNode jsonNode = PlayResultToJson.convertResultToJson(result);
-
-        //Assert response is correct.
-        Assert.assertTrue(jsonNode.has("endDate"));
-        Assert.assertEquals((
-                dateFormat.parse(newDate)).toInstant().getEpochSecond() * 1000, jsonNode.get("endDate").asLong());
-
-        //Assert database has been updated correctly.
-        TreasureHunt editedTreasureHunt = TreasureHunt.find.byId(treasureHunt.getTreasureHuntId());
-        Assert.assertNotNull(editedTreasureHunt);
-        Assert.assertEquals(dateFormat.parse(newDate), editedTreasureHunt.getEndDate());
-    }
+    
 
     @Test
     public void editTreasureHuntGoodNameAdmin() throws IOException {
@@ -274,38 +225,17 @@ public class TreasureHuntControllerTest {
     }
 
     @Test
-    public void editTreasureHuntBadStartDate() {
-        FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        ObjectNode treasureHuntObject = Json.newObject();
-        treasureHuntObject.put("startDate", dateFormat.format(
-                Date.from(treasureHunt.getEndDate().toInstant().plus(Duration.ofDays(1)))));
-        Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
-                "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
-        //Assert response code is correct.
-        Assert.assertEquals(400, result.status());
-    }
-
-    @Test
-    public void editTreasureHuntBadEndDate() {
-        FakeClient fakeClient = TestState.getInstance().getFakeClient();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        ObjectNode treasureHuntObject = Json.newObject();
-        treasureHuntObject.put("endDate", dateFormat.format(
-                Date.from(treasureHunt.getStartDate().toInstant().minus(Duration.ofDays(1)))));
-        Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
-                "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
-        //Assert response code is correct.
-        Assert.assertEquals(400, result.status());
-    }
-
-    @Test
     public void editTreasureHuntBadStartAndEndDate() {
         FakeClient fakeClient = TestState.getInstance().getFakeClient();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat timeFormat = new SimpleDateFormat("HH:mm");
+
         ObjectNode treasureHuntObject = Json.newObject();
         treasureHuntObject.put("endDate", dateFormat.format(treasureHunt.getStartDate()));
+        treasureHuntObject.put("startTime", timeFormat.format(treasureHunt.getStartDate()));
         treasureHuntObject.put("startDate", dateFormat.format(treasureHunt.getEndDate()));
+        treasureHuntObject.put("endTime", timeFormat.format(treasureHunt.getEndDate()));
+
         Result result = fakeClient.makeRequestWithToken("PUT", treasureHuntObject,
                 "/api/treasurehunts/" + treasureHunt.getTreasureHuntId(), user.getToken());
         //Assert response code is correct.
@@ -412,7 +342,10 @@ public class TreasureHuntControllerTest {
         body.put("treasureHuntDestinationId", destination.getDestinationId());
         body.put("riddle", "Test riddle");
         body.put("startDate", "2016-01-01");
-        body.put("endDate", "2016-12-31 11:59:59");
+        body.put("startTime", "19:12");
+        body.put("endDate", "2016-12-31");
+        body.put("endTime", "19:12");
+
 
         Result result = fakeClient.makeRequestWithToken("POST", body,
                 "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
@@ -553,7 +486,10 @@ public class TreasureHuntControllerTest {
         body.put("treasureHuntDestinationId", destination.getDestinationId());
         body.put("riddle", "Test riddle");
         body.put("startDate", "2016-01-01");
-        body.put("endDate", "2022-12-31 11:59:59");
+        body.put("startTime", "19:12");
+        body.put("endDate", "2022-12-31");
+        body.put("endTime", "19:12");
+
         Result result = fakeClient.makeRequestWithToken("POST", body,
                 "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
         Assert.assertEquals(201, result.status());
@@ -584,7 +520,10 @@ public class TreasureHuntControllerTest {
         body.put("treasureHuntDestinationId", destination.getDestinationId());
         body.put("riddle", "Test riddle");
         body.put("startDate", "2026-01-01");
-        body.put("endDate", "2036-01-01 11:59:59");
+        body.put("startTime", "19:12");
+        body.put("endDate", "2036-01-01");
+        body.put("endTime", "19:12");
+
         Result result = fakeClient.makeRequestWithToken("POST", body,
                 "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
         Assert.assertEquals(201, result.status());
@@ -615,7 +554,10 @@ public class TreasureHuntControllerTest {
         body.put("treasureHuntDestinationId", destination.getDestinationId());
         body.put("riddle", "Test riddle");
         body.put("startDate", "2016-01-01");
+        body.put("startTime", "19:12");
         body.put("endDate", "2017-01-01 11:59:59");
+        body.put("endTime", "15:12");
+
         Result result = fakeClient.makeRequestWithToken("POST", body,
                 "/api/users/" + user.getUserId() + "/treasurehunts", user.getToken());
         Assert.assertEquals(201, result.status());
